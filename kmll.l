@@ -36,16 +36,6 @@ int octal_escape (char *p);
 
 #define MAX_STR_CONST 300
 
-#undef YY_INPUT
-#define YY_INPUT(buf,result,max_size) \
-  { \
-    int r = strlen (lineptr); \
-    if (r > max_size) \
-      r = max_size; \
-    memcpy (buf, lineptr, r); \
-    lineptr += r; \
-    result = r; \
-  }
 %}
 
 %option case-insensitive
