@@ -243,6 +243,117 @@ static void display_update (char *buf)
 
 typedef struct
 {
+  GtkWidget *widget [KML_MAX_SWITCH_POSITION];
+  GtkWidget *image [KML_MAX_SWITCH_POSITION];
+  GtkWidget *fixed;
+  kml_switch_t *kml_switch;
+  int position;
+} switch_info_t;
+
+
+void switch_select (GtkWidget *widget, switch_info_t *sw)
+{
+  int new_pos;
+  int old_pos = sw->position;
+  GtkWidget *temp;
+
+  for (new_pos = 0; new_pos < KML_MAX_SWITCH_POSITION; new_pos++)
+    {
+      if (widget == sw->widget [new_pos])
+	break;
+    }
+  if (new_pos >= KML_MAX_SWITCH_POSITION)
+    fatal (2, "can't find switch position\n");
+
+#define SWITCH_DEBUG
+#ifdef SWITCH_DEBUG
+  printf ("switch position %d selected", new_pos);
+  if (new_pos == old_pos)
+    printf (": no change");
+  printf ("\n");
+#endif
+
+  if (new_pos == old_pos)
+    return;
+
+  gtk_widget_ref (sw->image [old_pos]);
+  gtk_widget_ref (sw->image [new_pos]);
+  gtk_container_remove (GTK_CONTAINER (sw->widget [old_pos]), sw->image [old_pos]);
+  gtk_container_remove (GTK_CONTAINER (sw->widget [new_pos]), sw->image [new_pos]);
+  temp = sw->image [old_pos];
+  sw->image [old_pos] = sw->image [new_pos];
+  sw->image [new_pos] = temp;
+  gtk_container_add (GTK_CONTAINER (sw->widget [old_pos]), sw->image [old_pos]);
+  gtk_container_add (GTK_CONTAINER (sw->widget [new_pos]), sw->image [new_pos]);
+  gtk_widget_unref (sw->image [old_pos]);
+  gtk_widget_unref (sw->image [new_pos]);
+
+  sw->position = new_pos;
+}
+
+
+void add_switch (GtkWidget *fixed,
+		 GdkPixbuf *window_pixbuf,
+		 kml_switch_t *kml_switch,
+		 switch_info_t *switch_info)
+{
+  int i;
+  GdkPixbuf *pixbuf;
+
+  switch_info->fixed = fixed;
+  switch_info->kml_switch = kml_switch;
+  switch_info->position = kml_switch->default_position;
+  
+  /* first construct active_image and inactive_image */
+  for (i = 0; i < KML_MAX_SWITCH_POSITION; i++)
+    if (kml_switch->position [i])
+      {
+	pixbuf = gdk_pixbuf_new_subpixbuf (window_pixbuf,
+					   kml_switch->position [i]->offset.x,
+					   kml_switch->position [i]->offset.y,
+					   kml_switch->size.width,
+					   kml_switch->size.height);
+	switch_info->image [i] = gtk_image_new_from_pixbuf (pixbuf);
+
+	switch_info->widget [i] = gtk_button_new ();
+	gtk_button_set_relief (GTK_BUTTON (switch_info->widget [i]), GTK_RELIEF_NONE);
+	gtk_widget_set_size_request (switch_info->widget [i],
+				     kml_switch->size.width,
+				     kml_switch->size.height);
+	gtk_fixed_put (GTK_FIXED (fixed),
+		       switch_info->widget [i],
+		       kml_switch->position [i]->offset.x,
+		       kml_switch->position [i]->offset.y);
+
+	g_signal_connect (G_OBJECT (switch_info->widget [i]),
+			  "pressed",
+			  G_CALLBACK (& switch_select),
+			  (gpointer) switch_info);
+
+	gtk_container_add (GTK_CONTAINER (switch_info->widget [i]),
+			   switch_info->image [i]);
+      }
+}
+
+
+switch_info_t *switch_info [KML_MAX_SWITCH];
+
+
+void add_switches (GdkPixbuf *window_pixbuf, GtkWidget *fixed)
+{
+  int i;
+
+  for (i = 0; i < KML_MAX_SWITCH; i++)
+    if (kml->kswitch [i])
+      {
+	switch_info [i] = alloc (sizeof (switch_info_t));
+	add_switch (fixed, window_pixbuf, kml->kswitch [i], switch_info [i]);
+      }
+}
+
+
+typedef struct
+{
   GtkWidget *widget;
   GtkWidget *fixed;
   kml_button_t *kml_button;
@@ -563,6 +674,8 @@ int main (int argc, char *argv[])
       image = gtk_image_new_from_pixbuf (image_pixbuf);
       gtk_fixed_put (GTK_FIXED (fixed), image, 0, 0);
     }
+
+  add_switches (image_pixbuf, fixed);
 
   add_keys (image_pixbuf, fixed);
 
