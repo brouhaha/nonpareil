@@ -70,6 +70,8 @@ struct sim_env_t
 
   int prev_pc;  /* used to store complete five-digit octal address of instruction */
 
+  int crc;
+
   int display_enable;
 
   bool key_flag;      /* true if a key is down */

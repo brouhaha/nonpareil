@@ -477,6 +477,31 @@ static void op_bank_switch (sim_t *sim, int opcode)
 }
 
 
+static void op_rom_selftest (sim_t *sim, int opcode)
+{
+  sim->env->crc = 01777;
+  sim->env->inst_state = selftest;
+  sim->env->pc &= ~ 01777;  // start from beginning of current 1K ROM bank
+  printf ("starting CRC of bank %d addr %04o\n", sim->env->bank, sim->env->pc);
+}
+
+
+static void crc_update (sim_t *sim, int word)
+{
+  int i;
+  int b;
+
+  for (i = 0; i < 10; i++)
+    {
+      b = sim->env->crc & 1;
+      sim->env->crc >>= 1;
+      if (b ^ (word & 1))
+	sim->env->crc ^= 0x331;
+      word >>= 1;
+    }
+}
+
+
 static void op_c_to_addr (sim_t *sim, int opcode)
 {
   sim->env->ram_addr = (sim->env->c [1] << 4) + sim->env->c [0];
@@ -853,7 +878,7 @@ static void init_ops (sim_t *sim)
   sim->op_fcn [01160] = op_c_to_addr;
   sim->op_fcn [01260] = op_clear_data_regs;
   sim->op_fcn [01360] = op_c_to_data;
-  /* sim->op_fcn [01460] = op_rom_selftest; */  /* Only on Spice series */
+  sim->op_fcn [01460] = op_rom_selftest;  /* Only on Spice series */
   /* 1560..1660 unassigned/unknown */
   sim->op_fcn [01760] = op_nop;  /* "HI I'M WOODSTOCK" */
 
@@ -1054,6 +1079,19 @@ bool woodstock_execute_instruction (sim_t *sim)
 	sim->env->pc = (sim->env->pc & ~01777) | opcode;
       break;
     case selftest:
+      if (opcode == 01060)
+	op_bank_switch (sim, opcode);  // bank switch even in self-test
+      crc_update (sim, opcode);
+      if (! (sim->env->pc & 01777))    // end of 1K ROM bank?
+	{
+	  // yes, return
+	  // $$$ I'm not sure what to do if CRC is bad, as I've never
+	  //     had a real calculator fail the test.
+	  printf ("done, crc = %03x: %s\n", sim->env->crc,
+		  sim->env->crc == 0x078 ? "good" : "bad");
+	  sim->env->inst_state = norm;
+	  op_return (sim, 0);
+	}
       break;
     }
 
