@@ -390,9 +390,13 @@ keyinfo keys_hp55 [35] =
 
 typedef struct
 {
+  GtkWidget *button;
   GtkWidget *fixed;
   int keycode;
 } button_info_t;
+
+
+button_info_t button_info [35];
 
 
 void button_pressed (GtkWidget *widget, button_info_t *button)
@@ -415,12 +419,11 @@ void button_released (GtkWidget *widget, button_info_t *button)
 
 void add_key (GtkWidget *fixed,
 	      GdkPixbuf *window_pixbuf,
-	      keyinfo *key)
+	      keyinfo *key,
+	      button_info_t *button_info)
 {
-  GtkWidget *button;
   GdkPixbuf *button_pixbuf;
   GtkWidget *button_image;
-  button_info_t *button_info;
 
   button_pixbuf = gdk_pixbuf_new_subpixbuf (window_pixbuf,
 					    key->rect.x,
@@ -430,31 +433,32 @@ void add_key (GtkWidget *fixed,
 
   button_image = gtk_image_new_from_pixbuf (button_pixbuf);
 
-  button_info = calloc (1, sizeof (button_info_t));
-  if (! button_info)
-    fatal (2, "can't allocate button info\n");
-
   button_info->fixed = fixed;
   button_info->keycode = key->keycode;
   
-  button = gtk_button_new ();
+  button_info->button = gtk_button_new ();
 
-  gtk_button_set_relief (GTK_BUTTON (button), GTK_RELIEF_NONE);
+  gtk_button_set_relief (GTK_BUTTON (button_info->button), GTK_RELIEF_NONE);
 
-  gtk_widget_set_size_request (button, key->rect.width, key->rect.height);
+  gtk_widget_set_size_request (button_info->button,
+			       key->rect.width,
+			       key->rect.height);
 
-  gtk_fixed_put (GTK_FIXED (fixed), button, key->rect.x, key->rect.y);
+  gtk_fixed_put (GTK_FIXED (fixed),
+		 button_info->button,
+		 key->rect.x,
+		 key->rect.y);
 
-  g_signal_connect (G_OBJECT (button),
+  g_signal_connect (G_OBJECT (button_info->button),
 		    "pressed",
 		    G_CALLBACK (& button_pressed),
 		    (gpointer) button_info);
-  g_signal_connect (G_OBJECT (button),
+  g_signal_connect (G_OBJECT (button_info->button),
 		    "released",
 		    G_CALLBACK (& button_released),
 		    (gpointer) button_info);
 
-  gtk_container_add (GTK_CONTAINER (button), button_image);
+  gtk_container_add (GTK_CONTAINER (button_info->button), button_image);
 }
 
 
@@ -463,7 +467,7 @@ void add_keys (GdkPixbuf *window_pixbuf, GtkWidget *fixed)
   int i;
 
   for (i = 0; i < (sizeof (keys_hp45) / sizeof (keyinfo)); i++)
-    add_key (fixed, window_pixbuf, & keys_hp45 [i]);
+    add_key (fixed, window_pixbuf, & keys_hp45 [i], & button_info [i]);
 }
 
 
