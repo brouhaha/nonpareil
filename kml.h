@@ -103,6 +103,7 @@ typedef struct kml_command_list_t
 typedef struct
 {
   kml_offset_t offset;
+  int flag;
   kml_command_list_t *onselect;
   kml_command_list_t *ondeselect;
 } kml_switch_position_t;

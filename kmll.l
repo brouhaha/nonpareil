@@ -78,6 +78,7 @@ display		return (DISPLAY);
 down		return (DOWN);
 else		return (ELSE);
 end		return (END);
+flag		return (FLAG);
 global		return (GLOBAL);
 hardware	return (HARDWARE);
 ifflag		return (IFFLAG);

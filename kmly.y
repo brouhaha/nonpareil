@@ -47,12 +47,12 @@ int kml_cur_idx2;
 
 %token ANNUNCIATOR AUTHOR      BACKGROUND  BITMAP      BUTTON      CLASS
 %token COLOR       DEBUG       DEFAULT     DIGITS      DISPLAY     DOWN
-%token ELSE        END         GLOBAL      HARDWARE    IFFLAG      IFPRESSED
-%token IMAGE       KEYCODE     LCD         MAP         MENUITEM    MODEL
-%token NOHOLD      OFFSET      ONDOWN      ONUP        OUTIN       PATCH
-%token POSITION    PRESS       PRINT       RELEASE     RESETFLAG   ROM
-%token SCANCODE    SETFLAG     SIZE        SWITCH      TITLE       TYPE
-%token VIRTUAL     ZOOM
+%token ELSE        END         FLAG        GLOBAL      HARDWARE    IFFLAG
+%token IFPRESSED   IMAGE       KEYCODE     LCD         MAP         MENUITEM
+%token MODEL       NOHOLD      OFFSET      ONDOWN      ONUP        OUTIN
+%token PATCH       POSITION    PRESS       PRINT       RELEASE     RESETFLAG
+%token ROM         SCANCODE    SETFLAG     SIZE        SWITCH      TITLE
+%token TYPE        VIRTUAL     ZOOM
 
 %type <intpair> offset_stmt size_stmt down_stmt
 
@@ -319,9 +319,13 @@ position_stmt_list	:	position_stmt
 			|	position_stmt position_stmt_list
 			;
 
-position_stmt		:	offset_stmt
+position_stmt		:	flag_stmt
+			|	offset_stmt
 				{ yy_kml->kswitch [kml_cur_idx]->position [kml_cur_idx2]->offset.x = $1.a;
 				  yy_kml->kswitch [kml_cur_idx]->position [kml_cur_idx2]->offset.y = $1.b; }
+			;
+
+flag_stmt		:	FLAG INTEGER { yy_kml->kswitch [kml_cur_idx]->position [kml_cur_idx2]->flag = $2; } ;
 
 
 /*----------------------------------------------------------------------------

@@ -164,10 +164,13 @@ static void print_kml_switch (FILE *f, kml_t *kml, int s)
   for (p = 0; p < KML_MAX_SWITCH_POSITION; p++)
     if (kml->kswitch [s]->position [p])
       {
-	fprintf (f, "\tposition %d  offset %d %d  end\n",
+	fprintf (f, "\tposition %d  offset %d %d",
 		 p,
 		 kml->kswitch [s]->position [p]->offset.x,
 		 kml->kswitch [s]->position [p]->offset.y);
+	if (kml->kswitch [s]->position [p]->flag)
+	  fprintf (f, "  flag %d", kml->kswitch [s]->position [p]->flag);
+	fprintf (f, "  end\n");
       }
   fprintf (f, "end\n\n");
 }
