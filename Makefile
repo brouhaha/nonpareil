@@ -1,6 +1,6 @@
 # Makefile for CASMSIM package
 # Copyright 1995 Eric L. Smith
-# $Header: /home/svn/casmsim/Makefile,v 1.16 1995/03/29 23:27:32 eric Exp $
+# $Header: /home/svn/casmsim/Makefile,v 1.17 1995/03/30 00:22:59 eric Exp $
 #
 # CASMSIM is free software; you can redistribute it and/or modify it under the
 # terms of the GNU General Public License version 2 as published by the Free
@@ -17,17 +17,21 @@
 # these programs (in the file "COPYING"); if not, write to the Free Software
 # Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #
-# $Header: /home/svn/casmsim/Makefile,v 1.16 1995/03/29 23:27:32 eric Exp $
+# $Header: /home/svn/casmsim/Makefile,v 1.17 1995/03/30 00:22:59 eric Exp $
 
 
 # -----------------------------------------------------------------------------
 # You may need to change the following definitions.  In particular you will
 # need to remove the -DUSE_TIMER if you don't have the setitimer() system
 # call, and you may need to chage X11LIBS and X11INCS if X isn't in /usr/X11.
+#
+# If you are using a version of Flex later than 2.4.1 you can optionally
+# remove the "-DOLD_FLEX" from CFLAGS, resulting in a completely imperceptible
+# performance improvement in CASM.
 # -----------------------------------------------------------------------------
 
 CC = gcc
-CFLAGS = -g -Dstricmp=strcasecmp -DUSE_TIMER -DENTER_KEY_MOD
+CFLAGS = -g -Dstricmp=strcasecmp -DUSE_TIMER -DENTER_KEY_MOD -DOLD_FLEX
 
 YACC = bison
 YFLAGS = -d -y

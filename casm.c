@@ -22,7 +22,7 @@ You should have received a copy of the GNU General Public License along with
 this program (in the file "COPYING"); if not, write to the Free Software
 Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
-$Header: /home/svn/casmsim/casm.c,v 1.12 1995/03/28 01:34:48 eric Exp $
+$Header: /home/svn/casmsim/casm.c,v 1.13 1995/03/30 00:22:59 eric Exp $
 */
 
 #include <stdarg.h>
@@ -260,11 +260,6 @@ int main (int argc, char *argv[])
 void yyerror (char *s)
 {
   error ("%s\n", s);
-}
-
-int yywrap (void)
-{
-  return 1;
 }
 
 void do_label (char *s)

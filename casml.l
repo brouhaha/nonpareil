@@ -22,13 +22,19 @@ You should have received a copy of the GNU General Public License along with
 this program (in the file "COPYING"); if not, write to the Free Software
 Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
-$Header: /home/svn/casmsim/casml.l,v 1.10 1995/03/28 01:34:48 eric Exp $
+$Header: /home/svn/casmsim/casml.l,v 1.11 1995/03/30 00:23:30 eric Exp $
 */
 
 %{
 #include "y.tab.h"
 #include "symtab.h"
 #include "casm.h"
+
+#ifdef OLD_FLEX
+#undef yywrap
+/* Only needed for versions of flex prior to 2.4.1. */
+int yywrap (void);
+#endif /* OLD_FLEX */
 
 #undef YY_INPUT
 #define YY_INPUT(buf,result,max_size) \
@@ -153,4 +159,13 @@ int keyword (char *string)
     if (stricmp (string, ptr->name) == 0)
       return ptr->value;
   return 0;
+}
+
+int yywrap (void)
+{
+#ifdef OLD_FLEX
+/* Only needed for versions of flex prior to 2.4.1. */
+  yyrestart (yyin);
+#endif /* OLD_FLEX */
+  return (1);
 }
