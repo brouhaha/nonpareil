@@ -79,9 +79,8 @@ I used GNU tools to build CASM; specifically GCC 2.5.8, Flex 2.4.7, Bison
 1.22, and Make 3.71.  I don't believe in using ugly preprocessor macros to
 make my code compile on non-ANSI compilers.  Lex won't work because I don't
 know how to make it take input from a string.  Earlier versions of Flex don't
-seem to work either, probably because they handle input differently.  It is
-possible to use Yacc instead of Bison.  I no longer use ".SUFFIXES:" in the
-Makefile, so I expect that other Make programs should work.
+seem to work either, probably because they handle input differently.  I have
+included the file hp45.lst in case you can't get CASM working.
 
 CASM requires a single command line argument to specify the source code file.
 
