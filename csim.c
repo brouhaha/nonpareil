@@ -535,6 +535,7 @@ static void help_about (GtkWidget *widget, gpointer data)
 				    "Copyright 1995, 2004 Eric L. Smith\n"
 				    "http://www.brouhaha.com/~eric/software/casmsim/"));
   gtk_widget_show_all (dialog);
+  gtk_dialog_run (GTK_DIALOG (dialog));
 }
 
 
