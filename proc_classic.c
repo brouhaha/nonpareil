@@ -37,7 +37,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
 #define SSIZE 12
 
-#define MAX_GROUP 1
+#define MAX_GROUP 2
 #define MAX_ROM 8
 #define ROM_SIZE 256
 
