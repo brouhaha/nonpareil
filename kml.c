@@ -39,8 +39,6 @@ int errors;
 char linebuf [MAX_LINE];
 char *lineptr;
 
-kml_t *kml;
-
 
 void yyerror (char *s)
 {
@@ -55,9 +53,10 @@ void range_check (int val, int min, int max)
 }
 
 
-void read_kml_file (char *fn)
+kml_t *read_kml_file (char *fn)
 {
   kml_t *kml;
+  extern kml_t *yy_kml;
 
   yyin = fopen (fn, "r");
   if (! yyin)
@@ -65,7 +64,59 @@ void read_kml_file (char *fn)
  
   kml = alloc (sizeof (kml_t));
 
+  yy_kml = kml;
+
   yyparse ();
   
   fclose (yyin);
+
+  return (kml);
+}
+
+
+static void free_kml_command_list (kml_command_list_t *list)
+{
+  while (list)
+    {
+      kml_command_list_t *next = list->next;
+      if (list->then_part)
+	free_kml_command_list (list->then_part);
+      if (list->else_part)
+	free_kml_command_list (list->then_part);
+      free (list);
+      list = next;
+    }
+}
+
+void free_kml (kml_t *kml)
+{
+  int i;
+
+  /* ISO/IEC 9899 paragraph 7.20.3.2 says free(NULL) has no effect. */
+  free (kml->title);
+  free (kml->author);
+  free (kml->hardware);
+  free (kml->model);
+  free (kml->rom);
+  free (kml->patch);
+  free (kml->bitmap);
+  free (kml->print);
+
+  for (i = 0; i < KML_MAX_COLOR; i++)
+    free (kml->display_color [i]);
+
+  for (i = 0; i < KML_MAX_ANNUNCIATOR; i++)
+    free (kml->annunciator [i]);
+
+  for (i = 0; i < KML_MAX_BUTTON; i++)
+    if (kml->button [i])
+      {
+	free_kml_command_list (kml->button [i]->onup);
+	free_kml_command_list (kml->button [i]->ondown);
+	free (kml->button [i]);
+      }
+
+  for (i = 0; i < KML_MAX_SCANCODE; i++)
+    if (kml->scancode [i])
+      free_kml_command_list (kml->scancode [i]);
 }

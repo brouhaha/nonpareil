@@ -138,6 +138,6 @@ typedef struct
   kml_command_list_t *scancode [KML_MAX_SCANCODE];
 } kml_t;
 
-extern kml_t *kml;
+kml_t *read_kml_file (char *fn);
 
-void read_kml_file (char *fn);
+void free_kml (kml_t *kml);
