@@ -90,10 +90,17 @@ Better model support:
 Ports:
 
   Windows
-    MinGW cross-compiler:  http://www.mingw.org/
-    GTK+ for Windows:      http://www.gimp.org/~tml/gimp/win32/
-    GTK+ for Windows runtime installer:  http://members.lycos.co.uk/alexv6/
-    NSIS installer:        http://nsis.sourceforge.net/
+    Cross-develompent tools:
+      MinGW cross-compiler:  http://www.mingw.org/
+
+    Toolkits:
+      GTK+ for Windows:      http://www.gimp.org/~tml/gimp/win32/
+      GTK+ for Windows runtime installer:  http://members.lycos.co.uk/alexv6/
+
+    Installers:
+      NSIS:        http://nsis.sourceforge.net/
+      MAKEMSI:     http://www.labyrinth.net.au/~dbareis/makemsi.htm
+      WiX:         http://sourceforge.net/projects/wix/
 
   MacOS X
     http://www.macgimp.org/index.php?topic=gtk
