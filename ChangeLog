@@ -1,3 +1,26 @@
+2004-01-15  Eric Smith <eric@brouhaha.com>
+
+	* Release 0.15.
+	
+2004-01-15  Eric Smith <eric@brouhaha.com>
+
+	* csim.c: Added menu bar and "About" dialog.
+
+	* proc.c: Initialize sim_env.key_buf to -1 to prevent first button
+	press lossage.
+	
+2004-01-14  Eric Smith <eric@brouhaha.com>
+	
+	* csim.c: Use GTK+ 2.x toolkit.
+	* xio .h xio.c: Deleted.
+	
+	* proc.c proc.h: Moved CPU simulation into separate source file,
+	and run in separate thread.
+	
+	* util.c util.h: Collected functions from elsewhere.
+
+	* casm.h casml.l: Eliminate warnings.
+	
 2004-01-12  Eric Smith <eric@brouhaha.com>
 
 	* hp35.asm: Replaced octal branch targets with labels.  Copied
