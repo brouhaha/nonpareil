@@ -23,13 +23,18 @@ this program (in the file "COPYING"); if not, write to the Free Software
 Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 */
 
+#include <stdarg.h>
 #include <stdio.h>
+#include <string.h>
+#include <unistd.h>
+#include "symtab.h"
 #include "casm.h"
 
 char *progname;
 int pass;
 int lineno;
 int errors;
+int warnings;
 
 int group;	/* current rom group */
 int rom;	/* current rom */
@@ -43,6 +48,8 @@ char flag_char;
 int objflag;	/* used to remember args to emit() */
 int objcode;
 
+int symtab_flag;
+
 int targflag;	/* used to remember args to target() */
 int targgroup;
 int targrom;
@@ -51,13 +58,27 @@ int targpc;
 char linebuf [MAX_LINE];
 char *lineptr;
 
+#define MAX_ERRBUF 2048
+char errbuf [MAX_ERRBUF];
+char *errptr;
+
 #define SRC_TAB 32
 char listbuf [MAX_LINE];
 char *listptr;
 
-FILE *srcfile;
-FILE *objfile;
-FILE *listfile;
+#ifndef PATH_MAX
+#define PATH_MAX 256
+#endif
+
+char srcfn  [PATH_MAX];
+char objfn  [PATH_MAX];
+char listfn [PATH_MAX];
+
+FILE *srcfile  = NULL;
+FILE *objfile  = NULL;
+FILE *listfile = NULL;
+
+t_symtab symtab [MAXGROUP] [MAXROM];  /* separate symbol tables for each ROM */
 
 void format_listing (void)
 {
@@ -106,11 +127,12 @@ void do_pass (int p)
   pass = p;
   lineno = 0;
   errors = 0;
+  warnings = 0;
   pc = 0;
   dsr = rom;
   dsg = group;
 
-  fprintf (stderr, "Starting pass %d\n", pass);
+  printf ("Pass %d rom", pass);
 
   while (fgets (linebuf, MAX_LINE, srcfile))
     {
@@ -125,21 +147,38 @@ void do_pass (int p)
       listptr = & listbuf [0];
       listbuf [0] = '\0';
 
+      errptr = & errbuf [0];
+      errbuf [0] = '\0';
+
       objflag = 0;
       targflag = 0;
       flag_char = ' ';
+      symtab_flag = 0;
 
       yyparse ();
 
       if (pass == 2)
 	{
-	  format_listing ();
-	  fprintf (listfile, "%s\n", listbuf);
+	  if (symtab_flag)
+	    print_symbol_table (symtab [group] [rom], listfile);
+	  else
+	    {
+	      format_listing ();
+	      fprintf (listfile, "%s\n", listbuf);
+	      if (errptr != & errbuf [0])
+		{
+		  fprintf (stderr, "%s\n", listbuf);
+		  fprintf (listfile, "%s", errbuf);
+		  fprintf (stderr, "%s",   errbuf);
+		}
+	    }
 	}
 
       if (objflag)
 	pc = (pc + 1) & 0xff;
     }
+
+  printf ("\n");
 }
 
 void munge_filename (char *dst, char *src, char *ext)
@@ -160,10 +199,6 @@ void munge_filename (char *dst, char *src, char *ext)
 
 int main (int argc, char *argv[])
 {
-  char *srcfn;
-  char objfn [300];
-  char listfn [300];
-
   progname = argv [0];
 
   if (argc != 2)
@@ -172,15 +207,20 @@ int main (int argc, char *argv[])
       exit (1);
     }
 
-  srcfn = argv [1];
+  for (group = 0; group < MAXGROUP; group++)
+    for (rom = 0; rom < MAXROM; rom++)
+      {
+	symtab [group] [rom] = alloc_symbol_table ();
+	if (! symtab [group] [rom])
+	  fatal ("symbol table allocation failed\n");
+      }
+
+  strcpy (srcfn, argv [1]);
 
   srcfile = fopen (srcfn, "r");
 
   if (! srcfile)
-    {
-      fprintf (stderr, "can't open input file '%s'\n", srcfn);
-      exit (2);
-    }
+    fatal ("can't open input file '%s'\n", srcfn);
 
   munge_filename (objfn, srcfn, ".obj");
   munge_filename (listfn, srcfn, ".lst");
@@ -188,18 +228,12 @@ int main (int argc, char *argv[])
   objfile = fopen (objfn, "w");
 
   if (! objfile)
-    {
-      fprintf (stderr, "can't open input file '%s'\n", objfn);
-      exit (2);
-    }
+    fatal ("can't open input file '%s'\n", objfn);
 
   listfile = fopen (listfn, "w");
 
   if (! listfile)
-    {
-      fprintf (stderr, "can't open listing file '%s'\n", listfn);
-      exit (2);
-    }
+    fatal ("can't open listing file '%s'\n", listfn);
 
   rom = 0;
   group = 0;
@@ -210,9 +244,7 @@ int main (int argc, char *argv[])
 
   do_pass (2);
 
-  print_symbol_table (listfile);
-
-  fprintf (stderr, "%d errors\n", errors);
+  err_printf ("%d errors, %d warnings\n", errors, warnings);
 
   fclose (srcfile);
   fclose (objfile);
@@ -221,9 +253,7 @@ int main (int argc, char *argv[])
 
 void yyerror (char *s)
 {
-  fprintf (stderr, "%s: %s", progname, s);
-  fprintf (stderr, " line %d\n", lineno);
-  errors++;
+  error ("%s\n", s);
 }
 
 int yywrap (void)
@@ -237,22 +267,13 @@ void do_label (char *s)
 
   if (pass == 1)
     {
-      if (! create_symbol (s, pc, lineno))
-	{
-	  fprintf (stdout, "multiply defined symbol '%s' on line %d\n", s, lineno);
-	  errors++;
-	}
+      if (! create_symbol (symtab [group] [rom], s, pc, lineno))
+	error ("multiply defined symbol '%s'\n", s);
     }
-  else if (! lookup_symbol (s, & prev_val))
-    {
-      fprintf (stdout, "undefined symbol '%s' on line %d\n", s, lineno);
-      errors++;
-    }
+  else if (! lookup_symbol (symtab [group] [rom], s, & prev_val))
+    error ("undefined symbol '%s'\n", s);
   else if (prev_val != pc)
-    {
-      fprintf (stdout, "phase error for symbol '%s' on line %d\n", s, lineno);
-      errors++;
-    }
+    error ("phase error for symbol '%s'\n", s);
 }
 
 void emit (int op)
@@ -272,13 +293,14 @@ void target (int g, int r, int p)
   targpc = p;
 }
 
-void range (int val, int min, int max)
+int range (int val, int min, int max)
 {
   if ((val < min) || (val > max))
     {
-      fprintf (stderr, "range error on line %d\n", lineno);
-      errors++;
+      error ("value out of range [%d to %d], using %d", min, max, min);
+      return min;
     }
+  return val;
 }
 
 char *newstr (char *orig)
@@ -290,12 +312,82 @@ char *newstr (char *orig)
   r = (char *) malloc (len + 10);
   
   if (! r)
-    {
-      fprintf (stderr, "memory allocation failed\n");
-      exit (2);
-    }
+    fatal ("memory allocation failed\n");
 
   memcpy (r, orig, len + 1);
   return (r);
 }
+
+/*
+ * print to both listing error buffer and standard error
+ *
+ * Use this for general messages.  Don't use this for warnings or errors
+ * generated by a particular line of the source file.  Use error() or
+ * warning() for that.
+ */
+int err_vprintf (char *format, va_list ap)
+{
+  int res;
+
+  if (listfile)
+    vfprintf (listfile, format, ap);
+  res = vfprintf (stderr, format, ap);
+  return (res);
+}
+
+int err_printf (char *format, ...)
+{
+  int res;
+  va_list ap;
+
+  va_start (ap, format);
+  res = err_vprintf (format, ap);
+  va_end (ap);
+  return (res);
+}
+
+
+/* generate fatal error message to stderr, doesn't return */
+void fatal (char *format, ...)
+{
+  va_list ap;
+
+  fprintf (stderr, "fatal error: ");
+  va_start (ap, format);
+  vfprintf (stderr, format, ap);
+  va_end (ap);
+  exit (2);
+}
+
+
+/* generate error or warning messages and increment appropriate counter */
+/* actually just puts the message into the error buffer */
+int error   (char *format, ...)
+{
+  int res;
+  va_list ap;
+
+  err_printf ("error in file %s line %d: ", srcfn, lineno);
+  va_start (ap, format);
+  res = err_vprintf (format, ap);
+  va_end (ap);
+  errptr += res;
+  errors ++;
+  return (res);
+}
+
+int warning (char *format, ...)
+{
+  int res;
+  va_list ap;
+
+  err_printf ("warning in file %s line %d: ", srcfn, lineno);
+  va_start (ap, format);
+  res = err_vprintf (format, ap);
+  va_end (ap);
+  errptr += res;
+  warnings ++;
+  return (res);
+}
+
 

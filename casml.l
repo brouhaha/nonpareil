@@ -25,6 +25,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
 %{
 #include "y.tab.h"
+#include "symtab.h"
 #include "casm.h"
 
 #undef YY_INPUT
@@ -135,6 +136,7 @@ keywords [] =
   "shift",     SHIFT,
   "stack",     STACK,
   "status",    STATUS,
+  "symtab",    SYMTAB,
   "then",      THEN,
   "to",        TO,
   "toggle",    TOGGLE,

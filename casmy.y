@@ -25,8 +25,8 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
 %{
 #include <stdio.h>
-#include "casm.h"
 #include "symtab.h"
+#include "casm.h"
 %}
 
 %union {
@@ -84,6 +84,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 %token SHIFT
 %token STACK
 %token STATUS
+%token SYMTAB
 %token THEN
 %token TO
 %token TOGGLE
@@ -107,20 +108,25 @@ label:		IDENT ':'	{ do_label ($1); }
 expr		: INTEGER { $$ = $1; }
 		| IDENT { if (pass == 1)
                             $$ = 0;
-                          else if (! lookup_symbol ($1, &$$))
-                            {
-                              fprintf (stderr, "undefined symbol '%s' on line %d\n", $1, lineno);
-			      errors++;
-                            }
+                          else if (! lookup_symbol (symtab [group] [rom], $1, &$$))
+			    {
+			      error ("undefined symbol '%s'\n", $1);
+			      $$ = 0;
+			    }
 			}
 		;
 
 pseudo_op	: ps_rom
+		| ps_symtab
 		;
 
-ps_rom		: '.' ROM expr { range ($3, 0, 017);
+ps_rom		: '.' ROM expr { $3 = range ($3, 0, MAXGROUP * MAXROM - 1);
 				 group = dsg = ($3 >> 3);
-				 rom = dsr = ($3 & 7); }
+				 rom = dsr = ($3 & 7); 
+			         printf (" %d", $3); }
+		;
+
+ps_symtab	: '.' SYMTAB { symtab_flag = 1; }
 		;
 
 instruction	: jsb_inst
@@ -182,30 +188,30 @@ arith_inst      : inst_test_b_0
                 | inst_a_plus_1
                 ;
 
-inst_test_b_0   : IF B FIELDSPEC '=' expr { range ($5, 0, 0);
+inst_test_b_0   : IF B FIELDSPEC '=' expr { $5 = range ($5, 0, 0);
                                             emit (($3 << 2) | 0x002); } ;
-inst_test_c_0   : IF C FIELDSPEC '=' expr { range ($5, 0, 0); 
+inst_test_c_0   : IF C FIELDSPEC '=' expr { $5 = range ($5, 0, 0); 
                                             emit (($3 << 2) | 0x1a2); } ;
 
-inst_test_a_1   : IF A FIELDSPEC GE expr { range ($5, 1, 1);
+inst_test_a_1   : IF A FIELDSPEC GE expr { $5 = range ($5, 1, 1);
                                            emit (($3 << 2) | 0x262); } ;
-inst_test_c_1   : IF C FIELDSPEC GE expr { range ($5, 1, 1);
+inst_test_c_1   : IF C FIELDSPEC GE expr { $5 = range ($5, 1, 1);
                                            emit (($3 << 2) | 0x062); } ;
 
 inst_test_a_c   : IF A GE C FIELDSPEC { emit (($5 << 2) | 0x042); } ;
 inst_test_a_b   : IF A GE B FIELDSPEC { emit (($5 << 2) | 0x202); } ;
 
-inst_0_to_a     : expr ARROW A FIELDSPEC { range ($1, 0, 0); 
+inst_0_to_a     : expr ARROW A FIELDSPEC { $1 = range ($1, 0, 0); 
                                            emit (($4 << 2) | 0x2e2); } ;
-inst_0_to_b     : expr ARROW B FIELDSPEC { range ($1, 0, 0); 
+inst_0_to_b     : expr ARROW B FIELDSPEC { $1 = range ($1, 0, 0); 
                                            emit (($4 << 2) | 0x022); } ;
-inst_0_to_c     : expr ARROW C FIELDSPEC { range ($1, 0, 0);
+inst_0_to_c     : expr ARROW C FIELDSPEC { $1 = range ($1, 0, 0);
                                            emit (($4 << 2) | 0x0c2); } ;
 
-inst_nines_comp : expr '-' C '-' expr ARROW C FIELDSPEC { range ($1, 0, 0);
-                                                          range ($5, 1, 1); 
+inst_nines_comp : expr '-' C '-' expr ARROW C FIELDSPEC { $1 = range ($1, 0, 0);
+                                                          $5 = range ($5, 1, 1); 
                                                  emit (($8 << 2) | 0x0e2); } ;
-inst_tens_comp  : expr '-' C ARROW C FIELDSPEC { range ($1, 0, 0);
+inst_tens_comp  : expr '-' C ARROW C FIELDSPEC { $1 = range ($1, 0, 0);
                                                  emit (($6 << 2) | 0x0a2); } ;
 
 inst_shl_a      : SHIFT LEFT A FIELDSPEC { emit (($4 << 2) | 0x102); } ;
@@ -235,13 +241,13 @@ inst_a_plus_c_c : A '+' C ARROW C FIELDSPEC { emit (($6 << 2) | 0x1c2); }
                 | C '+' A ARROW C FIELDSPEC { emit (($6 << 2) | 0x1c2); } ;
 inst_c_plus_c_c : C '+' C ARROW C FIELDSPEC { emit (($6 << 2) | 0x2a2); } ;
 
-inst_a_minus_1  : A '-' expr ARROW A FIELDSPEC { range ($3, 1, 1); 
+inst_a_minus_1  : A '-' expr ARROW A FIELDSPEC { $3 = range ($3, 1, 1); 
                                                  emit (($6 << 2) | 0x362); } ;
-inst_a_plus_1   : A '+' expr ARROW A FIELDSPEC { range ($3, 1, 1);  
+inst_a_plus_1   : A '+' expr ARROW A FIELDSPEC { $3 = range ($3, 1, 1);  
                                                  emit (($6 << 2) | 0x3e2); } ;
-inst_c_minus_1  : C '-' expr ARROW C FIELDSPEC { range ($3, 1, 1);  
+inst_c_minus_1  : C '-' expr ARROW C FIELDSPEC { $3 = range ($3, 1, 1);  
                                                  emit (($6 << 2) | 0x162); } ;
-inst_c_plus_1   : C '+' expr ARROW C FIELDSPEC { range ($3, 1, 1);  
+inst_c_plus_1   : C '+' expr ARROW C FIELDSPEC { $3 = range ($3, 1, 1);  
                                                  emit (($6 << 2) | 0x1e2); } ;
 
 status_inst     : inst_set_stat
@@ -250,12 +256,12 @@ status_inst     : inst_set_stat
                 | inst_tst_stat_n
                 ;
 
-inst_set_stat   : expr ARROW STATBIT { range ($1, 0, 1);
+inst_set_stat   : expr ARROW STATBIT { $1 = range ($1, 0, 1);
                                   emit (($3 << 6) | ($1 ? 0x004 : 0x024)); } ;
 inst_clr_stat   : CLEAR STATUS { emit (0x034); } ;
-inst_tst_stat_n : IF STATBIT '#' expr { range ($4, 1, 1);
+inst_tst_stat_n : IF STATBIT '#' expr { $4 = range ($4, 1, 1);
                                         emit (($2 << 6) | 0x014); } ;
-inst_tst_stat_e : IF STATBIT '=' expr { range ($4, 0, 0);
+inst_tst_stat_e : IF STATBIT '=' expr { $4 = range ($4, 0, 0);
                                         emit (($2 << 6) | 0x014); } ;
 
 pointer_inst    : inst_load_p
@@ -264,12 +270,12 @@ pointer_inst    : inst_load_p
                 | inst_decr_p
                 ;
 
-inst_load_p     : expr ARROW P       { range ($1, 0, 15);
+inst_load_p     : expr ARROW P       { $1 = range ($1, 0, 15);
                                        emit (($1 << 6) | 0x00c); } ;
-inst_test_p     : IF P '#' expr      { range ($4, 0, 15);
+inst_test_p     : IF P '#' expr      { $4 = range ($4, 0, 15);
                                        emit (($4 << 6) | 0x02c); } ;
-inst_incr_p     : P '+' expr ARROW P { range ($3, 1, 1); emit (0x03c); } ;
-inst_decr_p     : P '-' expr ARROW P { range ($3, 1, 1); emit (0x01c); } ;
+inst_incr_p     : P '+' expr ARROW P { $3 = range ($3, 1, 1); emit (0x03c); } ;
+inst_decr_p     : P '-' expr ARROW P { $3 = range ($3, 1, 1); emit (0x01c); } ;
 
 misc_inst       : inst_load_const
                 | inst_disp_off
@@ -298,7 +304,7 @@ misc_inst       : inst_load_const
 		| inst_srch_label
                 ;
 
-inst_load_const : LOAD CONSTANT expr        { range ($3, 0, 9); 
+inst_load_const : LOAD CONSTANT expr        { $3 = range ($3, 0, 9); 
                                               emit (($3 << 6) | 0x018); } ;
 inst_disp_off   : DISPLAY OFF               { emit (0x228); } ;
 inst_disp_tog   : DISPLAY TOGGLE            { emit (0x028); } ;
@@ -309,19 +315,19 @@ inst_stack_to_a : STACK ARROW A             { emit (0x1a8); } ;
 inst_down_rot   : DOWN ROTATE               { emit (0x328); } ;
 inst_clr_reg    : CLEAR REGISTERS           { emit (0x3a8); } ;
 
-inst_sel_rom    : SELECT ROM expr           { range ($3, 0, 7);
+inst_sel_rom    : SELECT ROM expr           { $3 = range ($3, 0, 7);
                                               emit (($3 << 7) | 0x010);
 					      target (dsg, $3, (pc + 1) & 0xff);
 					      dsr = rom;
 					      dsg = group;
 					      flag_char = '*'; } ;
 
-inst_del_rom    : DELAYED SELECT ROM expr   { range ($4, 0, 7); 
+inst_del_rom    : DELAYED SELECT ROM expr   { $4 = range ($4, 0, 7); 
                                               emit (($4 << 7) | 0x074);
 					      dsr = $4;
 					      flag_char = '$'; } ;
 
-inst_del_grp    : DELAYED SELECT GROUP expr { range ($4, 0, 1); 
+inst_del_grp    : DELAYED SELECT GROUP expr { $4 = range ($4, 0, 1); 
                                               emit (($4 << 7) | 0x234);
 					      dsg = $4;
 					      flag_char = '#'; } ;
