@@ -123,6 +123,8 @@ pseudo_op	: ps_rom
 ps_rom		: '.' ROM expr { $3 = range ($3, 0, MAXGROUP * MAXROM - 1);
 				 group = dsg = ($3 >> 3);
 				 rom = dsr = ($3 & 7); 
+				 pc = 0;
+				 last_instruction_type = OTHER_INST;
 			         printf (" %d", $3); }
 		;
 
@@ -149,9 +151,17 @@ goto_inst	: goto_form { emit (($1 << 2) | 0x003);
 			      dsr = rom; }
 		;
 
-goto_form       : GO TO expr { $$ = $3; }
-                | THEN GO TO expr { $$ = $4; }
-                | IF NO CARRY GO TO expr { $$ = $6; }
+goto_form       : GO TO expr      { $$ = $3; 
+				    if (last_instruction_type == ARITH_INST)
+				      warning ("unconditional goto shouldn't follow  arithmetic instruction\n"); 
+				    else if (last_instruction_type == TEST_INST)
+				      warning ("unconditional goto shouldn't follow test instruction\n"); }
+                | THEN GO TO expr { $$ = $4; 
+				    if (last_instruction_type != TEST_INST)
+				      warning ("'then go to' should only follow 'if' instructions\n"); }
+                | IF NO CARRY GO TO expr { $$ = $6; 
+				    if (last_instruction_type != ARITH_INST)
+				      warning ("'if no carry go to' should only follow arithmetic instructions\n"); }
 		;
 
 arith_inst      : inst_test_b_0
@@ -189,17 +199,17 @@ arith_inst      : inst_test_b_0
                 ;
 
 inst_test_b_0   : IF B FIELDSPEC '=' expr { $5 = range ($5, 0, 0);
-                                            emit (($3 << 2) | 0x002); } ;
+                                            emit_test (($3 << 2) | 0x002); } ;
 inst_test_c_0   : IF C FIELDSPEC '=' expr { $5 = range ($5, 0, 0); 
-                                            emit (($3 << 2) | 0x1a2); } ;
+                                            emit_test (($3 << 2) | 0x1a2); } ;
 
 inst_test_a_1   : IF A FIELDSPEC GE expr { $5 = range ($5, 1, 1);
-                                           emit (($3 << 2) | 0x262); } ;
+                                           emit_test (($3 << 2) | 0x262); } ;
 inst_test_c_1   : IF C FIELDSPEC GE expr { $5 = range ($5, 1, 1);
-                                           emit (($3 << 2) | 0x062); } ;
+                                           emit_test (($3 << 2) | 0x062); } ;
 
-inst_test_a_c   : IF A GE C FIELDSPEC { emit (($5 << 2) | 0x042); } ;
-inst_test_a_b   : IF A GE B FIELDSPEC { emit (($5 << 2) | 0x202); } ;
+inst_test_a_c   : IF A GE C FIELDSPEC { emit_test (($5 << 2) | 0x042); } ;
+inst_test_a_b   : IF A GE B FIELDSPEC { emit_test (($5 << 2) | 0x202); } ;
 
 inst_0_to_a     : expr ARROW A FIELDSPEC { $1 = range ($1, 0, 0); 
                                            emit (($4 << 2) | 0x2e2); } ;
@@ -210,9 +220,9 @@ inst_0_to_c     : expr ARROW C FIELDSPEC { $1 = range ($1, 0, 0);
 
 inst_nines_comp : expr '-' C '-' expr ARROW C FIELDSPEC { $1 = range ($1, 0, 0);
                                                           $5 = range ($5, 1, 1); 
-                                                 emit (($8 << 2) | 0x0e2); } ;
+                                                 emit_arith (($8 << 2) | 0x0e2); } ;
 inst_tens_comp  : expr '-' C ARROW C FIELDSPEC { $1 = range ($1, 0, 0);
-                                                 emit (($6 << 2) | 0x0a2); } ;
+                                                 emit_arith (($6 << 2) | 0x0a2); } ;
 
 inst_shl_a      : SHIFT LEFT A FIELDSPEC { emit (($4 << 2) | 0x102); } ;
 inst_shr_a      : SHIFT RIGHT A FIELDSPEC { emit (($4 << 2) | 0x2c2); } ;
@@ -230,25 +240,25 @@ inst_b_exch_c   : B EXCHANGE C FIELDSPEC { emit (($4 << 2) | 0x222); }
 inst_a_exch_c   : A EXCHANGE C FIELDSPEC { emit (($4 << 2) | 0x3a2); } 
                 | C EXCHANGE A FIELDSPEC { emit (($4 << 2) | 0x3a2); } ;
 
-inst_a_min_b_a  : A '-' B ARROW A FIELDSPEC { emit (($6 << 2) | 0x302); } ;
-inst_a_min_c_a  : A '-' C ARROW A FIELDSPEC { emit (($6 << 2) | 0x342); } ;
-inst_a_min_c_c  : A '-' C ARROW C FIELDSPEC { emit (($6 << 2) | 0x142); } ;
-inst_a_plus_b_a : A '+' B ARROW A FIELDSPEC { emit (($6 << 2) | 0x382); } 
-                | B '+' A ARROW A FIELDSPEC { emit (($6 << 2) | 0x382); } ;
-inst_a_plus_c_a : A '+' C ARROW A FIELDSPEC { emit (($6 << 2) | 0x3c2); } 
-                | C '+' A ARROW A FIELDSPEC { emit (($6 << 2) | 0x3c2); } ;
-inst_a_plus_c_c : A '+' C ARROW C FIELDSPEC { emit (($6 << 2) | 0x1c2); } 
-                | C '+' A ARROW C FIELDSPEC { emit (($6 << 2) | 0x1c2); } ;
-inst_c_plus_c_c : C '+' C ARROW C FIELDSPEC { emit (($6 << 2) | 0x2a2); } ;
+inst_a_min_b_a  : A '-' B ARROW A FIELDSPEC { emit_arith (($6 << 2) | 0x302); } ;
+inst_a_min_c_a  : A '-' C ARROW A FIELDSPEC { emit_arith (($6 << 2) | 0x342); } ;
+inst_a_min_c_c  : A '-' C ARROW C FIELDSPEC { emit_arith (($6 << 2) | 0x142); } ;
+inst_a_plus_b_a : A '+' B ARROW A FIELDSPEC { emit_arith (($6 << 2) | 0x382); } 
+                | B '+' A ARROW A FIELDSPEC { emit_arith (($6 << 2) | 0x382); } ;
+inst_a_plus_c_a : A '+' C ARROW A FIELDSPEC { emit_arith (($6 << 2) | 0x3c2); } 
+                | C '+' A ARROW A FIELDSPEC { emit_arith (($6 << 2) | 0x3c2); } ;
+inst_a_plus_c_c : A '+' C ARROW C FIELDSPEC { emit_arith (($6 << 2) | 0x1c2); } 
+                | C '+' A ARROW C FIELDSPEC { emit_arith (($6 << 2) | 0x1c2); } ;
+inst_c_plus_c_c : C '+' C ARROW C FIELDSPEC { emit_arith (($6 << 2) | 0x2a2); } ;
 
 inst_a_minus_1  : A '-' expr ARROW A FIELDSPEC { $3 = range ($3, 1, 1); 
-                                                 emit (($6 << 2) | 0x362); } ;
+                                                 emit_arith (($6 << 2) | 0x362); } ;
 inst_a_plus_1   : A '+' expr ARROW A FIELDSPEC { $3 = range ($3, 1, 1);  
-                                                 emit (($6 << 2) | 0x3e2); } ;
+                                                 emit_arith (($6 << 2) | 0x3e2); } ;
 inst_c_minus_1  : C '-' expr ARROW C FIELDSPEC { $3 = range ($3, 1, 1);  
-                                                 emit (($6 << 2) | 0x162); } ;
+                                                 emit_arith (($6 << 2) | 0x162); } ;
 inst_c_plus_1   : C '+' expr ARROW C FIELDSPEC { $3 = range ($3, 1, 1);  
-                                                 emit (($6 << 2) | 0x1e2); } ;
+                                                 emit_arith (($6 << 2) | 0x1e2); } ;
 
 status_inst     : inst_set_stat
                 | inst_clr_stat
@@ -260,9 +270,9 @@ inst_set_stat   : expr ARROW STATBIT { $1 = range ($1, 0, 1);
                                   emit (($3 << 6) | ($1 ? 0x004 : 0x024)); } ;
 inst_clr_stat   : CLEAR STATUS { emit (0x034); } ;
 inst_tst_stat_n : IF STATBIT '#' expr { $4 = range ($4, 1, 1);
-                                        emit (($2 << 6) | 0x014); } ;
+                                        emit_test (($2 << 6) | 0x014); } ;
 inst_tst_stat_e : IF STATBIT '=' expr { $4 = range ($4, 0, 0);
-                                        emit (($2 << 6) | 0x014); } ;
+                                        emit_test (($2 << 6) | 0x014); } ;
 
 pointer_inst    : inst_load_p
                 | inst_test_p
@@ -273,7 +283,7 @@ pointer_inst    : inst_load_p
 inst_load_p     : expr ARROW P       { $1 = range ($1, 0, 15);
                                        emit (($1 << 6) | 0x00c); } ;
 inst_test_p     : IF P '#' expr      { $4 = range ($4, 0, 15);
-                                       emit (($4 << 6) | 0x02c); } ;
+                                       emit_test (($4 << 6) | 0x02c); } ;
 inst_incr_p     : P '+' expr ARROW P { $3 = range ($3, 1, 1); emit (0x03c); } ;
 inst_decr_p     : P '-' expr ARROW P { $3 = range ($3, 1, 1); emit (0x01c); } ;
 

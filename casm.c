@@ -50,6 +50,9 @@ int objcode;
 
 int symtab_flag;
 
+int last_instruction_type;
+
+
 int targflag;	/* used to remember args to target() */
 int targgroup;
 int targrom;
@@ -131,6 +134,7 @@ void do_pass (int p)
   pc = 0;
   dsr = rom;
   dsg = group;
+  last_instruction_type = OTHER_INST;
 
   printf ("Pass %d rom", pass);
 
@@ -276,13 +280,29 @@ void do_label (char *s)
     error ("phase error for symbol '%s'\n", s);
 }
 
-void emit (int op)
+static void emit_core (int op, int inst_type)
 {
   objcode = op;
   objflag = 1;
+  last_instruction_type = inst_type;
 
   if ((pass == 2) && objfile)
     fprintf (objfile, "%1o%1o%03o:%03x\n", group, rom, pc, op);
+}
+
+void emit (int op)
+{
+  emit_core (op, OTHER_INST);
+}
+
+void emit_arith (int op)
+{
+  emit_core (op, ARITH_INST);
+}
+
+void emit_test (int op)
+{
+  emit_core (op, TEST_INST);
 }
 
 void target (int g, int r, int p)

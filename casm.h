@@ -38,6 +38,13 @@ extern char flag_char;  /* used to mark jumps across rom banks */
 
 extern int symtab_flag;
 
+
+#define OTHER_INST 0
+#define ARITH_INST 1
+#define TEST_INST 2
+extern int last_instruction_type;
+
+
 #define MAX_LINE 256
 extern char linebuf [MAX_LINE];
 extern char *lineptr;
@@ -48,7 +55,12 @@ extern t_symtab symtab [MAXGROUP] [MAXROM];  /* separate symbol tables for each 
 
 void do_label (char *s);
 
-void emit (int op);
+
+void emit       (int op);  /* use for instructions that never set carry */
+void emit_arith (int op);  /* use for arithmetic instructions that may set carry */
+void emit_test  (int op);  /* use for test instructions that
+
+
 void etarget (int targrom, int targpc);  /* for branch target info */
 
 /*
