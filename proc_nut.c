@@ -840,7 +840,7 @@ static void op_test_kb (sim_t *sim, int opcode)
 
 static void op_reset_kb (sim_t *sim, int opcode)
 {
-  sim->env->key_flag = 0;
+  sim->env->key_flag = sim->env->key_down;
 }
 
 
@@ -1238,12 +1238,13 @@ static bool nut_parse_listing_line (char *buf, int *bank, int *addr,
 static void nut_press_key (sim_t *sim, int keycode)
 {
   sim->env->key_buf = keycode;
+  sim->env->key_down = true;
   sim->env->key_flag = true;
 }
 
 static void nut_release_key (sim_t *sim)
 {
-  sim->env->key_flag = false;
+  sim->env->key_down = false;
 }
 
 static void nut_set_ext_flag (sim_t *sim, int flag, bool state)

@@ -73,7 +73,8 @@ struct sim_env_t
   rom_word_t first_word;   /* long branch: remember first word */
   bool long_branch_carry;  /* and carry */
 
-  bool key_flag;      /* true if a key is down */
+  bool key_down;      /* true if a key is down */
+  bool key_flag;
   int key_buf;        /* most recently pressed key */
 
   bool awake;
