@@ -41,12 +41,14 @@ unsigned long black, white;
 
 int window_width, window_height;
 
+char disp_buf [20];
+
+int pressed_key = -1;
+
+
 #define MAX_KEY 256
 int *keymap [MAX_KEY];
 int escape_code;
-
-
-int pressed_key = -1;
 
 
 #define WINDOW_WIDTH  270
@@ -362,7 +364,10 @@ static void handle_events (void)
 	  break;
 	case Expose:
 	  if (event.xexpose.count == 0)
-	    draw_calc ();
+	    {
+	      draw_calc ();
+	      draw_display (disp_buf);
+	    }
 	  break;
 	case NoExpose:
 	  break;
@@ -372,9 +377,6 @@ static void handle_events (void)
 	}
     }
 }
-
-
-char disp_buf [20];
 
 
 void init_display (int argc, char *argv[])
