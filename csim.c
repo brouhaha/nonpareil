@@ -412,7 +412,11 @@ void op_m_to_c (int opcode)
 
 void op_c_to_addr (int opcode)
 {
+#ifdef HP55
   ram_addr = c [12] * 10 + c[11];
+#else
+  ram_addr = c [12];
+#endif
   if (ram_addr >= max_ram)
     printf ("c -> ram addr: address %d out of range\n", ram_addr);
 }
@@ -862,6 +866,12 @@ void debugger (void)
 	  carry = 0;
 	  if (key_flag)
 	    s [0] = 1;
+#if HP55
+	  if (learn_mode)
+	    s [3] = 1;
+	  if (stopwatch_mode)
+	    s [11] = 1;
+#endif
 	  pc++;
 	  (* op_fcn [opcode]) (opcode);
 	  cycle++;
