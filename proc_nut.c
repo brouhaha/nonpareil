@@ -43,6 +43,9 @@ static int itmap [WSIZE] =
 { 0xe, 0xc, 0x8, 0x0, 0x1, 0x2, 0x5, 0xa, 0x4, 0x9, 0x3, 0x6, 0xd, 0xb };
 
 
+static void nut_print_state (sim_t *sim, sim_env_t *env);
+
+
 static void bad_op (sim_t *sim, int opcode)
 {
   printf ("illegal opcode %03x at %04x\n", opcode, sim->env->prev_pc);
@@ -1055,37 +1058,65 @@ static void nut_disassemble (sim_t *sim, int addr, char *buf, int len)
   if (len <= 0)
     return;
 
-  l = snprintf (buf, len, "%03x", sim->ucode [addr]);
+  l = snprintf (buf, len, "%03x  ", sim->ucode [addr]);
   buf += l;
   len -= l;
   if (len <= 0)
     return;
 
+  switch (sim->env->inst_state)
+    {
+    case long_branch:   snprintf (buf, len, "(long branch)"); return;
+    case cxisa:         snprintf (buf, len, "(cxisa)");       return;
+    case ldi:           snprintf (buf, len, "(immediate)");   return;
+    case norm:          break;
+    }
+
   return;
 }
 
 
-static void print_reg (char *label, reg_t reg)
+static void print_reg (reg_t reg)
 {
   int i;
-  printf ("%s", label);
-  for (i = 13; i >= 0; i--)
+  for (i = WSIZE - 1; i >= 0; i--)
     printf ("%x", reg [i]);
-  printf ("\n");
 }
+
+
+static void print_stat (sim_t *sim)
+{
+  int i;
+  for (i = 0; i < SSIZE; i++)
+    printf (sim->env->s [i] ? "%x" : ".", i);
+}
+
 
 static void nut_print_state (sim_t *sim, sim_env_t *env)
 {
-  int i;
-  printf ("pc=%04x  p=%d  q=%d  stat:", env->pc, env->p, env->q);
-  for (i = 0; i < SSIZE; i++)
-    if (env->s [i])
-      printf (" %d", i);
+  printf ("cycle %5lld  ", sim->cycle_count);
+  printf ("%c=%x ", (sim->env->pt == & sim->env->p) ? 'P' : 'p', sim->env->p);
+  printf ("%c=%x ", (sim->env->pt == & sim->env->q) ? 'Q' : 'q', sim->env->q);
+  printf ("carry=%d ", sim->env->carry);
+  printf (" stat=");
+  print_stat (sim);
   printf ("\n");
-  print_reg ("a: ", env->a);
-  print_reg ("b: ", env->b);
-  print_reg ("c: ", env->c);
-  print_reg ("m: ", env->m);
+  printf (" a=");
+  print_reg (sim->env->a);
+  printf (" b=");
+  print_reg (sim->env->b);
+  printf (" c=");
+  print_reg (sim->env->c);
+  printf ("\n");
+
+  if (sim->source [sim->env->prev_pc])
+    printf ("%s\n", sim->source [sim->env->prev_pc]);
+  else
+    {
+      char buf [80];
+      nut_disassemble (sim, sim->env->prev_pc, buf, sizeof (buf));
+      printf (" %s\n", buf);
+    }
 }
 
 void nut_execute_instruction (sim_t *sim)
@@ -1101,16 +1132,7 @@ void nut_execute_instruction (sim_t *sim)
 
 #ifdef HAS_DEBUGGER
   if (sim->debug_flags & (1 << SIM_DEBUG_TRACE))
-    {
-      if (sim->source [sim->env->prev_pc])
-	printf ("%s\n", sim->source [sim->env->prev_pc]);
-      else
-	{
-	  char buf [80];
-	  nut_disassemble (sim, sim->env->prev_pc, buf, sizeof (buf));
-	  printf ("%s\n", buf);
-	}
-    }
+    nut_print_state (sim, sim->env);
 #endif /* HAS_DEBUGGER */
 
   sim->env->prev_carry = sim->env->carry;
