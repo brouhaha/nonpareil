@@ -19,6 +19,21 @@ You should have received a copy of the GNU General Public License along with
 this program (in the file "COPYING"); if not, write to the Free Software
 Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
+CASM is supplied with a file named "hp45.asm" containing source code from
+United States patent number 4,001,569 titled "General Purpose Calculator
+Having Selective Data Storage, Data Conversion and Time-keeping Capabilities"
+granted January 4, 1977 to Peter D. Dickinson, Thomas E. Osborne, France
+Rode, and Allen J. Baum, and assigned to the Hewlett-Packard Company.
+
+CASM is supplied with a file named "hp55.asm" containing source code from
+United States patent number 4,009,379 titled "Portable Programmable
+Calculator Displaying Absolute Line Number Addresses and Key Codes and
+Automatically Altering Display Formats", granted February 22, 1977 to Bernard
+E. Musch and assigned to the Hewlett-Packard Company.
+
+These two files are not part of CASM, are not copyrighted by Eric L. Smith,
+and are not subject to the General Public License.
+
 -----------------------------------------------------------------------------
 
 CASM is just a quick weekend hack, so don't expect too much.  I used flex and
@@ -48,26 +63,20 @@ label" instruction is only available in the HP-65.
 The design of the processor and the instruction set are described in detail
 in United States patents 3,863,060 and 4,001,569.
 
-CASM is supplied with a file named "hp55.asm" containing the source code from
-from United States patent number 4,009,379 titled "Portable Programmable
-Calculator Displaying Absolute Line Number Addresses and Key Codes and
-Automatically Altering Display Formats", granted February 22, 1977 to Bernard
-E. Musch of Palo Alto, California, and assigned to the Hewlett-Packard
-Company of Palo Alto, California.  This file is not part of CASM, is not
-copyrighted by Eric L. Smith, and is not subject to the General Public
-License.
+The '569 patent appears to cover the HP-45 calculator.  I have an HP-45 but I
+haven't yet tried to dump the code to compare it to the listings in the patent.
 
-The '379 patent appears to cover the HP-55 calculator.  I don't have an
-HP-55, so I can't verify that the code in the patent matches that in the ROMs
-of an actual HP-55.  There are likely to be errors in my transcription of the
-code, as the listing in my copy of the patent is hard to read.  Caveat
-Emptor!
+The '379 patent appears to cover the HP-55 calculator.  I don't have an HP-55,
+so I can't verify that the code in the patent matches that in the ROMs of an
+actual HP-55.
+
+There are likely to be errors in my transcriptions of the code from the
+patents, as the listings in the patents are poorly reproduced.  Caveat Emptor!
 
 Various other United States patents assigned to Hewlett-Packard appear to
 contain source listings of ROMs of other HP calculators:
 
 	3,863,060:	HP-80
-	4,001,569:	HP-45
 	4,099,246:	HP-65 (only first half of ROM)
 	4,291,385:	HP-65 (only first half of ROM)
 

@@ -12,7 +12,7 @@ CFLAGS = -g -Dstricmp=strcasecmp
 HEADERS = casm.h symtab.h
 SOURCES = casm.c casm.l casm.y symtab.c
 MISC = COPYING README
-ROMS =  hp55.asm
+ROMS =  hp45.asm hp55.asm
 
 OBJECTS = casm.o y.tab.o lex.yy.o symtab.o
 LIBS = -lc
