@@ -1,5 +1,5 @@
 TODO list for Nonpareil
-Copyright 1995, 2003, 2004 Eric L. Smith <eric@brouhaha.com>
+Copyright 1995, 2003, 2004, 2005 Eric L. Smith <eric@brouhaha.com>
 $Id$
 
 
@@ -38,7 +38,8 @@ User interface:
 
   Calculator model selection at runtime.
 
-  Create a fancier About box.
+  Create a fancier About box.  Use GtkAboutDialog, which allows for
+  clickable website URLs and email addresses, license window, etc.
 
 
 Debugger:
@@ -57,6 +58,9 @@ Debugger:
 
 
 Internals:
+
+  Use Glib asynchronous queues for communication between GUI and simulator
+  threads, rather than mutexes and conditions.
 
   Use io_count to improve display update timing (already done in nut, add to
   classic and woodstock).
