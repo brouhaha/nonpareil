@@ -460,8 +460,8 @@ display
 	segment 'h' line offset  3  5 size  3  1 end
 	segment 'i' line offset  3  0 size  1  6 end
         segment 'j' line offset  3  5 size  1  6 end
-        segment 'k' line offset  3  5 size  3 -6 end
-        segment 'l' line offset  3  5 size -3 -6 end
+        segment 'k' line offset  3  5 size  3 -4 end
+        segment 'l' line offset  3  5 size -2 -4 end
         segment 'm' line offset  3  5 size  3  6 end
         segment 'n' line offset  3  5 size -3  6 end
 
