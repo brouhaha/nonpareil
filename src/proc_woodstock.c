@@ -31,64 +31,13 @@ MA 02111, USA.
 #include "display.h"
 #include "proc.h"
 #include "proc_int.h"
+#include "proc_woodstock.h"
 #include "dis_woodstock.h"
 
 
-#define SSIZE 16
-#define STACK_SIZE 2
 
 /* If defined, print warnings about stack overflow or underflow. */
 #undef STACK_WARNING
-
-
-struct sim_env_t
-{
-  reg_t a;
-  reg_t b;
-  reg_t c;
-  reg_t y;
-  reg_t z;
-  reg_t t;
-  reg_t m1;
-  reg_t m2;
-
-  digit_t f;
-
-  digit_t p;
-
-  uint8_t arithmetic_base;  /* 10 or 16 */
-
-  uint8_t carry, prev_carry;
-
-  uint8_t s [SSIZE];  /* status bits */
-  uint8_t ext_flag [SSIZE];  /* external flags, cause status bits to get set */
-
-  int ram_addr;  /* selected RAM address */
-
-  int bank;
-
-  uint16_t pc;
-
-  bool del_rom_flag;
-  uint8_t del_rom;
-
-  uint8_t if_flag;  /* True if "IF" instruction was executed, in which
-		       case the next instruction word fetched is a 10-bit
-		       branch address. */
-
-  int sp;  /* stack pointer */
-  uint16_t return_stack [STACK_SIZE];
-
-  int prev_pc;  /* used to store complete five-digit octal address of instruction */
-
-  int display_enable;
-
-  bool key_flag;      /* true if a key is down */
-  int key_buf;        /* most recently pressed key */
-
-  int max_ram;
-  reg_t ram [];	      /* dynamically sized */
-};
 
 
 static void woodstock_print_state (sim_t *sim, sim_env_t *env);
@@ -303,35 +252,35 @@ static void op_arith (sim_t *sim, int opcode)
 	sim->env->c [i] = do_sub (sim, 0, sim->env->c [i]);
       break;
     case 0x16:  /* if b[f] = 0 */
-      sim->env->if_flag = 1;
+      sim->env->inst_state = branch;
       for (i = first; i <= last; i++)
 	sim->env->carry |= (sim->env->b [i] != 0);
       break;
     case 0x17:  /* if c[f] = 0 */
-      sim->env->if_flag = 1;
+      sim->env->inst_state = branch;
       for (i = first; i <= last; i++)
 	sim->env->carry |= (sim->env->c [i] != 0);
       break;
     case 0x18:  /* if a >= c[f] */
-      sim->env->if_flag = 1;
+      sim->env->inst_state = branch;
       sim->env->carry = 0;
       for (i = first; i <= last; i++)
 	t [i] = do_sub (sim, sim->env->a [i], sim->env->c [i]);
       break;
     case 0x19:  /* if a >= b[f] */
-      sim->env->if_flag = 1;
+      sim->env->inst_state = branch;
       sim->env->carry = 0;
       for (i = first; i <= last; i++)
 	t [i] = do_sub (sim, sim->env->a [i], sim->env->b [i]);
       break;
     case 0x1a:  /* if a[f] # 0 */
-      sim->env->if_flag = 1;
+      sim->env->inst_state = branch;
       sim->env->carry = 1;
       for (i = first; i <= last; i++)
 	sim->env->carry &= (sim->env->a [i] == 0);
       break;
     case 0x1b:  /* if c[f] # 0 */
-      sim->env->if_flag = 1;
+      sim->env->inst_state = branch;
       sim->env->carry = 1;
       for (i = first; i <= last; i++)
 	sim->env->carry &= (sim->env->c [i] == 0);
@@ -750,14 +699,14 @@ static void op_clr_s (sim_t *sim, int opcode)
 
 static void op_test_s_eq_0 (sim_t *sim, int opcode)
 {
-  sim->env->if_flag = 1;
+  sim->env->inst_state = branch;
   sim->env->carry = sim->env->s [opcode >> 6];
 }
 
 
 static void op_test_s_eq_1 (sim_t *sim, int opcode)
 {
-  sim->env->if_flag = 1;
+  sim->env->inst_state = branch;
   sim->env->carry = ! sim->env->s [opcode >> 6];
 }
 
@@ -779,14 +728,14 @@ static void op_set_p (sim_t *sim, int opcode)
 
 static void op_test_p_eq (sim_t *sim, int opcode)
 {
-  sim->env->if_flag = 1;
+  sim->env->inst_state = branch;
   sim->env->carry = ! (sim->env->p == p_test_map [opcode >> 6]);
 }
 
 
 static void op_test_p_ne (sim_t *sim, int opcode)
 {
-  sim->env->if_flag = 1;
+  sim->env->inst_state = branch;
   sim->env->carry = ! (sim->env->p != p_test_map [opcode >> 6]);
 }
 
@@ -904,7 +853,7 @@ static void init_ops (sim_t *sim)
   sim->op_fcn [01160] = op_c_to_addr;
   sim->op_fcn [01260] = op_clear_data_regs;
   sim->op_fcn [01360] = op_c_to_data;
-  /* sim->op_fcn [01460] = op_rom_checksum; */
+  /* sim->op_fcn [01460] = op_rom_selftest; */  /* Only on Spice series */
   /* 1560..1660 unassigned/unknown */
   sim->op_fcn [01760] = op_nop;  /* "HI I'M WOODSTOCK" */
 
@@ -930,7 +879,7 @@ static void woodstock_disassemble (sim_t *sim, int addr, char *buf, int len)
   int ma1, ma2;
   int op1, op2;
 
-  if (sim->env->if_flag)  /* second word of two-word instruction */
+  if (sim->env->inst_state == branch)  /* second word of conditional branch */
     {
       snprintf (buf, len, "...");
       return;
@@ -1060,7 +1009,7 @@ bool woodstock_execute_instruction (sim_t *sim)
 {
   int i;
   int opcode;
-  int prev_if_flag;
+  inst_state_t prev_inst_state;
 
   sim->env->prev_pc = sim->env->pc;
   opcode = sim->ucode [woodstock_map_rom_address (sim, sim->env->pc)];
@@ -1080,8 +1029,9 @@ bool woodstock_execute_instruction (sim_t *sim)
     }
 #endif /* HAS_DEBUGGER */
 
-  prev_if_flag = sim->env->if_flag;
-  sim->env->if_flag = 0;
+  prev_inst_state = sim->env->inst_state;
+  if (sim->env->inst_state == branch)
+    sim->env->inst_state = norm;
 
   sim->env->prev_carry = sim->env->carry;
   sim->env->carry = 0;
@@ -1094,13 +1044,18 @@ bool woodstock_execute_instruction (sim_t *sim)
 
   sim->env->pc++;
 
-  if (prev_if_flag)
+  switch (prev_inst_state)
     {
+    case norm:
+      (* sim->op_fcn [opcode]) (sim, opcode);
+      break;
+    case branch:
       if (! sim->env->prev_carry)
 	sim->env->pc = (sim->env->pc & ~01777) | opcode;
+      break;
+    case selftest:
+      break;
     }
-  else
-    (* sim->op_fcn [opcode]) (sim, opcode);
 
   sim->cycle_count++;
 
@@ -1267,7 +1222,7 @@ static void woodstock_reset_processor (sim_t *sim)
   sim->env->pc = 0;
   sim->env->del_rom_flag = 0;
 
-  sim->env->if_flag = 0;
+  sim->env->inst_state = norm;
 
   sim->env->sp = 0;
 
