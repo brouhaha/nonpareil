@@ -32,6 +32,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 /* parser temporaries */
 kml_t *yy_kml;
 int kml_cur_idx;
+int kml_cur_idx2;
 %}
 
 %union {
@@ -48,9 +49,10 @@ int kml_cur_idx;
 %token COLOR       DEBUG       DIGITS      DISPLAY     DOWN        ELSE
 %token END         GLOBAL      HARDWARE    IFFLAG      IFPRESSED   IMAGE
 %token KEYCODE     LCD         MAP         MENUITEM    MODEL       NOHOLD
-%token OFFSET      ONDOWN      ONUP        OUTIN       PATCH       PRESS
-%token PRINT       RELEASE     RESETFLAG   ROM         SCANCODE    SETFLAG
-%token SIZE        TITLE       TYPE        VIRTUAL     ZOOM
+%token OFFSET      ONDOWN      ONUP        OUTIN       PATCH       POSITION
+%token PRESS       PRINT       RELEASE     RESETFLAG   ROM         SCANCODE
+%token SETFLAG     SIZE        SWITCH      TITLE       TYPE        VIRTUAL
+%token ZOOM
 
 %type <intpair> offset_stmt size_stmt down_stmt
 
@@ -75,6 +77,7 @@ section			:	global_section
 			|	background_section
 			|	display_section
 			|	annunciator_section
+			|	switch_section
 			|	button_section
 			|	scancode_section
 			;
@@ -279,6 +282,42 @@ ifpressed_command	:	IFPRESSED INTEGER command_list elsepart END
 				  $$->arg1 = $2;
 				  $$->then_part = $3;
 				  $$->else_part = $4; };
+
+
+/*----------------------------------------------------------------------------
+ switch section
+----------------------------------------------------------------------------*/
+
+switch_section		:	SWITCH INTEGER
+				{ range_check ($2, 0, KML_MAX_SWITCH);
+				  kml_cur_idx = $2;
+				  yy_kml->kswitch [$2] = alloc (sizeof (kml_switch_t)); }
+			        switch_stmt_list END ;
+
+switch_stmt_list	:	switch_stmt
+			|	switch_stmt switch_stmt_list
+			;
+
+
+switch_stmt		:	size_stmt
+				{ yy_kml->kswitch [kml_cur_idx]->size.width = $1.a;
+				  yy_kml->kswitch [kml_cur_idx]->size.height = $1.b; }
+			|	position_section
+			;
+
+position_section	:	POSITION INTEGER
+				{ range_check ($2, 0, KML_MAX_SWITCH_POSITION);
+				  kml_cur_idx2 = $2;
+				  yy_kml->kswitch [kml_cur_idx]->position [$2] = alloc (sizeof (kml_switch_position_t)); }
+				position_stmt_list END ;
+
+position_stmt_list	:	position_stmt
+			|	position_stmt position_stmt_list
+			;
+
+position_stmt		:	offset_stmt
+				{ yy_kml->kswitch [kml_cur_idx]->position [kml_cur_idx2]->offset.x = $1.a;
+				  yy_kml->kswitch [kml_cur_idx]->position [kml_cur_idx2]->offset.y = $1.b; }
 
 
 /*----------------------------------------------------------------------------

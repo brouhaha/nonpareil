@@ -35,13 +35,15 @@ extern char kml_linebuf [KML_LINEBUF_SIZE];
 
 int yylex (void);
 int yyparse (void);
-void yyerror (char *s);
+void yyerror (char *fmt, ...);
 void range_check (int val, int min, int max);
 
 
 #define KML_MAX_COLOR 16
 #define KML_MAX_ANNUNCIATOR 16
 #define KML_MAX_BUTTON 256
+#define KML_MAX_SWITCH 4
+#define KML_MAX_SWITCH_POSITION 4
 #define KML_MAX_SCANCODE 256
 
 typedef struct
@@ -100,6 +102,19 @@ typedef struct kml_command_list_t
 
 typedef struct
 {
+  kml_offset_t offset;
+  kml_command_list_t *onselect;
+  kml_command_list_t *ondeselect;
+} kml_switch_position_t;
+
+typedef struct
+{
+  kml_size_t size;
+  kml_switch_position_t *position [KML_MAX_SWITCH_POSITION];
+} kml_switch_t;
+
+typedef struct
+{
   int type;
   kml_size_t size;
   kml_offset_t offset;
@@ -134,6 +149,7 @@ typedef struct
 
   kml_annunciator_t *annunciator [KML_MAX_ANNUNCIATOR];
 
+  kml_switch_t *kswitch [KML_MAX_SWITCH];
   kml_button_t *button [KML_MAX_BUTTON];
 
   kml_command_list_t *scancode [KML_MAX_SCANCODE];
@@ -142,3 +158,5 @@ typedef struct
 kml_t *read_kml_file (char *fn);
 
 void free_kml (kml_t *kml);
+
+void print_kml (FILE *f, kml_t *kml);

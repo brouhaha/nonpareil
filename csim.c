@@ -468,6 +468,7 @@ static GtkWidget *get_menubar_menu (GtkWidget *window)
 int main (int argc, char *argv[])
 {
   char *kml_fn = NULL;
+  int kml_debug = 0;
 
   int image_width, image_height;
 
@@ -494,13 +495,15 @@ int main (int argc, char *argv[])
       argv++;
       if (*argv [0] == '-')
 	{
+	  if (strcasecmp (argv [0], "--kmldebug") == 0)
+	    kml_debug = 1;
 #if 0
-	  if (strcasecmp (argv [0], "-stop") == 0)
+	  else if (strcasecmp (argv [0], "--stop") == 0)
 	    run = 0;
-	  else if (strcasecmp (argv [0], "-trace") == 0)
+	  else if (strcasecmp (argv [0], "--trace") == 0)
 	    trace = 1;
-	  else
 #endif
+	  else
 	    fatal (1, "unrecognized option '%s'\n", argv [0]);
 	}
       else if (kml_fn)
@@ -519,6 +522,12 @@ int main (int argc, char *argv[])
   kml = read_kml_file (kml_fn);
   if (! kml)
     fatal (2, "can't read KML file '%s'\n", kml_fn);
+
+  if (kml_debug)
+    {
+      print_kml (stdout, kml);
+      exit (0);
+    }
 
   if (! kml->image)
     fatal (2, "No image file spsecified in KML\n");

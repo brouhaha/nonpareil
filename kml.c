@@ -40,9 +40,18 @@ int kml_errors;
 char kml_linebuf [KML_LINEBUF_SIZE];
 
 
-void yyerror (char *s)
+void yyerror (char *fmt, ...)
 {
-  fprintf (stderr, "%d: %s\n", kml_lineno, s);
+  va_list ap;
+
+  fprintf (stderr, "%d: ", kml_lineno);
+
+  va_start (ap, fmt);
+  vfprintf (stderr, fmt, ap);
+  va_end (ap);
+
+  fprintf (stderr, "\n");
+
   trim_trailing_whitespace (kml_linebuf);
   fprintf (stderr, "%s\n", kml_linebuf);
   fprintf (stderr, "%*s\n", 1 + kml_tokenpos, "^");
@@ -52,7 +61,7 @@ void yyerror (char *s)
 void range_check (int val, int min, int max)
 {
   if ((val < min) || (val > max))
-    yyerror ("value out of range");
+    yyerror ("value %d out of range [%d, %d]", val, min, max);
 }
 
 
@@ -123,4 +132,51 @@ void free_kml (kml_t *kml)
   for (i = 0; i < KML_MAX_SCANCODE; i++)
     if (kml->scancode [i])
       free_kml_command_list (kml->scancode [i]);
+}
+
+
+static print_kml_string (FILE *f, char *name, char *val)
+{
+  if (name)
+    fprintf (f, "\t%s \"%s\"\n", name, val);
+}
+
+static void print_kml_global (FILE *f, kml_t *kml)
+{
+  fprintf (f, "global\n");
+  print_kml_string (f, "title",    kml->title);
+  print_kml_string (f, "author",   kml->author);
+  print_kml_string (f, "hardware", kml->hardware);
+  print_kml_string (f, "model",    kml->model);
+  print_kml_string (f, "rom",      kml->rom);
+  print_kml_string (f, "image",      kml->image);
+  fprintf (f, "end\n\n");
+}
+
+static void print_kml_switch (FILE *f, kml_t *kml, int s)
+{
+  int p;
+  fprintf (f, "switch %d\n", s);
+  fprintf (f, "\tsize %d %d\n",
+	   kml->kswitch [s]->size.width,
+	   kml->kswitch [s]->size.height);
+  for (p = 0; p < KML_MAX_SWITCH_POSITION; p++)
+    if (kml->kswitch [s]->position [p])
+      {
+	fprintf (f, "\tposition %d  offset %d %d  end\n",
+		 p,
+		 kml->kswitch [s]->position [p]->offset.x,
+		 kml->kswitch [s]->position [p]->offset.y);
+      }
+  fprintf (f, "end\n\n");
+}
+
+void print_kml (FILE *f, kml_t *kml)
+{
+  int i;
+
+  print_kml_global (f, kml);
+  for (i = 0; i < KML_MAX_SWITCH; i++)
+    if (kml->kswitch [i])
+      print_kml_switch (f, kml, i);
 }

@@ -1,3 +1,12 @@
+2004-01-18  Eric Smith <eric@brouhaha.com>
+
+	* kml.h kml.c csim.c: Added --kmldebug option.
+	
+	* kml.h kml.c kmll.l kmly.y: Added "switch" section.
+	
+	* kmll.l: Litaral "0" was treated as octal but not converted
+	correctly.
+
 2004-01-17  Eric Smith <eric@brouhaha.com>
 
 	* csim.c (help_about): Include release number in About dialog.
