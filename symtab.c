@@ -24,7 +24,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 */
 
 #include <stdio.h>
-#include "casm.h"
+#include <string.h>
 #include "symtab.h"
 
 typedef struct sym
@@ -36,13 +36,48 @@ typedef struct sym
   struct sym *right;
 } sym;
 
-sym *table = NULL;
-
-void init_symbol_table (void)
+static char *newstr (char *orig)
 {
+  int len;
+  char *r;
+
+  len = strlen (orig);
+  r = (char *) malloc (len + 10);
+  
+  if (! r)
+    {
+      fprintf (stderr, "memory allocation failed\n");
+      exit (2);
+    }
+
+  memcpy (r, orig, len + 1);
+  return (r);
 }
 
-int insert_symbol (sym **p, sym *newsym)
+t_symtab alloc_symbol_table (void)
+{
+  sym **table;
+  table = (sym **) calloc (1, sizeof (sym *));
+  return (table);
+}
+
+static void free_entry (sym *p)
+{
+  if (p->left)
+    free_entry (p->left);
+  if (p->right)
+    free_entry (p->right);
+  free (p);
+}
+
+void free_symbol_table (t_symtab t)
+{
+  sym **table = t;
+  free_entry (*table);
+  free (table);
+}
+
+static int insert_symbol (sym **p, sym *newsym)
 {
   int i;
 
@@ -64,9 +99,10 @@ int insert_symbol (sym **p, sym *newsym)
 
 
 /* returns 1 for success, 0 if duplicate name */
-int create_symbol (char *name, int value, int lineno)
+int create_symbol (t_symtab t, char *name, int value, int lineno)
 {
-  sym *p = table;
+  sym **table = t;
+  sym *p = *table;
   sym *newsym;
 
   newsym = (sym *) calloc (1, sizeof (sym));
@@ -80,13 +116,14 @@ int create_symbol (char *name, int value, int lineno)
   newsym->value = value;
   newsym->lineno = lineno;
 
-  return (insert_symbol (& table, newsym));
+  return (insert_symbol (table, newsym));
 }
 
 /* returns 1 for success, 0 if not found */
-int lookup_symbol (char *name, int *value)
+int lookup_symbol (t_symtab t, char *name, int *value)
 {
-  sym *p = table;
+  sym **table = t;
+  sym *p = *table;
   int i;
 
   while (p)
@@ -105,7 +142,7 @@ int lookup_symbol (char *name, int *value)
   return (0);
 }
 
-void print_symbols (FILE *f, sym *p)
+static void print_symbols (FILE *f, sym *p)
 {
   if (! p)
     return;
@@ -114,7 +151,8 @@ void print_symbols (FILE *f, sym *p)
   print_symbols (f, p->right);
 }
 
-void print_symbol_table (FILE *f)
+void print_symbol_table (t_symtab t, FILE *f)
 {
-  print_symbols (f, table);
+  sym **table = t;
+  print_symbols (f, *table);
 }

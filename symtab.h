@@ -23,12 +23,18 @@ this program (in the file "COPYING"); if not, write to the Free Software
 Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 */
 
-void init_symbol_table (void);
+typedef void * t_symtab;
+
+/* create a symbol table, returns handle to be passed in to all other calls */
+t_symtab alloc_symbol_table (void);
+
+/* free a symbol table */
+void free_symbol_table (t_symtab t);
 
 /* returns 1 for success, 0 if duplicate name */
-int create_symbol (char *name, int value, int lineno);
+int create_symbol (t_symtab t, char *name, int value, int lineno);
 
 /* returns 1 for success, 0 if not found */
-int lookup_symbol (char *name, int *value);
+int lookup_symbol (t_symtab t, char *name, int *value);
 
-void print_symbol_table (FILE *f);
+void print_symbol_table (t_symtab t, FILE *f);
