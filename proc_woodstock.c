@@ -64,8 +64,7 @@ struct sim_env_t
 
   int ram_addr;  /* selected RAM address */
 
-  uint8_t bank [4];  /* for each of four 1K ROM banks, the currently selected
-			bank number */
+  int bank;
 
   uint16_t pc;
 
@@ -96,8 +95,7 @@ static void woodstock_print_state (sim_t *sim, sim_env_t *env);
 
 static inline int woodstock_map_rom_address (sim_t *sim, int addr)
 {
-  int b = sim->env->bank [addr >> 10];
-  return ((b << 12) + addr);
+  return ((sim->env->bank << 12) + addr);
 }
 
 
@@ -523,9 +521,9 @@ static void op_circulate_a_left (sim_t *sim, int opcode)
 
 static void op_bank_switch (sim_t *sim, int opcode)
 {
-  sim->env->bank [sim->env->prev_pc >> 10] ^= 1;
+  sim->env->bank ^= 1;
   printf ("bank switch at %04o, will select bank %o\n",
-	  sim->env->prev_pc, sim->env->bank [sim->env->prev_pc >> 10]);
+	  sim->env->prev_pc, sim->env->bank);
 }
 
 
