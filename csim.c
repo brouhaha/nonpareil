@@ -56,8 +56,14 @@ GtkWidget *display;
 
 void usage (FILE *f)
 {
+  fprintf (f, "CASMSIM release %s:  Microcode-level calculator simulator\n",
+	   MAKESTR(CASMSIM_RELEASE));
+  fprintf (f, "Copyright 1995, 2003, 2004 Eric L. Smith\n");
+  fprintf (f, "http://www.brouhaha.com/~eric/software/casmsim/\n");
+  fprintf (f, "\n");
   fprintf (f, "usage: %s [options...] kmlfile\n", progname);
   fprintf (f, "options:\n");
+  fprintf (f, "   --noshape\n");
   fprintf (f, "   --kmldebug\n");
   fprintf (f, "   --kmldump\n");
   fprintf (f, "   --scancodedebug\n");
@@ -641,6 +647,8 @@ void setup_color (GdkColormap *colormap,
 int main (int argc, char *argv[])
 {
   char *kml_fn = NULL;
+
+  gboolean no_shape = FALSE;
   gboolean kml_dump = FALSE;
 
   model_info_t *model_info;
@@ -673,7 +681,9 @@ int main (int argc, char *argv[])
       argv++;
       if (*argv [0] == '-')
 	{
-	  if (strcasecmp (argv [0], "--kmldebug") == 0)
+	  if (strcasecmp (argv [0], "--noshape") == 0)
+	    no_shape = 1;
+	  else if (strcasecmp (argv [0], "--kmldebug") == 0)
 	    kml_debug = 1;
 	  else if (strcasecmp (argv [0], "--kmldump") == 0)
 	    kml_dump = 1;
@@ -735,7 +745,7 @@ int main (int argc, char *argv[])
 
   main_window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
 
-  if (kml->has_transparency)
+  if (kml->has_transparency && ! no_shape)
     {
       image_mask_bitmap = (GdkBitmap *) gdk_pixmap_new (GTK_WINDOW (main_window)->frame,
 							image_width,
