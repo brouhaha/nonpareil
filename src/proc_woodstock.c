@@ -1311,6 +1311,8 @@ static void woodstock_new_processor (sim_t *sim, int ram_size)
   sim->display_digit_position = 0;
 
   init_ops (sim);
+
+  woodstock_reset_processor (sim);
 }
 
 

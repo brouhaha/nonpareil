@@ -1394,6 +1394,8 @@ static void nut_new_processor (sim_t *sim, int ram_size)
       voyager_display_init_ops (sim);
       break;
     }
+
+  nut_reset_processor (sim);
 }
 
 

@@ -1040,6 +1040,8 @@ static void classic_new_processor (sim_t *sim, int ram_size)
   sim->right_scan = 0;
 
   init_ops (sim);
+
+  classic_reset_processor (sim);
 }
 
 
