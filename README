@@ -8,13 +8,12 @@ CASMSIM consists of the CASM assembler and the CSIM simulator.
 
 IMPORTANT NOTES
 
-Release 0.16 of CASMSIM is an interim development release.  This
-is the first release to use (modified) KML files.  It uses the
-GTK+ toolkit.  
+Release 0.20 of CASMSIM is an interim development release.  This release
+improves the microinstruction timing in CSIM.
 
-In this release, the HP-35, HP-45, and HP-55 are simulated.  HP-80
-code is present but is known not to work correctly, probably due to
-typographical errors in the ROM source code.
+CSIM now uses (modified) KML files and the GTK+ toolkit.
+
+In this release, the HP-35, HP-45, HP-55, and HP-80 are simulated.
 
 To use the simulator, you will need suitable digital images (photographs
 or scans) of the calculators you wish to simulate.  No images are provided
@@ -24,7 +23,7 @@ HP Calculators:
 The appropriate image files may be downloaded and renamed to the correct
 names automatically by commands like "make hp45.jpg".
 
-The File and Edit menu commands are not implemented (other than Quit).
+The menu commands other than "Quit" and "About" are not implemented.
 
 -----------------------------------------------------------------------------
 
@@ -66,26 +65,14 @@ Peter Monta also *optically* dumped the contents of the HP-35 ROMs,
 and disassembled the resulting code.  I've cleaned it up a bit and
 added labels using the HP-45 source code as a guide.
 
-Various other United States patents assigned to Hewlett-Packard appear
-to contain source listings of ROMs of other HP calculators:
-
-	3,863,060:	HP-80
-	4,099,246:	HP-65 (only first half of ROM)
-	4,291,385:	HP-65 (only first half of ROM)
-
 -----------------------------------------------------------------------------
 
 CASM
 
 I used GNU tools to build CASM.  Originally I used GCC 2.5.8, Flex
 2.4.7, Bison 1.22, and Make 3.71.  Most recently I'm using GCC 3.3.2,
-Flex 2.5.4a, Bison 1.875, and Make 3.79.1.
-
-I don't believe in using ugly preprocessor macros to make my code
-compile on non-ANSI compilers.  Lex won't work because I don't know
-how to make it take input from a string.  Earlier versions of Flex
-don't seem to work either, probably because they handle input
-differently.
+Flex 2.5.4a, Bison 1.875, and Make 3.79.1.  Flex versions prior to
+2.4.2 will not work.
 
 CASM requires a single command line argument to specify the source
 code file.
@@ -141,29 +128,32 @@ eventually be able to simulate the HP-65.
 CSIM uses the Gtk+ 2.2 toolkit and Glib 2.2.  It should be portable to
 Windows and MacOS X, but has only been tested on Linux.
 
-CSIM uses a single command line argument to specify the assembly
-listing file.  If no argument is found, CSIM will try to find a file
-using the concatentation of the name under which it was invoked and
-".lst".  This allows you to (for instance) link CSIM to "hp45" and
-have it automatically try to load and run "hp45.lst".
+CSIM uses a single command line argument to specify the KML file.
+If no argument is found, CSIM will try to find a file using the
+concatentation of the name under which it was invoked and
+".kml".  This allows you to (for instance) link CSIM to "hp45" and
+have it automatically try to use "hp45.kml".
 
-There is one compile time options currently defined in the Makefile:
+CSIM attempts to maintain a simulation speed of 3500 microinstructions
+per second, the nominal rate of the real calculators, so that the
+HP-55 timer mode runs at roughly the correct rate.  Other than the
+HP-55, the calculators used an LC oscillator that was not very
+accurate.  On a computer that is heavily loaded, the microinstruction
+rate will be reduced, so the HP-55 timer mode (and the undocumented
+HP-45 timer mode) will run slow.  Don't blame me if you try to use it
+and burn your eggs.
 
--DENTER_KEY_MOD
-	Causes the ENTER^ key to generate the keycode for the normally
-        unused right hand button under the key.  On the HP-45 this button
-	works just like the normal ENTER^ button except when pressed after
-	RCL, in  which case it activates the undocumented and unsupported
-	stopwatch mode.  On a real HP-45 this button can also be "pressed"
-	as a phantom key by simultaneously pressing CHS, 7, and 8.  It is
-	fairly hard to consistenly press the three keys simultaneously, so
-	often this was done by the "penny trick".  CSIM doesn't support
-	multiple key presses at all, so this define is necessary to get into
-	stopwatch mode.  On my DX4-100 when the load average is near zero,
-	the stopwatch has an error of a few seconds per hour, which is better
-	than a real HP-45 without the crystal modification.  If the load
-	average approaches one the stopwatch will lose a lot of time.  Don't
-	blame me if you try to use it and burn your eggs.
+If you want to use the undocumented timer mode of the HP-45, there are
+comments in hp45.kml explaining the change necessary to that file.  On
+a real HP-45 this feature was accessed by pressing RCL then the "right
+half of the ENTER key".  The ENTER key actually covered two swithes,
+but the key was shaped so that it only pressed the left switch, and
+the ROM was written so the right switch would provide the ENTER
+function as well as allowing use of the timer mode.  It was possible
+to either put a shim on the key, or to create a a phantom keystroke by
+simultaneously pressing CHS, 7, and 8.  CSIM doesn't support multiple
+key presses at all, so the KML change makes the simulator's ENTER
+button produce the keycode for the right switch.
 
 -----------------------------------------------------------------------------
 
