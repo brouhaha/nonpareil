@@ -1,7 +1,7 @@
 /*
 casm.h
 $Id$
-Copyright 1995 Eric L. Smith
+Copyright 1995, 2004 Eric L. Smith <eric@brouhaha.com>
 
 CASM is an assembler for the processor used in the HP "Classic" series
 of calculators, which includes the HP-35, HP-45, HP-55, HP-65, HP-70,
@@ -80,3 +80,7 @@ int err_printf (char *format, ...);
 /* generate error or warning messages and increment appropriate counter */
 int error   (char *format, ...);
 int warning (char *format, ...);
+
+
+/* in casml.l: */
+int keyword (char *string);

@@ -1,7 +1,7 @@
 /*
 casm.l: lexical analyzer specification
 $Id$
-Copyright 1995, 2003 Eric L. Smith
+Copyright 1995, 2003 Eric L. Smith <eric@brouhaha.com>
 
 CASM is an assembler for the processor used in the HP "Classic" series
 of calculators, which includes the HP-35, HP-45, HP-55, HP-65, HP-70,
@@ -24,7 +24,9 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 */
 
 %{
+#include <string.h>
 #include "casmy.tab.h"
+#include "util.h"
 #include "symtab.h"
 #include "casm.h"
 
@@ -65,7 +67,7 @@ rb		\]
 [sS]1[0-1]		{ yylval.integer = atoi (yytext+1); return STATBIT; }
 
 {alpha}{alphanum}*	{
-                          if (yylval.integer = keyword (yytext))
+                          if ((yylval.integer = keyword (yytext)))
                             return yylval.integer;
                           yylval.string = newstr (yytext);
                           return IDENT;
@@ -97,56 +99,56 @@ struct keyword
 }
 keywords [] =
 {
-  "a",         A,
-  "b",         B,
-  "c",         C,
-  "m",         M,
-  "p",         P,
+  { "a",         A },
+  { "b",         B },
+  { "c",         C },
+  { "m",         M },
+  { "p",         P },
 
-  "address",   ADDRESS,
-  "advance",   ADVANCE,
-  "and",       AND,
-  "buffer",    BUFFER,
-  "carry",     CARRY,
-  "clear",     CLEAR,
-  "constant",  CONSTANT,
-  "data",      DATA,
-  "delayed",   DELAYED,
-  "delete",    DELETE,
-  "display",   DISPLAY,
-  "down",      DOWN,
-  "exchange",  EXCHANGE,
-  "for",       FOR,
-  "go",        GO,
-  "group",     GROUP,
-  "if",        IF,
-  "insert",    INSERT,
-  "jsb",       JSB,
-  "keys",      KEYS,
-  "label",     LABEL,
-  "left",      LEFT,
-  "load",      LOAD,
-  "mark",      MARK,
-  "memory",    MEMORY,
-  "no",        NO,
-  "off",       OFF,
-  "operation", OPERATION,
-  "pointer",   POINTER,
-  "registers", REGISTERS,
-  "return",    RETURN,
-  "right",     RIGHT,
-  "rom",       ROM,
-  "rotate",    ROTATE,
-  "search",    SEARCH,
-  "select",    SELECT,
-  "shift",     SHIFT,
-  "stack",     STACK,
-  "status",    STATUS,
-  "symtab",    SYMTAB,
-  "then",      THEN,
-  "to",        TO,
-  "toggle",    TOGGLE,
-  NULL,        0,
+  { "address",   ADDRESS },
+  { "advance",   ADVANCE },
+  { "and",       AND },
+  { "buffer",    BUFFER },
+  { "carry",     CARRY },
+  { "clear",     CLEAR },
+  { "constant",  CONSTANT },
+  { "data",      DATA },
+  { "delayed",   DELAYED },
+  { "delete",    DELETE },
+  { "display",   DISPLAY },
+  { "down",      DOWN },
+  { "exchange",  EXCHANGE },
+  { "for",       FOR },
+  { "go",        GO },
+  { "group",     GROUP },
+  { "if",        IF },
+  { "insert",    INSERT },
+  { "jsb",       JSB },
+  { "keys",      KEYS },
+  { "label",     LABEL },
+  { "left",      LEFT },
+  { "load",      LOAD },
+  { "mark",      MARK },
+  { "memory",    MEMORY },
+  { "no",        NO },
+  { "off",       OFF },
+  { "operation", OPERATION },
+  { "pointer",   POINTER },
+  { "registers", REGISTERS },
+  { "return",    RETURN },
+  { "right",     RIGHT },
+  { "rom",       ROM },
+  { "rotate",    ROTATE },
+  { "search",    SEARCH },
+  { "select",    SELECT },
+  { "shift",     SHIFT },
+  { "stack",     STACK },
+  { "status",    STATUS },
+  { "symtab",    SYMTAB },
+  { "then",      THEN },
+  { "to",        TO },
+  { "toggle",    TOGGLE },
+  { NULL,        0 }
 };
 
 int keyword (char *string)
