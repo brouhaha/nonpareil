@@ -1,5 +1,5 @@
 /*
-arch.c
+platform.h
 $Id$
 Copyright 2004 Eric L. Smith
 
@@ -20,37 +20,23 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 */
 
 
-#include <stdbool.h>
-#include <string.h>
-#include <strings.h>
+/* hardware platforms */
 
+#define PLATFORM_UNKNOWN   0
+#define PLATFORM_CLASSIC   1
+#define PLATFORM_WOODSTOCK 2
+#define PLATFORM_TOPCAT    3
+#define PLATFORM_HAWKEYE   4
+#define PLATFORM_STING     5
+#define PLATFORM_CRICKET   6
+#define PLATFORM_SPICE     7
+#define PLATFORM_COCONUT   8
+#define PLATFORM_VOYAGER   9
+#define PLATFORM_CAPRICORN 10
+#define PLATFORM_GEMINI    11
+#define PLATFORM_KANGAROO  12
+#define PLATFORM_TITAN     13
 
-#include "arch.h"
+#define PLATFORM_MAX       14
 
-
-char *arch_name [ARCH_MAX] =
-  {
-    "unknown",
-    "classic",
-    "woodstock",
-    "cricket",
-    "nut",
-    "capricorn",
-    "saturn"
-  };
-
-int arch = ARCH_UNKNOWN;
-
-bool select_arch (char *s)
-{
-  int i;
-  for (i = 1; i < ARCH_MAX; i++)
-    {
-      if (strcasecmp (s, arch_name [i]) == 0)
-	{
-	  arch = i;
-	  return (true);
-	}
-    }
-  return (false);
-}
+extern char *platform_name [PLATFORM_MAX];

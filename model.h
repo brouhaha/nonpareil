@@ -1,5 +1,5 @@
 /*
-arch.c
+model.h
 $Id$
 Copyright 2004 Eric L. Smith
 
@@ -20,37 +20,12 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 */
 
 
-#include <stdbool.h>
-#include <string.h>
-#include <strings.h>
-
-
-#include "arch.h"
-
-
-char *arch_name [ARCH_MAX] =
-  {
-    "unknown",
-    "classic",
-    "woodstock",
-    "cricket",
-    "nut",
-    "capricorn",
-    "saturn"
-  };
-
-int arch = ARCH_UNKNOWN;
-
-bool select_arch (char *s)
+typedef struct
 {
-  int i;
-  for (i = 1; i < ARCH_MAX; i++)
-    {
-      if (strcasecmp (s, arch_name [i]) == 0)
-	{
-	  arch = i;
-	  return (true);
-	}
-    }
-  return (false);
-}
+  char *name;
+  int platform;
+  int cpu_arch;
+  int ram_size;
+} model_info_t;
+
+model_info_t *get_model_info (char *model);

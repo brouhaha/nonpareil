@@ -36,6 +36,8 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #include "proc.h"
 #include "kml.h"
 #include "arch.h"
+#include "platform.h"
+#include "model.h"
 
 #ifdef HAS_DEBUGGER_CLI
   #include "debugger.h"
