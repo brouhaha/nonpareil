@@ -581,6 +581,24 @@ static void help_about (GtkWidget *widget, gpointer data)
 }
 
 
+void debug_show_reg (GtkWidget *widget, gpointer data)
+{
+  /* $$$ not yet implemented */
+}
+
+
+void debug_run (GtkWidget *widget, gpointer data)
+{
+  /* $$$ not yet implemented */
+}
+
+
+void debug_step (GtkWidget *widget, gpointer data)
+{
+  /* $$$ not yet implemented */
+}
+
+
 static GtkItemFactoryEntry menu_items [] =
   {
     { "/_File",         NULL,         NULL,          0, "<Branch>" },
@@ -592,6 +610,10 @@ static GtkItemFactoryEntry menu_items [] =
     { "/_Edit",         NULL,         NULL,          0, "<Branch>" },
     { "/Edit/_Copy",    "<control>C", edit_copy,     0, "<StockItem>", GTK_STOCK_COPY },
     { "/Edit/_Paste",   "<control>V", edit_paste,    0, "<StockItem>", GTK_STOCK_PASTE },
+    { "/_Debug",        NULL,         NULL,          0, "<Branch>" },
+    { "/Debug/Show Reg", NULL,        debug_show_reg, 0, "<Item>" },
+    { "/Debug/Run",     NULL,         debug_run,     0, "<Item>" },
+    { "/Debug/Step",    NULL,         debug_step,    0, "<Item>" },
     { "/_Help",         NULL,         NULL,          0, "<LastBranch>" },
     { "/_Help/About",   NULL,         help_about,    0, "<Item>" }
   };
