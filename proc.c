@@ -118,7 +118,8 @@ static digit_t do_sub (struct sim_handle_t *sim, digit_t x, digit_t y)
 static void op_arith (struct sim_handle_t *sim, int opcode)
 {
   uint8_t op, field;
-  int first, last;
+  int first = 0;
+  int last = 0;
   int temp;
   int i;
   reg_t t;
@@ -140,7 +141,7 @@ static void op_arith (struct sim_handle_t *sim, int opcode)
     case 2:  /* x  */  first =  0; last =  2; break;
     case 3:  /* w  */  first =  0; last = 13; break;
     case 4:  /* wp */
-      first =  0; last =  sim->env.p; break;
+      first =  0; last =  sim->env.p;
       if (sim->env.p > 13)
 	{
 	  printf ("Warning! p >= WSIZE at %05o\n", sim->env.prev_pc);
@@ -1004,6 +1005,8 @@ gpointer sim_thread_func (gpointer data)
 	}
       g_mutex_unlock (sim->sim_mutex);
     }
+
+  return (NULL);  /* $$$ Hmmm... what are we supposed to return? */
 }
 
 
