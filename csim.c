@@ -774,6 +774,7 @@ int main (int argc, char *argv[])
 
   sim = sim_init (model_info->platform,
 		  model_info->cpu_arch,
+		  model_info->clock_frequency,
 		  model_info->ram_size,
 		  & display_update);
 

@@ -97,6 +97,10 @@ struct sim_t
 
   int platform;
 
+  double words_per_usec;  /* Processor word times per microsecond, typically
+			     much less than 1.  For instance, 3.5e-3 for
+			     HP-55. */
+
   sim_env_t *env;		/* architecture-unique */
   uint64_t cycle_count;
 

@@ -48,6 +48,7 @@ typedef struct sim_env_t sim_env_t;
  */
 sim_t *sim_init  (int platform,
 		  int arch,
+		  int clock_frequency,  /* Hz */
 		  int ram_size,
 		  void (*display_update_fn)(char *buf));
 

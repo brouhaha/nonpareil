@@ -33,16 +33,9 @@ MA 02111, USA.
 #include "proc_int.h"
 
 
-/* The real hardware executes a fixed number of microinstructions per
-   second.  The HP-55 uses a crystal, but the other models use an LC
-   oscillator that is not adjusted.  We try to run at nominally the
-   same rate. */
-#define UINST_PER_SEC 3500
-
 /* we try to schedule execution in "jiffies": */
 #define JIFFY_PER_SEC 30
 
-#define UINST_USEC (1.0e6 / UINST_PER_SEC)
 #define JIFFY_USEC (1.0e6 / JIFFY_PER_SEC)
 
 
@@ -207,7 +200,7 @@ gpointer sim_thread_func (gpointer data)
 	    case 1: usec += 1000000; break;
 	    default: usec = 1000000;
 	    }
-	  i = usec / UINST_USEC;
+	  i = usec * sim->words_per_usec;
 #if 0
 	  printf ("tv %d.%06d, usec %d, i %d\n", sim->tv.tv_sec, sim->tv.tv_usec, usec, i);
 #endif
@@ -243,17 +236,23 @@ gpointer sim_thread_func (gpointer data)
 
 sim_t *sim_init (int platform,
 		 int arch,
+		 int clock_frequency,  /* Hz */
 		 int ram_size,
 		 void (*display_update_fn)(char *buf))
 {
   sim_t *sim;
+  arch_info_t *arch_info;
 
   sim = alloc (sizeof (sim_t));
 
   sim->arch = arch;
   sim->proc = processor_dispatch [arch];
+  arch_info = get_arch_info (arch);
 
   sim->platform = platform;
+
+  sim->words_per_usec = clock_frequency / (1.0e6 * arch_info->word_length);
+  printf ("words_per_usec = %f\n", sim->words_per_usec);
 
   sim->prev_state = SIM_UNKNOWN;
   sim->state = SIM_IDLE;

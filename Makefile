@@ -43,7 +43,7 @@ LDFLAGS = -g
 # -----------------------------------------------------------------------------
 
 PACKAGE = nonpareil
-RELEASE = 0.32
+RELEASE = 0.33
 DISTNAME = $(PACKAGE)-$(RELEASE)
 
 PACKAGES = gtk+-2.0 gdk-2.0 gdk-pixbuf-2.0 glib-2.0 gthread-2.0
@@ -99,7 +99,7 @@ UASM_OBJECTS = asm.o symtab.o util.o arch.o \
 	asml.o asmy.tab.o casml.o casmy.tab.o wasml.o wasmy.tab.o
 
 NONPAREIL_OBJECTS = csim.o util.o proc.o kmll.o kmly.tab.o kml.o \
-	platform.o model.o \
+	arch.o platform.o model.o \
 	proc_classic.o proc_woodstock.o
 ifdef HAS_DEBUGGER_CLI
   NONPAREIL_OBJECTS += debugger.o
