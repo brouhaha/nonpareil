@@ -110,6 +110,8 @@ listings.tar.gz: $(LISTINGS)
 hp45.jpg:
 	wget http://www.hpmuseum.org/45.jpg -O hp45.jpg
 
+hp80.jpg:
+	wget http://www.hpmuseum.org/80.jpg -O hp80.jpg
 
 clean:
 	rm -f $(TARGETS) $(MISC_TARGETS) $(OBJECTS) \
