@@ -79,7 +79,7 @@ contain source listings of ROMs of other HP calculators:
 CASM
 
 I used flex and bison to build CASM.  It should be possible to use yacc
-instead of bison, but I don't think lex will work without some change the
+instead of bison, but I don't think lex will work without some changes to the
 input function.
 
 CASM requires a single command line argument to specify the source code file.
@@ -131,7 +131,7 @@ an image of the ROM code from the calculator.
 
 CSIM uses a single command line argument to specify the assembly listing file.
 If no argument is found, CSIM will try to find a file using the concatentation
-of the name under which it was invoked and "lst".  This allows you to (for
+of the name under which it was invoked and ".lst".  This allows you to (for
 instance) link CSIM to "hp45" and have it automatically try to load and run
 "hp45.lst".
 
