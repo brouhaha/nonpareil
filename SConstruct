@@ -18,58 +18,75 @@
 # the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
 # Boston, MA 02111, USA.
 
-params = {}
+release = '0.45'
 
 #-----------------------------------------------------------------------------
 # Conditionals 
 #-----------------------------------------------------------------------------
 
-params['has_debugger'] = 1
-params['has_debugger_cli'] = 1
-params['use_tcl'] = 1
-params['use_readline'] = 1
+opts = Options ()
 
+opts.AddOptions (EnumOption ('target',
+			     help = 'execution target',
+			     allowed_values = ('native', 'windows'),
+			     default = 'native',
+			     ignorecase = 1),
+
+		 ('prefix',
+		  'installation path prefix',
+		  '/usr/local'),
+
+		 BoolOption ('debug',
+			     help = 'compile for debugging',
+			     default = 1))
+
+opts.AddOptions (BoolOption ('has_debugger',
+			     help = 'has_debugger',
+			     default = 0),
+
+		 BoolOption ('has_debugger_cli',
+			     help = 'has_debugger_cli',
+			     default = 0),
+
+		 BoolOption ('use_tcl',
+			     help = 'use_tcl',
+			     default = 1),  # only if has_debugger_cli
+
+		 BoolOption ('use_readline',
+			     help = 'use_readline',
+			     default = 1))  # only if has_debugger_cli
 
 #-----------------------------------------------------------------------------
 
-params['package'] = "nonpareil"
-params['release'] = "0.45"
+opts.AddOptions (('PACKAGE', 'package name', 'nonpareil'),
+		 ('RELEASE', 'release number', release))
 
-common_cflags = ['-g', '-Wall']
 
-n_env = Environment (CFLAGS = common_cflags,
-		     CPPPATH= ['.'])
+env = Environment (options = opts)
 
-w_env = Environment (CCFLAGS = common_cflags + ['-mms-bitfields', '-DSHAPE_DEFAULT=false'],
-		     CPPPATH=['.'],
-                     CC = '/usr/local/mingw/bin/i586-mingw32-gcc')
+if env ['target'] == 'windows':
+	build_dir = 'wbuild'
+else:
+	build_dir = 'build'
 
-builds = [('linux',   n_env, 'build')]
-# builds += [('windows', w_env, 'wbuild')]
-
-for arch,env,builddir in builds:
-	params['arch'] = arch
-	Export('env params')
-	SConscript('src/SConscript', build_dir=builddir, duplicate=0)
+Export('env')
+SConscript('src/SConscript',
+	   build_dir=build_dir,
+	   duplicate=0)
+#	   exports = 'env')
 
 #-----------------------------------------------------------------------------
 # Assemble ROM sources
 #-----------------------------------------------------------------------------
 
-SConscript ('asm/SConscript', build_dir='obj', duplicate=0)
+SConscript ('asm/SConscript',
+	    build_dir='obj',
+	    duplicate=0)
 
 #-----------------------------------------------------------------------------
-# Install
+# Install KML, image, firmware files
 #-----------------------------------------------------------------------------
 
-prefix = "/usr/local"
-
-n_env.Alias (target = 'install',
-             source = n_env.Install (dir = prefix + "/bin",
-                                     source = "build/uasm"))
-
-n_env.Alias (target = 'install',
-             source = n_env.Install (dir = prefix + "/bin",
-                                     source = "build/nonpareil"))
-
-# $$$ Need to install KML and image files as well.
+SConscript ('rom/SConscript')
+SConscript ('kml/SConscript')
+SConscript ('image/SConscript')

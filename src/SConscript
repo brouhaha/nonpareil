@@ -18,70 +18,116 @@
 # the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
 # Boston, MA 02111, USA.
 
-Import('env params')
+Import('env')
+
 #-----------------------------------------------------------------------------
-# Source code
+# common
 #-----------------------------------------------------------------------------
+
+env.Append (CPPPATH = ['.'])  # why is this necessary?
+env.Append (CCFLAGS = ['-Wall'])
+env.Append (YACCFLAGS = [ '-d', '-v' ])
+
+if env ['debug'] :
+	env.Append (CCFLAGS = ['-g'])
+else:
+	env.Append (CCFLAGS = ['-O2'])
+
+if env ['target'] == 'windows':
+	env.Replace (CC = '/usr/local/mingw/bin/i586-mingw32-gcc')
+	env.Append (CCFLAGS = ['-mms-bitfields'])
+
 common_srcs = Split("""util.c arch.c""")
 common_objs = []
 for src in common_srcs:
-    common_objs.append(env.Object(src))
+    common_objs.append (env.Object (src))
+
+release_env = env.Copy (CPPDEFINES = { 'NONPAREIL_RELEASE': "$RELEASE" })
+common_objs.append (release_env.Object ('release.c'))
+
+#-----------------------------------------------------------------------------
+# uasm
+#-----------------------------------------------------------------------------
+
+uasm_env = env.Copy ()
 
 uasm_srcs = Split ("""asm.c symtab.c
             	      asml.l asmy.y
                       casml.l casmy.y
                       wasml.l wasmy.y""")
-nonpareil_srcs = Split ("""csim.c proc.c kmll.l kmly.y kml.c
+
+uasm = uasm_env.Program (target = 'uasm',
+                         source = uasm_srcs + common_objs)
+
+#-----------------------------------------------------------------------------
+# nonpareil
+#-----------------------------------------------------------------------------
+
+nonpareil_env = env.Copy ()
+
+nonpareil_srcs = Split ("""proc.c kmll.l kmly.y kml.c
                            platform.c model.c
                            proc_classic.c
                            proc_woodstock.c dis_woodstock.c
                            proc_nut.c dis_nut.c coconut_lcd.c voyager_lcd.c""")
 
-
-env ['YACCFLAGS'] = [ '-d', '-v' ]
-
 packages = "gtk+-2.0 gdk-2.0 gdk-pixbuf-2.0 glib-2.0 gthread-2.0"
+if env ['has_debugger_cli']:
+    packages += ' vte'
 
-try:
-    defines = list(env['CPPDEFINES'])
-except KeyError:
-    defines = []
-nplibs = []
+if env ['has_debugger']:
+    nonpareil_env.Append (CPPDEFINES = {'HAS_DEBUGGER': 1})
 
-if params['arch'] != 'windows':
-    if params['has_debugger_cli']:
-        defines.append('HAS_DEBUGGER_CLI')
-        packages += ' vte'
-        nplibs.append('util')  # for PTY support
-        if params['use_tcl']:
-            defines.append('USE_TCL')
-            nplibs.append('tcl')
-        if params['use_readline']:
-            defines.append('USE_READLINE')
-            nplibs.append('readline')
-    if params['has_debugger']:
-        defines.append('HAS_DEBUGGER')
-        debuggerobj = env.Object('debugger.c', CPPDEFINES=defines)
-        nonpareil_srcs.append(debuggerobj)
-
-if params['arch'] == 'windows':
+if env ['target'] == 'windows':
     pkg_config_cmd = 'PKG_CONFIG_PATH=/usr/local/gtkwin/lib/pkgconfig '
 else:
     pkg_config_cmd = ''
 pkg_config_cmd += 'pkg-config --cflags --libs '
+nonpareil_env.ParseConfig(pkg_config_cmd + packages)
 
-env.ParseConfig(pkg_config_cmd + packages)
+csim_env = nonpareil_env.Copy ()
+csim_env.Append (CPPDEFINES = {'DEFAULT_PATH': env ['prefix'] + "/lib/nonpareil"})
 
-uasm = env.Program (target = 'uasm',
-                    source = uasm_srcs + common_objs)
+if env ['target'] == 'windows':
+    csim_env.Append (CPPDEFINES = {'SHAPE_DEFAULT': "false"})
 
-nonpareil = env.Program (target='nonpareil',
-                         source = nonpareil_srcs + common_objs, LIBS=env['LIBS'] + nplibs)
+nonpareil_objs = []
 
+if env ['has_debugger_cli']:
+    csim_env.Append (CPPDEFINES = {'HAS_DEBUGGER_CLI': 1})
+    debugger_env = csim_env.Copy ()
+    nonpareil_env.Append (LIBS = 'util')  # for PTY support
+    if env ['use_tcl']:
+        debugger_env.Append (CPPDEFINES = {'USE_TCL': 1})
+        nonpareil_env.Append (LIBS = 'tcl')
+    if env ['use_readline']:
+        debugger_env.Append (CPPDEFINES = {'USE_READLINE': 1})
+        nonpareil_env.Append (LIBS = 'readline')
+    nonpareil_objs.append (debugger_env.Object ('debugger.c'))
+
+nonpareil_objs.append (csim_env.Object ('csim.c'))
+
+for src in nonpareil_srcs:
+    nonpareil_objs.append (nonpareil_env.Object (src))
+
+nonpareil = nonpareil_env.Program (target = 'nonpareil',
+                                   source = common_objs + nonpareil_objs)
 
 #-----------------------------------------------------------------------------
-# Define default targets
+# default targets
 #-----------------------------------------------------------------------------
 
 Default ([uasm, nonpareil])
-# Default ([uasm])
+
+#-----------------------------------------------------------------------------
+# install
+#-----------------------------------------------------------------------------
+
+#if env ['target'] == 'windows':
+#    env.Alias (target = 'install',
+#               source = env.Install (dir = env ['wprefix'],
+#                                     source = [uasm, nonpareil]))
+#else:
+env.Alias (target = 'install',
+           source = env.Install (dir = env ['prefix'] + "/lib/nonpareil",
+                                 source = [uasm, nonpareil]))

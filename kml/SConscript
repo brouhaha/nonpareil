@@ -21,36 +21,15 @@
 Import('env')
 
 #-----------------------------------------------------------------------------
-# Assemble ROM sources
+# Install KML files
 #-----------------------------------------------------------------------------
 
-asm_srcs = Split ("hp35.asm hp45.asm hp55.asm hp80.asm")
-uasm = File('#/build/uasm')
-env['ASCOM'] = '$AS $SOURCES -o $TARGET'
-env['AS'] =  str(uasm)
-
-#uasm_bld = env.Builder (action = '$UASMCOM',
-#                        suffix = '.obj',
-#                    src_suffix = '.asm')
-#env.Append(BUILDERS = {'Obj' : uasm_bld})
-
-hp35_obj = env.Object('hp35.asm')
-hp45_obj = env.Object('hp45.asm')
-hp55_obj = env.Object('hp55.asm')
-hp80_obj = env.Object('hp80.asm')
-
-
-#-----------------------------------------------------------------------------
-# Define default targets
-#-----------------------------------------------------------------------------
-
-Default (hp35_obj)
-Default (hp45_obj)
-Default (hp55_obj)
-Default (hp80_obj)
-
-roms = [hp35_obj, hp45_obj, hp55_obj, hp80_obj]
+kmls = Split ("""hp35.kml hp45.kml hp55.kml hp80.kml
+                 hp25.kml
+                 hp32e.kml hp33c.kml hp34c.kml hp37e.kml hp38c.kml hp38e.kml
+                 hp41cv.kml
+                 hp16c.kml""")
 
 env.Alias (target = 'install',
            source = env.Install (dir = env ['prefix'] + "/lib/nonpareil",
-                                 source = roms))
+                                 source = kmls))

@@ -1,5 +1,9 @@
 2004-06-15  Eric Smith <eric@brouhaha.com>
 
+	* SConstruct, */Sconscript: Made options work.  Eliminated params
+	variable passed between scripts.  Better handling of Windows
+	target.  General cleanup.
+	
 	* util.h release.c asm.c csim.c: Added string var nonpareil_release
 	for use in messages.
 
