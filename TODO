@@ -14,6 +14,7 @@ User interface:
 
   Add ability to read kml, image, microcode from zip file.
       GSF: http://www.gnome.org/projects/libgsf/
+          examples in CVS: http://cvs.gnome.org/viewcvs/libgsf/tests/
       On Windows, build ZIP into .EXE similar to a self-extractor?
 
   Display segments from image file rather than as line segments and
