@@ -50,8 +50,10 @@ extern int last_instruction_type;
 extern char linebuf [MAX_LINE];
 extern char *lineptr;
 
+
 #define MAXGROUP 2
-#define MAXROM 8
+#define MAXROM 16     /* max 8 for classic, 16 for woodstock */
+
 extern t_symtab symtab [MAXGROUP] [MAXROM];  /* separate symbol tables for each ROM */
 
 void do_label (char *s);

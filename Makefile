@@ -73,21 +73,23 @@ endif
 
 CALCS = hp35 hp45 hp55 hp80
 
-TARGETS = casm csim
+TARGETS = csim casm wasm
 
 HDRS = asm.h symtab.h util.h proc.h kml.h debugger.h
 CSRCS = asm.c symtab.c csim.c util.c proc.c kml.c debugger.c
-OSRCS = casml.l casmy.y kmll.l kmly.y
+OSRCS = casml.l casmy.y wasml.l wasmy.y kmll.l kmly.y
 MISC = COPYING README ChangeLog
 
 KML = $(CALCS:=.kml)
 IMAGES = $(CALCS:=.png)
 
-AUTO_CSRCS = casml.c casmy.tab.c kmll.c kmly.tab.c
-AUTO_HDRS = casmy.tab.h kmly.tab.h
-AUTO_MISC = casmy.output kmly.output
+AUTO_CSRCS = casml.c casmy.tab.c wasml.c wasmy.tab.c kmll.c kmly.tab.c
+AUTO_HDRS = casmy.tab.h wasmy.tab.h kmly.tab.h
+AUTO_MISC = casmy.output wasmy.output kmly.output
 
 CASM_OBJECTS = asm.o symtab.o casml.o casmy.tab.o util.o
+
+WASM_OBJECTS = asm.o symtab.o wasml.o wasmy.tab.o util.o
 
 CSIM_OBJECTS = csim.o util.o proc.o kmll.o kmly.tab.o kml.o
 ifdef HAS_DEBUGGER_CLI
@@ -121,12 +123,14 @@ hp%: hp%.lst csim
 all: $(TARGETS) $(CALCS) $(ROM_LISTINGS)
 
 
-casm:	$(CASM_OBJECTS)
-	$(CC) -o $@ $(CASM_OBJECTS)
-
 csim:	$(CSIM_OBJECTS)
 	$(CC) -o $@ $(CSIM_OBJECTS) $(SIM_LIBS) 
 
+casm:	$(CASM_OBJECTS)
+	$(CC) -o $@ $(CASM_OBJECTS)
+
+wasm:	$(WASM_OBJECTS)
+	$(CC) -o $@ $(WASM_OBJECTS)
 
 dist:	$(DIST_FILES)
 	-rm -rf $(DISTNAME) $(DISTNAME).tar.gz

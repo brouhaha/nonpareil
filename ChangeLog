@@ -1,3 +1,7 @@
+2004-04-03  Eric Smith <eric@brouhaha.com>
+
+	* wasml.l wasmy.y Makefile: Started development of Woodstock assembler "wasm".
+
 2004-04-02  Eric Smith <eric@brouhaha.com>
 
 	* asm.h asm.c: Renamed from casm.h and casm.c.
