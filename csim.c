@@ -429,7 +429,6 @@ void add_key (GtkWidget *fixed,
 					    key->rect.height);
 
   button_image = gtk_image_new_from_pixbuf (button_pixbuf);
-  gtk_widget_show (button_image);
 
   button_info = calloc (1, sizeof (button_info_t));
   if (! button_info)
@@ -455,8 +454,6 @@ void add_key (GtkWidget *fixed,
 		    G_CALLBACK (& button_released),
 		    (gpointer) button_info);
 
-  gtk_widget_show (button);
-
   gtk_container_add (GTK_CONTAINER (button), button_image);
 }
 
@@ -476,6 +473,60 @@ static void quit_callback (GtkWidget *widget, gpointer data)
 }
 
 
+static void file_open (GtkWidget *widget, gpointer data)
+{
+  /* $$$ not yet implemented */
+}
+
+
+static void file_save (GtkWidget *widget, gpointer data)
+{
+  /* $$$ not yet implemented */
+}
+
+
+static void file_save_as (GtkWidget *widget, gpointer data)
+{
+  /* $$$ not yet implemented */
+}
+
+
+static void help_about (GtkWidget *widget, gpointer data)
+{
+  /* $$$ not yet implemented */
+}
+
+
+static GtkItemFactoryEntry menu_items [] =
+  {
+    { "/_File",         NULL,         NULL,          0, "<Branch>" },
+    { "/File/_Open",    "<control>O", file_open,     0, "<StockItem>", GTK_STOCK_OPEN },
+    { "/File/_Save",    "<control>S", file_save,     0, "<StockItem>", GTK_STOCK_SAVE },
+    { "/File/Save _As", NULL,         file_save_as,  0, "<Item>" },
+    { "/File/sep1",     NULL,         NULL,          0, "<Separator>" },
+    { "/File/_Quit",    "<CTRL>Q",    gtk_main_quit, 0, "<StockItem>", GTK_STOCK_QUIT },
+    { "/_Help",         NULL,         NULL,          0, "<LastBranch>" },
+    { "/_Help/About",   NULL,         help_about,    0, "<Item>" }
+  };
+
+static gint nmenu_items = sizeof (menu_items) / sizeof (GtkItemFactoryEntry);
+
+
+static GtkWidget *get_menubar_menu (GtkWidget *window)
+{
+  GtkAccelGroup *accel_group;
+  GtkItemFactory *item_factory;
+
+  accel_group = gtk_accel_group_new ();
+  item_factory = gtk_item_factory_new (GTK_TYPE_MENU_BAR,
+				       "<main>",
+				       accel_group);
+  gtk_item_factory_create_items (item_factory, nmenu_items, menu_items, NULL);
+  gtk_window_add_accel_group (GTK_WINDOW (window), accel_group);
+  return (gtk_item_factory_get_widget (item_factory, "<main>"));
+}
+
+
 #ifndef PATH_MAX
 #define PATH_MAX 256
 #endif
@@ -491,9 +542,11 @@ int main (int argc, char *argv[])
 {
   char *objfn = NULL;
 
-  int window_width, window_height;
+  int image_width, image_height;
 
   GtkWidget *window;
+  GtkWidget *vbox;
+  GtkWidget *menubar;
   GtkWidget *fixed;
 
   GdkPixbuf *image_pixbuf;
@@ -535,28 +588,30 @@ int main (int argc, char *argv[])
   if (! image_pixbuf)
     fatal (2, "can't load image\n");
 
-  window_width = gdk_pixbuf_get_width (image_pixbuf);
-  window_height = gdk_pixbuf_get_height (image_pixbuf);
+  image_width = gdk_pixbuf_get_width (image_pixbuf);
+  image_height = gdk_pixbuf_get_height (image_pixbuf);
 
   window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
-  gtk_widget_set_size_request (window, window_width, window_height);
   gtk_window_set_resizable (GTK_WINDOW (window), FALSE);
   gtk_window_set_title (GTK_WINDOW (window), "HP-45");
 
+  vbox = gtk_vbox_new (FALSE, 1);
+  gtk_container_add (GTK_CONTAINER (window), vbox);
+
+  menubar = get_menubar_menu (window);
+  gtk_box_pack_start (GTK_BOX (vbox), menubar, FALSE, TRUE, 0);
+
   fixed = gtk_fixed_new ();
-  gtk_container_add (GTK_CONTAINER (window), fixed);
-  gtk_widget_show (fixed);
+  gtk_widget_set_size_request (fixed, image_width, image_height);
+  gtk_box_pack_end (GTK_BOX (vbox), fixed, FALSE, TRUE, 0);
 
   if (image_pixbuf != NULL)
     {
       image = gtk_image_new_from_pixbuf (image_pixbuf);
       gtk_fixed_put (GTK_FIXED (fixed), image, 0, 0);
-      gtk_widget_show (image);
     }
 
   add_keys (image_pixbuf, fixed);
-
-  gtk_widget_show (window);
 
   create_digits ();
 
@@ -576,7 +631,9 @@ int main (int argc, char *argv[])
   gtk_widget_modify_fg (display, GTK_STATE_NORMAL, & red);
   gtk_widget_modify_bg (display, GTK_STATE_NORMAL, & black);
   gtk_fixed_put (GTK_FIXED (fixed), display, DISPLAY_X, DISPLAY_Y);
-  gtk_widget_show (display);
+
+  gtk_widget_show_all (window);
+
   g_signal_connect (G_OBJECT (display),
 		    "expose_event",
 		    G_CALLBACK (display_expose_event_callback),
