@@ -1,13 +1,16 @@
-README file for CASM - an HP Classic series calculator micro assembler
+CASMSIM - an HP Classic series calculator micro assembler and simulator
 Copyright 1995 Eric L. Smith (eric@telebit.com)
 Last revised March 9, 1995
 
+CASMSIM consists of the CASM assembler and the CSIM simulator.  It's just a
+quick hack, so don't expect too much.
+
 -----------------------------------------------------------------------------
 
-CASM is free software; you can redistribute it and/or modify it under the
+CASMSIM is free software; you can redistribute it and/or modify it under the
 terms of the GNU General Public License version 2 as published by the Free
 Software Foundation.  Note that I am not granting permission to redistribute
-or modify CASM under the terms of any later version of the General Public
+or modify CASMSIM under the terms of any later version of the General Public
 License.
 
 This program is distributed in the hope that it will be useful (or at least
@@ -19,36 +22,16 @@ You should have received a copy of the GNU General Public License along with
 this program (in the file "COPYING"); if not, write to the Free Software
 Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
-CASM is supplied with a file named "hp45.asm" containing source code from
-United States patent number 4,001,569 titled "General Purpose Calculator
-Having Selective Data Storage, Data Conversion and Time-keeping Capabilities"
-granted January 4, 1977 to Peter D. Dickinson, Thomas E. Osborne, France
-Rode, and Allen J. Baum, and assigned to the Hewlett-Packard Company.
-
-CASM is supplied with a file named "hp55.asm" containing source code from
-United States patent number 4,009,379 titled "Portable Programmable
-Calculator Displaying Absolute Line Number Addresses and Key Codes and
-Automatically Altering Display Formats", granted February 22, 1977 to Bernard
-E. Musch and assigned to the Hewlett-Packard Company.
-
-These two files are not part of CASM, are not copyrighted by Eric L. Smith,
-and are not subject to the General Public License.
+CASMSIM is distributed with a file named "hp45.asm" containing source code
+from United States patent number 4,001,569 and a file named "hp55.asm"
+containing source code from United States patent number 4,009,379.  These two
+files are distributed only for your convenience; they are not part of CASMSIM,
+are not copyrighted by Eric L. Smith, and are not subject to the General
+Public License.
 
 -----------------------------------------------------------------------------
 
-CASM is just a quick weekend hack, so don't expect too much.  I used flex and
-bison to build it; I once used yacc in place of bison so I think that works.
-I parse the source file one line at a time because it simplifies making a
-pretty listing file; unfortunately this means that lex can't be used in place
-of flex without rewriting my YY_INPUT macro as an input function.
-
-CASM requires a single command line argument to specify the source code file.
-
-CASM derives names for the object and listing files from the source filename
-by replacing the extension (everything after the last dot, typically "asm")
-with "obj" or "lst".  If the source filename doesn't have an extension CASM
-adds one.  The object file format is one word per line with the five digit
-octal address, a colon and the instruction word in hexadecimal.
+Background
 
 In the HP classic series processor, unlike modern microprocessors, various
 instructions were interpreted by various chips.  The core processor consists
@@ -80,16 +63,24 @@ contain source listings of ROMs of other HP calculators:
 	4,099,246:	HP-65 (only first half of ROM)
 	4,291,385:	HP-65 (only first half of ROM)
 
+-----------------------------------------------------------------------------
+
+I used flex and bison to build CASM.  It should be possible to use yacc
+instead of bison, but I don't think lex will work without some change the
+input function.
+
+CASM requires a single command line argument to specify the source code file.
+
+CASM derives names for the object and listing files from the source filename
+by replacing the extension (everything after the last dot, typically "asm")
+with "obj" or "lst".  If the source filename doesn't have an extension CASM
+adds one.  The object file format is one word per line with the five digit
+octal address, a colon and the instruction word in hexadecimal.
+
 I personally prefer my assembly source code to be in all lower case, so it
 doesn't look like it is shouting at me.  All the source code I have typed in
 from patents is in lower case, but CASM is case insensitive so if you prefer
 emphatic source code be my guest.
-
-The current version of CASM doesn't enforce the use of the appropriate form
-of the "go to" instruction.  For instance, the plain "go to" should only be
-used after instructions that can't set the carry flag.  The "then go to" form
-should only be used after "if" instructions.  The "if no carry go to" form
-should only be used after arithmetic instructions.
 
 CASM considers the keywords which are used to form instructions to be
 reserved words, so they can't be used as labels.  HP's assembler was more
@@ -107,3 +98,22 @@ code at location 0 of the selected ROM.
 CASM has a .symtab directive which causes the symbol table to be printed to
 the listing file.  If the source file contains multiple ROMs, each ROM should
 have its own .symtab directive.
+
+-----------------------------------------------------------------------------
+
+CSIM
+
+CSIM is a simulator for the hardware of the HP Classic series of calculators.
+It should be capable of simulating the HP-35, HP-45, HP-55, HP-70, and HP-80.
+With some additional work it should eventually be able to simulate the HP-65.
+
+Since CSIM simulates the actual hardware, it is of little use unless you have
+an image of the ROM code from the calculator.  You can use my csim 
+
+CSIM is just a quick weekend hack, so don't expect too much.
+
+CSIM uses a single command line argument to specify the object code file.  If
+no argument is found, CSIM will try to find a file using the concatentation
+of the name under which it was invoked and "obj".  This allows you to (for
+instance) link CSIM to "hp45" and have it automatically try to load and run
+"hp45.obj".
