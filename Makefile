@@ -50,6 +50,7 @@ OSRCS = casml.l casmy.y kmll.l kmly.y
 MISC = COPYING README ChangeLog
 
 KML = $(CALCS:=.kml)
+IMAGES = hp35.jpg hp45.png hp55.jpg hp80.jpg
 
 AUTO_CSRCS = casml.c casmy.tab.c kmll.c kmly.tab.c
 AUTO_HDRS = casmy.tab.h kmly.tab.h
@@ -66,7 +67,8 @@ ROM_SRCS =  $(CALCS:=.asm)
 ROM_LISTINGS = $(ROM_SRCS:.asm=.lst)
 ROM_OBJS = $(ROM_SRCS:.asm=.obj)
 
-DIST_FILES = $(MISC) Makefile $(HDRS) $(CSRCS) $(OSRCS) $(ROM_SRCS) $(KML)
+DIST_FILES = $(MISC) Makefile $(HDRS) $(CSRCS) $(OSRCS) $(ROM_SRCS) \
+	$(KML) $(IMAGES)
 
 CFLAGS += -DCASMSIM_RELEASE=$(RELEASE)
 
