@@ -14,8 +14,6 @@ User interface:
   syntax to specify keyboard rectangle, and use only region outside
   rectangle for dragging.
 
-  Transparency/shape:  pop-up menu.
-
   Improve KML file utilization, particularly for display.
 
   Keyboard events, at least for numeric entry, basic four functions, and enter.

@@ -44,6 +44,7 @@ struct sim_handle_t *sim;
 
 
 GtkWidget *main_window;
+GtkWidget *menubar;  /* actually a popup menu in transparency/shape mode */
 
 
 #define DISPLAY_DIGIT_POSITIONS 15
@@ -539,13 +540,14 @@ static GtkItemFactoryEntry menu_items [] =
 static gint nmenu_items = sizeof (menu_items) / sizeof (GtkItemFactoryEntry);
 
 
-static GtkWidget *get_menubar_menu (GtkWidget *window)
+static GtkWidget *create_menus (GtkWidget *window,
+				GtkType container_type)
 {
   GtkAccelGroup *accel_group;
   GtkItemFactory *item_factory;
 
   accel_group = gtk_accel_group_new ();
-  item_factory = gtk_item_factory_new (GTK_TYPE_MENU_BAR,
+  item_factory = gtk_item_factory_new (container_type,
 				       "<main>",
 				       accel_group);
   gtk_item_factory_create_items (item_factory, nmenu_items, menu_items, NULL);
@@ -587,13 +589,24 @@ gboolean on_move_window (GtkWidget *widget, GdkEventButton *event)
 {
   if (event->type == GDK_BUTTON_PRESS)
     {
-      if (event->button == 1)
+      switch (event->button)
 	{
+	case 1:  /* left button */
 	  gtk_window_begin_move_drag (GTK_WINDOW (main_window),
 				      event->button,
 				      event->x_root,
 				      event->y_root,
 				      event->time);
+	  break;
+	case 3:  /* right button */
+	  gtk_menu_popup (GTK_MENU (menubar),
+			  NULL,  /* parent_menu_shell */
+			  NULL,  /* parent_menu_item */
+			  NULL,  /* func */
+			  NULL,  /* data */
+			  event->button,
+			  event->time);
+	  break;
 	}
     }
   return (FALSE);
@@ -617,7 +630,6 @@ int main (int argc, char *argv[])
   GtkWidget *event_box;
 
   GtkWidget *vbox;
-  GtkWidget *menubar;
   GtkWidget *fixed;
 
   GdkPixbuf *image_pixbuf;
@@ -725,11 +737,12 @@ int main (int argc, char *argv[])
       event_box = gtk_event_box_new ();
       gtk_container_add (GTK_CONTAINER (event_box), vbox);
       gtk_container_add (GTK_CONTAINER (main_window), event_box);
+      menubar = create_menus (main_window, GTK_TYPE_MENU);
     }
   else
     {
       gtk_container_add (GTK_CONTAINER (main_window), vbox);
-      menubar = get_menubar_menu (main_window);
+      menubar = create_menus (main_window, GTK_TYPE_MENU_BAR);
       gtk_box_pack_start (GTK_BOX (vbox), menubar, FALSE, TRUE, 0);
     }
 
@@ -788,15 +801,18 @@ int main (int argc, char *argv[])
 		    G_CALLBACK (display_expose_event_callback),
 		    NULL);
 
-  g_signal_connect (G_OBJECT (event_box),
-		    "button_press_event",
-		    G_CALLBACK (on_move_window),
-		    NULL);
+  if (image_mask_bitmap)
+    {
+      g_signal_connect (G_OBJECT (event_box),
+			"button_press_event",
+			G_CALLBACK (on_move_window),
+			NULL);
+    }
 
-  gtk_signal_connect (GTK_OBJECT (main_window),
-		      "destroy",
-		      GTK_SIGNAL_FUNC (quit_callback),
-		      NULL);
+  g_signal_connect (G_OBJECT (main_window),
+		    "destroy",
+		    GTK_SIGNAL_FUNC (quit_callback),
+		    NULL);
 
   if (! sim_read_listing_file (sim, kml->rom, TRUE))
     fatal (2, "unable to read listing file '%s'\n", kml->rom);
