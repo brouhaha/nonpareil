@@ -25,6 +25,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 */
 
 #include <stdarg.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -32,8 +33,16 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
 #include "symtab.h"
 #include "util.h"
-#include "asm.h"
 #include "arch.h"
+#include "asm.h"
+
+
+parser_t *parser [ARCH_MAX] =
+{
+  asm_parse,
+  casm_parse,
+  wasm_parse
+};
 
 
 int pass;
@@ -139,6 +148,8 @@ void do_pass (int p)
 {
   int i;
 
+  arch = ARCH_UNKNOWN;
+  
   pass = p;
   lineno = 0;
   errors = 0;
@@ -171,7 +182,7 @@ void do_pass (int p)
       flag_char = ' ';
       symtab_flag = 0;
 
-      yyparse ();
+      parser [arch] ();
 
       if (pass == 2)
 	{
@@ -277,11 +288,6 @@ int main (int argc, char *argv[])
   fclose (objfile);
   fclose (listfile);
   exit (0);
-}
-
-void yyerror (char *s)
-{
-  error ("%s\n", s);
 }
 
 void do_label (char *s)
@@ -410,18 +416,15 @@ int warning (char *format, ...)
 }
 
 
-int keyword (char *string)
+int keyword (char *string, keyword_t *table)
 {
-  struct keyword *ptr;
-
-  for (ptr = keywords; ptr->name; ptr++)
-    if (strcasecmp (string, ptr->name) == 0)
-      return ptr->value;
+  while (table->name)
+    {
+      if (strcasecmp (string, table->name) == 0)
+	return table->value;
+      table++;
+    }
   return 0;
 }
 
 
-int yywrap (void)
-{
-  return (1);
-}

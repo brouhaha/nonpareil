@@ -23,13 +23,17 @@ this program (in the file "COPYING"); if not, write to the Free Software
 Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 */
 
-%{
-#include <stdio.h>
-#include "symtab.h"
-#include "asm.h"
-#include "arch.h"
+%name-prefix="casm_"
 
-int arch = ARCH_CLASSIC;
+%{
+#include <stdbool.h>
+#include <stdio.h>
+
+#include "symtab.h"
+#include "arch.h"
+#include "asm.h"
+
+void casm_error (char *s);
 %}
 
 %union {
@@ -376,3 +380,8 @@ inst_srch_label	: SEARCH FOR LABEL          { emit (0x280); } ;
 inst_ptr_adv	: POINTER ADVANCE           { emit (0x300); } ;
 
 %%
+
+void casm_error (char *s)
+{
+  error ("%s\n", s);
+}

@@ -10,6 +10,8 @@
 ; Journal.  The patent application was filed on October 7, 1972, so
 ; the code in the Journal code might be more recent.
 
+	.arch classic
+
 	.rom @00
 
 power1:	jsb power2

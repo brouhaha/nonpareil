@@ -6,6 +6,8 @@
 ;     found by Peter Monta by OCRing the listing in the patent
 ; May not match released code in actual HP-45 calculators.
 
+	.arch classic
+
 	.rom @00
 
 pwo1:	jsb	pwo2

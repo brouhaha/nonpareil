@@ -34,6 +34,10 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
 extern char *arch_name [ARCH_MAX];
 
+extern int arch;
+
+bool select_arch (char *s);
+
 
 /* hardware platforms */
 

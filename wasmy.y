@@ -27,16 +27,20 @@ this program (in the file "COPYING"); if not, write to the Free Software
 Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 */
 
+%name-prefix="wasm_"
+
 %{
+#include <stdbool.h>
 #include <stdio.h>
+
 #include "symtab.h"
-#include "asm.h"
 #include "arch.h"
+#include "asm.h"
 
 int ptr_load_map [14];
 int ptr_test_map [14];
 
-int arch = ARCH_WOODSTOCK;
+void wasm_error (char *s);
 %}
 
 %union {
@@ -428,3 +432,8 @@ int ptr_load_map [14] =
 
 int ptr_test_map [14] =
   { 013, 005, 003, 007, 000, 012, 006, 016, 001, 004, 015, 014, 002, 011 };
+
+void wasm_error (char *s)
+{
+  error ("%s\n", s);
+}

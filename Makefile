@@ -71,32 +71,31 @@ ifdef USE_READLINE
   LOADLIBES += -lreadline -lhistory -ltermcap
 endif
 
-CALCS = hp25
+CALCS = hp25 hp35 hp45 hp55 hp80
 
-TARGETS = csim casm wasm
+TARGETS = csim asm
 
 HDRS = asm.h symtab.h util.h proc.h kml.h debugger.h arch.h
 CSRCS = asm.c symtab.c csim.c util.c proc.c kml.c debugger.c arch.c
-OSRCS = casml.l casmy.y wasml.l wasmy.y kmll.l kmly.y
+LSRCS = asml.l casml.l wasml.l kmll.l
+YSRCS = asmy.y casmy.y wasmy.y kmly.y
 MISC = COPYING README ChangeLog
 
 KML = $(CALCS:=.kml)
 IMAGES = $(CALCS:=.png)
 
-AUTO_CSRCS = casml.c casmy.tab.c wasml.c wasmy.tab.c kmll.c kmly.tab.c
-AUTO_HDRS = casmy.tab.h wasmy.tab.h kmly.tab.h
-AUTO_MISC = casmy.output wasmy.output kmly.output
+AUTO_CSRCS = asml.c asmy.tab.c casml.c casmy.tab.c wasml.c wasmy.tab.c kmll.c kmly.tab.c
+AUTO_HDRS = asmy.tab.h casmy.tab.h wasmy.tab.h kmly.tab.h
+AUTO_MISC = asmy.output casmy.output wasmy.output kmly.output
 
-CASM_OBJECTS = asm.o symtab.o casml.o casmy.tab.o util.o arch.o
-
-WASM_OBJECTS = asm.o symtab.o wasml.o wasmy.tab.o util.o arch.o
+ASM_OBJECTS = asm.o symtab.o asml.o asmy.tab.o casml.o casmy.tab.o wasml.o wasmy.tab.o util.o arch.o
 
 CSIM_OBJECTS = csim.o util.o proc.o kmll.o kmly.tab.o kml.o arch.o
 ifdef HAS_DEBUGGER_CLI
   CSIM_OBJECTS += debugger.o
 endif
 
-OBJECTS = $(CASM_OBJECTS) $(CSIM_OBJECTS)
+OBJECTS = $(ASM_OBJECTS) $(CSIM_OBJECTS)
 
 SIM_LIBS = $(LOADLIBES)
 
@@ -104,7 +103,7 @@ ROM_SRCS =  $(CALCS:=.asm)
 ROM_LISTINGS = $(ROM_SRCS:.asm=.lst)
 ROM_OBJS = $(ROM_SRCS:.asm=.obj)
 
-DIST_FILES = $(MISC) Makefile $(HDRS) $(CSRCS) $(OSRCS) $(ROM_SRCS) \
+DIST_FILES = $(MISC) Makefile $(HDRS) $(CSRCS) $(LSRCS) $(YSRCS) $(ROM_SRCS) \
 	$(KML) $(IMAGES)
 
 CFLAGS += -DCASMSIM_RELEASE=$(RELEASE)
@@ -113,7 +112,7 @@ CFLAGS += -DCASMSIM_RELEASE=$(RELEASE)
 	$(YACC) $(YFLAGS) $<
 
 %.obj %.lst: %.asm csim
-	./wasm $<
+	./asm $<
 
 hp%: hp%.lst csim
 	rm -f $@
@@ -126,11 +125,8 @@ all: $(TARGETS) $(CALCS) $(ROM_LISTINGS)
 csim:	$(CSIM_OBJECTS)
 	$(CC) -o $@ $(CSIM_OBJECTS) $(SIM_LIBS) 
 
-casm:	$(CASM_OBJECTS)
-	$(CC) -o $@ $(CASM_OBJECTS)
-
-wasm:	$(WASM_OBJECTS)
-	$(CC) -o $@ $(WASM_OBJECTS)
+asm:	$(ASM_OBJECTS)
+	$(CC) -o $@ $(ASM_OBJECTS)
 
 dist:	$(DIST_FILES)
 	-rm -rf $(DISTNAME) $(DISTNAME).tar.gz

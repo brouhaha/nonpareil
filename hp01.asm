@@ -18,6 +18,7 @@
 ; This source code has not yet been checked against the object code in
 ; the patent listing.
 
+	.arch cricket
 
 	file	cri0
 

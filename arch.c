@@ -20,6 +20,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 */
 
 
+#include <stdbool.h>
 #include <string.h>
 #include <strings.h>
 
@@ -38,6 +39,21 @@ char *arch_name [ARCH_MAX] =
     "saturn"
   };
 
+int arch = ARCH_UNKNOWN;
+
+bool select_arch (char *s)
+{
+  int i;
+  for (i = 1; i < ARCH_MAX; i++)
+    {
+      if (strcasecmp (s, arch_name [i]) == 0)
+	{
+	  arch = i;
+	  return (true);
+	}
+    }
+  return (false);
+}
 
 char *platform_name [PLATFORM_MAX] =
   {

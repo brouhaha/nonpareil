@@ -24,9 +24,6 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 */
 
 
-extern int arch;
-
-
 int pass;
 extern int lineno;
 extern int errors;
@@ -92,11 +89,22 @@ int error   (char *format, ...);
 int warning (char *format, ...);
 
 
-int yylex (void);
+/* lexers: */
 
-void yyerror (char *s);
+int asm_lex  (void);  /* generic, used only to parse .arch directive */
+int casm_lex (void);  /* classic */
+int wasm_lex (void);  /* woodstock */
 
-int yywrap (void);
+
+/* parsers: */
+typedef int (parser_t)(void);
+
+extern parser_t *parser [ARCH_MAX];
+
+
+int asm_parse  (void);  /* generic, used only to parse .arch directive */
+int casm_parse (void);  /* classic */
+int wasm_parse (void);  /* woodstock */
 
 
 typedef struct keyword
@@ -105,8 +113,6 @@ typedef struct keyword
   int value;
 } keyword_t;
 
-extern keyword_t keywords [];
-
-int keyword (char *string);
+int keyword (char *string, keyword_t *table);
 
 
