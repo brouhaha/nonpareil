@@ -34,6 +34,7 @@ MA 02111, USA.
 #include "coconut_lcd.h"
 #include "voyager_lcd.h"
 #include "proc_nut.h"
+#include "dis_nut.h"
 
 
 /* map from high opcode bits to register index */
@@ -411,7 +412,7 @@ static void op_short_branch (sim_t *sim, int opcode)
 
   offset = (opcode >> 3) & 0x3f;
   if (opcode & 0x200)
-    offset = offset - 64;
+    offset -= 64;
 
   if (((opcode >> 2) & 1) == sim->env->prev_carry)
     sim->env->pc = sim->env->pc + offset - 1;
@@ -1056,19 +1057,7 @@ static void nut_init_ops (sim_t *sim)
 
 static void nut_disassemble (sim_t *sim, int addr, char *buf, int len)
 {
-  int l;
-
-  l = snprintf (buf, len, "%04x: ", addr);
-  buf += l;
-  len -= l;
-  if (len <= 0)
-    return;
-
-  l = snprintf (buf, len, "%03x  ", sim->ucode [addr]);
-  buf += l;
-  len -= l;
-  if (len <= 0)
-    return;
+  int op1, op2;
 
   switch (sim->env->inst_state)
     {
@@ -1078,7 +1067,10 @@ static void nut_disassemble (sim_t *sim, int addr, char *buf, int len)
     case norm:          break;
     }
 
-  return;
+  op1 = sim->ucode [addr];
+  op2 = sim->ucode [addr + 1];
+
+  nut_disassemble_inst (addr, op1, op2, buf, len);
 }
 
 

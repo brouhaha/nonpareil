@@ -43,7 +43,7 @@ User interface:
 
 Debugger:
 
-  Add disassemblers for Classic and Nut processors.
+  Add disassembler for Classic processors.
 
   Add reflection API for use by debugger (both GUI and command line).
 

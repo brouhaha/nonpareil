@@ -943,8 +943,6 @@ static void woodstock_disassemble (sim_t *sim, int addr, char *buf, int len)
   op2 = sim->ucode [ma2];
 
   woodstock_disassemble_inst (ma1, op1, op2, buf, len);
-
-  return;
 }
 
 
