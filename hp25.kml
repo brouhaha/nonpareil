@@ -46,7 +46,7 @@ display
 
 	digits 12
 		size 17 12
-		offset 10 10
+		offset 10 20
 	end
 
 	character '0' segment 'a' 'b' 'c' 'd' 'e' 'f'         end
@@ -75,7 +75,7 @@ display
 	segment 'e' offset  0  5 size 1 6 end
 	segment 'f' offset  0  0 size 1 6 end
 	segment 'g' offset  0  5 size 6 1 end
-	segment 'h' offset  7 10 size 2 2 end
+	segment 'h' offset  9 11 size 2 2 end
 end
 
 switch 0
