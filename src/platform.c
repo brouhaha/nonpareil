@@ -26,20 +26,25 @@ MA 02111, USA.
 
 char *platform_name [PLATFORM_MAX] =
   {
-    [PLATFORM_UNKNOWN] = "unknown",
-    [PLATFORM_CLASSIC]   = "classic",
-    [PLATFORM_WOODSTOCK] = "woodstock",
-    [PLATFORM_TOPCAT]    = "topcat",
-    [PLATFORM_HAWKEYE]   = "hawkeye",
-    [PLATFORM_STING]     = "sting",
-    [PLATFORM_CRICKET]   = "cricket",
-    [PLATFORM_SPICE]     = "spice",
-    [PLATFORM_COCONUT]   = "coconut",
-    [PLATFORM_VOYAGER]   = "voyager",
-    [PLATFORM_CAPRICORN] = "capricorn",
-    [PLATFORM_GEMINI]    = "gemini",
-    [PLATFORM_KANGAROO]  = "kangaroo",
-    [PLATFORM_TITAN]     = "titan"
+    [PLATFORM_UNKNOWN]    = "unknown",
+    [PLATFORM_CLASSIC]    = "classic",
+    [PLATFORM_CLASSIC_PR] = "classic_pr",
+    [PLATFORM_WOODSTOCK]  = "woodstock",
+    [PLATFORM_TOPCAT]     = "topcat",
+    [PLATFORM_HAWKEYE]    = "hawkeye",
+    [PLATFORM_STING]      = "sting",
+    [PLATFORM_CRICKET]    = "cricket",
+    [PLATFORM_SPICE]      = "spice",
+    [PLATFORM_COCONUT]    = "coconut",
+    [PLATFORM_VOYAGER]    = "voyager",
+    [PLATFORM_CAPRICORN]  = "capricorn",
+    [PLATFORM_KANGAROO]   = "kangaroo",
+    [PLATFORM_TITAN]      = "titan",
+    [PLATFORM_CLAMSHELL]  = "clamshell",
+    [PLATFORM_LEWIS]      = "lewis",
+    [PLATFORM_SACAJAWEA]  = "sacajawea",
+    [PLATFORM_BERT]       = "bert",
+    [PLATFORM_CLARKE]     = "clarke"
   };
 
 int find_platform_by_name (char *s)
