@@ -51,17 +51,17 @@ CALCS = hp45 hp55 hp35
 
 TARGETS = casm csim
 
-HDRS = casm.h symtab.h util.h proc.h
-CSRCS = casm.c symtab.c csim.c util.c proc.c
-OSRCS = casml.l casmy.y 
+HDRS = casm.h symtab.h util.h proc.h kml.h
+CSRCS = casm.c symtab.c csim.c util.c proc.c kml.c
+OSRCS = casml.l casmy.y kmly.y
 MISC = COPYING README ChangeLog
 
-AUTO_CSRCS = casml.c casmy.tab.c
-AUTO_HDRS = casmy.tab.h
-AUTO_MISC = casmy.output
+AUTO_CSRCS = casml.c casmy.tab.c kmll.c kmly.tab.c
+AUTO_HDRS = casmy.tab.h kmly.tab.h
+AUTO_MISC = casmy.output kmly.output
 
 CASM_OBJECTS = casm.o symtab.o casml.o casmy.tab.o util.o
-CSIM_OBJECTS = csim.o util.o proc.o
+CSIM_OBJECTS = csim.o util.o proc.o kmll.o kmly.tab.o kml.o
 
 OBJECTS = $(CASM_OBJECTS) $(CSIM_OBJECTS)
 
