@@ -46,13 +46,13 @@ int kml_cur_idx2;
 %token <string> STRING
 
 %token ANNUNCIATOR AUTHOR      BACKGROUND  BITMAP      BUTTON      CLASS
-%token COLOR       DEBUG       DIGITS      DISPLAY     DOWN        ELSE
-%token END         GLOBAL      HARDWARE    IFFLAG      IFPRESSED   IMAGE
-%token KEYCODE     LCD         MAP         MENUITEM    MODEL       NOHOLD
-%token OFFSET      ONDOWN      ONUP        OUTIN       PATCH       POSITION
-%token PRESS       PRINT       RELEASE     RESETFLAG   ROM         SCANCODE
-%token SETFLAG     SIZE        SWITCH      TITLE       TYPE        VIRTUAL
-%token ZOOM
+%token COLOR       DEBUG       DEFAULT     DIGITS      DISPLAY     DOWN
+%token ELSE        END         GLOBAL      HARDWARE    IFFLAG      IFPRESSED
+%token IMAGE       KEYCODE     LCD         MAP         MENUITEM    MODEL
+%token NOHOLD      OFFSET      ONDOWN      ONUP        OUTIN       PATCH
+%token POSITION    PRESS       PRINT       RELEASE     RESETFLAG   ROM
+%token SCANCODE    SETFLAG     SIZE        SWITCH      TITLE       TYPE
+%token VIRTUAL     ZOOM
 
 %type <intpair> offset_stmt size_stmt down_stmt
 
@@ -302,8 +302,12 @@ switch_stmt_list	:	switch_stmt
 switch_stmt		:	size_stmt
 				{ yy_kml->kswitch [kml_cur_idx]->size.width = $1.a;
 				  yy_kml->kswitch [kml_cur_idx]->size.height = $1.b; }
+			|	default_stmt
 			|	position_section
 			;
+
+default_stmt		:	DEFAULT INTEGER { yy_kml->kswitch [kml_cur_idx]->default_position = $2; } ;
+
 
 position_section	:	POSITION INTEGER
 				{ range_check ($2, 0, KML_MAX_SWITCH_POSITION);

@@ -72,6 +72,7 @@ button		return (BUTTON);
 class		return (CLASS);
 color		return (COLOR);
 debug		return (DEBUG);
+default		return (DEFAULT);
 digits		return (DIGITS);
 display		return (DISPLAY);
 down		return (DOWN);

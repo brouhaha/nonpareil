@@ -160,6 +160,7 @@ static void print_kml_switch (FILE *f, kml_t *kml, int s)
   fprintf (f, "\tsize %d %d\n",
 	   kml->kswitch [s]->size.width,
 	   kml->kswitch [s]->size.height);
+  fprintf (f, "\tdefault %d\n", kml->kswitch [s]->default_position);
   for (p = 0; p < KML_MAX_SWITCH_POSITION; p++)
     if (kml->kswitch [s]->position [p])
       {

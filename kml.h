@@ -110,6 +110,7 @@ typedef struct
 typedef struct
 {
   kml_size_t size;
+  int default_position;
   kml_switch_position_t *position [KML_MAX_SWITCH_POSITION];
 } kml_switch_t;
 
