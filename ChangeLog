@@ -1,3 +1,9 @@
+2004-05-02  Eric Smith <eric@brouhaha.com>
+
+	* kmly.y kml.c: Allow annunciator sections to be nested in display
+	section.  Fix annunciator size parsing.  Print annunciators in
+	print_kml().
+
 2004-05-01  Eric Smith <eric@brouhaha.com>
 
 	* coconut_lcd.c: Added coconut_op_display_compensation (acts as NOP).

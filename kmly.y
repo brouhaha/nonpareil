@@ -208,6 +208,7 @@ display_stmt		:	zoom_stmt
 			|	display_color_stmt
 			|	character_stmt
 			|	segment_stmt
+			|	annunciator_section
 			;
 
 zoom_stmt		:	ZOOM INTEGER { yy_kml->display_zoom = $2; } ;
@@ -304,7 +305,7 @@ annunciator_stmt_list	:	annunciator_stmt
 
 annunciator_stmt	:	size_stmt
 				{ yy_kml->annunciator [kml_cur_idx]->size.width = $1.a;
-				  yy_kml->annunciator [kml_cur_idx]->size.width = $1.b; }
+				  yy_kml->annunciator [kml_cur_idx]->size.height = $1.b; }
 			|	offset_stmt
 				{ yy_kml->annunciator [kml_cur_idx]->offset.x = $1.a;
 				  yy_kml->annunciator [kml_cur_idx]->offset.y = $1.b; }

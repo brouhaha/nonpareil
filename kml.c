@@ -157,6 +157,19 @@ static void print_kml_string (FILE *f, char *name, char *val)
     fprintf (f, "\t%s \"%s\"\n", name, val);
 }
 
+
+static void print_kml_size (FILE *f, kml_size_t *size)
+{
+  fprintf (f, "size %d %d ", size->width, size->height);
+}
+
+
+static void print_kml_offset (FILE *f, kml_offset_t *offset)
+{
+  fprintf (f, "offset %d %d ", offset->x, offset->y);
+}
+
+
 static void print_kml_global (FILE *f, kml_t *kml)
 {
   fprintf (f, "global\n");
@@ -250,12 +263,23 @@ void print_kml_scancode (FILE *f, kml_scancode_t *scancode)
   fprintf (f, " end\n");
 }
 
+void print_kml_annunciator (FILE *f, kml_t *kml, int i)
+{
+  fprintf (f, "annunciator %d  ", i);
+  print_kml_size (f, & kml->annunciator [i]->size);
+  print_kml_offset (f, & kml->annunciator [i]->offset);
+  fprintf (f, "end\n");
+}
+
 void print_kml (FILE *f, kml_t *kml)
 {
   int i;
   kml_scancode_t *scancode;
 
   print_kml_global (f, kml);
+  for (i = 0; i < KML_MAX_ANNUNCIATOR; i++)
+    if (kml->annunciator [i])
+      print_kml_annunciator (f, kml, i);
   for (i = 0; i < KML_MAX_SWITCH; i++)
     if (kml->kswitch [i])
       print_kml_switch (f, kml, i);
