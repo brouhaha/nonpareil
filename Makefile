@@ -96,7 +96,7 @@ ASM_OBJECTS = asm.o symtab.o util.o arch.o \
 
 CSIM_OBJECTS = csim.o util.o proc.o kmll.o kmly.tab.o kml.o \
 	platform.o model.o \
-	proc_woodstock.o
+	proc_classic.o proc_woodstock.o
 ifdef HAS_DEBUGGER_CLI
   CSIM_OBJECTS += debugger.o
 endif

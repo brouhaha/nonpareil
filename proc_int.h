@@ -30,8 +30,15 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
 typedef struct
 {
+  int max_rom;
+  int max_bank;
+
   void (* new_processor)       (sim_t *sim, int ram_size);
   void (* free_processor)      (sim_t *sim);
+
+  bool (* parse_listing_line)  (char *buf, int *bank, int *addr,
+				rom_word_t *opcode);
+
   void (* reset_processor)     (sim_t *sim);
   void (* execute_instruction) (sim_t *sim);
 
@@ -43,7 +50,7 @@ typedef struct
   /* for debugger: */
   void (* read_ram)            (sim_t *sim, int addr, reg_t *val);
   void (* write_ram)           (sim_t *sim, int addr, reg_t *val);
-  void (* disassemble)         (sim_t *sim, int addr);
+  void (* disassemble)         (sim_t *sim, int addr, char *buf, int len);
 
   sim_env_t * (* get_env)      (sim_t *sim); 
   void (* set_env)             (sim_t *sim, sim_env_t *env); 
@@ -56,10 +63,6 @@ extern processor_dispatch_t *processor_dispatch [ARCH_MAX];
 
 
 /* common to all architectures: */
-
-#define MAX_GROUP 2
-#define MAX_ROM   16
-#define ROM_SIZE  256
 
 typedef enum
   {
@@ -95,13 +98,13 @@ struct sim_t
 
   void (*display_update)(char *buf);
 
-  romword ucode [MAX_GROUP] [MAX_ROM] [ROM_SIZE];
-  uint8_t bpt   [MAX_GROUP] [MAX_ROM] [ROM_SIZE];
-  char *source  [MAX_GROUP] [MAX_ROM] [ROM_SIZE];
+  rom_word_t *ucode;
+  char       **source;
+  bool       *breakpoint;
 
   void (* op_fcn [1024])(struct sim_t *sim, int opcode);
 
-  char prev_display [25];
+  char prev_display [(WSIZE + 1) * 2 + 1];
 };
 
 

@@ -35,6 +35,10 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #include "proc_int.h"
 
 
+#define SSIZE 16
+#define STACK_SIZE 2
+
+
 struct sim_env_t
 {
   reg_t a;
@@ -885,7 +889,7 @@ static void woodstock_disassemble (sim_t *sim, int addr, char *buf, int len)
     return;
 
   /* $$$ should use current bank rather than always bank 0 */
-  l = snprintf (buf, len, "%04d", sim->ucode [0] [addr >> 8] [addr & 0377]);
+  l = snprintf (buf, len, "%04d", sim->ucode [addr]);
   buf += l;
   len -= l;
   if (len <= 0)
@@ -900,7 +904,7 @@ static char display_char [16] = "0123456789rHoPE ";
 
 static void woodstock_handle_io (sim_t *sim)
 {
-  char buf [25];
+  char buf [(WSIZE + 1) * 2 + 1];
   char *bp;
   int i;
 
@@ -971,7 +975,8 @@ void woodstock_execute_instruction (sim_t *sim)
   prev_if_flag = sim->env->if_flag;
   sim->env->if_flag = 0;
 
-  opcode = sim->ucode [0] [sim->env->pc >> 8] [sim->env->pc & 0377];
+  /* $$$ need to handle bank switching */
+  opcode = sim->ucode [sim->env->pc];
 
 #ifdef KEYTRACE
   if (opcode == 00020)
@@ -983,7 +988,8 @@ void woodstock_execute_instruction (sim_t *sim)
   if (trace)
     {
       woodstock_print_state (sim, sim->env);
-      printf ("%s\n", sim->source [0] [sim->env->pc >> 8] [sim->env->pc & 0377]);
+      /* $$$ need to handle bank switching */
+      printf ("%s\n", sim->source [sim->env->pc]);
     }
 
   sim->env->prev_carry = sim->env->carry;
@@ -1008,6 +1014,48 @@ void woodstock_execute_instruction (sim_t *sim)
   sim->cycle_count++;
 
   woodstock_handle_io (sim);
+}
+
+
+static int parse_octal (char *oct, int digits, int *val)
+{
+  *val = 0;
+
+  while (digits--)
+    {
+      if (((*oct) < '0') || ((*oct) > '7'))
+	return (0);
+      (*val) = ((*val) << 3) + ((*(oct++)) - '0');
+    }
+  return (1);
+}
+
+
+static bool woodstock_parse_listing_line (char *buf, int *bank, int *addr,
+					  rom_word_t *opcode)
+{
+  int i;
+  int a, o;
+
+  if (strlen (buf) < 18)
+    return (false);
+
+  if (! parse_octal (& buf [15], 4, & a))
+    {
+      fprintf (stderr, "invalid address %o", i);
+      return (false);
+    }
+
+  if (! parse_octal (& buf [ 9], 4, & o))
+    {
+      fprintf (stderr, "invalid opcode %o", o);
+      return (false);
+    }
+
+  *bank = 0;
+  *addr = a;
+  *opcode = o;
+  return (true);
 }
 
 
@@ -1113,8 +1161,14 @@ static void woodstock_free_processor (sim_t *sim)
 
 processor_dispatch_t woodstock_processor =
   {
+    4096,
+    2, 
+
     woodstock_new_processor,
     woodstock_free_processor,
+
+    woodstock_parse_listing_line,
+
     woodstock_reset_processor,
     woodstock_execute_instruction,
 

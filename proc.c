@@ -47,83 +47,29 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
 
 /*
- * set breakpoints at every location so we know if we hit
- * uninitialized ROM
+ * allocate space for microcode ROM, as well as source code and breakpoints.
+ * Set breakpoints at every location so we know if we hit uninitialized ROM.
  */
-static void init_breakpoints (sim_t *sim)
+static void allocate_ucode (sim_t *sim)
 {
-  int g, r, p;
+  int size, i;
 
-  for (g = 0; g < MAX_GROUP; g++)
-    for (r = 0; r < MAX_ROM; r++)
-      for (p = 0; p < ROM_SIZE; p++)
-	sim->bpt [g] [r] [p] = 1;
-}
+  size = sim->proc->max_bank * sim->proc->max_rom;
 
+  sim->ucode      = alloc (size * sizeof (rom_word_t));
+  sim->source     = alloc (size * sizeof (char *));
+  sim->breakpoint = alloc (size * sizeof (bool));
 
-static int parse_octal (char *oct, int digits, int *val)
-{
-  *val = 0;
-
-  while (digits--)
-    {
-      if (((*oct) < '0') || ((*oct) > '7'))
-	return (0);
-      (*val) = ((*val) << 3) + ((*(oct++)) - '0');
-    }
-  return (1);
-}
-
-
-static void init_source (sim_t *sim)
-{
-  int g, r, p;
-
-  for (g = 0; g < MAX_GROUP; g++)
-    for (r = 0; r < MAX_ROM; r++)
-      for (p = 0; p < ROM_SIZE; p++)
-	sim->source [g] [r] [p] = NULL;
-}
-
-
-bool sim_read_object_file (sim_t *sim, char *fn)
-{
-  int i;
-  FILE *f;
-  int g, r, p, opcode;
-  int count = 0;
-  char buf [80];
-
-  f = fopen (fn, "r");
-  if (! f)
-    {
-      fprintf (stderr, "error opening listing file\n");
-      return (false);
-    }
-
-  while (fgets (buf, sizeof (buf), f))
-    {
-      i = sscanf (buf, "%1o%1o%3o:%3x", & g, & r, & p, & opcode);
-      if (i != 4)
-	fprintf (stderr, "only converted %d items\n", i);
-      else if ((g >= MAX_GROUP) || (r >= MAX_ROM) || (p >= ROM_SIZE))
-	fprintf (stderr, "bad address\n");
-      else
-	{
-	  sim->ucode [g][r][p] = opcode;
-	  sim->bpt   [g][r][p] = 0;
-	  count ++;
-	}
-    }
-  fprintf (stderr, "read %d words from '%s'\n", count, fn);
-  return (true);
+  for (i = 0; i < size; i++)
+    sim->breakpoint [i] = true;
 }
 
 
 bool sim_read_listing_file (sim_t *sim, char *fn, int keep_src)
 {
   FILE *f;
-  int addr, g, r, p, opcode;
+  int bank, addr, i;
+  rom_word_t opcode;
   int count = 0;
   char buf [80];
 
@@ -137,32 +83,24 @@ bool sim_read_listing_file (sim_t *sim, char *fn, int keep_src)
   while (fgets (buf, sizeof (buf), f))
     {
       trim_trailing_whitespace (buf);
-      if ((strlen (buf) >= 18) &&
-	  parse_octal (& buf [15], 4, & addr) &&
-	  parse_octal (& buf [ 9], 4, & opcode))
+      if (sim->proc->parse_listing_line (buf, & bank, & addr, & opcode))
 	{
-	  g = 0;
-	  r = addr >> 8;
-	  p = addr & 0377;
-	  if ((g >= MAX_GROUP) || (r >= MAX_ROM) || (p >= ROM_SIZE))
-	    fprintf (stderr, "bad address\n");
-	  else if (! sim->bpt [g][r][p])
+	  i = bank * sim->proc->max_rom + addr;
+	  if (! sim->breakpoint [i])
 	    {
-	      fprintf (stderr, "duplicate listing line for address %1o%1o%03o\n",
-		       g, r, p);
-	      fprintf (stderr, "orig: %s\n", sim->source [g][r][p]);
+	      fprintf (stderr, "duplicate listing line for bank %d address %o\n",
+		       bank, addr);
+	      fprintf (stderr, "orig: %s\n", sim->source [i]);
 	      fprintf (stderr, "dup:  %s\n", buf);
 	    }
-	  else
-	    {
-	      sim->ucode  [g][r][p] = opcode;
-	      sim->bpt    [g][r][p] = 0;
-	      if (keep_src)
-		sim->source [g][r][p] = newstr (& buf [0]);
-	      count ++;
-	    }
+	  sim->ucode      [i] = opcode;
+	  sim->breakpoint [i] = 0;
+	  if (keep_src)
+	    sim->source   [i] = newstr (& buf [0]);
+	  count++;
 	}
     }
+
 #if 0
   fprintf (stderr, "read %d words from '%s'\n", count, fn);
 #endif
@@ -281,8 +219,7 @@ sim_t *sim_init (int arch,
 
   sim->proc->new_processor (sim, ram_size);
 
-  init_breakpoints (sim);
-  init_source (sim);
+  allocate_ucode (sim);
 
   sim->display_update = display_update_fn;
 
@@ -427,7 +364,7 @@ void sim_free_env (sim_t *sim, sim_env_t *env)
 }
 
 
-romword sim_read_rom (sim_t *sim, int addr)
+rom_word_t sim_read_rom (sim_t *sim, int addr)
 {
   /* The ROM is read-only, so we don't have to grab the mutex. */
   /* $$$ not yet implemented */
@@ -480,7 +417,7 @@ extern processor_dispatch_t woodstock_processor;
 processor_dispatch_t *processor_dispatch [ARCH_MAX] =
   {
     [ARCH_UNKNOWN]   = NULL,
-    [ARCH_CLASSIC]   = NULL, /* & classic_processor, */
+    [ARCH_CLASSIC]   = & classic_processor,
     [ARCH_WOODSTOCK] = & woodstock_processor,
     [ARCH_CRICKET]   = NULL,
     [ARCH_NUT]       = NULL,

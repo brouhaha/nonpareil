@@ -28,12 +28,8 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 typedef uint8_t digit_t;
 typedef digit_t reg_t [WSIZE];
 
-#define SSIZE 16
 
-#define STACK_SIZE 2
-
-
-typedef uint16_t romword;
+typedef uint16_t rom_word_t;
 
 
 /* simulator state, common to all architectures (opaque): */
@@ -95,8 +91,8 @@ void sim_set_env (sim_t *sim,
 		  sim_env_t *env);
 
 
-romword sim_read_rom (sim_t *sim,
-		      int addr);
+rom_word_t sim_read_rom (sim_t *sim,
+			 int addr);
 
 void sim_read_ram (sim_t *sim,
 		   int addr,
