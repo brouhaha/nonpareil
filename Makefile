@@ -88,8 +88,8 @@ LSRCS = asml.l casml.l wasml.l kmll.l
 YSRCS = asmy.y casmy.y wasmy.y kmly.y
 MISC = COPYING README ChangeLog
 
-KML = $(CALCS:=.kml)
-IMAGES = $(CALCS:=.png)
+KML = $(ALL_CALCS:=.kml)
+IMAGES = $(ALL_CALCS:=.png)
 
 AUTO_CSRCS = $(LSRCS:.l=.c) $(YSRCS:.y=.tab.c)
 AUTO_HDRS = $(YSRCS:.y=.tab.h)
@@ -130,7 +130,7 @@ hp%: hp%.obj nonpareil
 	ln -s nonpareil $@
 
 
-all: $(TARGETS) $(CALCS) $(ROM_LISTINGS)
+all: $(TARGETS) $(ALL_CALCS) $(ROM_LISTINGS)
 
 
 nonpareil:	$(NONPAREIL_OBJECTS)
