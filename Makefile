@@ -7,7 +7,7 @@ YFLAGS = -d -y
 LEX = flex
 
 CC = gcc
-CFLAGS = -g -Dstricmp=strcasecmp
+CFLAGS = -g -Dstricmp=strcasecmp -DUSE_TIMER -DENTER_KEY_MOD
 
 PROGRAMS = casm csim
 MISC_TARGETS = hp45 hp55
