@@ -59,9 +59,14 @@ display
 	character '7' segment 'a' 'b' 'c'                     end
 	character '8' segment 'a' 'b' 'c' 'd' 'e' 'f' 'g'     end
 	character '9' segment 'a' 'b' 'c' 'd'     'f' 'g'     end
-	character '.' segment                             'h' end
-	character '-' segment                         'g'     end
+	character 'r' segment                 'e'     'g'     end
+	character 'H' segment     'b' 'c'     'e' 'f' 'g'     end
+	character 'o' segment         'c' 'd' 'e'     'g'     end
+	character 'P' segment 'a' 'b'         'e' 'f' 'g'     end
+	character 'E' segment 'a'         'd' 'e' 'f' 'g'     end
 	character ' ' segment                                 end
+	character '-' segment                         'g'     end
+	character '.' segment                             'h' end
 
 	segment 'a' offset  0  0 size 6 1 end
 	segment 'b' offset  5  0 size 1 6 end
@@ -70,7 +75,21 @@ display
 	segment 'e' offset  0  5 size 1 6 end
 	segment 'f' offset  0  0 size 1 6 end
 	segment 'g' offset  0  5 size 6 1 end
-	segment 'h' offset  2  8 size 2 2 end
+	segment 'h' offset  7 10 size 2 2 end
+end
+
+switch 0
+  size 18 13
+  default 1
+  position 0  offset  78 107  end  # off
+  position 1  offset  96 107  end  # on
+end
+
+switch 1
+  size 18 13
+  default 1
+  position 0  offset 190 107          end  # program
+  position 1  offset 208 107  flag 3  end  # run
 end
 
 button 11  type 0  size 35 30  offset  39 153  down 2 8  keycode 264  end
