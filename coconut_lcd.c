@@ -247,6 +247,8 @@ void coconut_display_reset (sim_t *sim)
 void coconut_display_update (sim_t *sim)
 {
   int i;
+  int j = 0;
+
   for (i = LEFT; i >= RIGHT; i--)
     {
       int segments = 0;
@@ -265,7 +267,7 @@ void coconut_display_update (sim_t *sim)
 	  if (sim->env->lcd_ann & (1 << i))
 	    segments |= SEGMENT_ANN;
 	}
-      sim->display_segments [LEFT - i] = segments;
+      sim->display_segments [j++] = segments;
     }
 
   sim->display_update_fn (sim->display_handle, DISPLAY_DIGITS,
