@@ -75,7 +75,7 @@ void usage (FILE *f)
   fprintf (f, "Nonpareil release %s:  Microcode-level calculator simulator\n",
 	   MAKESTR(NONPAREIL_RELEASE));
   fprintf (f, "Copyright 1995, 2003, 2004 Eric L. Smith\n");
-  fprintf (f, "http://nonpareil.brouhaha.com//\n");
+  fprintf (f, "http://nonpareil.brouhaha.com/\n");
   fprintf (f, "\n");
   fprintf (f, "usage: %s [options...] kmlfile\n", progname);
   fprintf (f, "options:\n");
