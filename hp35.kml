@@ -26,7 +26,9 @@ global
 	hardware "Classic"
 	model "35"
 	rom "hp35.lst"
-	image "hp35.jpg"
+	image "hp35.png"
+	color 0 87 127 152  # background color, used when transparency is off
+	transparency 128
 end
 
 background
