@@ -1,3 +1,9 @@
+2004-04-13  Eric Smith <eric@brouhaha.com>
+
+	* csim.c display.h kml.c kml.h kmll.l kmly.y proc.c proc.h
+	proc_int.h proc_classic.c proc_woodstock.c: Major rework of
+	display code.
+
 2004-04-12  Eric Smith <eric@brouhaha.com>
 
 	* csim.c proc.h proc_int.h proc.c: Compute instruction rate from

@@ -46,24 +46,26 @@ display
 		offset 10 20
 	end
 
-	character '0' segment 'a' 'b' 'c' 'd' 'e' 'f'         end
-	character '1' segment     'b' 'c'                     end
-        character '2' segment 'a' 'b'     'd' 'e'     'g'     end
-	character '3' segment 'a' 'b' 'c' 'd'         'g'     end
-	character '4' segment     'b' 'c'         'f' 'g'     end
-	character '5' segment 'a'     'c' 'd'     'f' 'g'     end
-	character '6' segment 'a'     'c' 'd' 'e' 'f' 'g'     end
-	character '7' segment 'a' 'b' 'c'                     end
-	character '8' segment 'a' 'b' 'c' 'd' 'e' 'f' 'g'     end
-	character '9' segment 'a' 'b' 'c' 'd'     'f' 'g'     end
-	character 'r' segment                 'e'     'g'     end
-	character 'H' segment     'b' 'c'     'e' 'f' 'g'     end
-	character 'o' segment         'c' 'd' 'e'     'g'     end
-	character 'P' segment 'a' 'b'         'e' 'f' 'g'     end
-	character 'E' segment 'a'         'd' 'e' 'f' 'g'     end
-	character ' ' segment                                 end
-	character '-' segment                         'g'     end
-	character '.' segment                             'h' end
+	character 0x00 segment 'a' 'b' 'c' 'd' 'e' 'f'             end
+	character 0x01 segment     'b' 'c'                         end
+        character 0x02 segment 'a' 'b'     'd' 'e'     'g'         end
+	character 0x03 segment 'a' 'b' 'c' 'd'         'g'         end
+	character 0x04 segment     'b' 'c'         'f' 'g'         end
+	character 0x05 segment 'a'     'c' 'd'     'f' 'g'         end
+	character 0x06 segment 'a'     'c' 'd' 'e' 'f' 'g'         end
+	character 0x07 segment 'a' 'b' 'c'                         end
+	character 0x08 segment 'a' 'b' 'c' 'd' 'e' 'f' 'g'         end
+	character 0x09 segment 'a' 'b' 'c' 'd'     'f' 'g'         end
+	character 0x0a segment                 'e'     'g'         end # r
+	character 0x0b segment     'b' 'c'     'e' 'f' 'g'         end # H
+	character 0x0c segment         'c' 'd' 'e'     'g'         end # o
+	character 0x0d segment 'a' 'b'         'e' 'f' 'g'         end # p
+	character 0x0e segment 'a'         'd' 'e' 'f' 'g'         end # e
+	character 0x0f segment                                     end # space
+	character ' '  segment                                     end
+	character '-'  segment                         'g'         end
+	character '.'  segment                             'h'     end
+	character ','  segment                             'h' 'i' end
 
 	segment 'a' offset  0  0 size 6 1 end
 	segment 'b' offset  5  0 size 1 6 end
@@ -73,6 +75,7 @@ display
 	segment 'f' offset  0  0 size 1 6 end
 	segment 'g' offset  0  5 size 6 1 end
 	segment 'h' offset  9 11 size 2 2 end
+	segment 'i' offset  8 13 size 2 1 end
 end
 
 switch 0

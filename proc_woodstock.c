@@ -32,6 +32,7 @@ MA 02111, USA.
 #include "arch.h"
 #include "platform.h"
 #include "util.h"
+#include "display.h"
 #include "proc.h"
 #include "proc_int.h"
 
@@ -82,7 +83,6 @@ struct sim_env_t
   int prev_pc;  /* used to store complete five-digit octal address of instruction */
 
   int display_enable;
-  int io_count;
 
   bool key_flag;      /* true if a key is down */
   int key_buf;        /* most recently pressed key */
@@ -813,19 +813,12 @@ static void op_a_to_rom_addr (sim_t *sim, int opcode)
 static void op_display_off (sim_t *sim, int opcode)
 {
   sim->env->display_enable = 0;
-  sim->env->io_count = 2;
-  /*
-   * Don't immediately turn off display because the very next instruction
-   * might be a display_toggle to turn it on.  This happens in the HP-45
-   * stopwatch.
-   */
 }
 
 
 static void op_display_toggle (sim_t *sim, int opcode)
 {
   sim->env->display_enable = ! sim->env->display_enable;
-  sim->env->io_count = 0;  /* force immediate display update */
 }
 
 
@@ -940,94 +933,71 @@ static void woodstock_disassemble (sim_t *sim, int addr, char *buf, int len)
 }
 
 
-static char display_char [16] = "0123456789rHoPE ";
-  
-
-static void decode_woodstock_display (sim_t *sim, char *bp)
+static void woodstock_display_scan (sim_t *sim)
 {
-  int i;
-
-  for (i = WSIZE - 1; i >= 2; i--)  /* 12 digits rather than 14 */
-    {
-      if (sim->env->b [i] & 2)
-	{
-	  if ((sim->env->a [i] <= 1) || ((sim->env->a [i] & 7) == 7))
-	    *bp++ = ' ';
-	  else
-	    *bp++ = '-';
-	}
-      else
-	{
-	  *bp++ = display_char [sim->env->a [i]];
-	}
-      if (sim->env->b [i] & 1)
-	*bp++ = '.';
-      else
-	*bp++ = ' ';
-    }
-  *bp = '\0';
-}
-
-
-static void decode_spice_display (sim_t *sim, char *bp)
-{
-  int i;
-
-  if (sim->env->b [12] & 4)
-    *bp++ = '-';
-  else
-    *bp++ = ' ';
-  *bp++ = ' ';
-
-  for (i = 12; i >= 3; i--)
-    {
-      if (sim->env->b [i] == 6)
-	{
-	  if (sim->env->a [i] == 9)
-	    *bp++ = '-';
-	  else
-	    *bp++ = ' ';
-	}
-      else
-	*bp++ = display_char [sim->env->a [i]];
-      switch (sim->env->b [i] & 3)
-	{
-	case 0: *bp++ = ' '; break;
-	case 1: *bp++ = '.'; break;
-	case 2: *bp++ = ' '; break;
-	case 3: *bp++ = ','; break;
-	}
-    }
-  *bp++ = '\0';
-}
-
-
-static void woodstock_handle_io (sim_t *sim)
-{
-  char buf [(WSIZE + 1) * 2 + 1];
+  int a = sim->env->a [sim->display_scan_position];
+  int b = sim->env->b [sim->display_scan_position];
+  segment_bitmap_t segs = 0;
 
   if (sim->env->display_enable)
     {
-      switch (sim->platform)
+      if (b & 2)
 	{
-	case PLATFORM_WOODSTOCK: decode_woodstock_display (sim, buf); break;
-	case PLATFORM_SPICE:     decode_spice_display     (sim, buf); break;
-#if 0
-	case PLATFORM_TOPCAT:
-	case PLATFORM_STING:     decode_topcat_display    (sim, buf); break;
-#endif
-	default: fatal (2, "Woodstock arch doesn't know how to handle display for platform %s\n", platform_name [sim->platform]);
+	  if ((a >= 2) && ((a & 7) != 7))
+	    segs = sim->char_gen ['-'];
 	}
+      else
+	segs = sim->char_gen [a];
+      if (b & 1)
+	segs |= sim->char_gen ['.'];
     }
-  else
+
+  sim->display_segments [sim->display_digit_position++] = segs;
+
+  sim->display_scan_position--;
+
+  if (sim->display_scan_position < sim->right_scan)
     {
-      memset (buf, ' ', (WSIZE + 1) * 2);
-      buf [(WSIZE + 1) * 2] = '\0';
+      while (sim->display_digit_position < MAX_DIGIT_POSITION)
+	sim->display_segments [sim->display_digit_position++] = 0;
+      sim->display_digit_position = 0;
+      sim->display_scan_position = sim->left_scan;
     }
-  if (strcmp (buf, sim->prev_display) != 0)
+}
+
+
+static void spice_display_scan (sim_t *sim)
+{
+  int a = sim->env->a [sim->display_scan_position];
+  int b = sim->env->b [sim->display_scan_position];
+  segment_bitmap_t segs = 0;
+
+  if (! sim->display_digit_position)
+    sim->display_segments [sim->display_digit_position++] = 0;  /* make room for sign */
+
+  if (sim->env->display_enable)
     {
-      sim->display_update (buf);
-      strncpy (sim->prev_display, buf, sizeof (buf));
+      if ((sim->display_scan_position == sim->left_scan) && (b & 4))
+	sim->display_segments [0] = sim->char_gen ['-'];
+      if (b == 6)
+	{
+	  if (a == 9)
+	    segs = sim->char_gen ['-'];
+	}
+      else
+	segs = sim->char_gen [a];
+      if (b & 1)
+	segs |= sim->char_gen [(b & 2) ? ',' : '.'];
+    }
+
+  sim->display_segments [sim->display_digit_position++] = segs;
+
+  if ((--sim->display_scan_position) < sim->right_scan)
+    {
+      while (sim->display_digit_position < MAX_DIGIT_POSITION)
+	sim->display_segments [sim->display_digit_position++] = 0;
+      sim->display_digit_position = 0;
+      sim->display_scan_position = sim->left_scan;
     }
 }
 
@@ -1117,7 +1087,10 @@ void woodstock_execute_instruction (sim_t *sim)
 
   sim->cycle_count++;
 
-  woodstock_handle_io (sim);
+  sim->display_scan_fn (sim);
+
+  sim->display_update_fn (sim->display_handle, MAX_DIGIT_POSITION,
+			  sim->display_segments);
 }
 
 
@@ -1285,6 +1258,8 @@ static void woodstock_reset_processor (sim_t *sim)
   sim->env->p = 0;
 
   sim->env->display_enable = 0;
+  sim->display_digit_position = 0;
+  sim->display_scan_position = WSIZE - 1;
 
   sim->env->key_buf = -1;  /* no key has been pressed */
   sim->env->key_flag = 0;
@@ -1297,6 +1272,25 @@ static void woodstock_new_processor (sim_t *sim, int ram_size)
 {
   sim->env = alloc (sizeof (sim_env_t) + ram_size * sizeof (reg_t));
   sim->env->max_ram = ram_size;
+
+  switch (sim->platform)
+    {
+    case PLATFORM_WOODSTOCK:
+      sim->display_scan_fn = woodstock_display_scan;
+      sim->left_scan = WSIZE - 1;
+      sim->right_scan = 2;
+      break;
+    case PLATFORM_SPICE:
+      sim->display_scan_fn = spice_display_scan;
+      sim->left_scan = WSIZE - 2;
+      sim->right_scan = 3;
+      break;
+    default:
+      fatal (2, "Woodstock arch doesn't know how to handle display for platform %s\n", platform_name [sim->platform]);
+    }
+
+  sim->display_scan_position = sim->left_scan;
+  sim->display_digit_position = 0;
 
   init_ops (sim);
 }

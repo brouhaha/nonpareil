@@ -50,7 +50,9 @@ sim_t *sim_init  (int platform,
 		  int arch,
 		  int clock_frequency,  /* Hz */
 		  int ram_size,
-		  void (*display_update_fn)(char *buf));
+		  segment_bitmap_t *char_gen,
+		  display_handle_t *display_handle,
+		  display_update_fn_t *display_update_fn);
 
 /* kill the sim thread */
 void sim_quit  (sim_t *sim);

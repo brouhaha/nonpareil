@@ -104,7 +104,17 @@ struct sim_t
   sim_env_t *env;		/* architecture-unique */
   uint64_t cycle_count;
 
-  void (*display_update)(char *buf);
+  segment_bitmap_t *char_gen;
+  display_handle_t *display_handle;
+  display_update_fn_t *display_update_fn;
+
+  int left_scan;
+  int right_scan;
+  int display_scan_position;   /* word index, left_scan down to right_scan */
+  int display_digit_position;  /* character index, 0 to MAX_DIGIT_POSITION-1 */
+  segment_bitmap_t display_segments [MAX_DIGIT_POSITION];
+
+  void (* display_scan_fn) (sim_t *sim);
 
   rom_word_t *ucode;
   bool       *breakpoint;

@@ -31,6 +31,7 @@ MA 02111, USA.
 
 #include "arch.h"
 #include "util.h"
+#include "display.h"
 #include "proc.h"
 #include "proc_int.h"
 
@@ -72,7 +73,6 @@ struct sim_env_t
   int prev_pc;  /* used to store complete five-digit octal address of instruction */
 
   int display_enable;
-  int io_count;
 
   bool key_flag;      /* true if a key is down */
   int key_buf;        /* most recently pressed key */
@@ -609,19 +609,12 @@ static void op_rom_addr_to_buf (sim_t *sim, int opcode)
 static void op_display_off (sim_t *sim, int opcode)
 {
   sim->env->display_enable = 0;
-  sim->env->io_count = 2;
-  /*
-   * Don't immediately turn off display because the very next instruction
-   * might be a display_toggle to turn it on.  This happens in the HP-45
-   * stopwatch.
-   */
 }
 
 
 static void op_display_toggle (sim_t *sim, int opcode)
 {
   sim->env->display_enable = ! sim->env->display_enable;
-  sim->env->io_count = 0;  /* force immediate display update */
 }
 
 
@@ -731,42 +724,42 @@ static void classic_disassemble (sim_t *sim, int addr, char *buf, int len)
 }
 
 
-static void classic_handle_io (sim_t *sim)
+static void classic_display_scan (sim_t *sim)
 {
-  char buf [(WSIZE + 1) * 2 + 1];
-  char *bp;
-  int i;
+  int a = sim->env->a [sim->display_scan_position];
+  int b = sim->env->b [sim->display_scan_position];
 
-  bp = & buf [0];
-  if (sim->env->display_enable)
+  if (sim->display_digit_position < MAX_DIGIT_POSITION)
     {
-      for (i = WSIZE - 1; i >= 0; i--)
+      sim->display_segments [sim->display_digit_position] = 0;  /* blank */
+
+      if (sim->env->display_enable && (b <= 7))
 	{
-	  if (sim->env->b [i] >= 8)
-	    *bp++ = ' ';
-	  else if ((i == 2) || (i == 13))
+	  if ((sim->display_scan_position == 2) ||
+	      (sim->display_scan_position == 13))
 	    {
-	      if (sim->env->a [i] >= 8)
-		*bp++ = '-';
-	      else
-		*bp++ = ' ';
+	      if (a >= 8)
+		sim->display_segments [sim->display_digit_position] = sim->char_gen ['-'];
 	    }
 	  else
-	    *bp++ = '0' + sim->env->a [i];
-	  *bp++ = ' ';  /* no decimal in same digit */
-
-	  if (sim->env->b [i] == 2)
+	    sim->display_segments [sim->display_digit_position] = sim->char_gen ['0' + a];
+      
+	  if (b == 2)
 	    {
-	      *bp++ = '.';  /* decimal gets its own digit position */
-	      *bp++ = ' ';
+	      if ((++sim->display_digit_position) < MAX_DIGIT_POSITION)
+		sim->display_segments [sim->display_digit_position] = sim->char_gen ['.'];
 	    }
 	}
     }
-  *bp = '\0';
-  if (strcmp (buf, sim->prev_display) != 0)
+
+  sim->display_digit_position++;
+
+  if ((--sim->display_scan_position) < sim->right_scan)
     {
-      sim->display_update (buf);
-      strncpy (sim->prev_display, buf, sizeof (buf));
+      while (sim->display_digit_position < MAX_DIGIT_POSITION)
+	sim->display_segments [sim->display_digit_position++] = 0;
+      sim->display_digit_position = 0;
+      sim->display_scan_position = sim->left_scan;
     }
 }
 
@@ -833,7 +826,10 @@ void classic_execute_instruction (sim_t *sim)
   (* sim->op_fcn [opcode]) (sim, opcode);
   sim->cycle_count++;
 
-  classic_handle_io (sim);
+  sim->display_scan_fn (sim);
+
+  sim->display_update_fn (sim->display_handle, MAX_DIGIT_POSITION,
+			  sim->display_segments);
 }
 
 
@@ -978,6 +974,9 @@ void classic_reset_processor (sim_t *sim)
   sim->env->p = 0;
 
   sim->env->display_enable = 0;
+  sim->display_digit_position = 0;
+  sim->display_scan_position = sim->left_scan;
+
   sim->env->key_flag = 0;
 }
 
@@ -1027,6 +1026,10 @@ static void classic_new_processor (sim_t *sim, int ram_size)
 {
   sim->env = alloc (sizeof (sim_env_t) + ram_size * sizeof (reg_t));
   sim->env->max_ram = ram_size;
+
+  sim->display_scan_fn = classic_display_scan;
+  sim->left_scan = WSIZE - 1;
+  sim->right_scan = 0;
 
   init_ops (sim);
 }

@@ -30,6 +30,7 @@ MA 02111, USA.
 #include <gtk/gtk.h>
 
 #include "util.h"
+#include "display.h"
 #include "proc.h"
 #include "kml.h"
 #include "arch.h"
@@ -58,9 +59,7 @@ GtkWidget *main_window;
 GtkWidget *menubar;  /* actually a popup menu in transparency/shape mode */
 
 
-char display_digit [KML_MAX_DIGITS];
-int display_radix_mark [KML_MAX_DIGITS];
-
+static segment_bitmap_t display_segments [KML_MAX_DIGITS];
 
 GtkWidget *display;
 
@@ -84,12 +83,12 @@ void usage (FILE *f)
 }
 
 
-void draw_digit (GtkWidget *widget, gint x, gint y, int val)
+void draw_digit (GtkWidget *widget, gint x, gint y, segment_bitmap_t segments)
 {
   int i;
 
   for (i = 0; i < KML_MAX_SEGMENT; i++)
-    if (kml->character_segment_map [val] & (1 << i))
+    if (segments & (1 << i))
       gdk_draw_rectangle (widget->window,
 			  display->style->fg_gc [GTK_WIDGET_STATE (widget)],
 			  TRUE,
@@ -118,10 +117,7 @@ gboolean display_expose_event_callback (GtkWidget *widget,
   x = kml->digit_offset.x;
   for (i = 0; i < kml->display_digits; i++)
     {
-      draw_digit (widget, x, kml->digit_offset.y, display_digit [i]);
-      if (display_radix_mark [i])
-	draw_digit (widget, x, kml->digit_offset.y, '.');
-		       
+      draw_digit (widget, x, kml->digit_offset.y, display_segments [i]);
       x += kml->digit_size.width;
     }
 
@@ -129,33 +125,29 @@ gboolean display_expose_event_callback (GtkWidget *widget,
 }
 
 
-static void display_update (char *buf)
+static void display_update (display_handle_t *display_handle,
+			    int digit_count,
+			    segment_bitmap_t *segments)
 {
   int i;
-  int l;
   GdkRectangle rect = { 0, 0, 0, 0 };
+  bool changed = 0;
 
-#ifdef DISPLAY_DEBUG
-  printf ("%s\n", buf);
-#endif
-
-  l = strlen (buf);
-
-  for (i = 0; i < kml->display_digits; i++)
+  for (i = 0; i < digit_count; i++)
     {
-      if ((2 * i) >= l)
-	{
-	  display_digit [i] = ' ';
-	  display_radix_mark [i] = 0;
-	  continue;
-	}
-      display_digit [i] = buf [2 * i];
-      display_radix_mark [i] = (buf [2 * i + 1] == '.');
+      if (segments [i] != display_segments [i])
+	changed = 1;
     }
+
+  if (! changed)
+    return;
+
+  memcpy (display_segments, segments,
+	  digit_count * sizeof (segment_bitmap_t));
 
   rect.width = display->allocation.width;
   rect.height = display->allocation.height;
-    
+
   /* invalidate the entire drawing area */
   gdk_window_invalidate_rect (display->window,
 			      & rect,
@@ -711,6 +703,8 @@ int main (int argc, char *argv[])
   GdkColor image_bg_color;
 
   char buf [PATH_MAX];
+
+  void *display_handle = NULL;
  
   progname = newstr (argv [0]);
 
@@ -776,6 +770,8 @@ int main (int argc, char *argv[])
 		  model_info->cpu_arch,
 		  model_info->clock_frequency,
 		  model_info->ram_size,
+		  kml->character_segment_map,
+		  display_handle,
 		  & display_update);
 
   file_pixbuf = gdk_pixbuf_new_from_file (kml->image, & error);

@@ -20,9 +20,11 @@ MA 02111, USA.
 */
 
 %{
+#include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
 
+#include "display.h"
 #include "kml.h"
 #include "kmly.tab.h"
 

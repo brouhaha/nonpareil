@@ -41,31 +41,12 @@ void range_check_char (int val, int min, int max);
 #define KML_MAX_GLOBAL_COLOR 2
 #define KML_MAX_DISPLAY_COLOR 16
 
-/* 
- * For seven-segment displays, by convention the segments are labelled 'a'
- * through 'g'.  We designate the '.' and ',' as 'h' and 'i', respectively.
- *
- *     aaa
- *    f   b
- *    f   b
- *    f   b
- *     ggg
- *    e   c
- *    e   c
- *    e   c  hh
- *     ddd   hh
- *          ii
- *         ii
- *
- * Not all calculators have the comma.  Some calculators, particularly the
- * classic series, put the '.' inside the seven segments, and dedicate a
- * full digit position to the radix mark.
- */
-
 #define KML_MAX_DIGITS 15
 
+/* For details of display segments, see the comments at the bottom of
+ * the header file display.h.  */
 #define KML_FIRST_SEGMENT 'a'
-#define KML_MAX_SEGMENT 9
+#define KML_MAX_SEGMENT 17
 
 #define KML_MAX_CHARACTER 256
 #define KML_MAX_ANNUNCIATOR 16
@@ -202,7 +183,7 @@ typedef struct
   kml_size_t digit_size;
   kml_offset_t digit_offset;
 
-  int character_segment_map [KML_MAX_CHARACTER];
+  segment_bitmap_t character_segment_map [KML_MAX_CHARACTER];
   kml_segment_t *segment [KML_MAX_SEGMENT];
 
   int display_zoom;

@@ -20,9 +20,11 @@ MA 02111, USA.
 */
 
 %{
+#include <stdint.h>
 #include <stdio.h>
 
 #include "util.h"
+#include "display.h"
 #include "kml.h"
 
 /* parser temporaries */
@@ -60,6 +62,7 @@ int kml_cur_idx2;
 %type <cmdlist> resetflag_command menuitem_command ifflag_command
 %type <cmdlist> ifpressed_command
 
+%type <integer> char_id
 %type <integer> segment_list
 
 %%
@@ -228,7 +231,11 @@ digit_param		:	size_stmt { yy_kml->digit_size.width = $1.a;
 					      yy_kml->digit_offset.y = $1.b; }
 			;
 
-character_stmt		:	CHARACTER CHAR SEGMENT segment_list END { yy_kml->character_segment_map [$2] = $4; } ;
+character_stmt		:	CHARACTER char_id SEGMENT segment_list END { yy_kml->character_segment_map [$2] = $4; } ;
+
+char_id			:	CHAR { $$ = $1 }
+			|	INTEGER { $$ = $1; }
+			;
 
 segment_list		:	{ $$ = 0; }
 			|	CHAR segment_list { range_check_char ($1, KML_FIRST_SEGMENT, KML_FIRST_SEGMENT + KML_MAX_SEGMENT - 1);

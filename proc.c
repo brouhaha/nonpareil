@@ -29,6 +29,7 @@ MA 02111, USA.
 
 #include "arch.h"
 #include "util.h"
+#include "display.h"
 #include "proc.h"
 #include "proc_int.h"
 
@@ -234,11 +235,13 @@ gpointer sim_thread_func (gpointer data)
 
 /* The following functions can be called from the main thread: */
 
-sim_t *sim_init (int platform,
-		 int arch,
-		 int clock_frequency,  /* Hz */
-		 int ram_size,
-		 void (*display_update_fn)(char *buf))
+sim_t *sim_init  (int platform,
+		  int arch,
+		  int clock_frequency,  /* Hz */
+		  int ram_size,
+		  segment_bitmap_t *char_gen,
+		  display_handle_t *display_handle,
+		  display_update_fn_t *display_update_fn)
 {
   sim_t *sim;
   arch_info_t *arch_info;
@@ -269,7 +272,9 @@ sim_t *sim_init (int platform,
 
   allocate_ucode (sim);
 
-  sim->display_update = display_update_fn;
+  sim->char_gen = char_gen;
+  sim->display_handle = display_handle;
+  sim->display_update_fn = display_update_fn;
 
   sim->state = SIM_IDLE;
 

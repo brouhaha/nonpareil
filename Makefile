@@ -79,7 +79,7 @@ ALL_CALCS = $(SRC_CALCS) $(OBJ_CALCS)
 
 TARGETS = nonpareil uasm
 
-HDRS = asm.h symtab.h util.h proc.h proc_int.h kml.h debugger.h \
+HDRS = asm.h symtab.h util.h proc.h proc_int.h kml.h debugger.h display.h \
 	arch.h platform.h model.h
 CSRCS = asm.c symtab.c csim.c util.c proc.c kml.c debugger.c \
 	arch.c platform.c model.c \
