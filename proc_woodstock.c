@@ -710,7 +710,10 @@ static void op_load_constant (sim_t *sim, int opcode)
     }
   else
     sim->env->c [sim->env->p] = opcode >> 6;
-  sim->env->p = (sim->env->p - 1) & 0xf;
+  if (sim->env->p)
+    sim->env->p--;
+  else
+    sim->env->p = WSIZE - 1;
 }
 
 
