@@ -10,7 +10,9 @@ Build process:
 
 User interface:
 
-  Transparency/shape:  add support for moving window.
+  Transparency/shape: improve support for moving window: add KML
+  syntax to specify keyboard rectangle, and use only region outside
+  rectangle for dragging.
 
   Transparency/shape:  pop-up menu.
 
@@ -22,7 +24,7 @@ User interface:
       File - Open, Save, save As
       Edit - Copy, Paste
 
-  Make button hilighting look better.
+  Make button highlighting look better.
 
   Make slide switches look better.
 

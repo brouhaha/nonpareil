@@ -1,3 +1,9 @@
+2004-02-13  Eric Smith <eric@brouhaha.com>
+
+	* csim.c (main, on_move_window): When there are no window
+	decorations (using transparency/shape support), allow window to be
+	dragged by mouse down anywhere other than active keys.
+
 2004-02-06  Eric Smith <eric@brouhaha.com>
 	* kml.h kmll.l kmly.y: Added kml include file support.
 

@@ -583,6 +583,23 @@ model_info_t *get_model_info (char *model)
 }
 
 
+gboolean on_move_window (GtkWidget *widget, GdkEventButton *event)
+{
+  if (event->type == GDK_BUTTON_PRESS)
+    {
+      if (event->button == 1)
+	{
+	  gtk_window_begin_move_drag (GTK_WINDOW (main_window),
+				      event->button,
+				      event->x_root,
+				      event->y_root,
+				      event->time);
+	}
+    }
+  return (FALSE);
+}
+
+
 #ifndef PATH_MAX
 #define PATH_MAX 256
 #endif
@@ -596,6 +613,8 @@ int main (int argc, char *argv[])
   model_info_t *model_info;
 
   int image_width, image_height;
+
+  GtkWidget *event_box;
 
   GtkWidget *vbox;
   GtkWidget *menubar;
@@ -700,10 +719,16 @@ int main (int argc, char *argv[])
 			kml->title ? kml->title : "CASMSIM");
 
   vbox = gtk_vbox_new (FALSE, 1);
-  gtk_container_add (GTK_CONTAINER (main_window), vbox);
 
-  if (! image_mask_bitmap)
+  if (image_mask_bitmap)
     {
+      event_box = gtk_event_box_new ();
+      gtk_container_add (GTK_CONTAINER (event_box), vbox);
+      gtk_container_add (GTK_CONTAINER (main_window), event_box);
+    }
+  else
+    {
+      gtk_container_add (GTK_CONTAINER (main_window), vbox);
       menubar = get_menubar_menu (main_window);
       gtk_box_pack_start (GTK_BOX (vbox), menubar, FALSE, TRUE, 0);
     }
@@ -761,6 +786,11 @@ int main (int argc, char *argv[])
   g_signal_connect (G_OBJECT (display),
 		    "expose_event",
 		    G_CALLBACK (display_expose_event_callback),
+		    NULL);
+
+  g_signal_connect (G_OBJECT (event_box),
+		    "button_press_event",
+		    G_CALLBACK (on_move_window),
 		    NULL);
 
   gtk_signal_connect (GTK_OBJECT (main_window),
