@@ -42,7 +42,7 @@ LOADLIBES = `pkg-config $(PACKAGES) --libs`
 # -----------------------------------------------------------------------------
 
 PACKAGE = casmsim
-RELEASE = 0.19
+RELEASE = 0.20
 DISTNAME = $(PACKAGE)-$(RELEASE)
 
 CALCS = hp35 hp45 hp55 hp80
