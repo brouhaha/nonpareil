@@ -2,7 +2,11 @@
 ; Copyright 2004 Eric L. Smith <eric@brouhaha.com>
 ; $Id$
 ; Keyed in by Eric Smith on 18-Jan-2004 - any errors are probably mine.
-; May not match released code in actual HP-65 calculators.
+
+; The code from the patent may not match released code in actual HP-65
+; calculators.  It does however match the normalization code listed in
+; Figure 5 of the article "Programming the Personal COmputer" in the
+; May 1974 issue of the Hewlett-Packard Journal.
 
 ; HP-65 ROM 00
 

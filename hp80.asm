@@ -2,10 +2,13 @@
 ; Copyright 2004 Eric L. Smith <eric@brouhaha.com>
 ; $Id$
 ; Keyed in by Eric Smith on 15-Jan-2004 - any errors are probably mine.
-; May not match released code in actual HP-80 calculators.
-;
-; Has not yet been checked.  Especially need to go over the Certificate
-; of Correction to the patent.
+
+; The code from the patent may not match released code in actual HP-80
+; calculators.  It does not match the interest rate calculation code
+; listed in Figure 3 of the article "A Pocket-Sized Answer Machine for
+; Business and Finance" in the May 1973 issue of the Hewlett-Packard
+; Journal.  The patent application was filed on October 7, 1972, so
+; the code in the Journal code might be more recent.
 
 	.rom @00
 
@@ -22,7 +25,7 @@ ms1:	down rotate
 ytx:	select rom 1
 stor1:	go to stor2
 rdown1:	down rotate
-	go to owfl3	; $$$ target L0017 in listing wrong, actual L0117?
+	go to owfl3
 xey:	stack -> a
 	go to xey1
 	no operation
@@ -76,7 +79,7 @@ enter1:	c -> stack
 	0 -> s10
 	0 -> s7
 stor3:	0 -> s4
-	go to owfl1	; $$$ target addr missing in listing
+	go to owfl1
 clr2:	if s7 # 1
 	     then go to clr3
 	if s4 # 1
@@ -138,10 +141,10 @@ scint9:	a -> b[x]
 	go to scint4
 msk1:	jsb sround
 	0 -> a[x]
-	a + 1 -> a[x]	; $$$ extra "0" before a[x] in listing
+	a + 1 -> a[x]
 	shift left a[x]
 	a exchange b[w]
-	if a >= b[x]	; $$$ was '<=' in listing
+	if a >= b[x]
 	     then go to scint9
 	a -> b[x]
 msk11:	a - 1 -> a[x]
@@ -251,7 +254,7 @@ dent3:	0 -> c[w]
 	b exchange c[x]
 	go to dent12
 scint5:	if a[p] >= 1
-	     then go to scint6	; $$$ source ahd label l0363, prob. bogus?
+	     then go to scint6
 	c - 1 -> c[p]
 	p + 1 -> p
 	go to scint7
@@ -437,7 +440,7 @@ msi1:	down rotate
 	0 -> s7
 	jsb rot1
 	c -> stack
-	go to smul11	; $$$ was smull11 in listing
+	go to smul11
 mskr0:	0 -> s6
 	select rom 0
 sum14:	0 - c - 1 -> c[s]
@@ -496,7 +499,7 @@ rot1:	b exchange c[w]
 rtn16:	display off
 	go to rtn9
 rtn8:	if s4 # 1
-	     then go to retr4	; $$$ most of line missing in listing
+	     then go to retr4
 retr3:	select rom 3
 div:	a exchange c[ms]
 	go to div12
@@ -525,7 +528,7 @@ add5:	if a >= c[x]
 sqr:	if c[m] >= 1
 	     then go to sqr1
 	return
-	no operation		; $$$ line missing in listing
+	no operation
 
 	.symtab
 
@@ -974,7 +977,7 @@ fvr44:	down rotate
 	if a[xs] >= 1
 	     then go to fvr46
 	go to fvr44
-fvr9:	jsb mpy		; $$$ was fvr49 in listing
+fvr9:	jsb mpy
 	jsb s12
 	c + 1 -> c[x]
 	1 -> s11
@@ -994,7 +997,7 @@ fvr1:	stack -> a
 	c + 1 -> c[x]
 	c + 1 -> c[x]
 	jsb r13
-pmt42:	if s11 # 1	; $$$ was pnt42 in listing
+pmt42:	if s11 # 1
 	     then go to pv46
 fv46:	if s10 # 1
 	     then go to pv49
@@ -1038,7 +1041,7 @@ ten6:	m -> c
 	return
 selr4:	select rom 4
 n41:	jsb div
-	jsb r100	; $$$ was r1000 in listing
+	jsb r100
 	jsb add
 	down rotate
 	stack -> a
@@ -1308,7 +1311,7 @@ dnote1:	0 -> s4
 	stack -> a
 	down rotate
 	c exchange m
-	go to dnote3	; $$$ was dnote in listing
+	go to dnote3
 
 	.symtab
 
@@ -1791,7 +1794,7 @@ dn14:	a + b -> a[m]
 	shift left a[m]
 	a + 1 -> a[m]
 	a exchange b[x]
-	0 -> c[w]	; $$$ arrow missing in listing
+	0 -> c[w]
 	c - 1 -> c[xs]
 	a + c -> a[w]
 	a exchange b[w]
@@ -1814,7 +1817,7 @@ da5:	0 -> s4
 da12:	c - 1 -> c[x]
 	if no carry go to da2
 	shift right c[m]
-	0 -> c[x]	; $$$ field selector missing in listing
+	0 -> c[x]
 da2:	if c[x] >= 1
 	     then go to err71
 	0 -> b[w]
