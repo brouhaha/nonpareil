@@ -1,3 +1,8 @@
+2004-04-30  Eric Smith <eric@brouhaha.com>
+
+	* proc_woodstock.c (woodstock_reset_processor): Only set external
+	flag 5 (battery OK) on Woodstock series.
+
 2004-04-29  Eric Smith <eric@brouhaha.com>
 
 	* csim.c: Add --shape option and SHAPE_DEFAULT define.

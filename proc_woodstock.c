@@ -1284,7 +1284,8 @@ static void woodstock_reset_processor (sim_t *sim)
   sim->env->key_buf = -1;  /* no key has been pressed */
   sim->env->key_flag = 0;
 
-  sim->env->ext_flag [5] = 1;  /* force battery ok */
+  if (sim->platform == PLATFORM_WOODSTOCK)
+    sim->env->ext_flag [5] = 1;  /* force battery ok */
 }
 
 
