@@ -420,15 +420,23 @@ static void op_decimal (sim_t *sim, int opcode)
 }
 
 
+/* $$$ woodstock doc says when increment or decrement P wraps,
+ * P "disappears for one word time". */
+
 static void op_dec_p (sim_t *sim, int opcode)
 {
-  sim->env->p = (sim->env->p - 1) & 0xf;
+  if (sim->env->p)
+    sim->env->p--;
+  else
+    sim->env->p = WSIZE - 1;
 }
 
 
 static void op_inc_p (sim_t *sim, int opcode)
 {
-  sim->env->p = (sim->env->p + 1) & 0xf;
+  sim->env->p = sim->env->p++;
+  if (sim->env->p >= WSIZE)
+    sim->env->p = 0;
 }
 
 

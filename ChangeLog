@@ -1,5 +1,11 @@
 2004-04-10  Eric Smith <eric@brouhaha.com>
 
+	* proc_woodstock.c (op_dec_p, op_inc_p): Increment and decrement P
+	instructions wrap at word size, rather than setting P to an
+	invalid position.
+
+2004-04-10  Eric Smith <eric@brouhaha.com>
+
 	* proc_woodstock.c (woodstock_handle_io): If the display is
 	disabled, fill the string with spaces.
 	
