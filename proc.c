@@ -720,7 +720,7 @@ static void op_keys_to_rom_addr (sim_t *sim, int opcode)
 static void op_a_to_rom_addr (sim_t *sim, int opcode)
 {
   sim->env.pc = sim->env.pc & ~0377;
-  sim->env.pc += ((sim->env.a [1] << 4) + sim->env.a [0]);
+  sim->env.pc += ((sim->env.a [2] << 4) + sim->env.a [1]);
 }
 
 
