@@ -26,7 +26,7 @@ MA 02111, USA.
 #include <stdbool.h>
 #include <string.h>
 
-#include "asmy.tab.h"
+#include "asmy.h"
 #include "util.h"
 #include "symtab.h"
 #include "arch.h"

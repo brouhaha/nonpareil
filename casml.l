@@ -25,7 +25,7 @@ MA 02111, USA.
 %{
 #include <string.h>
 
-#include "casmy.tab.h"
+#include "casmy.h"
 #include "util.h"
 #include "symtab.h"
 #include "arch.h"

@@ -26,7 +26,7 @@ MA 02111, USA.
 
 #include "display.h"
 #include "kml.h"
-#include "kmly.tab.h"
+#include "kmly.h"
 
 #include "util.h"
 
