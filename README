@@ -1,11 +1,13 @@
 CASMSIM - an HP Classic series calculator micro assembler and simulator
 Copyright 1995 Eric L. Smith (eric@telebit.com)
-Last revised March 9, 1995
+Last revised March 10, 1995
 
 CASMSIM consists of the CASM assembler and the CSIM simulator.  It's just a
 quick hack, so don't expect too much.
 
 -----------------------------------------------------------------------------
+
+Notices
 
 CASMSIM is free software; you can redistribute it and/or modify it under the
 terms of the GNU General Public License version 2 as published by the Free
@@ -32,6 +34,15 @@ Public License.
 -----------------------------------------------------------------------------
 
 Background
+
+The HP-35, the first of HP's classic series of handheld calculators, was
+introduced in 1972 and described as the "Electronic Slide Rule".  The HP-35
+was a non-programmable scientific, and was followed by the HP-45 improved
+scientific calculator, the HP-65 scientific programmable with card reader, the
+HP-55 scientific programmable with stopwatch, and the HP-70 and HP-80 business
+calculators.  All of these calculators used essentially the same processor,
+which was also used in the HP 3380 Integrator, the HP 5830 and HP 5840 Gas
+Chromatographs, and the HP 1722 Oscilliscope.
 
 In the HP classic series processor, unlike modern microprocessors, various
 instructions were interpreted by various chips.  The core processor consists
@@ -65,6 +76,8 @@ contain source listings of ROMs of other HP calculators:
 
 -----------------------------------------------------------------------------
 
+CASM
+
 I used flex and bison to build CASM.  It should be possible to use yacc
 instead of bison, but I don't think lex will work without some change the
 input function.
@@ -90,10 +103,10 @@ code to "go_".
 CASM does a better job of displaying the branch target addresses than the HP
 assembler did.  It will actually show the correct target address based on the
 delayed select instructions, unless the delay instruction is in the last word
-of a page.  CASM has a ".rom" directive which can be used to 
-be used to provide the rom number.  This is vaguely similar to the origin
-directive in a typical assembler, except that CASM always start assembling
-code at location 0 of the selected ROM.
+of a page.  CASM has a ".rom" directive which can be used to provide the rom
+number.  This is roughly equivalent to the origin directive in a typical
+assembler, except that CASM always start assembling code at location 0 of the
+selected ROM.
 
 CASM has a .symtab directive which causes the symbol table to be printed to
 the listing file.  If the source file contains multiple ROMs, each ROM should
@@ -109,8 +122,6 @@ With some additional work it should eventually be able to simulate the HP-65.
 
 Since CSIM simulates the actual hardware, it is of little use unless you have
 an image of the ROM code from the calculator.  You can use my csim 
-
-CSIM is just a quick weekend hack, so don't expect too much.
 
 CSIM uses a single command line argument to specify the object code file.  If
 no argument is found, CSIM will try to find a file using the concatentation
