@@ -840,7 +840,7 @@ static bool classic_parse_object_line (char *buf, int *bank, int *addr,
   int a, o;
 
   if (buf [0] == '#')  /* comment? */
-    return (true);
+    return (false);
 
   if (strlen (buf) != 9)
     return (false);
