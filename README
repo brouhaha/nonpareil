@@ -1,6 +1,6 @@
 CASMSIM - an HP Classic series calculator micro assembler and simulator
 Copyright 1995 Eric L. Smith (eric@telebit.com)
-Last revised March 10, 1995
+Last revised March 13, 1995
 
 CASMSIM consists of the CASM assembler and the CSIM simulator.  It's just a
 quick hack, so don't expect too much.
@@ -120,11 +120,37 @@ CSIM is a simulator for the hardware of the HP Classic series of calculators.
 It should be capable of simulating the HP-35, HP-45, HP-55, HP-70, and HP-80.
 With some additional work it should eventually be able to simulate the HP-65.
 
-Since CSIM simulates the actual hardware, it is of little use unless you have
-an image of the ROM code from the calculator.  You can use my csim 
+CSIM currently uses the X window system, although by replacing the file xio.c
+with an alternate file that implements the three functions whose prototypes
+are in xio.h, it should be possible to make it work with any reasonable
+input and output devices.  The X interface currently only supports the HP-45
+keyboard legends.
 
-CSIM uses a single command line argument to specify the object code file.  If
-no argument is found, CSIM will try to find a file using the concatentation
-of the name under which it was invoked and "obj".  This allows you to (for
+Since CSIM simulates the actual hardware, it is of little use unless you have
+an image of the ROM code from the calculator.
+
+CSIM uses a single command line argument to specify the assembly listing file.
+If no argument is found, CSIM will try to find a file using the concatentation
+of the name under which it was invoked and "lst".  This allows you to (for
 instance) link CSIM to "hp45" and have it automatically try to load and run
-"hp45.obj".
+"hp45.lst".
+
+At this point CSIM just barely parially works with the HP-45 ROM image; it
+doesn't work with the HP-55 image at all.  I don't know how much of this is
+due to errors in CSIM versus errors in my typing of the assembly sources.  In
+this release CSIM should be viewed as a snapshot of a work in progress.  No
+effort has been made to do any performance optimization.  For instance, the
+display is updated and keyboard events are polled after every instruction
+cycle.  At this point I'm more concerned with improving the accuracy of the
+simulation.  Currently the following functions of the HP-45 are known NOT to
+work on CSIM:
+
+    digit entry
+    exponent entry
+    trig functions (including polar conversions)
+    factorial
+    pi
+
+Most everything else works, although obviously without digit entry it is
+pretty useless.
+
