@@ -1,15 +1,36 @@
 TODO list for CASMSIM
-Eric L. Smith
+Copyright 1995, 2003, 2004 Eric L. Smith <eric@brouhaha.com>
 $Id$
 
+Add menus:
+    File - Open, Save, Quit
+    Edit - Copy, Paste
+    Help - Contents, About
+
+Keyboard events, at least for numeric entry, basic four functions, and enter.
+
+Copy and paste.
+
+Add a debugger.
+
+Calculator model selection at runtime.
+
+Split ALU functions into separate source file.
+
+Create a CPU class, with subclasses for classic, woodstock,
+spice/spike, and nut/voyager.
+
+Port to Windows
+Port to MacOS X
+
 Dump actual HP-45 and HP-55 ROMs and compare to CASM output
+Dump HP-65, HP-70, HP-80 ROMs
 
 Key in partial HP-65 source code from patent
-Dump HP-65 ROMs
-Implement HP-65 keyboard legends
-
 Key in HP-80 source code from patent
-Implement HP-80 keyboard legends
+
+Implement HP-65, HP-70, HP-80 keyboard legends
+
 
 Make RAM addressing work correctly for HP-45 and HP-65 (only one digit of
 address)
@@ -17,26 +38,3 @@ address)
 Clean up memory usage of symbols in CASM
 
 Implement symbol cross-reference in CASM
-
-Implement keyboard control
-
-Implement debugging in CSIM
-	signal handler
-	commands:
-		step
-		continue
-		break
-		quit
-		print
-
-Pretty up the display
-	Implement seven-segment LED font
-	make display font selection a command-line option
-	come up with bitmaps or font for key legends
-
-Use X resources and create file "csim.ad"
-
-Port to Windows and/or Macintosh
-
-Implement HP-70 keyboard legends
-

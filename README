@@ -1,71 +1,65 @@
 CASMSIM - an HP Classic series calculator micro assembler and simulator
-Copyright 1995, 2003 Eric L. Smith (eric@brouhaha.com)
-$Id: README,v 1.24 2003/05/30 23:38:12 eric Exp $
+Copyright 1995, 2003, 2004 Eric L. Smith <eric@brouhaha.com>
+$Id$
 
-CASMSIM consists of the CASM assembler and the CSIM simulator.  It's just a
-quick hack, so don't expect too much.  In particular it really needs an
-Imakefile.
+CASMSIM consists of the CASM assembler and the CSIM simulator.
 
 -----------------------------------------------------------------------------
 
-Notices
+IMPORTANT NOTE
 
-CASMSIM is free software; you can redistribute it and/or modify it under the
-terms of the GNU General Public License version 2 as published by the Free
-Software Foundation.  Note that I am not granting permission to redistribute
-or modify CASMSIM under the terms of any later version of the General Public
-License.
+Release 0.15 of CASMSIM is an interim developmental release.  It is
+the first release to use the Gtk+ toolkit.  Only the HP-45 is
+simulated in this release.  To use the simulator, you will need a
+suitable digital image (photograph or scan) of the calculator.  No
+image is provided in the release, however one may be obtained from
+the Museum of HP Calculators:
+    http://www.hpmuseum.org/45.jpg
 
-This program is distributed in the hope that it will be useful (or at least
-amusing), but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General
-Public License for more details.
-
-You should have received a copy of the GNU General Public License along with
-this program (in the file "COPYING"); if not, write to the Free Software
-Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
-
-CASMSIM is distributed with a file named "hp45.asm" containing source code
-from United States patent number 4,001,569 and a file named "hp55.asm"
-containing source code from United States patent number 4,009,379.  These two
-files are distributed only for your convenience; they are not part of CASMSIM,
-are not copyrighted by Eric L. Smith, and are not subject to the General
-Public License.
+The file should be downloaded and renamed to "hp45.jpg".
 
 -----------------------------------------------------------------------------
 
 Background
 
-The HP-35, the first of HP's classic series of handheld calculators, was
-introduced in 1972 and described as the "Electronic Slide Rule".  The HP-35
-was a non-programmable scientific, and was followed by the HP-45 improved
-scientific calculator, the HP-65 scientific programmable with card reader, the
-HP-55 scientific programmable with stopwatch, and the HP-70 and HP-80 business
-calculators.  All of these calculators used essentially the same processor,
-which was also used in the HP 3380 Integrator, the HP 5830 and HP 5840 Gas
-Chromatographs, and the HP 1722 Oscilliscope.
+The HP-35, the first of HP's classic series of handheld calculators,
+was introduced in 1972 and described as the "Electronic Slide Rule".
+The HP-35 was a non-programmable scientific, and was followed by the
+HP-45 improved scientific calculator, the HP-65 scientific
+programmable with card reader, the HP-55 scientific programmable with
+stopwatch, and the HP-70 and HP-80 business calculators.  All of these
+calculators used essentially the same processor, which was also used
+in the HP 3380 Integrator, the HP 5830 and HP 5840 Gas Chromatographs,
+and the HP 1722 Oscilliscope.
 
-In the HP classic series processor, unlike modern microprocessors, various
-instructions were interpreted by various chips.  The core processor consists
-of the C&T (control and timing), A&R (arithmetic and registers) and the ROM
-or QUAD ROM chips.  Additions chips may be present for data storage or
-program storage.  Since different calculator models have different
-combinations of these chips, some instructions are not available on all
-models.  For instance, the "delayed select" instructions are probably not
-implemented in the HP-35 and HP-80 which use single ROMs, and the "search for
-label" instruction is only available in the HP-65.
+In the HP classic series processor, unlike modern microprocessors,
+various instructions were interpreted by various chips.  The core
+processor consists of the C&T (control and timing), A&R (arithmetic
+and registers) and the ROM or QUAD ROM chips.  Additions chips may be
+present for data storage or program storage.  Since different
+calculator models have different combinations of these chips, some
+instructions are not available on all models.  For instance, the
+"delayed select" instructions are probably not implemented in the
+HP-35 and HP-80 which use single ROMs, and the "search for label"
+instruction is only available in the HP-65.
 
-The design of the processor and the instruction set are described in detail
-in United States patents 3,863,060 and 4,001,569.
+The design of the processor and the instruction set are described in
+detail in United States patents 3,863,060 and 4,001,569.
 
-I've typed in the source code from the '569 and '379 patents which cover the
-HP-45 and HP-55 respectively.  There are likely to be errors in my typing, as
-the listings in the patents are poorly reproduced.  I plan to eventually dump
-the ROMs from actual calculators to verify my typing.  For that matter, the
-code in the patents might not be identical to that in production units.
+I've typed in the source code from the '569 and '379 patents which
+cover the HP-45 and HP-55 respectively.  The listings in the patents
+were poorly reproduced.  Peter Monta wrote a specialized OCR program
+to verify the listing against the patent, and corrected several
+errors.  The code in the patents might not be identical to that in
+production units; I plan to eventually dump the ROMs from actual
+calculators.
 
-Various other United States patents assigned to Hewlett-Packard appear to
-contain source listings of ROMs of other HP calculators:
+Peter Monta also *optically* dumped the contents of the HP-35 ROMs,
+and disassembled the resulting code.  I've cleaned it up a bit and
+added labels using the HP-45 source code as a guide.
+
+Various other United States patents assigned to Hewlett-Packard appear
+to contain source listings of ROMs of other HP calculators:
 
 	3,863,060:	HP-80
 	4,099,246:	HP-65 (only first half of ROM)
@@ -75,99 +69,77 @@ contain source listings of ROMs of other HP calculators:
 
 CASM
 
-I used GNU tools to build CASM; specifically GCC 2.5.8, Flex 2.4.7, Bison
-1.22, and Make 3.71.  I don't believe in using ugly preprocessor macros to
-make my code compile on non-ANSI compilers.  Lex won't work because I don't
-know how to make it take input from a string.  Earlier versions of Flex don't
-seem to work either, probably because they handle input differently.  
+I used GNU tools to build CASM.  Originally I used GCC 2.5.8, Flex
+2.4.7, Bison 1.22, and Make 3.71.  Most recently I'm using GCC 3.3.2,
+Flex 2.5.4a, Bison 1.875, and Make 3.79.1.
 
-CASM requires a single command line argument to specify the source code file.
+I don't believe in using ugly preprocessor macros to make my code
+compile on non-ANSI compilers.  Lex won't work because I don't know
+how to make it take input from a string.  Earlier versions of Flex
+don't seem to work either, probably because they handle input
+differently.
 
-CASM derives names for the object and listing files from the source filename
-by replacing the extension (everything after the last dot, typically "asm")
-with "obj" or "lst".  If the source filename doesn't have an extension CASM
-adds one.  The object file format is one word per line with the five digit
-octal address, a colon and the instruction word in hexadecimal.
+CASM requires a single command line argument to specify the source
+code file.
 
-I personally prefer my assembly source code to be in all lower case, so it
-doesn't look like it is shouting at me.  All the source code I have typed in
-from patents is in lower case, but CASM is case insensitive so if you prefer
-emphatic source code be my guest.
+CASM derives names for the object and listing files from the source
+filename by replacing the extension (everything after the last dot,
+typically "asm") with "obj" or "lst".  If the source filename doesn't
+have an extension CASM adds one.  The object file format is one word
+per line with the five digit octal address, a colon and the
+instruction word in hexadecimal.
+
+I personally prefer my assembly source code to be in all lower case,
+so it doesn't look like it is shouting at me.  All the source code I
+have typed in from patents is in lower case, but CASM is case
+insensitive so if you prefer emphatic source code be my guest.
 
 CASM considers the keywords which are used to form instructions to be
-reserved words, so they can't be used as labels.  HP's assembler was more
-flexible in this regard; I had to change the label "go" in the HP-55 source
-code to "go_".
+reserved words, so they can't be used as labels.  HP's assembler was
+more flexible in this regard; I had to change the label "go" in the
+HP-55 source code to "go_".
 
-CASM does a better job of displaying the branch target addresses than the HP
-assembler did.  It will actually show the correct target address based on the
-delayed select instructions, unless the delay instruction is in the last word
-of a page.  CASM has a ".rom" directive which can be used to provide the rom
-number.  This is roughly equivalent to the origin directive in a typical
-assembler, except that CASM always start assembling code at location 0 of the
+CASM does a better job of displaying the branch target addresses than
+the HP assembler did.  It will actually show the correct target
+address based on the delayed select instructions, unless the delay
+instruction is in the last word of a page.  CASM has a ".rom"
+directive which can be used to provide the rom number.  This is
+roughly equivalent to the origin directive in a typical assembler,
+except that CASM always start assembling code at location 0 of the
 selected ROM.
 
-Because HP assembled each ROM separately, they were able to use the same
-symbols in multiple ROMs.  CASM therefore has a separate name space and keeps
-a separate symbol table for each ROM.
+Because HP assembled each ROM separately, they were able to use the
+same symbols in multiple ROMs.  CASM therefore has a separate name
+space and keeps a separate symbol table for each ROM.
 
-CASM has a .symtab directive which causes the symbol table to be printed to
-the listing file.  If the source file contains multiple ROMs, each ROM should
-have its own .symtab directive.
+CASM has a .symtab directive which causes the symbol table to be
+printed to the listing file.  If the source file contains multiple
+ROMs, each ROM should have its own .symtab directive.
 
-The file "hp55.asm" when assembled with CASM will produce one warning, which
-will be printed to standard out twice (once during each pass).  This warning
-can be ignored as it is the result of CASM being pickier than the HP assembler
-about forms of the "go to" instruction.
-
-If you can't get CASM working I have made the file listings.tar.gz available
-separately.  It includes hp45.lst and hp55.lst files which can be used with
-CSIM.
+The file "hp55.asm" when assembled with CASM will produce one warning,
+which will be printed to standard out twice (once during each pass).
+This warning can be ignored as it is the result of CASM being pickier
+than the HP assembler about forms of the "go to" instruction.
 
 -----------------------------------------------------------------------------
 
 CSIM
 
-CSIM is a simulator for the hardware of the HP Classic series of calculators.
-It should be capable of simulating the HP-35, HP-45, HP-55, HP-70, and HP-80.
-With some additional work it should eventually be able to simulate the HP-65.
+CSIM is a simulator for the hardware of the HP Classic series of
+calculators.  It should be capable of simulating the HP-35, HP-45,
+HP-55, HP-70, and HP-80.  With some additional work it should
+eventually be able to simulate the HP-65.
 
-CSIM currently uses the X window system, although by replacing the file xio.c
-with an alternate file that implements the three functions whose prototypes
-are in xio.h, it should be possible to make it work with any reasonable
-input and output devices.  The X interface currently only supports the HP-45
-keyboard legends.
+CSIM uses the Gtk+ 2.2 toolkit and Glib 2.2.  It should be portable to
+Windows and MacOS X, but has only been tested on Linux.
 
-Since CSIM simulates the actual hardware, it is of little use unless you have
-an image of the ROM code from the calculator.
+CSIM uses a single command line argument to specify the assembly
+listing file.  If no argument is found, CSIM will try to find a file
+using the concatentation of the name under which it was invoked and
+".lst".  This allows you to (for instance) link CSIM to "hp45" and
+have it automatically try to load and run "hp45.lst".
 
-CSIM uses a single command line argument to specify the assembly listing file.
-If no argument is found, CSIM will try to find a file using the concatentation
-of the name under which it was invoked and ".lst".  This allows you to (for
-instance) link CSIM to "hp45" and have it automatically try to load and run
-"hp45.lst".
-
-At this point CSIM is known to mostly work with the HP-45 ROM image, but I
-haven't tested it much and I haven't verified the ROM image.  There
-are serious problems with the HP-55 image, which may be CSIM bugs or they
-may be errors in my typing of the assembly sources.  The keyboard layout and
-legends are currently hardcoded for the HP-45 in xio.c.
-
-There are two compile time options currently defined in the Makefile:
-
--DUS_TIMER
-	Enables the code to use the BSD-style interval timer to prevent the
-	simulator from executing more than 35 microinstructions every 1/100
-	of a second.  This allows for an approximation of the performance of
-	the real HP calculators.  If your operating system doesn't support
-	the setitimer() system call you'll have to take this define out or
-	write equivalent code yourself.  With this define in place, CSIM uses
-	sufficiently little CPU time that it isn't a problem to leave it
-	running all the time (at least on my DX4-100, a VAX-11/725 might be a
-	different story).  It doesn't make any noticable contribution to the
-	load average under Linux.  Under BSDI/386 the load average must be
-	computed wrong (or at least differently), as it pegs the load average
-	at one (when nothing else is running).
+There is one compile time options currently defined in the Makefile:
 
 -DENTER_KEY_MOD
 	Causes the ENTER^ key to generate the keycode for the normally
@@ -189,16 +161,33 @@ There are two compile time options currently defined in the Makefile:
 
 Credits (and blame)
 
-CASMSIM was originally written by Eric Smith.  Any bugs in it are almost
-certainly my fault.
+CASMSIM was originally written by Eric Smith.  Any bugs in it are
+almost certainly my fault.
 
-Peter Monta developed a specialized OCR program for use on the ROM listings
-in the US patents, and found one typo in my HP-45 source code and several
-in my HP-55 source code.  He also provided modifications to xio.c to
-support the HP-55 keyboard.
+Peter Monta developed a specialized OCR program for use on the ROM
+listings in the US patents, and found one typo in my HP-45 source code
+and several in my HP-55 source code.  He also provided modifications
+to xio.c to support the HP-55 keyboard.
 
-Dave Hicks, of hpmuseum.org fame, translated CSIM to Java:
+Dave Hicks translated CSIM to Java:
         http://www.hpmuseum.org/simulate/sim45.htm
 
-Thanks also to HP for having made such great products in the first place,
-without which all of this would have been unnecessary.  :-)
+-----------------------------------------------------------------------------
+
+Notices
+
+CASMSIM is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.  Note that I am not
+granting permission to redistribute or modify CASMSIM under the terms
+of any later version of the General Public License.
+
+This program is distributed in the hope that it will be useful (or at
+least amusing), but WITHOUT ANY WARRANTY; without even the implied
+warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See
+the GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program (in the file "COPYING"); if not, write to the
+Free Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139,
+USA.
