@@ -152,13 +152,13 @@ instruction	: jsb_inst
 		| misc_inst
 	        ;
 
-jsb_inst        : JSB expr { emit (($2 << 2) | 00001); 
+jsb_inst        : JSB expr { emit ((001 << 12) | ($2 << 2) | 00001); 
 			     target (dsg, dsr, $2);
 			     dsg = group;
 			     dsr = rom; }
                 ;
 
-goto_inst	: goto_form { emit (($1 << 2) | 00003);
+goto_inst	: goto_form { emit ((013 << 12) | ($1 << 2) | 00003);
 			      target (dsg, dsr, $1);
 			      dsg = group;
 			      dsr = rom; }
@@ -175,7 +175,7 @@ goto_form       :  GO TO expr { $$ = $3;
 
 then_inst	: THEN GO TO expr { if (last_instruction_type != TEST_INST)
 				      warning ("'then go to' should only follow 'if' instructions\n");
-				    emit ($4 & 01377);
+				    emit ((014 << 12) | ($4 & 01377));
 				  }
 		;
 
@@ -296,7 +296,7 @@ stat_bit_name	: IDENT
 stat_bit	: S stat_bit_name expr { $$ = range ($3, 0, 15); } ;
 
 inst_set_stat   : expr ARROW stat_bit { $1 = range ($1, 0, 1);
-                                  emit (($3 << 6) | ($1 ? 00014 : 00004)); } ;
+                                  emit (($3 << 6) | ($1 ? 00004 : 00014)); } ;
 inst_clr_stat   : CLEAR STATUS { emit (00110); } ;
 
 inst_tst_stat_e : IF stat_bit '=' expr { $4 = range ($4, 0, 1);
@@ -388,9 +388,9 @@ inst_down_rot   : DOWN ROTATE               { emit (01110); } ;
 inst_f_to_a	: F ARROW A FIELDSPEC 	    { $4 = range ($4, 3, 3);
 					      emit (01610); } ;
 inst_f_exch_a	: F EXCHANGE A FIELDSPEC    { $4 = range ($4, 3, 3);
-					      emit (01610); }
+					      emit (01710); }
 		| A FIELDSPEC EXCHANGE F    { $2 = range ($2, 3, 3);
-					      emit (01610); }
+					      emit (01710); }
 inst_clr_reg    : CLEAR REGISTERS           { emit (00010); } ;
 
 inst_sel_rom    : SELECT ROM expr           { $3 = range ($3, 0, 15);
@@ -401,7 +401,7 @@ inst_sel_rom    : SELECT ROM expr           { $3 = range ($3, 0, 15);
 					      flag_char = '*'; } ;
 
 inst_del_rom    : DELAYED ROM expr          { $3 = range ($3, 0, 15); 
-                                              emit (($3 << 7) | 00064);
+                                              emit (($3 << 6) | 00064);
 					      dsr = $3;
 					      flag_char = '$'; } ;
 
@@ -410,7 +410,7 @@ inst_key_to_rom	: KEYS ARROW ROM ADDRESS    { emit (00020); } ;
 inst_a_to_rom	: A ARROW ROM ADDRESS       { emit (00220); } ;
 
 inst_decimal	: DECIMAL		    { emit (01410); } ;
-inst_binary	: BINARY		    { emit (01410); } ;
+inst_binary	: BINARY		    { emit (00420); } ;
 
 inst_return	: RETURN                    { emit (01020); } ;
 
