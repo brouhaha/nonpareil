@@ -20,7 +20,7 @@ You should have received a copy of the GNU General Public License along with
 this program (in the file "COPYING"); if not, write to the Free Software
 Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
-$Header: /home/svn/casmsim/xio.c,v 1.8 2003/05/30 07:26:34 eric Exp $
+$Header: /home/svn/casmsim/xio.c,v 1.9 2003/05/30 23:31:52 eric Exp $
 */
 
 #include <stdio.h>
@@ -164,6 +164,52 @@ typedef struct
 
 
 keyinfo (*keys)[35];
+
+keyinfo keys_hp35 [35] =
+{
+  { {  24, 120, 30, 24 }, "x^y",   "",     006, WHITE, BLACK },
+  { {  72, 120, 30, 24 }, "log",    "",     004, WHITE, BLACK },
+  { { 120, 120, 30, 24 }, "ln",   "",    003, WHITE, BLACK },
+  { { 168, 120, 30, 24 }, "e^x",   "",     002, WHITE, BLACK },
+  { { 216, 120, 30, 24 }, "CLR",      "",        000, WHITE,  BLUE },
+
+  { {  24, 168, 30, 24 }, "sqrt(x)",   "", 056, WHITE, BLACK },
+  { {  72, 168, 30, 24 }, "arc",   "",     054, WHITE, MED_GREY },
+  { { 120, 168, 30, 24 }, "sin",   "",  053, WHITE, MED_GREY },
+  { { 168, 168, 30, 24 }, "cos",   "",  052, WHITE, MED_GREY },
+  { { 216, 168, 30, 24 }, "tan",   "",  050, WHITE, MED_GREY },
+
+  { {  24, 216, 30, 24 }, "1/x",  "",      016, WHITE, BLACK },
+  { {  72, 216, 30, 24 }, "x<>y",   "",     014, WHITE, BLACK },
+  { { 120, 216, 30, 24 }, "RDN",   "",  013, WHITE, BLACK },
+  { { 168, 216, 30, 24 }, "STO",   "",  012, WHITE, BLACK },
+  { { 216, 216, 30, 24 }, "RCL",     "", 010, WHITE, BLACK },
+
+  { {  24, 264, 78, 24 }, "ENTER^","", 076, WHITE, BLUE },
+  { { 120, 264, 30, 24 }, "CHS",   "",     073, WHITE, BLUE },
+  { { 168, 264, 30, 24 }, "EEX",   "",     072, WHITE, BLUE },
+  { { 216, 264, 30, 24 }, "CLX",   "",   070, WHITE, BLUE },
+
+  { {  24, 312, 24, 24 }, "-",     "",        066, WHITE, BLUE },
+  { {  73, 312, 37, 24 }, "7",     "",   064, BLACK, WHITE },
+  { { 141, 312, 37, 24 }, "8",     "",   063, BLACK, WHITE },
+  { { 209, 312, 37, 24 }, "9",     "", 062, BLACK, WHITE },
+
+  { {  24, 360, 24, 24 }, "+",     "",        026, WHITE, BLUE },
+  { {  73, 360, 37, 24 }, "4",     "",        024, BLACK, WHITE },
+  { { 141, 360, 37, 24 }, "5",     "",        023, BLACK, WHITE },
+  { { 209, 360, 37, 24 }, "6",     "",        022, BLACK, WHITE },
+
+  { {  24, 408, 24, 24 }, "x",     "",        036, WHITE, BLUE },
+  { {  73, 408, 37, 24 }, "1",     "",        034, BLACK, WHITE },
+  { { 141, 408, 37, 24 }, "2",     "",        033, BLACK, WHITE },
+  { { 209, 408, 37, 24 }, "3",     "",        032, BLACK, WHITE },
+
+  { {  24, 456, 24, 24 }, "/",     "",        046, WHITE, BLUE },
+  { {  73, 456, 37, 24 }, "0",     "",   044, BLACK, WHITE },
+  { { 141, 456, 37, 24 }, ".",     "",      043, BLACK, WHITE },
+  { { 209, 456, 37, 24 }, "Pi",  "",    042, BLACK, WHITE },
+};
 
 keyinfo keys_hp45 [35] =
 {
@@ -438,6 +484,8 @@ void init_display (int argc, char *argv[])
   disp_buf [0] ='\0';
   keys = &keys_hp45;
   n = strlen(argv[0]);
+  if (strcmp(argv[0]+n-4,"hp35")==0)
+    keys = &keys_hp35;
   if (strcmp(argv[0]+n-4,"hp55")==0)
     keys = &keys_hp55;
   init_graphics (argc, argv, argv[0]+n-4);
