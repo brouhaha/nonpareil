@@ -32,8 +32,8 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #include "symtab.h"
 #include "asm.h"
 
-extern int ptr_load_map [14];
-extern int ptr_test_map [14];
+int ptr_load_map [14];
+int ptr_test_map [14];
 %}
 
 %union {
@@ -194,30 +194,38 @@ arith_inst      : inst_0_to_a
                 | inst_c_minus_1
                 | inst_tens_comp
                 | inst_nines_comp
-		| inst_test_b_0
-                | inst_test_c_0
-                | inst_test_a_c
-                | inst_test_a_b
-                | inst_test_a_1
-                | inst_test_c_1
+		| inst_test_b_eq_0
+                | inst_test_c_eq_0
+                | inst_test_a_ge_c
+                | inst_test_a_ge_b
+                | inst_test_a_ne_0
+                | inst_test_c_ne_0
                 | inst_a_min_c_a
                 | inst_shr_a
                 | inst_shr_b
                 | inst_shr_c
                 ;
 
-inst_test_b_0   : IF B FIELDSPEC '=' expr { $5 = range ($5, 0, 0);
-                                            emit_test (($3 << 2) | 01302); } ;
-inst_test_c_0   : IF C FIELDSPEC '=' expr { $5 = range ($5, 0, 0); 
-                                            emit_test (($3 << 2) | 01342); } ;
+inst_test_b_eq_0   : IF B FIELDSPEC '=' expr { $5 = range ($5, 0, 0);
+                                               emit_test (($3 << 2) | 01302); }
+		   | IF expr '=' B FIELDSPEC { $2 = range ($2, 0, 0);
+                                               emit_test (($5 << 2) | 01302); } ;
+inst_test_c_eq_0   : IF C FIELDSPEC '=' expr { $5 = range ($5, 0, 0); 
+                                               emit_test (($3 << 2) | 01342); }
+		   | IF expr '=' C FIELDSPEC { $2 = range ($2, 0, 0);
+                                               emit_test (($5 << 2) | 01342); } ;
 
-inst_test_a_1   : IF A FIELDSPEC GE expr { $5 = range ($5, 1, 1);
-                                           emit_test (($3 << 2) | 01502); } ;
-inst_test_c_1   : IF C FIELDSPEC GE expr { $5 = range ($5, 1, 1);
-                                           emit_test (($3 << 2) | 01542); } ;
+inst_test_a_ne_0   : IF A FIELDSPEC '#' expr { $5 = range ($5, 0, 0);
+                                               emit_test (($3 << 2) | 01502); }
+		   | IF expr '#' A FIELDSPEC { $2 = range ($2, 0, 0);
+                                               emit_test (($5 << 2) | 01502); } ;
+inst_test_c_ne_0   : IF C FIELDSPEC '#' expr { $5 = range ($5, 0, 0);
+                                               emit_test (($3 << 2) | 01542); }
+		   | IF expr '#' C FIELDSPEC { $2 = range ($2, 0, 0);
+                                               emit_test (($5 << 2) | 01542); } ;
 
-inst_test_a_c   : IF A GE C FIELDSPEC { emit_test (($5 << 2) | 01402); } ;
-inst_test_a_b   : IF A GE B FIELDSPEC { emit_test (($5 << 2) | 01442); } ;
+inst_test_a_ge_c   : IF A GE C FIELDSPEC { emit_test (($5 << 2) | 01402); } ;
+inst_test_a_ge_b   : IF A GE B FIELDSPEC { emit_test (($5 << 2) | 01442); } ;
 
 inst_0_to_a     : expr ARROW A FIELDSPEC { $1 = range ($1, 0, 0); 
                                            emit (($4 << 2) | 00002); } ;
@@ -391,5 +399,5 @@ inst_woodstock	: HI IAM WOODSTOCK	    { emit (01760); } ;
 int ptr_load_map [14] =
   { 014, 010, 005, 011, 001, 016, 013, 002, 003, 015, 006, 004, 007, 012 };
 
-extern int ptr_test_map [14] =
+int ptr_test_map [14] =
   { 013, 005, 003, 007, 000, 012, 006, 016, 001, 004, 015, 014, 002, 011 };
