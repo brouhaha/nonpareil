@@ -76,18 +76,13 @@ typedef enum
     SIM_QUIT
   } sim_state_t;
 
+
+typedef struct sim_thread_t sim_thread_t;
+
+
 struct sim_t
 {
-  /* These glib items should be moved into an outer structure so that
-     the architecture-specific processor code doesn't have to know
-     about them. */
-  GThread *thread;
-  GCond *sim_cond;
-  GCond *ui_cond;
-  GMutex *sim_mutex;
-
-  GTimeVal tv;
-  GTimeVal prev_tv;
+  sim_thread_t *thread;
 
   sim_state_t state;
   sim_state_t prev_state;

@@ -25,10 +25,6 @@ MA 02111, USA.
 #include <stdlib.h>
 #include <string.h>
 
-#include <glib.h>  /* It would be really nice to get rid of this.  See
-		      the note at the top of the declaration of
-		      struct sim_t in proc_int.h. */
-
 #include "arch.h"
 #include "platform.h"
 #include "util.h"

@@ -40,6 +40,18 @@ MA 02111, USA.
 #define JIFFY_USEC (1.0e6 / JIFFY_PER_SEC)
 
 
+struct sim_thread_t
+{
+  GThread  *thread;
+  GCond    *sim_cond;
+  GCond    *ui_cond;
+  GMutex   *sim_mutex;
+
+  GTimeVal tv;
+  GTimeVal prev_tv;
+};
+
+
 /*
  * allocate space for microcode ROM, as well as source code and breakpoints.
  * Set breakpoints at every location so we know if we hit uninitialized ROM.
@@ -157,45 +169,45 @@ gpointer sim_thread_func (gpointer data)
 
   for (;;)
     {
-      g_mutex_lock (sim->sim_mutex);
+      g_mutex_lock (sim->thread->sim_mutex);
       if (sim->state != sim->prev_state)
 	{
 	  if (sim->state == SIM_RUN)
-	    g_get_current_time (& sim->prev_tv);
+	    g_get_current_time (& sim->thread->prev_tv);
 	}
       sim->prev_state = sim->state;
       switch (sim->state)
 	{
 	case SIM_QUIT:
-	  g_mutex_unlock (sim->sim_mutex);
+	  g_mutex_unlock (sim->thread->sim_mutex);
 	  g_thread_exit (0);
 
 	case SIM_RESET:
 	  sim->proc->reset_processor (sim);
 	  sim->state = SIM_IDLE;
-	  g_cond_signal (sim->ui_cond);
-	  g_cond_wait (sim->sim_cond, sim->sim_mutex);
+	  g_cond_signal (sim->thread->ui_cond);
+	  g_cond_wait (sim->thread->sim_cond, sim->thread->sim_mutex);
 	  break;
 
 	case SIM_IDLE:
-	  g_cond_wait (sim->sim_cond, sim->sim_mutex);
+	  g_cond_wait (sim->thread->sim_cond, sim->thread->sim_mutex);
 	  break;
 
 	case SIM_STEP:
 	  sim->proc->execute_instruction (sim);
 	  /* handle_io (sim); */
 	  sim->state = SIM_IDLE;
-	  g_cond_signal (sim->ui_cond);
-	  g_cond_wait (sim->sim_cond, sim->sim_mutex);
+	  g_cond_signal (sim->thread->ui_cond);
+	  g_cond_wait (sim->thread->sim_cond, sim->thread->sim_mutex);
 	  break;
 
 	case SIM_RUN:
 	  /* find out how much time has elapsed, saturated at one second */
-	  g_get_current_time (& sim->tv);
+	  g_get_current_time (& sim->thread->tv);
 
 	  /* compute how many microinstructions we want to execute */
-	  usec = sim->tv.tv_usec - sim->prev_tv.tv_usec;
-	  switch (sim->tv.tv_sec - sim->prev_tv.tv_sec)
+	  usec = sim->thread->tv.tv_usec - sim->thread->prev_tv.tv_usec;
+	  switch (sim->thread->tv.tv_sec - sim->thread->prev_tv.tv_sec)
 	    {
 	    case 0: break;
 	    case 1: usec += 1000000; break;
@@ -203,7 +215,8 @@ gpointer sim_thread_func (gpointer data)
 	    }
 	  i = usec * sim->words_per_usec;
 #if 0
-	  printf ("tv %d.%06d, usec %d, i %d\n", sim->tv.tv_sec, sim->tv.tv_usec, usec, i);
+	  printf ("tv %d.%06d, usec %d, i %d\n", sim->thread->tv.tv_sec,
+		  sim->thread->tv.tv_usec, usec, i);
 #endif
 
 	  /* execute the microinstructions */
@@ -216,17 +229,18 @@ gpointer sim_thread_func (gpointer data)
 	  /* handle_io (sim); */
 
 	  /* remember when we ran */
-	  memcpy (& sim->prev_tv, & sim->tv, sizeof (GTimeVal));
+	  memcpy (& sim->thread->prev_tv, & sim->thread->tv, sizeof (GTimeVal));
 
 	  /* sleep a while */
-	  g_time_val_add (& sim->tv, JIFFY_USEC);
-	  g_cond_timed_wait (sim->sim_cond, sim->sim_mutex, & sim->tv);
+	  g_time_val_add (& sim->thread->tv, JIFFY_USEC);
+	  g_cond_timed_wait (sim->thread->sim_cond, sim->thread->sim_mutex,
+			     & sim->thread->tv);
 	  break;
 
 	default:
 	  fatal (2, "bad simulator state\n");
 	}
-      g_mutex_unlock (sim->sim_mutex);
+      g_mutex_unlock (sim->thread->sim_mutex);
     }
 
   return (NULL);  /* $$$ Hmmm... what are we supposed to return? */
@@ -247,6 +261,7 @@ sim_t *sim_init  (int platform,
   arch_info_t *arch_info;
 
   sim = alloc (sizeof (sim_t));
+  sim->thread = alloc (sizeof (sim_thread_t));
 
   sim->arch = arch;
   sim->proc = processor_dispatch [arch];
@@ -262,11 +277,11 @@ sim_t *sim_init  (int platform,
 
   g_thread_init (NULL);  /* $$$ has Gtk already done this? */
 
-  sim->sim_cond = g_cond_new ();
-  sim->ui_cond = g_cond_new ();
-  sim->sim_mutex = g_mutex_new ();
+  sim->thread->sim_cond = g_cond_new ();
+  sim->thread->ui_cond = g_cond_new ();
+  sim->thread->sim_mutex = g_mutex_new ();
 
-  g_mutex_lock (sim->sim_mutex);
+  g_mutex_lock (sim->thread->sim_mutex);
 
   sim->proc->new_processor (sim, ram_size);
 
@@ -280,9 +295,9 @@ sim_t *sim_init  (int platform,
 
   sim->cycle_count = 0;
 
-  sim->thread = g_thread_create (sim_thread_func, sim, TRUE, NULL);
+  sim->thread->thread = g_thread_create (sim_thread_func, sim, TRUE, NULL);
 
-  g_mutex_unlock (sim->sim_mutex);
+  g_mutex_unlock (sim->thread->sim_mutex);
 
   return (sim);
 }
@@ -290,10 +305,10 @@ sim_t *sim_init  (int platform,
 
 void sim_quit (sim_t *sim)
 {
-  g_mutex_lock (sim->sim_mutex);
+  g_mutex_lock (sim->thread->sim_mutex);
   sim->state = SIM_QUIT;
 
-  g_thread_join (sim->thread);
+  g_thread_join (sim->thread->thread);
 
   free (sim);
 }
@@ -301,70 +316,70 @@ void sim_quit (sim_t *sim)
 
 void sim_reset (sim_t *sim)
 {
-  g_mutex_lock (sim->sim_mutex);
+  g_mutex_lock (sim->thread->sim_mutex);
   if (sim->state != SIM_IDLE)
     fatal (2, "can't reset when not idle\n");
   sim->state = SIM_RESET;
-  g_cond_signal (sim->sim_cond);
+  g_cond_signal (sim->thread->sim_cond);
   while (sim->state != SIM_IDLE)
-    g_cond_wait (sim->ui_cond, sim->sim_mutex);
-  g_mutex_unlock (sim->sim_mutex);
+    g_cond_wait (sim->thread->ui_cond, sim->thread->sim_mutex);
+  g_mutex_unlock (sim->thread->sim_mutex);
 }
 
 
 void sim_step (sim_t *sim)
 {
-  g_mutex_lock (sim->sim_mutex);
+  g_mutex_lock (sim->thread->sim_mutex);
   if (sim->state != SIM_IDLE)
     fatal (2, "can't step when not idle\n");
   sim->state = SIM_STEP;
-  g_cond_signal (sim->sim_cond);
+  g_cond_signal (sim->thread->sim_cond);
   while (sim->state != SIM_IDLE)
-    g_cond_wait (sim->ui_cond, sim->sim_mutex);
-  g_mutex_unlock (sim->sim_mutex);
+    g_cond_wait (sim->thread->ui_cond, sim->thread->sim_mutex);
+  g_mutex_unlock (sim->thread->sim_mutex);
 }
 
 
 void sim_start (sim_t *sim)
 {
-  g_mutex_lock (sim->sim_mutex);
+  g_mutex_lock (sim->thread->sim_mutex);
   if (sim->state != SIM_IDLE)
     fatal (2, "can't start when not idle\n");
   sim->state = SIM_RUN;
-  g_cond_signal (sim->sim_cond);
-  g_mutex_unlock (sim->sim_mutex);
+  g_cond_signal (sim->thread->sim_cond);
+  g_mutex_unlock (sim->thread->sim_mutex);
 }
 
 
 void sim_stop (sim_t *sim)
 {
-  g_mutex_lock (sim->sim_mutex);
+  g_mutex_lock (sim->thread->sim_mutex);
   if (sim->state == SIM_IDLE)
     goto done;
   if (sim->state != SIM_RUN)
     fatal (2, "can't stop when not running\n");
   sim->state = SIM_IDLE;
-  g_cond_signal (sim->sim_cond);
+  g_cond_signal (sim->thread->sim_cond);
 done:
-  g_mutex_unlock (sim->sim_mutex);
+  g_mutex_unlock (sim->thread->sim_mutex);
 }
 
 
 uint64_t sim_get_cycle_count (sim_t *sim)
 {
   uint64_t count;
-  g_mutex_lock (sim->sim_mutex);
+  g_mutex_lock (sim->thread->sim_mutex);
   count = sim->cycle_count;
-  g_mutex_unlock (sim->sim_mutex);
+  g_mutex_unlock (sim->thread->sim_mutex);
   return (count);
 }
 
 
 void sim_set_cycle_count (sim_t *sim, uint64_t count)
 {
-  g_mutex_lock (sim->sim_mutex);
+  g_mutex_lock (sim->thread->sim_mutex);
   sim->cycle_count = count;
-  g_mutex_unlock (sim->sim_mutex);
+  g_mutex_unlock (sim->thread->sim_mutex);
 }
 
 
@@ -383,9 +398,9 @@ void sim_clear_breakpoint (sim_t *sim, int address)
 bool sim_running (sim_t *sim)
 {
   bool result;
-  g_mutex_lock (sim->sim_mutex);
+  g_mutex_lock (sim->thread->sim_mutex);
   result = (sim->state == SIM_RUN);
-  g_mutex_unlock (sim->sim_mutex);
+  g_mutex_unlock (sim->thread->sim_mutex);
   return (result);
 }
 
@@ -394,26 +409,26 @@ sim_env_t *sim_get_env (sim_t *sim)
 {
   sim_env_t *env;
 
-  g_mutex_lock (sim->sim_mutex);
+  g_mutex_lock (sim->thread->sim_mutex);
   env = sim->proc->get_env (sim);
-  g_mutex_unlock (sim->sim_mutex);
+  g_mutex_unlock (sim->thread->sim_mutex);
   return (env);
 }
 
 
 void sim_set_env (sim_t *sim, sim_env_t *env)
 {
-  g_mutex_lock (sim->sim_mutex);
+  g_mutex_lock (sim->thread->sim_mutex);
   sim->proc->set_env (sim, env);
-  g_mutex_unlock (sim->sim_mutex);
+  g_mutex_unlock (sim->thread->sim_mutex);
 }
 
 
 void sim_free_env (sim_t *sim, sim_env_t *env)
 {
-  g_mutex_lock (sim->sim_mutex);
+  g_mutex_lock (sim->thread->sim_mutex);
   sim->proc->free_env (sim, env);
-  g_mutex_unlock (sim->sim_mutex);
+  g_mutex_unlock (sim->thread->sim_mutex);
 }
 
 
@@ -427,40 +442,40 @@ rom_word_t sim_read_rom (sim_t *sim, int addr)
 
 void sim_read_ram (sim_t *sim, int addr, reg_t *val)
 {
-  g_mutex_lock (sim->sim_mutex);
+  g_mutex_lock (sim->thread->sim_mutex);
   sim->proc->read_ram (sim, addr, val);
-  g_mutex_unlock (sim->sim_mutex);
+  g_mutex_unlock (sim->thread->sim_mutex);
 }
 
 void sim_write_ram (sim_t *sim, int addr, reg_t *val)
 {
-  g_mutex_lock (sim->sim_mutex);
+  g_mutex_lock (sim->thread->sim_mutex);
   sim->proc->write_ram (sim, addr, val);
-  g_mutex_unlock (sim->sim_mutex);
+  g_mutex_unlock (sim->thread->sim_mutex);
 }
 
 
 void sim_press_key (sim_t *sim, int keycode)
 {
-  g_mutex_lock (sim->sim_mutex);
+  g_mutex_lock (sim->thread->sim_mutex);
   sim->proc->press_key (sim, keycode);
-  g_mutex_unlock (sim->sim_mutex);
+  g_mutex_unlock (sim->thread->sim_mutex);
 }
 
 
 void sim_release_key (sim_t *sim)
 {
-  g_mutex_lock (sim->sim_mutex);
+  g_mutex_lock (sim->thread->sim_mutex);
   sim->proc->release_key (sim);
-  g_mutex_unlock (sim->sim_mutex);
+  g_mutex_unlock (sim->thread->sim_mutex);
 }
 
 
 void sim_set_ext_flag (sim_t *sim, int flag, bool state)
 {
-  g_mutex_lock (sim->sim_mutex);
+  g_mutex_lock (sim->thread->sim_mutex);
   sim->proc->set_ext_flag (sim, flag, state);
-  g_mutex_unlock (sim->sim_mutex);
+  g_mutex_unlock (sim->thread->sim_mutex);
 }
 
 

@@ -1,5 +1,8 @@
 2004-04-14  Eric Smith <eric@brouhaha.com>
 
+	* proc_int.h proc.c proc_classic.c proc_woodstock.c: Remove glib.h
+	dependency from proc_xxx.c.
+	
 	* kml.h kmll.l kmly.y csim.c (draw_digit): Segment definitions
 	can be "line" or "rect".
 
