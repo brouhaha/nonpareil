@@ -28,13 +28,15 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
 #include "util.h"
 #include "kml.h"
+
+/* parser temporaries */
+int kml_cur_idx;
 %}
 
 %union {
   int integer;
   char *string;
   struct { int a; int b; } intpair;
-  struct { int a; int b; int c; int d; } intquad;
   kml_command_list_t *cmdlist;
 }
 
@@ -49,14 +51,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 %token RESETFLAG   ROM         SCANCODE    SETFLAG     SIZE        TITLE
 %token TYPE        VIRTUAL     ZOOM
 
-%type <string> title_stmt author_stmt hardware_stmt model_stmt
-%type <string> rom_stmt patch_stmt bitmap_stmt print_stmt
-
-%type <integer> class_stmt debug_stmt zoom_stmt
-
 %type <intpair> offset_stmt size_stmt down_stmt
-
-%type <intquad> color_stmt
 
 %type <cmdlist> command_list command elsepart
 %type <cmdlist> map_command press_command release_command setflag_command
@@ -105,25 +100,25 @@ global_stmt		:	title_stmt
 			|	debug_stmt
 			;
 
-title_stmt		:	TITLE STRING { $$ = $2; } ;
+title_stmt		:	TITLE STRING { kml->title = $2; } ;
 
-author_stmt		:	AUTHOR STRING { $$ = $2; } ;
+author_stmt		:	AUTHOR STRING { kml->author = $2; } ;
 
-hardware_stmt		:	HARDWARE STRING { $$ = $2; } ;
+hardware_stmt		:	HARDWARE STRING { kml->hardware = $2; } ;
 
-model_stmt		:	MODEL STRING { $$ = $2; } ;
+model_stmt		:	MODEL STRING { kml->model = $2; } ;
 
-class_stmt		:	CLASS INTEGER { $$ = $2; } ;
+class_stmt		:	CLASS INTEGER { kml->class = $2; } ;
 
-rom_stmt		:	ROM STRING { $$ = $2; } ;
+rom_stmt		:	ROM STRING { kml->rom = $2; } ;
 
-patch_stmt		:	PATCH STRING { $$ = $2; } ;
+patch_stmt		:	PATCH STRING { kml->patch = $2; } ;
 
-bitmap_stmt		:	BITMAP STRING { $$ = $2; } ;
+bitmap_stmt		:	BITMAP STRING { kml->bitmap = $2; } ;
 
-print_stmt		:	PRINT STRING { $$ = $2; } ;
+print_stmt		:	PRINT STRING { kml->print = $2; } ;
 
-debug_stmt		:	DEBUG INTEGER { $$ = $2; } ;
+debug_stmt		:	DEBUG INTEGER { kml->debug = $2; } ;
 
 /*----------------------------------------------------------------------------
  common statements, used in several sections
@@ -146,7 +141,11 @@ background_stmt_list	:	background_stmt
 			;
 
 background_stmt		:	offset_stmt
+				{ kml->background_offset.x = $1.a;
+				  kml->background_offset.y = $1.b; }
 			|	size_stmt
+				{ kml->background_size.width = $1.a;
+				  kml->background_size.height = $1.b; }
 			;
 
 /*----------------------------------------------------------------------------
@@ -160,28 +159,44 @@ lcd_stmt_list		:	lcd_stmt
 			;
 
 lcd_stmt		:	zoom_stmt
-			|	offset_stmt
+			|	offset_stmt { kml->display_offset.x = $1.a;
+					      kml->display_offset.y = $1.b; }
 			|	color_stmt
 			;
 
-zoom_stmt		:	ZOOM INTEGER { $$ = $2; } ;
+zoom_stmt		:	ZOOM INTEGER { kml->display_zoom = $2; } ;
 
 color_stmt		:	COLOR INTEGER INTEGER INTEGER INTEGER
-				{ $$.a = $2; $$.b = $3; $$.c = $4; $$.d = $5 };
+				{ range_check ($2, 0, KML_MAX_COLOR);
+				  kml->display_color [$2] = alloc (sizeof (kml_color_t));
+				  kml->display_color [$2]->r = $3;
+				  kml->display_color [$2]->g = $4;
+				  kml->display_color [$2]->b = $5; } ;
 
 /*----------------------------------------------------------------------------
  annunciator section
 ----------------------------------------------------------------------------*/
 
-annunciator_section	:	ANNUNCIATOR INTEGER annunciator_stmt_list END ;
+annunciator_section	:	ANNUNCIATOR INTEGER
+				{ range_check ($2, 0, KML_MAX_ANNUNCIATOR);
+				  kml_cur_idx = $2;
+				  kml->annunciator [$2] = alloc (sizeof (kml_annunciator_t)); }
+				annunciator_stmt_list END
+			 ;
 
 annunciator_stmt_list	:	annunciator_stmt
 			|	annunciator_stmt annunciator_stmt_list
 			;
 
 annunciator_stmt	:	size_stmt
+				{ kml->annunciator [kml_cur_idx]->size.width = $1.a;
+				  kml->annunciator [kml_cur_idx]->size.width = $1.b; }
 			|	offset_stmt
+				{ kml->annunciator [kml_cur_idx]->offset.x = $1.a;
+				  kml->annunciator [kml_cur_idx]->offset.y = $1.b; }
 			|	down_stmt
+				{ kml->annunciator [kml_cur_idx]->down.x = $1.a;
+				  kml->annunciator [kml_cur_idx]->down.y = $1.b; }
 			;
 
 /*----------------------------------------------------------------------------
@@ -256,7 +271,11 @@ ifpressed_command	:	IFPRESSED INTEGER command_list elsepart END
  button section
 ----------------------------------------------------------------------------*/
 
-button_section		:	BUTTON INTEGER button_stmt_list END ;
+button_section		:	BUTTON INTEGER
+				{ range_check ($2, 0, KML_MAX_BUTTON);
+				  kml_cur_idx = $2;
+				  kml->button [$2] = alloc (sizeof (kml_button_t)); }
+				button_stmt_list END ;
 
 button_stmt_list	:	button_stmt
 			|	button_stmt button_stmt_list
@@ -264,8 +283,14 @@ button_stmt_list	:	button_stmt
 
 button_stmt		:	type_stmt
 			|	size_stmt
+				{ kml->button [kml_cur_idx]->size.width = $1.a;
+				  kml->button [kml_cur_idx]->size.height = $1.b; }
 			|	offset_stmt
+				{ kml->button [kml_cur_idx]->offset.x = $1.a;
+				  kml->button [kml_cur_idx]->offset.y = $1.b; }
 			|	down_stmt
+				{ kml->button [kml_cur_idx]->down.x = $1.a;
+				  kml->button [kml_cur_idx]->down.y = $1.b; }
 			|	outin_stmt
 			|	keycode_stmt
 			|	virtual_stmt
@@ -274,24 +299,28 @@ button_stmt		:	type_stmt
 			|	ondown_stmt
 			;
 
-type_stmt		:	TYPE INTEGER ;
+type_stmt		:	TYPE INTEGER { kml->button [kml_cur_idx]->type = $2; } ;
 
-outin_stmt		:	OUTIN INTEGER INTEGER ;
+outin_stmt		:	OUTIN INTEGER INTEGER { yyerror ("OUTIN not supported"); } ;
 
-keycode_stmt		:	KEYCODE INTEGER ;
+keycode_stmt		:	KEYCODE INTEGER { kml->button [kml_cur_idx]->keycode = $2; } ;
 
-virtual_stmt		:	VIRTUAL ;
+virtual_stmt		:	VIRTUAL { kml->button [kml_cur_idx]->nohold = 1; } ;
 
-nohold_stmt		:	NOHOLD ;
+nohold_stmt		:	NOHOLD { kml->button [kml_cur_idx]->nohold = 1; } ;
 
-onup_stmt		:	ONUP command_list END ;
+onup_stmt		:	ONUP command_list END
+				{ kml->button [kml_cur_idx]->onup = $2; } ;
 
-ondown_stmt		:	ONDOWN command_list END ;
+ondown_stmt		:	ONDOWN command_list END
+				{ kml->button [kml_cur_idx]->ondown = $2; } ;
 
 /*----------------------------------------------------------------------------
  scancode section
 ----------------------------------------------------------------------------*/
 
-scancode_section	:	SCANCODE INTEGER command_list END ;
+scancode_section	:	SCANCODE INTEGER command_list END
+				{ range_check ($2, 0, KML_MAX_SCANCODE);
+				  kml->scancode [$2] = $3 ; };
 
 %%

@@ -54,6 +54,12 @@ Internals:
 
   Implement symbol cross-reference in CASM
 
+  It would be nice to use a pure parser for KML, pass in the kml_t
+  pointer as input, and return it from read_kml_file().  But Flex
+  doesn't yet seem to have support for the Bison pure_parser option.
+  There exist patches, but I don't want to make people use those.
+  Better to wait for a production release of Flex.
+
 
 Better model support:
 

@@ -36,6 +36,7 @@ extern char *lineptr;
 int yylex (void);
 int yyparse (void);
 void yyerror (char *s);
+void range_check (int val, int min, int max);
 
 
 #define KML_MAX_COLOR 16
@@ -72,7 +73,7 @@ typedef struct
 {
   kml_size_t size;
   kml_offset_t offset;
-  kml_down_t down;
+  kml_offset_t down;
 } kml_annunciator_t;
 
 typedef enum
@@ -100,8 +101,9 @@ typedef struct kml_command_list_t
 typedef struct
 {
   int type;
-  kml_offset_t offset;
   kml_size_t size;
+  kml_offset_t offset;
+  kml_offset_t down;
   int keycode;
   int virtual;
   int nohold;

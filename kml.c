@@ -48,6 +48,13 @@ void yyerror (char *s)
 }
 
 
+void range_check (int val, int min, int max)
+{
+  if ((val < min) || (val > max))
+    yyerror ("value out of range");
+}
+
+
 void read_kml_file (char *fn)
 {
   kml_t *kml;
