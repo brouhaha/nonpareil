@@ -341,7 +341,7 @@ int err_vprintf (char *format, va_list ap)
 {
   int res;
 
-  if (listfile)
+  if (listfile && (pass == 2))
     vfprintf (listfile, format, ap);
   res = vfprintf (stderr, format, ap);
   return (res);

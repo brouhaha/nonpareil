@@ -1,5 +1,8 @@
 2004-04-04  Eric Smith <eric@brouhaha.com>
 
+	* asm.c (err_vprintf): Only output messages to listing file during
+	pass 2.
+
 	* asm.c (format_listing): Use return value from sprintf() to avoid
 	unnecessary use of strlen().
 
