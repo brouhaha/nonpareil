@@ -329,7 +329,7 @@ char *newstr (char *orig)
   char *r;
 
   len = strlen (orig);
-  r = (char *) malloc (len + 10);
+  r = (char *) malloc (len + 1);
   
   if (! r)
     fatal ("memory allocation failed\n");
