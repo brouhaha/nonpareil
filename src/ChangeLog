@@ -1,10 +1,12 @@
 2004-07-09  Eric Smith <eric@brouhaha.com>
 
+	* proc_woodstock.c (op_clear_reg): Actually clear registers; was
+	previously copying T to all regs.
+	
 	* proc_woodstock.c (woodstock_execute_instruction): Key trace
 	should only enable or disable tracing on a normal instruction
 	fetch, not a branch target or self-test fetch.  Don't trace ROM
 	self-test fetches.
-
 
 2004-07-08  Eric Smith <eric@brouhaha.com>
 
