@@ -1,3 +1,24 @@
+2004-07-09  Eric Smith <eric@brouhaha.com>
+
+	* proc_woodstock.c (woodstock_execute_instruction): Key trace
+	should only enable or disable tracing on a normal instruction
+	fetch, not a branch target or self-test fetch.  Don't trace ROM
+	self-test fetches.
+
+
+2004-07-08  Eric Smith <eric@brouhaha.com>
+
+	* dis_woodstock.c: Fix branch target decode.
+
+	* proc_woodstock.c: Add ROM selftest CRC code.
+	
+	* model.c: HP-34C apparently has 64 hardware RAM registers, as
+	that's how many the self-test checks.
+	
+	* proc_woodstock.c proc_woodstock.h: Split woodstock definitions
+	into proc_woodstock.h.  Replaced if_flag with inst_state to
+	support the additional state 'selftest'.
+	
 2004-06-15  Eric Smith <eric@brouhaha.com>
 
 	* SConstruct, */Sconscript: Made options work.  Eliminated params
