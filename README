@@ -1,6 +1,6 @@
 CASMSIM - an HP Classic series calculator micro assembler and simulator
 Copyright 1995, 2003 Eric L. Smith (eric@brouhaha.com)
-$Header: /home/svn/casmsim/README,v 1.22 2003/05/30 02:03:06 eric Exp $
+$Header: /home/svn/casmsim/README,v 1.23 2003/05/30 07:36:38 eric Exp $
 
 CASMSIM consists of the CASM assembler and the CSIM simulator.  It's just a
 quick hack, so don't expect too much.  In particular it really needs an
@@ -184,3 +184,21 @@ There are two compile time options currently defined in the Makefile:
 	than a real HP-45 without the crystal modification.  If the load
 	average approaches one the stopwatch will lose a lot of time.  Don't
 	blame me if you try to use it and burn your eggs.
+
+-----------------------------------------------------------------------------
+
+Credits (and blame)
+
+CASMSIM was originally written by Eric Smith.  Any bugs in it are almost
+certainly my fault.
+
+Peter Monta developed a specialized OCR program for use on the ROM listings
+in the US patents, and found one typo in my HP-45 source code and several
+in my HP-55 source code.  He also provided modifications to xio.c to
+support the HP-55 keyboard.
+
+Dave Hicks, of hpmuseum.org fame, translated CSIM to Java:
+        http://www.hpmuseum.org/simulate/sim45.htm
+
+Thanks also to HP for having made such great products in the first place,
+without which all of this would have been unnecessary.  :-)

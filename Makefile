@@ -1,6 +1,6 @@
 # Makefile for CASMSIM package
 # Copyright 1995, 2003 Eric L. Smith
-# $Header: /home/svn/casmsim/Makefile,v 1.18 2003/05/30 02:03:06 eric Exp $
+# $Header: /home/svn/casmsim/Makefile,v 1.19 2003/05/30 07:36:38 eric Exp $
 #
 # CASMSIM is free software; you can redistribute it and/or modify it under the
 # terms of the GNU General Public License version 2 as published by the Free
@@ -46,7 +46,7 @@ X11INCS = -I/usr/X11R6/include
 # -----------------------------------------------------------------------------
 
 PACKAGE = casmsim
-VERSION = 0.11
+VERSION = 0.12
 DISTNAME = $(PACKAGE)-$(VERSION)
 
 TARGETS = casm csim
@@ -72,7 +72,7 @@ ROM_SRCS =  hp45.asm hp55.asm
 ROM_LISTINGS = $(ROM_SRCS:.asm=.lst)
 ROM_OBJS = $(ROM_SRCS:.asm=.obj)
 
-DISTRIB = $(MISC) Makefile $(HDRS) $(CSRCS) $(OSRCS) $(ROM_SRCS)
+DIST_FILES = $(MISC) Makefile $(HDRS) $(CSRCS) $(OSRCS) $(ROM_SRCS)
 
 
 %.tab.c %.tab.h %.output: %.y
@@ -101,12 +101,12 @@ hp55.obj hp55.lst:	casm hp55.asm
 csim:	$(CSIM_OBJECTS)
 	$(CC) -o $@ $(CSIM_OBJECTS) $(SIM_LIBS) 
 
-casmsim.tar.gz:	$(DISTFILES)
-	-rm -rf $@ $*
-	mkdir $*
-	for f in $(DISTFILES); do ln $$f $*/$$f; done
-	tar --gzip -chf $@ $*
-	-rm -rf $*
+dist:	$(DIST_FILES)
+	-rm -rf $(DISTNAME) $(DISTNAME).tar.gz
+	mkdir $(DISTNAME)
+	for f in $(DIST_FILES); do ln $$f $(DISTNAME)/$$f; done
+	tar --gzip -chf $(DISTNAME).tar.gz $(DISTNAME)
+	-rm -rf $(DISTNAME)
 
 listings.tar.gz: $(LISTINGS)
 	tar -cvzf $@ $(LISTINGS)
