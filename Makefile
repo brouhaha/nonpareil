@@ -43,7 +43,7 @@ LDFLAGS = -g
 # -----------------------------------------------------------------------------
 
 PACKAGE = nonpareil
-RELEASE = 0.30
+RELEASE = 0.31
 DISTNAME = $(PACKAGE)-$(RELEASE)
 
 PACKAGES = gtk+-2.0 gdk-2.0 gdk-pixbuf-2.0 glib-2.0 gthread-2.0

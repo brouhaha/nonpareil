@@ -6,9 +6,9 @@ $Id$
 
 News:
 
-Release 0.30 of Nonpareil is an interim development release.
+Release 0.31 of Nonpareil is an interim development release.
 
-In this release, the HP-25, HP-35, HP-45, HP-55, and HP-80 are
+In this release, the HP-25, HP-33C, HP-35, HP-45, HP-55, and HP-80 are
 simulated.
 
 The menu commands other than "Quit" and "About" are not implemented.
@@ -72,6 +72,12 @@ An online copy of this article is available from the Museum of HP
 Calculators:
         http://www.hpmuseum.org/journals/woodb.htm
 
+In 1978, HP introduced their third generation handheld calculators,
+known internally as the Spice series.  These use essentially the same
+processor architecture as the Woodstock series, with the addition of
+an instruction to checksum a 1K region of ROM, used as part of a
+self-test.
+
 -----------------------------------------------------------------------------
 
 Nonpareil simulator:
@@ -80,8 +86,9 @@ Nonpareil is a microcode-level simulator for the hardware of the HP
 Classic and Woodstock series of calculators.  It should be capable of
 simulating the following calculators:
 
-  Classic series:  HP-35, HP-45, HP-55, HP-70, HP-80
+  Classic series:    HP-35, HP-45, HP-55, HP-70, HP-80
   Woodstock series:  HP-21, HP-22, HP-25, HP-25C, HP-27, HP-29C
+  Spice series:      HP-31E, HP-32E, HP-33E, HP-33C, HP-37E
 
 Nonpareil uses the Gtk+ 2.2 toolkit and Glib 2.2.  It should be
 portable to Windows and MacOS X, but has only been tested on Linux.
@@ -178,9 +185,9 @@ my fault.
 Peter Monta provided the HP-35 code.  He also found and corrected
 typographical errors in my entry of the HP-45 and HP-55 source code.
 
-Images of the HP-25, HP-35, HP-45, HP-55, and HP-80 are copyrighted by
-David G. Hicks of the Museum of HP Calculators and have been included
-in this package by his permission:
+Images of the HP-25, HP-33C, HP-35, HP-45, HP-55, and HP-80 are
+copyrighted by David G. Hicks of the Museum of HP Calculators and have
+been included in this package by his permission:
         http://www.hpmuseum.org/
 
 David G. Hicks translated the earlier csim HP-45 simulator to Java:
