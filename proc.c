@@ -719,6 +719,13 @@ static void op_keys_to_rom_addr (sim_t *sim, int opcode)
 }
 
 
+static void op_a_to_rom_addr (sim_t *sim, int opcode)
+{
+  sim->env.pc = sim->env.pc & ~0377;
+  sim->env.pc += ((sim->env.a [1] << 4) + sim->env.a [0]);
+}
+
+
 static void op_display_off (sim_t *sim, int opcode)
 {
   sim->env.display_enable = 0;
@@ -792,7 +799,7 @@ static void init_ops (sim_t *sim)
 
   sim->op_fcn [00020] = op_keys_to_rom_addr;
   /* 0010 unknown */
-  sim->op_fcn [00220] = op_keys_to_rom_addr;
+  sim->op_fcn [00220] = op_a_to_rom_addr;
   /* 0320 unknown */
   sim->op_fcn [00420] = op_binary;
   /* 0520 unknown */
