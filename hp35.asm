@@ -1,4 +1,5 @@
 ; HP-35 ROM code disassembled from dump by Peter Monta
+; Copyright 2004 Eric L. Smith <eric@brouhaha.com>
 ; $Id$
 
 ; Much of the code is similar to the HP-45 ROM source code, so labels
