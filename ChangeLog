@@ -1,0 +1,9 @@
+950323:	Reluctantly changed the names of source files from casm.l and casm.y to
+	casml.l and casmy.y.  It seems that many systems have stupid default
+	make rules that would try to build casm.c from casm.l or casm.y if the
+	latter are newer.  Previously I had a line ".SUFFIXES:" in the
+	Makefile to prevent the default rules from being used, but this only
+	works with GNU make or BSD make.
+
+	Created this CHANGELOG file and added it to MISC in the Makefile.
+
