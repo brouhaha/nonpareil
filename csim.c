@@ -38,6 +38,9 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 char *progname;
 
 
+GtkWidget *main_window;
+
+
 #define DISPLAY_DIGIT_POSITIONS 15
 int display_digit [DISPLAY_DIGIT_POSITIONS];
 
@@ -497,7 +500,29 @@ static void file_save_as (GtkWidget *widget, gpointer data)
 
 static void help_about (GtkWidget *widget, gpointer data)
 {
-  /* $$$ not yet implemented */
+  GtkWidget *dialog;
+
+  dialog = gtk_dialog_new_with_buttons ("About CASMSIM",
+					main_window,
+					GTK_DIALOG_DESTROY_WITH_PARENT,
+					GTK_STOCK_OK,
+					GTK_RESPONSE_NONE,
+					NULL);
+
+  gtk_dialog_set_has_separator (GTK_DIALOG (dialog), FALSE);
+
+  g_signal_connect_swapped (GTK_OBJECT (dialog),
+			    "response",
+			    G_CALLBACK (gtk_widget_destroy),
+			    GTK_OBJECT (dialog));
+
+  gtk_container_add (GTK_CONTAINER (GTK_DIALOG (dialog)->vbox),
+		     gtk_label_new ("CASMSIM"));
+  gtk_container_add (GTK_CONTAINER (GTK_DIALOG (dialog)->vbox),
+		     gtk_label_new ("Microcode-level calculator simulator\n"
+				    "Copyright 1995, 2004 Eric L. Smith\n"
+				    "http://www.brouhaha.com/~eric/software/casmsim/"));
+  gtk_widget_show_all (dialog);
 }
 
 
@@ -548,7 +573,6 @@ int main (int argc, char *argv[])
 
   int image_width, image_height;
 
-  GtkWidget *window;
   GtkWidget *vbox;
   GtkWidget *menubar;
   GtkWidget *fixed;
@@ -595,14 +619,14 @@ int main (int argc, char *argv[])
   image_width = gdk_pixbuf_get_width (image_pixbuf);
   image_height = gdk_pixbuf_get_height (image_pixbuf);
 
-  window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
-  gtk_window_set_resizable (GTK_WINDOW (window), FALSE);
-  gtk_window_set_title (GTK_WINDOW (window), "HP-45");
+  main_window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
+  gtk_window_set_resizable (GTK_WINDOW (main_window), FALSE);
+  gtk_window_set_title (GTK_WINDOW (main_window), "HP-45");
 
   vbox = gtk_vbox_new (FALSE, 1);
-  gtk_container_add (GTK_CONTAINER (window), vbox);
+  gtk_container_add (GTK_CONTAINER (main_window), vbox);
 
-  menubar = get_menubar_menu (window);
+  menubar = get_menubar_menu (main_window);
   gtk_box_pack_start (GTK_BOX (vbox), menubar, FALSE, TRUE, 0);
 
   fixed = gtk_fixed_new ();
@@ -621,7 +645,7 @@ int main (int argc, char *argv[])
 
   display = gtk_drawing_area_new ();
 
-  colormap = gtk_widget_get_colormap (window);
+  colormap = gtk_widget_get_colormap (main_window);
   if (! gdk_color_parse ("#ee1111", & red))
     fatal (2, "can't parse color red\n");
   if (! gdk_colormap_alloc_color (colormap, & red, FALSE, TRUE))
@@ -636,14 +660,14 @@ int main (int argc, char *argv[])
   gtk_widget_modify_bg (display, GTK_STATE_NORMAL, & black);
   gtk_fixed_put (GTK_FIXED (fixed), display, DISPLAY_X, DISPLAY_Y);
 
-  gtk_widget_show_all (window);
+  gtk_widget_show_all (main_window);
 
   g_signal_connect (G_OBJECT (display),
 		    "expose_event",
 		    G_CALLBACK (display_expose_event_callback),
 		    NULL);
 
-  gtk_signal_connect (GTK_OBJECT (window),
+  gtk_signal_connect (GTK_OBJECT (main_window),
 		      "destroy",
 		      GTK_SIGNAL_FUNC (quit_callback),
 		      NULL);
