@@ -1016,7 +1016,7 @@ void sim_reset (void)
   g_mutex_lock (sim_mutex);
   if (sim_state != SIM_IDLE)
     fatal (2, "can't reset when not idle\n");
-  sim_state = SIM_STEP;
+  sim_state = SIM_RESET;
   g_cond_signal (sim_cond);
   while (sim_state != SIM_IDLE)
     g_cond_wait (ui_cond, sim_mutex);
