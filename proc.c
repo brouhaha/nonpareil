@@ -1004,6 +1004,32 @@ static void handle_io (sim_t *sim)
 }
 
 
+void print_reg (char *label, reg_t reg)
+{
+  int i;
+  printf ("%s", label);
+  for (i = 13; i >= 0; i--)
+    printf ("%x", reg [i]);
+  printf ("\n");
+}
+
+void print_env (sim_env_t *env)
+{
+  int i;
+  printf ("pc=%04o  radix=%d  p=%d  f=%x  stat:",
+	  env->pc, env->arithmetic_base, env->p, env->f);
+  for (i = 0; i < 16; i++)
+    if (env->s [i])
+      printf (" %d", i);
+  printf ("\n");
+  print_reg ("a:  ", env->a);
+  print_reg ("b:  ", env->b);
+  print_reg ("c:  ", env->c);
+  print_reg ("m1: ", env->m1);
+  print_reg ("m2: ", env->m2);
+}
+
+
 void execute_instruction (sim_t *sim)
 {
   int i;
@@ -1016,7 +1042,9 @@ void execute_instruction (sim_t *sim)
 
   opcode = sim->ucode [0] [sim->env.pc >> 8] [sim->env.pc & 0377];
 
-#if 0
+#undef TRACE
+#ifdef TRACE
+  print_env (& sim->env);
   printf ("%s\n", sim->source [0] [sim->env.pc >> 8] [sim->env.pc & 0377]);
 #endif
 
