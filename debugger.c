@@ -85,6 +85,51 @@ static int xyzzy_cmd (CMD_ARGS)
 }
 
 
+static int go_cmd (CMD_ARGS)
+{
+#ifdef USE_TCL
+  dbg_t *dbg = (dbg_t *) clientData;
+#endif
+  if (sim_running (dbg->sim))
+    {
+      fprintf (dbg->err, "already running\n");
+      return (2);
+    }
+  sim_start (dbg->sim);
+  return (0);
+}
+
+
+static int halt_cmd (CMD_ARGS)
+{
+#ifdef USE_TCL
+  dbg_t *dbg = (dbg_t *) clientData;
+#endif
+  if (! sim_running (dbg->sim))
+    {
+      fprintf (dbg->err, "already halted\n");
+      return (2);
+    }
+  sim_stop (dbg->sim);
+  return (0);
+}
+
+
+static int step_cmd (CMD_ARGS)
+{
+#ifdef USE_TCL
+  dbg_t *dbg = (dbg_t *) clientData;
+#endif
+  if (sim_running (dbg->sim))
+    {
+      fprintf (dbg->err, "already running\n");
+      return (2);
+    }
+  sim_step (dbg->sim);
+  return (0);
+}
+
+
 static int quit_cmd (CMD_ARGS)
 { 
   if (argc != 1)
@@ -113,8 +158,11 @@ typedef struct
 
 cmd_entry cmd_table [] =
 {
-  { "help", help_cmd,       1, "Help                            list commands\n" },
-  { "quit", quit_cmd,       4, "QUIT                            quit simulator\n" },
+  { "go",   go_cmd,         1, "Go           start execution\n" },
+  { "halt", halt_cmd,       2, "HAlt         halt execution\n" },
+  { "help", help_cmd,       1, "Help         list commands\n" },
+  { "quit", quit_cmd,       4, "QUIT         quit simulator\n" },
+  { "step", step_cmd,       1, "Step         single-step\n" },
   { "xyzzy", xyzzy_cmd,     1, "Xyzzy\n" },
   { NULL, NULL, 0, NULL }
 };
