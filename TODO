@@ -14,9 +14,11 @@ User interface:
   syntax to specify keyboard rectangle, and use only region outside
   rectangle for dragging.
 
-  Improve KML file utilization, particularly for display.
+  Improve keyboard support:
+      Release key when focus is lost.
+      Keep button widgets from usurping "ENTER" key.
 
-  Keyboard events, at least for numeric entry, basic four functions, and enter.
+  Improve KML file utilization, particularly for display.
 
   Implement menu commands:
       File - Open, Save, save As

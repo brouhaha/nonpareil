@@ -129,6 +129,14 @@ typedef struct
   kml_command_list_t *ondown;
 } kml_button_t;
 
+
+typedef struct kml_scancode_t
+{
+  struct kml_scancode_t *next;
+  int scancode;
+  kml_command_list_t *commands;
+} kml_scancode_t;
+
 typedef struct
 {
   char *title;
@@ -157,7 +165,8 @@ typedef struct
   kml_switch_t *kswitch [KML_MAX_SWITCH];
   kml_button_t *button [KML_MAX_BUTTON];
 
-  kml_command_list_t *scancode [KML_MAX_SCANCODE];
+  kml_scancode_t *first_scancode;
+  kml_scancode_t *last_scancode;
 } kml_t;
 
 kml_t *read_kml_file (char *fn);

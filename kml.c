@@ -105,6 +105,7 @@ static void free_kml_command_list (kml_command_list_t *list)
 void free_kml (kml_t *kml)
 {
   int i;
+  kml_scancode_t *scancode, *next_scancode;
 
   /* ISO/IEC 9899 paragraph 7.20.3.2 says free(NULL) has no effect. */
   free (kml->title);
@@ -129,9 +130,12 @@ void free_kml (kml_t *kml)
 	free (kml->button [i]);
       }
 
-  for (i = 0; i < KML_MAX_SCANCODE; i++)
-    if (kml->scancode [i])
-      free_kml_command_list (kml->scancode [i]);
+  for (scancode = kml->first_scancode; scancode; scancode = next_scancode)
+    {
+      next_scancode = scancode->next;
+      free_kml_command_list (scancode->commands);
+      free (scancode);
+    }
 }
 
 
@@ -177,12 +181,71 @@ static void print_kml_switch (FILE *f, kml_t *kml, int s)
   fprintf (f, "end\n\n");
 }
 
+void print_kml_command_list (FILE *f, kml_command_list_t *commands)
+{
+  while (commands)
+    {
+      switch (commands->cmd)
+	{
+	case KML_CMD_MAP:
+	  fprintf (f, "map %d %d", commands->arg1, commands->arg2);
+	  break;
+	case KML_CMD_PRESS:
+	  fprintf (f, "press %d ", commands->arg1);
+	  break;
+	case KML_CMD_RELEASE:
+	  fprintf (f, "release %d ", commands->arg1);
+	  break;
+	case KML_CMD_SETFLAG:
+	  fprintf (f, "setflag %d ", commands->arg1);
+	  break;
+	case KML_CMD_RESETFLAG:
+	  fprintf (f, "resetflag %d ", commands->arg1);
+	  break;
+	case KML_CMD_MENUITEM:
+	  fprintf (f, "menuitem %d ", commands->arg1);
+	  break;
+	case KML_CMD_IFFLAG:
+	  fprintf (f, "ifflag %d ", commands->arg1);
+	  print_kml_command_list (f, commands->then_part);
+	  if (commands->else_part)
+	    {
+	      fprintf (f, "else ");
+	      print_kml_command_list (f, commands->else_part);
+	    }
+	  fprintf (f, " end");
+	  break;
+	case KML_CMD_IFPRESSED:
+	  fprintf (f, "ifpressed %d ", commands->arg1);
+	  print_kml_command_list (f, commands->then_part);
+	  if (commands->else_part)
+	    {
+	      fprintf (f, "else ");
+	      print_kml_command_list (f, commands->else_part);
+	    }
+	  fprintf (f, " end");
+	  break;
+	}
+      commands = commands->next;
+    }
+}
+
+void print_kml_scancode (FILE *f, kml_scancode_t *scancode)
+{
+  fprintf (f, "scancode %d ", scancode->scancode);
+  print_kml_command_list (f, scancode->commands);
+  fprintf (f, " end\n");
+}
+
 void print_kml (FILE *f, kml_t *kml)
 {
   int i;
+  kml_scancode_t *scancode;
 
   print_kml_global (f, kml);
   for (i = 0; i < KML_MAX_SWITCH; i++)
     if (kml->kswitch [i])
       print_kml_switch (f, kml, i);
+  for (scancode = kml->first_scancode; scancode; scancode = scancode->next)
+    print_kml_scancode (f, scancode);
 }

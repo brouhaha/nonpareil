@@ -1,5 +1,7 @@
 2004-02-13  Eric Smith <eric@brouhaha.com>
 
+	* csim.c kml.h kml.c kmly.y: Added keyboard support.
+	
 	* csim.c (main, on_move_window, create_menus): When there are no
 	window decorations (using transparency/shape support), allow
 	window to be dragged by left-click anywhere other than active

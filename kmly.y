@@ -250,7 +250,7 @@ map_command		:	MAP INTEGER INTEGER
 				{ $$ = alloc (sizeof (kml_command_list_t));
 				  $$->cmd = KML_CMD_MAP;
 				  $$->arg1 = $2;
-				  $$->arg1 = $3; } ;
+				  $$->arg2 = $3; } ;
 
 press_command		:	PRESS INTEGER
 				{ $$ = alloc (sizeof (kml_command_list_t));
@@ -393,7 +393,19 @@ ondown_stmt		:	ONDOWN command_list END
 ----------------------------------------------------------------------------*/
 
 scancode_section	:	SCANCODE INTEGER command_list END
-				{ range_check ($2, 0, KML_MAX_SCANCODE);
-				  yy_kml->scancode [$2] = $3 ; };
+				{ kml_scancode_t *s = alloc (sizeof (kml_scancode_t));
+				  s->scancode = $2;
+				  s->commands = $3;
+				  if (yy_kml->last_scancode)
+				    {
+				      yy_kml->last_scancode->next = s;
+				      yy_kml->last_scancode = s;
+				    }
+				  else
+				    {
+				      yy_kml->first_scancode = s;
+				      yy_kml->last_scancode = s;
+				    }
+				};
 
 %%

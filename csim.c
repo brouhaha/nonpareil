@@ -399,6 +399,7 @@ void add_key (GtkWidget *fixed,
 		    "pressed",
 		    G_CALLBACK (& button_pressed),
 		    (gpointer) button_info);
+
   g_signal_connect (G_OBJECT (button_info->widget),
 		    "released",
 		    G_CALLBACK (& button_released),
@@ -421,6 +422,85 @@ void add_keys (GdkPixbuf *window_pixbuf, GtkWidget *fixed)
 	button_info [i] = alloc (sizeof (button_info_t));
 	add_key (fixed, window_pixbuf, kml->button [i], button_info [i]);
       }
+}
+
+
+void process_commands (kml_command_list_t *commands,
+		       int scancode,
+		       int pressed);
+
+
+void process_command (kml_command_list_t *command,
+		      int scancode,
+		      int pressed)
+{
+  switch (command->cmd)
+    {
+    case KML_CMD_MAP:
+      if (scancode != command->arg1)
+	{
+	  fprintf (stderr, "scancode %d has map command for scancode %d\n",
+		   scancode, command->arg1);
+	  return;
+	}
+      if (! button_info [command->arg2])
+	{
+	  fprintf (stderr, "scancode %d has map command for nonexistent key %d\n",
+		   scancode, command->arg2);
+	  return;
+	}
+      if (pressed)
+	{
+	  button_pressed (button_info [command->arg2]->widget,
+			  button_info [command->arg2]);
+	}
+      else
+	{
+	  button_released (button_info [command->arg2]->widget,
+			   button_info [command->arg2]);
+	}
+      break;
+    case KML_CMD_IFPRESSED:
+      if (pressed)
+	process_commands (command->then_part, scancode, pressed);
+      else if (command->else_part)
+	process_commands (command->else_part, scancode, pressed);
+      break;
+    default:
+      fprintf (stderr, "unimplemented command %d\n", command->cmd);
+    }
+}
+
+void process_commands (kml_command_list_t *commands,
+		       int scancode,
+		       int pressed)
+{
+  while (commands)
+    {
+      process_command (commands, scancode, pressed);
+      commands = commands->next;
+    }
+}
+
+
+void on_key_event (GtkWidget *widget, GdkEventKey *event)
+{
+  kml_scancode_t *scancode;
+
+  if ((event->type != GDK_KEY_PRESS) && 
+      (event->type != GDK_KEY_RELEASE))
+    return;  /* why are we here? */
+
+  for (scancode = kml->first_scancode; scancode; scancode = scancode->next)
+    {
+      if (event->keyval == scancode->scancode)
+	{
+	  process_commands (scancode->commands, event->keyval, event->type == GDK_KEY_PRESS);
+	  return;
+	}
+    }
+  if (1)
+    fprintf (stderr, "unrecognized scancode %d\n", event->keyval);
 }
 
 
@@ -799,6 +879,16 @@ int main (int argc, char *argv[])
   g_signal_connect (G_OBJECT (display),
 		    "expose_event",
 		    G_CALLBACK (display_expose_event_callback),
+		    NULL);
+
+  g_signal_connect (G_OBJECT (main_window),
+		    "key_press_event",
+		    G_CALLBACK (on_key_event),
+		    NULL);
+
+  g_signal_connect (G_OBJECT (main_window),
+		    "key_release_event",
+		    G_CALLBACK (on_key_event),
 		    NULL);
 
   if (image_mask_bitmap)
