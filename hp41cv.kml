@@ -24,19 +24,18 @@ global
 	model "41CV"
 	rom "hp41cv.obj"
 #	listing "hp41c.lst"
-	image "hp41cv.png"
+	image "hp41.png"
 	color 0 137 0 6	  # background color, used when transparency is off
-	transparency 128
 end
 
 background
-	offset 11 17
-	size 281 526
+	offset 0 0
+	size 270 496
 end
 
 display
-	offset 35 48
-	size 235 42
+	offset 8 8
+	size 254 48
 
 	color 0 142 125 109   # background
 	color 1 142 125 109   # unlit segments
@@ -458,53 +457,53 @@ display
 	segment 'q' rect offset  9  5 size 2 2 end  # upper dot of colon
 end
 
-button 01  type 0  size 44 20  offset  33 107  down 2 8  keycode 0x18  end
-button 02  type 0  size 44 20  offset  83 107  down 2 8  keycode 0xc6  end
-button 03  type 0  size 44 20  offset 180 107  down 2 8  keycode 0xc5  end
-button 04  type 0  size 44 20  offset 230 107  down 2 8  keycode 0xc4  end
+button 01  type 0  size 37 18  offset  21  65  down 2 8  keycode 0x18  end
+button 02  type 0  size 37 18  offset  69  65  down 2 8  keycode 0xc6  end
+button 03  type 0  size 37 18  offset 165  65  down 2 8  keycode 0xc5  end
+button 04  type 0  size 37 18  offset 213  65  down 2 8  keycode 0xc4  end
 
-button 11  type 0  size 30 30  offset  47 165  down 2 8  keycode 0x10  end
-button 12  type 0  size 30 30  offset  92 165  down 2 8  keycode 0x30  end
-button 13  type 0  size 30 30  offset 136 165  down 2 8  keycode 0x70  end
-button 14  type 0  size 30 30  offset 179 165  down 2 8  keycode 0x80  end
-button 15  type 0  size 30 30  offset 225 165  down 2 8  keycode 0xc0  end
+button 11  type 0  size 30 28  offset  24 111  down 2 8  keycode 0x10  end
+button 12  type 0  size 30 28  offset  72 111  down 2 8  keycode 0x30  end
+button 13  type 0  size 30 28  offset 120 111  down 2 8  keycode 0x70  end
+button 14  type 0  size 30 28  offset 168 111  down 2 8  keycode 0x80  end
+button 15  type 0  size 30 28  offset 216 111  down 2 8  keycode 0xc0  end
 
-button 21  type 0  size 30 30  offset  47 210  down 2 8  keycode 0x11  end
-button 22  type 0  size 30 30  offset  92 210  down 2 8  keycode 0x31  end
-button 23  type 0  size 30 30  offset 136 210  down 2 8  keycode 0x71  end
-button 24  type 0  size 30 30  offset 179 210  down 2 8  keycode 0x81  end
-button 25  type 0  size 30 30  offset 225 210  down 2 8  keycode 0xc1  end
+button 21  type 0  size 30 28  offset  24 159  down 2 8  keycode 0x11  end
+button 22  type 0  size 30 28  offset  72 159  down 2 8  keycode 0x31  end
+button 23  type 0  size 30 28  offset 120 159  down 2 8  keycode 0x71  end
+button 24  type 0  size 30 28  offset 168 159  down 2 8  keycode 0x81  end
+button 25  type 0  size 30 28  offset 216 159  down 2 8  keycode 0xc1  end
 
-button 31  type 0  size 30 30  offset  47 255  down 2 8  keycode 0x12  end
-button 32  type 0  size 30 30  offset  92 255  down 2 8  keycode 0x32  end
-button 33  type 0  size 30 30  offset 136 255  down 2 8  keycode 0x72  end
-button 34  type 0  size 30 30  offset 179 255  down 2 8  keycode 0x82  end
-button 35  type 0  size 30 30  offset 225 255  down 2 8  keycode 0xc2  end
+button 31  type 0  size 30 28  offset  24 207  down 2 8  keycode 0x12  end
+button 32  type 0  size 30 28  offset  72 207  down 2 8  keycode 0x32  end
+button 33  type 0  size 30 28  offset 120 207  down 2 8  keycode 0x72  end
+button 34  type 0  size 30 28  offset 168 207  down 2 8  keycode 0x82  end
+button 35  type 0  size 30 28  offset 216 207  down 2 8  keycode 0xc2  end
 
-button 41  type 0  size 75 30  offset  47 300  down 2 8  keycode 0x13  end
-button 42  type 0  size 30 30  offset 136 300  down 2 8  keycode 0x73  end
-button 43  type 0  size 30 30  offset 179 300  down 2 8  keycode 0x83  end
-button 44  type 0  size 30 30  offset 225 300  down 2 8  keycode 0xc3  end
+button 41  type 0  size 78 28  offset  24 255  down 2 8  keycode 0x13  end
+button 42  type 0  size 30 28  offset 120 255  down 2 8  keycode 0x73  end
+button 43  type 0  size 30 28  offset 168 255  down 2 8  keycode 0x83  end
+button 44  type 0  size 30 28  offset 216 255  down 2 8  keycode 0xc3  end
 
-button 51  type 0  size 30 30  offset  47 345  down 2 8  keycode 0x14  end
-button 52  type 0  size 35 30  offset 100 345  down 2 8  keycode 0x34  end
-button 53  type 0  size 35 30  offset 159 345  down 2 8  keycode 0x74  end
-button 54  type 0  size 35 30  offset 218 345  down 2 8  keycode 0x84  end
+button 51  type 0  size 24 28  offset  24 303  down 2 8  keycode 0x14  end
+button 52  type 0  size 37 28  offset  73 303  down 2 8  keycode 0x34  end
+button 53  type 0  size 37 28  offset 141 303  down 2 8  keycode 0x74  end
+button 54  type 0  size 37 28  offset 209 303  down 2 8  keycode 0x84  end
 
-button 61  type 0  size 30 30  offset  47 390  down 2 8  keycode 0x15  end
-button 62  type 0  size 35 30  offset 100 390  down 2 8  keycode 0x35  end
-button 63  type 0  size 35 30  offset 159 390  down 2 8  keycode 0x75  end
-button 64  type 0  size 35 30  offset 218 390  down 2 8  keycode 0x85  end
+button 61  type 0  size 24 28  offset  24 351  down 2 8  keycode 0x15  end
+button 62  type 0  size 37 28  offset  73 351  down 2 8  keycode 0x35  end
+button 63  type 0  size 37 28  offset 141 351  down 2 8  keycode 0x75  end
+button 64  type 0  size 37 28  offset 209 351  down 2 8  keycode 0x85  end
 
-button 71  type 0  size 30 30  offset  47 435  down 2 8  keycode 0x16  end
-button 72  type 0  size 35 30  offset 100 435  down 2 8  keycode 0x36  end
-button 73  type 0  size 35 30  offset 159 435  down 2 8  keycode 0x76  end
-button 74  type 0  size 35 30  offset 218 435  down 2 8  keycode 0x86  end
+button 71  type 0  size 24 28  offset  24 399  down 2 8  keycode 0x16  end
+button 72  type 0  size 37 28  offset  73 399  down 2 8  keycode 0x36  end
+button 73  type 0  size 37 28  offset 141 399  down 2 8  keycode 0x76  end
+button 74  type 0  size 37 28  offset 209 399  down 2 8  keycode 0x86  end
 
-button 81  type 0  size 30 30  offset  47 480  down 2 8  keycode 0x17  end
-button 82  type 0  size 35 30  offset 100 480  down 2 8  keycode 0x37  end
-button 83  type 0  size 35 30  offset 159 480  down 2 8  keycode 0x77  end
-button 84  type 0  size 35 30  offset 218 480  down 2 8  keycode 0x87  end
+button 81  type 0  size 24 28  offset  24 447  down 2 8  keycode 0x17  end
+button 82  type 0  size 37 28  offset  73 447  down 2 8  keycode 0x37  end
+button 83  type 0  size 37 28  offset 141 447  down 2 8  keycode 0x77  end
+button 84  type 0  size 37 28  offset 209 447  down 2 8  keycode 0x87  end
 
 # main keyboard:
 scancode 48 map 48 82 end  # 0
