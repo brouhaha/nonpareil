@@ -55,8 +55,54 @@ char *lineptr;
 char listbuf [MAX_LINE];
 char *listptr;
 
-void do_pass (int p, FILE *srcf, FILE *listf)
+FILE *srcfile;
+FILE *objfile;
+FILE *listfile;
+
+void format_listing (void)
 {
+  int i;
+	
+  sprintf (listptr, "%3d   ", lineno);
+  listptr += strlen (listptr);
+
+  if (objflag)
+    {
+      sprintf (listptr, "L%1o%1o%03o:  ", group, rom, pc);
+      listptr += strlen (listptr);
+      for (i = 0x200; i; i >>= 1)
+	*listptr++ = (objcode & i) ? '1' : '.';
+      *listptr = '\0';
+    }
+  else
+    {
+      strcat (listptr, "                   ");
+      listptr += strlen (listptr);
+    }
+
+  if (targflag)
+    {
+      sprintf (listptr, "  -> L%1o%1o%03o", targgroup, targrom, targpc);
+      listptr += strlen (listptr);
+    }
+  else
+    {
+      strcat (listptr, "           ");
+      listptr += strlen (listptr);
+    }
+	  
+  sprintf (listptr, "  %c%c%c%c%c     ", flag_char, flag_char, flag_char,
+	   flag_char, flag_char);
+  listptr += strlen (listptr);
+  
+  strcat (listptr, linebuf);
+  listptr += strlen (listptr);
+}
+
+void do_pass (int p)
+{
+  int i;
+
   pass = p;
   lineno = 0;
   errors = 0;
@@ -66,8 +112,13 @@ void do_pass (int p, FILE *srcf, FILE *listf)
 
   fprintf (stderr, "Starting pass %d\n", pass);
 
-  while (fgets (linebuf, MAX_LINE, srcf))
+  while (fgets (linebuf, MAX_LINE, srcfile))
     {
+      /* remove newline */
+      i = strlen (linebuf);
+      if (linebuf [i - 1] == '\n')
+	linebuf [i - 1] = '\0';
+
       lineno++;
       lineptr = & linebuf [0];
 
@@ -82,42 +133,8 @@ void do_pass (int p, FILE *srcf, FILE *listf)
 
       if (pass == 2)
 	{
-	  sprintf (listptr, "%3d   ", lineno);
-	  listptr += strlen (listptr);
-
-	  if (objflag)
-	    {
-	      int i;
-	      sprintf (listptr, "L%1o%1o%03o:  ", group, rom, pc);
-	      listptr += strlen (listptr);
-	      for (i = 0x200; i; i >>= 1)
-		*listptr++ = (objcode & i) ? '1' : '.';
-	      *listptr = '\0';
-	    }
-	  else
-	    {
-	      strcat (listptr, "                   ");
-	      listptr += strlen (listptr);
-	    }
-
-	  if (targflag)
-	    {
-	      sprintf (listptr, "  -> L%1o%1o%03o", targgroup, targrom, targpc);
-	      listptr += strlen (listptr);
-	    }
-	  else
-	    {
-	      strcat (listptr, "           ");
-	      listptr += strlen (listptr);
-	    }
-	  
-	  sprintf (listptr, "  %c%c%c%c%c     ", flag_char, flag_char, flag_char,
-		                               flag_char, flag_char);
-	  listptr += strlen (listptr);
-
-	  strcat (listptr, linebuf);
-	  /* listptr += strlen (listpr); */
-	  fprintf (listf, "%s", listbuf);
+	  format_listing ();
+	  fprintf (listfile, "%s\n", listbuf);
 	}
 
       if (objflag)
@@ -125,10 +142,27 @@ void do_pass (int p, FILE *srcf, FILE *listf)
     }
 }
 
+void munge_filename (char *dst, char *src, char *ext)
+{
+  int i;
+  int lastdot = 0;
+  for (i = 0; src [i]; i++)
+    {
+      if (src [i] == '.')
+	lastdot = i;
+    }
+  if (lastdot == 0)
+    lastdot = strlen (src);
+  memcpy (dst, src, lastdot);
+  dst [lastdot] = '\0';
+  strcat (dst, ext);
+}
+
 int main (int argc, char *argv[])
 {
-  char *infile;
-  FILE *in;
+  char *srcfn;
+  char objfn [300];
+  char listfn [300];
 
   progname = argv [0];
 
@@ -138,28 +172,51 @@ int main (int argc, char *argv[])
       exit (1);
     }
 
-  infile = argv [1];
+  srcfn = argv [1];
 
-  in = fopen (infile, "r");
+  srcfile = fopen (srcfn, "r");
 
-  if (! in)
+  if (! srcfile)
     {
-      fprintf (stderr, "can't open input file '%s'\n", infile);
+      fprintf (stderr, "can't open input file '%s'\n", srcfn);
+      exit (2);
+    }
+
+  munge_filename (objfn, srcfn, ".obj");
+  munge_filename (listfn, srcfn, ".lst");
+
+  objfile = fopen (objfn, "w");
+
+  if (! objfile)
+    {
+      fprintf (stderr, "can't open input file '%s'\n", objfn);
+      exit (2);
+    }
+
+  listfile = fopen (listfn, "w");
+
+  if (! listfile)
+    {
+      fprintf (stderr, "can't open listing file '%s'\n", listfn);
       exit (2);
     }
 
   rom = 0;
   group = 0;
 
-  do_pass (1, in, stdout);
+  do_pass (1);
 
-  rewind (in);
+  rewind (srcfile);
 
-  do_pass (2, in, stdout);
+  do_pass (2);
 
-  print_symbol_table (stdout);
+  print_symbol_table (listfile);
 
   fprintf (stderr, "%d errors\n", errors);
+
+  fclose (srcfile);
+  fclose (objfile);
+  fclose (listfile);
 }
 
 void yyerror (char *s)
@@ -202,6 +259,9 @@ void emit (int op)
 {
   objcode = op;
   objflag = 1;
+
+  if ((pass == 2) && objfile)
+    fprintf (objfile, "%1o%1o%03o:%03x\n", group, rom, pc, op);
 }
 
 void target (int g, int r, int p)

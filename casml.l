@@ -37,13 +37,16 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
     lineptr += r; \
     result = r; \
   }
+#if 0
+    fprintf (stderr, "yy_input: '%s', %d\n", lineptr, r); \
+
+#endif
 %}
 
 octaldig	[0-7]
 digit		[0-9]
 alpha		[a-zA-Z]
 alphanum	[a-zA-Z0-9_]
-comment		\;.*$
 lb		\[
 rb		\]
 %%
@@ -73,9 +76,9 @@ rb		\]
 \>=		{ return GE; }
 -\>		{ return ARROW; }
 
-\;.*$		;
+\;.*		;
 [ \t]+		;
-\n		{ return yytext [0]; }
+\n		;
 .		{ return yytext [0]; }
 
 %%

@@ -1,5 +1,6 @@
 README file for CASM - an HP Classic series calculator micro assembler
 Copyright 1995 Eric L. Smith (eric@telebit.com)
+Last revised March 8, 1995
 
 -----------------------------------------------------------------------------
 
@@ -21,16 +22,18 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 -----------------------------------------------------------------------------
 
 CASM is just a quick weekend hack, so don't expect too much.  I used flex and
-yacc to build it; I once used bison in place of yacc so I think that works.
+bison to build it; I once used yacc in place of bison so I think that works.
 I parse the source file one line at a time because it simplifies making a
 pretty listing file; unfortunately this means that lex can't be used in place
 of flex without rewriting my YY_INPUT macro as an input function.
 
 CASM requires a single command line argument to specify the source code file.
 
-CASM currently writes a listing to standard out, and doesn't produce any
-object file at all.  I'll probably have it generate Intel hex or Motorola
-S-record format object files in the next version.
+CASM derives names for the object and listing files from the source filename
+by replacing the extension (everything after the last dot, typically "asm")
+with "obj" or "lst".  If the source filename doesn't have an extension CASM
+adds one.  The object file format is one word per line with the five digit
+octal address, a colon and the instruction word in hexadecimal.
 
 In the HP classic series processor, unlike modern microprocessors, various
 instructions were interpreted by various chips.  The core processor consists
@@ -51,8 +54,8 @@ Calculator Displaying Absolute Line Number Addresses and Key Codes and
 Automatically Altering Display Formats", granted February 22, 1977 to Bernard
 E. Musch of Palo Alto, California, and assigned to the Hewlett-Packard
 Company of Palo Alto, California.  These source code files are not part of
-CASM, are not copyrighted by me, and are not subject to the General Public
-License.
+CASM, are not copyrighted by Eric L. Smith, and are not subject to the General
+Public License.
 
 The '379 patent appears to cover the HP-55 calculator.  I don't have an
 HP-55, so I can't verify that the code in the patent matches that in the ROMs

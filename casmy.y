@@ -93,12 +93,12 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
 %%
 
-line		:	label instruction '\n'
-		|	label '\n'
-		|	instruction '\n'
-		|	pseudo_op '\n'
-		|	'\n'
-		|	error '\n'
+line		:	label instruction
+		|	label
+		|	instruction
+		|	pseudo_op
+		|	
+		|	error
 		;
 
 label:		IDENT ':'	{ do_label ($1); }
@@ -303,7 +303,7 @@ inst_load_const : LOAD CONSTANT expr        { range ($3, 0, 9);
 inst_disp_off   : DISPLAY OFF               { emit (0x228); } ;
 inst_disp_tog   : DISPLAY TOGGLE            { emit (0x028); } ;
 inst_c_exch_m   : C EXCHANGE M              { emit (0x0a8); } ;
-inst_m_to_c     : M ARROW C                 { emit (0x288); } ;
+inst_m_to_c     : M ARROW C                 { emit (0x2a8); } ;
 inst_c_to_stack : C ARROW STACK             { emit (0x128); } ;
 inst_stack_to_a : STACK ARROW A             { emit (0x1a8); } ;
 inst_down_rot   : DOWN ROTATE               { emit (0x328); } ;
