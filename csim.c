@@ -67,6 +67,8 @@ static segment_bitmap_t display_segments [KML_MAX_DIGITS];
 
 GtkWidget *display;
 
+GdkBitmap *annunciator_bitmap [KML_MAX_ANNUNCIATOR];
+
 
 void usage (FILE *f)
 {
@@ -178,6 +180,112 @@ static void display_update (display_handle_t *display_handle,
   gdk_window_invalidate_rect (display->window,
 			      & rect,
 			      FALSE);
+}
+
+
+static void get_pixbuf_pixel (GdkPixbuf *pixbuf, int x, int y,
+			      int *r, int *g, int *b)
+{
+  int width, height, rowstride, n_channels;
+  guchar *pixels, *p;
+
+  n_channels = gdk_pixbuf_get_n_channels (pixbuf);
+
+  g_assert (gdk_pixbuf_get_colorspace (pixbuf) == GDK_COLORSPACE_RGB);
+  g_assert (gdk_pixbuf_get_bits_per_sample (pixbuf) == 8);
+  // g_assert (gdk_pixbuf_get_has_alpha (pixbuf));
+  g_assert (n_channels >= 3);
+
+  width = gdk_pixbuf_get_width (pixbuf);
+  height = gdk_pixbuf_get_height (pixbuf);
+
+  g_assert (x >= 0 && x < width);
+  g_assert (y >= 0 && y < height);
+
+  rowstride = gdk_pixbuf_get_rowstride (pixbuf);
+  pixels = gdk_pixbuf_get_pixels (pixbuf);
+
+  p = pixels + y * rowstride + x * n_channels;
+  *r = p[0];
+  *g = p[1];
+  *b = p[2];
+}
+
+
+static void init_annunciator (GdkPixbuf *file_pixbuf, int i)
+{
+  int row_bytes;
+  char *xbm_data;
+  char *p;
+  int bit;
+  int x, y;
+  int r, g, b;
+
+  row_bytes = (kml->annunciator [i]->size.width + 7) / 8;
+
+  xbm_data = alloc (row_bytes * kml->annunciator [i]->size.height + 9);
+  // $$$ If we don't add at least 9 bytes of padding,
+  // gdk_bitmap_create_from_data() will segfault!
+
+#ifdef ANN_DEBUG
+  printf ("Annunciator %d:\n", i);
+  printf ("height: %d  width: %d  row_bytes: %d\n",
+	  kml->annunciator [i]->size.height,
+	  kml->annunciator [i]->size.width,
+	  row_bytes);
+#endif
+
+  for (y = 0; y < kml->annunciator [i]->size.height; y++)
+    {
+      p = & xbm_data [y * row_bytes];
+      bit = 0x80;
+      for (x = 0; x < kml->annunciator [i]->size.width; x++)
+	{
+	  get_pixbuf_pixel (file_pixbuf, 
+			    kml->annunciator [i]->offset.x + x,
+			    kml->annunciator [i]->offset.y + y,
+			    & r, & g, & b);
+
+	  bit = (r == 0) && (g == 0) && (b == 0);
+	  // $$$ This needs to be improved!  Perhaps we should compute
+	  // the Euclidian distance in the color space between this pixel
+	  // value and the display foreground and background colors?
+
+#ifdef ANN_DEBUG
+	  printf (bit ? "*" : ".");
+#endif
+	  if (bit)
+	    {
+	      (*p) |= bit;
+	    }
+	  bit >>= 1;
+	  if (! bit)
+	    {
+	      p++;
+	      bit = 0x80;
+	    }
+	}
+#ifdef ANN_DEBUG
+      printf ("\n");
+#endif
+    }
+
+  annunciator_bitmap [i] = gdk_bitmap_create_from_data (NULL,
+							xbm_data,
+							kml->annunciator [i]->size.width,
+							kml->annunciator [i]->size.height);
+
+  free (xbm_data);
+}
+
+
+static void init_annunciators (GdkPixbuf *file_pixbuf)
+{
+  int i;
+
+  for (i = 0; i < KML_MAX_ANNUNCIATOR; i++)
+    if (kml->annunciator [i])
+      init_annunciator (file_pixbuf, i);
 }
 
 
@@ -822,7 +930,7 @@ int main (int argc, char *argv[])
 
   if (kml->has_transparency && shape)
     {
-      image_mask_bitmap = (GdkBitmap *) gdk_pixmap_new (GTK_WINDOW (main_window)->frame,
+      image_mask_bitmap = (GdkBitmap *) gdk_pixmap_new (NULL,
 							kml->background_size.width,
 							kml->background_size.height,
 							1);
@@ -908,6 +1016,8 @@ int main (int argc, char *argv[])
     }
 
   gtk_widget_show_all (main_window);
+
+  init_annunciators (file_pixbuf);
 
   g_signal_connect (G_OBJECT (display),
 		    "expose_event",
