@@ -18,17 +18,22 @@
 # Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
 
+#HAS_DEBUGGER=1
+ifdef HAS_DEBUGGER
+HAS_DEBUGGER_CLI=1
+ifdef HAS_DEBUGGER_CLI
+USE_TCL=1
+USE_READLINE=1
+endif
+endif
+
+
 YACC = bison
 YFLAGS = -d -v
 
 LEX = flex
 
 LDFLAGS = -g
-
-PACKAGES = gtk+-2.0 gdk-2.0 gdk-pixbuf-2.0 glib-2.0 gthread-2.0
-
-CFLAGS = -g -Wall `pkg-config $(PACKAGES) --cflags`
-LOADLIBES = `pkg-config $(PACKAGES) --libs`
 
 
 # -----------------------------------------------------------------------------
@@ -37,15 +42,41 @@ LOADLIBES = `pkg-config $(PACKAGES) --libs`
 # -----------------------------------------------------------------------------
 
 PACKAGE = casmsim
-RELEASE = 0.23
+RELEASE = 0.24
 DISTNAME = $(PACKAGE)-$(RELEASE)
+
+PACKAGES = gtk+-2.0 gdk-2.0 gdk-pixbuf-2.0 glib-2.0 gthread-2.0
+ifdef HAS_DEBUGGER_CLI
+PACKAGES += vte
+endif
+
+CFLAGS = -g -Wall `pkg-config $(PACKAGES) --cflags`
+LOADLIBES = `pkg-config $(PACKAGES) --libs` -lutil
+
+ifdef HAS_DEBUGGER
+  CFLAGS += -DHAS_DEBUGGER
+endif
+
+ifdef HAS_DEBUGGER_CLI
+  CFLAGS += -DHAS_DEBUGGER_CLI
+endif
+
+ifdef USE_TCL
+  CFLAGS += -DUSE_TCL
+  LOADLIBES += -ltcl
+endif
+
+ifdef USE_READLINE
+  CFLAGS += -DUSE_READLINE
+  LOADLIBES += -lreadline -lhistory -ltermcap
+endif
 
 CALCS = hp35 hp45 hp55 hp80
 
 TARGETS = casm csim
 
-HDRS = casm.h symtab.h util.h proc.h kml.h
-CSRCS = casm.c symtab.c csim.c util.c proc.c kml.c
+HDRS = casm.h symtab.h util.h proc.h kml.h debugger.h
+CSRCS = casm.c symtab.c csim.c util.c proc.c kml.c debugger.c
 OSRCS = casml.l casmy.y kmll.l kmly.y
 MISC = COPYING README ChangeLog
 
@@ -57,7 +88,11 @@ AUTO_HDRS = casmy.tab.h kmly.tab.h
 AUTO_MISC = casmy.output kmly.output
 
 CASM_OBJECTS = casm.o symtab.o casml.o casmy.tab.o util.o
+
 CSIM_OBJECTS = csim.o util.o proc.o kmll.o kmly.tab.o kml.o
+ifdef HAS_DEBUGGER_CLI
+  CSIM_OBJECTS += debugger.o
+endif
 
 OBJECTS = $(CASM_OBJECTS) $(CSIM_OBJECTS)
 

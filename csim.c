@@ -35,6 +35,10 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #include "proc.h"
 #include "kml.h"
 
+#ifdef HAS_DEBUGGER_CLI
+  #include "debugger.h"
+#endif
+
 
 gboolean scancode_debug = FALSE;
 gboolean kml_debug = FALSE;
@@ -42,6 +46,11 @@ gboolean kml_debug = FALSE;
 kml_t *kml;
 
 sim_t *sim;
+
+#ifdef HAS_DEBUGGER_CLI
+gboolean dbg_visible;
+dbg_t *dbg;
+#endif
 
 
 GtkWidget *main_window;
@@ -498,6 +507,7 @@ static void help_about (GtkWidget *widget, gpointer data)
 }
 
 
+#ifdef HAS_DEBUGGER
 void debug_show_reg (GtkWidget *widget, gpointer data)
 {
   /* $$$ not yet implemented */
@@ -516,6 +526,20 @@ void debug_step (GtkWidget *widget, gpointer data)
 }
 
 
+#ifdef HAS_DEBUGGER_CLI
+void debug_cmd_win (GtkWidget *widget, gpointer data)
+{
+  if (! dbg)
+    dbg = init_debugger (sim);
+
+  dbg_visible = ! dbg_visible;
+
+  show_debugger (dbg, dbg_visible);
+}
+#endif /* HAS_DEBUGGER_CLI */
+#endif /* HAS_DEBUGGER */
+
+
 static GtkItemFactoryEntry menu_items [] =
   {
     { "/_File",         NULL,         NULL,          0, "<Branch>" },
@@ -527,10 +551,15 @@ static GtkItemFactoryEntry menu_items [] =
     { "/_Edit",         NULL,         NULL,          0, "<Branch>" },
     { "/Edit/_Copy",    "<control>C", edit_copy,     0, "<StockItem>", GTK_STOCK_COPY },
     { "/Edit/_Paste",   "<control>V", edit_paste,    0, "<StockItem>", GTK_STOCK_PASTE },
+#ifdef HAS_DEBUGGER
     { "/_Debug",        NULL,         NULL,          0, "<Branch>" },
     { "/Debug/Show Reg", NULL,        debug_show_reg, 0, "<Item>" },
     { "/Debug/Run",     NULL,         debug_run,     0, "<Item>" },
     { "/Debug/Step",    NULL,         debug_step,    0, "<Item>" },
+#ifdef HAS_DEBUGGER_CLI
+    { "/Debug/Command Window", NULL,     debug_cmd_win, 0, "<ToggleItem>" },
+#endif
+#endif
     { "/_Help",         NULL,         NULL,          0, "<LastBranch>" },
     { "/_Help/About",   NULL,         help_about,    0, "<Item>" }
   };
@@ -636,7 +665,6 @@ void setup_color (GdkColormap *colormap,
   if (! gdk_colormap_alloc_color (colormap, gdk_color, FALSE, TRUE))
     fatal (2, "can't alloc %s color\n", name);
 }
-
 
 
 #ifndef PATH_MAX

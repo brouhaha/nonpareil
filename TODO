@@ -19,8 +19,6 @@ User interface:
       Ignore key release and hold key for a fixed (configurable?) number of
           simulation cycles?
 
-  Improve KML file utilization, particularly for display.
-
   Implement menu commands:
       File - Open, Save, save As
       Edit - Copy, Paste
@@ -42,7 +40,13 @@ Internals:
 
   Use io_count to improve display update timing.
 
-  Add a debugger.
+  Add reflection API for use by debugger (both GUI and command line).
+
+  Add register window.
+
+  Add debugger commands.  Pass dbt_t as arg to commands.
+
+  Change Tcl standard I/O streams to use pty file descriptor.
 
   Split ALU functions into separate source file.
 
@@ -66,9 +70,7 @@ Better model support:
 
   Scan images.
 
-  Implement HP-65, HP-70, HP-80 keyboard legends.
-
-  Dump actual HP-45, HP-55, HP-65, HP-70, HP-80 ROMs.
+  Dump actual HP-45, HP-55, HP-65, HP-70, HP-80 ROMs.  Dump buggy HP-35 ROMs.
 
   Compare actual HP-45 and HP-55 ROMs to CASM output.
 
@@ -78,7 +80,8 @@ Better model support:
 Ports:
 
   Windows
+    http://www.mingw.org/
+    http://www.gimp.org/~tml/gimp/win32/
 
   MacOS X
-
-
+    http://www.macgimp.org/index.php?topic=gtk

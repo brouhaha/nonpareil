@@ -1,5 +1,8 @@
 2004-02-24  Eric Smith <eric@brouhaha.com>
 
+	* debugger.c debugger.h csim.c: Added command-line debugger
+	infrastructure.
+	
 	* proc.c proc.h csim.c: Replaced "struct sim_handle_t" with
 	typedef'd sim_t.
 
