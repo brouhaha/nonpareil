@@ -33,10 +33,17 @@ MA 02111, USA.
 #include "proc_nut.h"
 
 
+#define VOYAGER_LCD_DEBUG
+#define VOYAGER_DISPLAY_BLINK_DIVISOR 150
+
+
 static void voyager_op_display_off (sim_t *sim, int opcode)
 {
+#ifdef VOYAGER_LCD_DEBUG
   printf ("display off\n");
+#endif
   sim->env->display_enable = 0;
+  sim->env->display_blink = 0;
   sim->env->display_count = 2;
   // Don't change immediately, as the next instruction might be a
   // display toggle.
@@ -45,14 +52,30 @@ static void voyager_op_display_off (sim_t *sim, int opcode)
 
 static void voyager_op_display_toggle (sim_t *sim, int opcode)
 {
+#ifdef VOYAGER_LCD_DEBUG
   printf ("display toggle\n");
+#endif
   sim->env->display_enable = ! sim->env->display_enable;
+  sim->env->display_count = 0;  /* force immediate display update */
+}
+
+
+static void voyager_op_display_blink (sim_t *sim, int opcode)
+{
+#ifdef VOYAGER_LCD_DEBUG
+  printf ("display blink\n");
+#endif
+  sim->env->display_enable = 1;
+  sim->env->display_blink = 1;
+  sim->env->display_blink_state = 1;
+  sim->env->display_blink_count = VOYAGER_DISPLAY_BLINK_DIVISOR;
   sim->env->display_count = 0;  /* force immediate display update */
 }
 
 
 void voyager_display_init_ops (sim_t *sim)
 {
+  sim->op_fcn [0x030] = voyager_op_display_blink;
   sim->op_fcn [0x2e0] = voyager_op_display_off;
   sim->op_fcn [0x320] = voyager_op_display_toggle;
 }
@@ -61,6 +84,7 @@ void voyager_display_init_ops (sim_t *sim)
 void voyager_display_reset (sim_t *sim)
 {
   sim->env->display_enable = 0;
+  sim->env->display_blink = 0;
   sim->env->display_count = 0;
 }
 
@@ -130,17 +154,31 @@ void voyager_display_update (sim_t *sim)
   for (digit = 0; digit < VOYAGER_DISPLAY_DIGITS; digit++)
     {
       sim->display_segments [digit] = 0;
-      for (segment = 0; segment < 8; segment++)
+      if (sim->env->display_enable &&
+	  ((! sim->env->display_blink) || (sim->env->display_blink_state)))
 	{
-	  int vreg = voyager_display_map [digit][segment].reg;
-	  int vdig = voyager_display_map [digit][segment].dig;
-	  int vbit = voyager_display_map [digit][segment].bit;
-	  if (vbit && (sim->env->ram [9 + vreg][vdig] & vbit))
-	    sim->display_segments [digit] |= (1 << segment);
+	  for (segment = 0; segment < 8; segment++)
+	    {
+	      int vreg = voyager_display_map [digit][segment].reg;
+	      int vdig = voyager_display_map [digit][segment].dig;
+	      int vbit = voyager_display_map [digit][segment].bit;
+	      if (vbit && (sim->env->ram [9 + vreg][vdig] & vbit))
+		sim->display_segments [digit] |= (1 << segment);
+	    }
 	}
     }
 
   sim->display_update_fn (sim->display_handle, VOYAGER_DISPLAY_DIGITS,
 			  sim->display_segments);
+
+  if (sim->env->display_blink)
+    {
+      sim->env->display_blink_count--;
+      if (! sim->env->display_blink_count)
+	{
+	  sim->env->display_blink_state ^= 1;
+	  sim->env->display_blink_count = VOYAGER_DISPLAY_BLINK_DIVISOR;
+	}
+    }
 }
 

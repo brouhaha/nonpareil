@@ -2,6 +2,9 @@
 
 	* coconut_lcd.c: Added coconut_op_display_compensation (acts as NOP).
 
+	* voyager_lcd.c proc_nut.h proc_nut.c dis_nut.c: Added
+	voyager_op_display_blink().
+
 2004-04-30  Eric Smith <eric@brouhaha.com>
 
 	* proc_woodstock.c dis_woodstock.h dis_woodstock.c: Added

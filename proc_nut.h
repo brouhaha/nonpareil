@@ -79,6 +79,9 @@ struct sim_env_t
 
   bool awake;
   bool display_enable;
+  bool display_blink;
+  bool display_blink_state;  /* if blinking, current phase (on or off) */
+  int display_blink_count;
 
   int display_count;
 

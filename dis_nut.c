@@ -119,7 +119,7 @@ static char *nut_op20 [16] =
 
 static char *nut_op30 [16] =
   { 
-    /* 0x030 */ "???",
+    /* 0x030 */ "disp blink",  /* voyager only */
     /* 0x070 */ "n=c",
     /* 0x0b0 */ "c=n", 
     /* 0x0f0 */ "c<>n",
@@ -213,7 +213,10 @@ static void nut_disassemble_00 (int op1, int op2, char *buf, int len)
       snprintf (buf, len, "rdreg %d", arg);
       break;
     case 0x03c:
-      snprintf (buf, len, "? rcr %d", tmap [arg]);
+      if (op1 == 0x3fc)
+	snprintf (buf, len, "disp compensation");
+      else
+	snprintf (buf, len, "? rcr %d", tmap [arg]);
       break;
     }
 }

@@ -229,6 +229,7 @@ void coconut_display_reset (sim_t *sim)
   int i;
 
   sim->env->display_enable = 0;
+  sim->env->display_blink = 0;
   sim->env->display_count = 0;
 
   sim->pf_exists [LCD_DISPLAY] = 1;

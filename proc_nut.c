@@ -830,10 +830,25 @@ static void op_keys_to_rom_addr (sim_t *sim, int opcode)
   sim->env->pc = (sim->env->pc & 0xff00) | sim->env->key_buf;
 }
 
+
+#ifdef VOYAGER_SELF_TEST_KEY_HACK
+static int kp = 0;
+static uint8_t keys [] = { 0x18, 0x17 };
+#endif
+
+
 static void op_keys_to_c (sim_t *sim, int opcode)
 {
+#ifdef VOYAGER_SELF_TEST_KEY_HACK
+  sim->env->c [4] = keys [kp] >> 4; /* sim->env->key_buf >> 4; */
+  sim->env->c [3] = keys [kp] & 0xf; /* sim->env->key_buf & 0x0f; */
+  kp++;
+  if (kp == sizeof (keys))
+    kp = 0;
+#else
   sim->env->c [4] = sim->env->key_buf >> 4;
   sim->env->c [3] = sim->env->key_buf & 0x0f;
+#endif
 }
 
 static void op_test_kb (sim_t *sim, int opcode)
@@ -1033,10 +1048,13 @@ static void nut_init_ops (sim_t *sim)
   sim->op_fcn [0x220] = op_keys_to_c;
   sim->op_fcn [0x260] = op_set_hex;
   sim->op_fcn [0x2a0] = op_set_dec;
+  // 0x2e0 = display off (Nut, Voyager)
+  // 0x320 = display toggle (Nut, Voyager)
   sim->op_fcn [0x360] = op_return_if_carry;
   sim->op_fcn [0x3a0] = op_return_if_no_carry;
   sim->op_fcn [0x3e0] = op_return;
 
+  // 0x030 = display blink (Voyager)
   sim->op_fcn [0x070] = op_c_to_n;
   sim->op_fcn [0x0b0] = op_n_to_c;
   sim->op_fcn [0x0f0] = op_c_exch_n;
@@ -1245,8 +1263,10 @@ static bool nut_parse_listing_line (char *buf, int *bank, int *addr,
 
 static void nut_press_key (sim_t *sim, int keycode)
 {
+#if 0
   if ((! sim->env->awake) && (! sim->env->display_enable) && (keycode != 0x18))
     return;
+#endif
   sim->env->key_buf = keycode;
   sim->env->key_down = true;
   sim->env->key_flag = true;
@@ -1295,8 +1315,6 @@ void nut_reset_processor (sim_t *sim)
   sim->env->pc = 0;
   sim->env->inst_state = norm;
   sim->env->carry = 1;
-  sim->env->display_enable = 0;
-  sim->env->display_count = 0;
 
   sim->env->key_flag = 0;
 
