@@ -987,6 +987,7 @@ static void decode_spice_display (sim_t *sim, char *bp)
 	case 3: *bp++ = ','; break;
 	}
     }
+  *bp++ = '\0';
 }
 
 
@@ -1006,6 +1007,11 @@ static void woodstock_handle_io (sim_t *sim)
 #endif
 	default: fatal (2, "Woodstock arch doesn't know how to handle display for platform %s\n", platform_name [sim->platform]);
 	}
+    }
+  else
+    {
+      memset (buf, ' ', (WSIZE + 1) * 2);
+      buf [(WSIZE + 1) * 2] = '\0';
     }
   if (strcmp (buf, sim->prev_display) != 0)
     {

@@ -1,3 +1,11 @@
+2004-04-10  Eric Smith <eric@brouhaha.com>
+
+	* proc_woodstock.c (woodstock_handle_io): If the display is
+	disabled, fill the string with spaces.
+	
+	* proc_woodstock.c (decode_woodstock_display): Add a trailing null
+	character to the string.
+	
 2004-04-09  Eric Smith <eric@brouhaha.com>
 
 	* proc_woodstock.c (woodstock_parse_object_line): Handle a
