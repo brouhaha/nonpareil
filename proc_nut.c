@@ -946,6 +946,7 @@ static void op_powoff (sim_t *sim, int opcode)
 #endif
   sim->env->awake = false;
   sim->env->pc = 0;
+  sim->env->display_count = 0;  /* force display update */
   if (sim->env->display_enable)
     {
       /* going to light sleep */
@@ -1148,9 +1149,6 @@ bool nut_execute_instruction (sim_t *sim)
 
   sim->env->prev_carry = sim->env->carry;
   sim->env->carry = 0;
-
-  if (sim->env->key_flag)
-    sim->env->s [0] = 1;
 
   switch (sim->env->inst_state)
     {
