@@ -498,12 +498,24 @@ static void file_save_as (GtkWidget *widget, gpointer data)
 }
 
 
+static void edit_copy (GtkWidget *widget, gpointer data)
+{
+  /* $$$ not yet implemented */
+}
+
+
+static void edit_paste (GtkWidget *widget, gpointer data)
+{
+  /* $$$ not yet implemented */
+}
+
+
 static void help_about (GtkWidget *widget, gpointer data)
 {
   GtkWidget *dialog;
 
   dialog = gtk_dialog_new_with_buttons ("About CASMSIM",
-					main_window,
+					GTK_WINDOW (main_window),
 					GTK_DIALOG_DESTROY_WITH_PARENT,
 					GTK_STOCK_OK,
 					GTK_RESPONSE_NONE,
@@ -534,6 +546,9 @@ static GtkItemFactoryEntry menu_items [] =
     { "/File/Save _As", NULL,         file_save_as,  0, "<Item>" },
     { "/File/sep1",     NULL,         NULL,          0, "<Separator>" },
     { "/File/_Quit",    "<CTRL>Q",    gtk_main_quit, 0, "<StockItem>", GTK_STOCK_QUIT },
+    { "/_Edit",         NULL,         NULL,          0, "<Branch>" },
+    { "/Edit/_Copy",    "<control>C", edit_copy,     0, "<StockItem>", GTK_STOCK_COPY },
+    { "/Edit/_Paste",   "<control>V", edit_paste,    0, "<StockItem>", GTK_STOCK_PASTE },
     { "/_Help",         NULL,         NULL,          0, "<LastBranch>" },
     { "/_Help/About",   NULL,         help_about,    0, "<Item>" }
   };
