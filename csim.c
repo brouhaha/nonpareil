@@ -689,7 +689,7 @@ void read_object_file (char *fn, FILE *f)
       else
 	{
 	  ucode [g][r][p] = opcode;
-	  bpt   [g][r][p] = 1;
+	  bpt   [g][r][p] = 0;
 	  count ++;
 	}
     }
@@ -723,7 +723,7 @@ int parse_opcode (char *bin, int *opcode)
 }
 
 
-void read_listing_file (char *fn, FILE *f)
+void read_listing_file (char *fn, FILE *f, int keep_src)
 {
   int i;
   char buf [80];
@@ -738,7 +738,7 @@ void read_listing_file (char *fn, FILE *f)
 	{
 	  if ((g >= MAX_GROUP) || (r >= MAX_ROM) || (p >= ROM_SIZE))
 	    fprintf (stderr, "bad address\n");
-	  else if (source [g][r][p])
+	  else if (! bpt [g][r][p])
 	    {
 	      fprintf (stderr, "duplicate listing line for address %1o%1o%03o\n",
 		       g, r, p);
@@ -748,8 +748,9 @@ void read_listing_file (char *fn, FILE *f)
 	  else
 	    {
 	      ucode  [g][r][p] = opcode;
-	      bpt    [g][r][p] = 1;
-	      source [g][r][p] = newstr (& buf [0]);
+	      bpt    [g][r][p] = 0;
+	      if (keep_src)
+		source [g][r][p] = newstr (& buf [0]);
 	      count ++;
 	    }
 	}
@@ -959,7 +960,7 @@ int main (int argc, char *argv[])
 
   init_breakpoints ();
   init_source ();
-  read_listing_file (objfn, f);
+  read_listing_file (objfn, f, trace);
   fclose (f);
 
   init_ops ();
