@@ -116,6 +116,7 @@ void free_kml (kml_t *kml)
   free (kml->hardware);
   free (kml->model);
   free (kml->rom);
+  free (kml->rom_listing);
   free (kml->patch);
   free (kml->image);
 
@@ -157,12 +158,13 @@ static void print_kml_string (FILE *f, char *name, char *val)
 static void print_kml_global (FILE *f, kml_t *kml)
 {
   fprintf (f, "global\n");
-  print_kml_string (f, "title",    kml->title);
-  print_kml_string (f, "author",   kml->author);
-  print_kml_string (f, "hardware", kml->hardware);
-  print_kml_string (f, "model",    kml->model);
-  print_kml_string (f, "rom",      kml->rom);
-  print_kml_string (f, "image",    kml->image);
+  print_kml_string (f, "title",        kml->title);
+  print_kml_string (f, "author",       kml->author);
+  print_kml_string (f, "hardware",     kml->hardware);
+  print_kml_string (f, "model",        kml->model);
+  print_kml_string (f, "rom",          kml->rom);
+  print_kml_string (f, "rom_listing",  kml->rom_listing);
+  print_kml_string (f, "image",        kml->image);
   if (kml->has_transparency)
     fprintf (f, "\ttransparency %d\n", kml->transparency_threshold);
   fprintf (f, "end\n\n");

@@ -885,8 +885,12 @@ int main (int argc, char *argv[])
 		    GTK_SIGNAL_FUNC (quit_callback),
 		    NULL);
 
-  if (! sim_read_listing_file (sim, kml->rom, TRUE))
-    fatal (2, "unable to read listing file '%s'\n", kml->rom);
+  if (! sim_read_object_file (sim, kml->rom))
+    fatal (2, "unable to read object file '%s'\n", kml->rom);
+
+  if (kml->rom_listing)
+    if (! sim_read_listing_file (sim, kml->rom_listing))
+      fatal (2, "unable to read listing file '%s'\n", kml->rom_listing);
 
   sim_reset (sim);
 

@@ -46,12 +46,12 @@ int kml_cur_idx2;
 %token CHARACTER    CLASS        COLOR        DEBUG        DEFAULT
 %token DIGITS       DISPLAY      DOWN         ELSE         END
 %token FLAG         GLOBAL       HARDWARE     IFFLAG       IFPRESSED
-%token IMAGE        INCLUDE      KEYCODE      LCD          MAP
-%token MENUITEM     MODEL        NOHOLD       OFFSET       ONDOWN
-%token ONUP         OUTIN        PATCH        POSITION     PRESS
-%token PRINT        RELEASE      RESETFLAG    ROM          SCANCODE
-%token SEGMENT      SETFLAG      SIZE         SWITCH       TITLE
-%token TRANSPARENCY TYPE         VIRTUAL      ZOOM
+%token IMAGE        INCLUDE      KEYCODE      LCD          LISTING
+%token MAP          MENUITEM     MODEL        NOHOLD       OFFSET
+%token ONDOWN       ONUP         OUTIN        PATCH        POSITION
+%token PRESS        PRINT        RELEASE      RESETFLAG    ROM
+%token SCANCODE     SEGMENT      SETFLAG      SIZE         SWITCH
+%token TITLE        TRANSPARENCY TYPE         VIRTUAL      ZOOM
 
 %type <intpair> offset_stmt size_stmt down_stmt
 
@@ -104,6 +104,7 @@ global_stmt		:	title_stmt
 			|	model_stmt
 			|	class_stmt
 			|	rom_stmt
+			|	listing_stmt
 			|	patch_stmt
 			|	image_stmt
 			|	transparency_stmt
@@ -123,6 +124,8 @@ model_stmt		:	MODEL STRING { yy_kml->model = newstr ($2); } ;
 class_stmt		:	CLASS INTEGER { yy_kml->class = $2; } ;
 
 rom_stmt		:	ROM STRING { yy_kml->rom = newstr ($2); } ;
+
+listing_stmt		:	LISTING STRING { yy_kml->rom_listing = newstr ($2); } ;
 
 patch_stmt		:	PATCH STRING { yy_kml->patch = newstr ($2); } ;
 

@@ -820,6 +820,56 @@ void classic_execute_instruction (sim_t *sim)
 }
 
 
+static bool parse_octal (char *oct, int digits, int *val)
+{
+  *val = 0;
+
+  while (digits--)
+    {
+      if (((*oct) < '0') || ((*oct) > '7'))
+	return (false);
+      (*val) = ((*val) << 3) + ((*(oct++)) - '0');
+    }
+  return (true);
+}
+
+
+static bool classic_parse_object_line (char *buf, int *bank, int *addr,
+				       rom_word_t *opcode)
+{
+  int a, o;
+
+  if (buf [0] == '#')  /* comment? */
+    return (true);
+
+  if (strlen (buf) != 9)
+    return (false);
+
+  if (buf [4] != ':')
+    {
+      fprintf (stderr, "invalid object file format\n");
+      return (false);
+    }
+
+  if (! parse_octal (& buf [0], 4, & a))
+    {
+      fprintf (stderr, "invalid address %o\n", a);
+      return (false);
+    }
+
+  if (! parse_octal (& buf [5], 4, & o))
+    {
+      fprintf (stderr, "invalid opcode %o\n", o);
+      return (false);
+    }
+
+  *bank = 0;
+  *addr = a;
+  *opcode = o;
+  return (true);
+}
+
+
 static int parse_address (char *oct, int *g, int *r, int *p)
 {
   return (sscanf (oct, "%1o%1o%3o", g, r, p) == 3);
@@ -856,13 +906,13 @@ static bool classic_parse_listing_line (char *buf, int *bank, int *addr,
 
   if (! parse_address (& buf [8], &g, &r, &p))
     {
-      fprintf (stderr, "bad address\n");
+      fprintf (stderr, "bad address format\n");
       return (false);
     }
 
   if ((g >= MAX_GROUP) || (r >= MAX_ROM) || (p >= ROM_SIZE))
     {
-      fprintf (stderr, "bad address\n");
+      fprintf (stderr, "bad address: group %o rom %o addr %03o\n", g, r, p);
       return (false);
     }
 
@@ -981,6 +1031,7 @@ processor_dispatch_t classic_processor =
     classic_new_processor,
     classic_free_processor,
 
+    classic_parse_object_line,
     classic_parse_listing_line,
 
     classic_reset_processor,

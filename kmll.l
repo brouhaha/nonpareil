@@ -90,6 +90,7 @@ image		return (IMAGE);
 include		return (INCLUDE);
 keycode		return (KEYCODE);
 lcd		return (LCD);
+listing		return (LISTING);
 map		return (MAP);
 menuitem	return (MENUITEM);
 model		return (MODEL);

@@ -22,7 +22,8 @@ global
 	author "Eric Smith <eric@brouhaha.com>"
 	hardware "Classic"
 	model "80"
-	rom "hp80.lst"
+	rom "hp80.obj"
+	listing "hp80.lst"
 	image "hp80.png"
 	color 0 67 33 119	  # background color, used when transparency is off
 	transparency 128

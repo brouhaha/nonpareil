@@ -1017,24 +1017,59 @@ void woodstock_execute_instruction (sim_t *sim)
 }
 
 
-static int parse_octal (char *oct, int digits, int *val)
+static bool parse_octal (char *oct, int digits, int *val)
 {
   *val = 0;
 
   while (digits--)
     {
       if (((*oct) < '0') || ((*oct) > '7'))
-	return (0);
+	return (false);
       (*val) = ((*val) << 3) + ((*(oct++)) - '0');
     }
-  return (1);
+  return (true);
+}
+
+
+static bool woodstock_parse_object_line (char *buf, int *bank, int *addr,
+					 rom_word_t *opcode)
+{
+  int a, o;
+
+  if (buf [0] == '#')  /* comment? */
+    return (true);
+
+  if (strlen (buf) != 9)
+    return (false);
+
+  if (buf [4] != ':')
+    {
+      fprintf (stderr, "invalid object file format\n");
+      return (false);
+    }
+
+  if (! parse_octal (& buf [0], 4, & a))
+    {
+      fprintf (stderr, "invalid address %o\n", a);
+      return (false);
+    }
+
+  if (! parse_octal (& buf [5], 4, & o))
+    {
+      fprintf (stderr, "invalid opcode %o\n", o);
+      return (false);
+    }
+
+  *bank = 0;
+  *addr = a;
+  *opcode = o;
+  return (true);
 }
 
 
 static bool woodstock_parse_listing_line (char *buf, int *bank, int *addr,
 					  rom_word_t *opcode)
 {
-  int i;
   int a, o;
 
   if (strlen (buf) < 18)
@@ -1042,13 +1077,13 @@ static bool woodstock_parse_listing_line (char *buf, int *bank, int *addr,
 
   if (! parse_octal (& buf [15], 4, & a))
     {
-      fprintf (stderr, "invalid address %o", i);
+      fprintf (stderr, "invalid address %o\n", a);
       return (false);
     }
 
   if (! parse_octal (& buf [ 9], 4, & o))
     {
-      fprintf (stderr, "invalid opcode %o", o);
+      fprintf (stderr, "invalid opcode %o\n", o);
       return (false);
     }
 
@@ -1167,6 +1202,7 @@ processor_dispatch_t woodstock_processor =
     woodstock_new_processor,
     woodstock_free_processor,
 
+    woodstock_parse_object_line,
     woodstock_parse_listing_line,
 
     woodstock_reset_processor,

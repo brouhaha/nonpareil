@@ -65,7 +65,48 @@ static void allocate_ucode (sim_t *sim)
 }
 
 
-bool sim_read_listing_file (sim_t *sim, char *fn, int keep_src)
+bool sim_read_object_file (sim_t *sim, char *fn)
+{
+  FILE *f;
+  int bank, addr, i;
+  rom_word_t opcode;
+  int count = 0;
+  char buf [80];
+
+  f = fopen (fn, "r");
+  if (! f)
+    {
+      fprintf (stderr, "error opening object file\n");
+      return (false);
+    }
+
+  while (fgets (buf, sizeof (buf), f))
+    {
+      trim_trailing_whitespace (buf);
+      if (sim->proc->parse_object_line (buf, & bank, & addr, & opcode))
+	{
+	  i = bank * sim->proc->max_rom + addr;
+	  if (! sim->breakpoint [i])
+	    {
+	      fprintf (stderr, "duplicate object code for bank %d address %o\n",
+		       bank, addr);
+	      fprintf (stderr, "orig: %s\n", sim->source [i]);
+	      fprintf (stderr, "dup:  %s\n", buf);
+	    }
+	  sim->ucode      [i] = opcode;
+	  sim->breakpoint [i] = 0;
+	  count++;
+	}
+    }
+
+#if 1
+  fprintf (stderr, "read %d words from '%s'\n", count, fn);
+#endif
+  return (true);
+}
+
+
+bool sim_read_listing_file (sim_t *sim, char *fn)
 {
   FILE *f;
   int bank, addr, i;
@@ -86,22 +127,25 @@ bool sim_read_listing_file (sim_t *sim, char *fn, int keep_src)
       if (sim->proc->parse_listing_line (buf, & bank, & addr, & opcode))
 	{
 	  i = bank * sim->proc->max_rom + addr;
-	  if (! sim->breakpoint [i])
+	  if (sim->breakpoint [i])
 	    {
-	      fprintf (stderr, "duplicate listing line for bank %d address %o\n",
+	      fprintf (stderr, "listing line for which there was no code in object file, bank %d address %o\n",
 		       bank, addr);
-	      fprintf (stderr, "orig: %s\n", sim->source [i]);
-	      fprintf (stderr, "dup:  %s\n", buf);
+	      fprintf (stderr, "src: %s\n", sim->source [i]);
 	    }
-	  sim->ucode      [i] = opcode;
-	  sim->breakpoint [i] = 0;
-	  if (keep_src)
-	    sim->source   [i] = newstr (& buf [0]);
+	  if (sim->ucode [i] != opcode)
+	    {
+	      fprintf (stderr, "listing line for which object code does not match object file, bank %d address %o\n",
+		       bank, addr);
+	      fprintf (stderr, "src: %s\n", sim->source [i]);
+	      fprintf (stderr, "object file: %04o\n", sim->ucode [i]);
+	    }
+	  sim->source   [i] = newstr (& buf [0]);
 	  count++;
 	}
     }
 
-#if 0
+#if 1
   fprintf (stderr, "read %d words from '%s'\n", count, fn);
 #endif
   return (true);

@@ -36,6 +36,8 @@ typedef struct
   void (* new_processor)       (sim_t *sim, int ram_size);
   void (* free_processor)      (sim_t *sim);
 
+  bool (* parse_object_line)   (char *buf, int *bank, int *addr,
+				rom_word_t *opcode);
   bool (* parse_listing_line)  (char *buf, int *bank, int *addr,
 				rom_word_t *opcode);
 

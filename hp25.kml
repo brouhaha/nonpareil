@@ -22,7 +22,7 @@ global
 	author "Eric Smith <eric@brouhaha.com>"
 	hardware "Woodstock"
 	model "25"
-	rom "hp25.lst"
+	rom "hp25.obj"
 	image "hp25.png"
 	color 0 87 127 152  # background color, used when transparency is off
 	transparency 128

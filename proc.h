@@ -57,8 +57,7 @@ bool sim_read_object_file (sim_t *sim,
 			   char *fn);
 
 bool sim_read_listing_file (struct sim_t *sim,
-			    char *fn,
-			    int keep_src);
+			    char *fn);
 
 void sim_reset (sim_t *sim);  /* resets simulated processor */
 void sim_step  (sim_t *sim);  /* executes one instruction */

@@ -185,6 +185,7 @@ typedef struct
   char *model;
   int  class;
   char *rom;
+  char *rom_listing;
   char *patch;
   char *image;
   int has_transparency;
