@@ -70,7 +70,8 @@ typedef enum
   CMD_SET_BREAKPOINT,
   CMD_PRESS_KEY,
   CMD_RELEASE_KEY,
-  CMD_SET_EXT_FLAG
+  CMD_SET_EXT_FLAG,
+  CMD_GET_DISPLAY_UPDATE
 } sim_cmd_t;
 
 typedef enum
@@ -335,6 +336,10 @@ static void handle_sim_cmd (sim_t *sim, sim_msg_t *msg)
       sim->proc->set_ext_flag (sim, msg->arg, msg->b);
       msg->reply = OK;
       break;
+    case CMD_GET_DISPLAY_UPDATE:
+      gui_display_update (sim);
+      msg->reply = OK;
+      break;
     default:
       msg->reply = BAD_CMD;
     }
@@ -561,6 +566,15 @@ void sim_set_ext_flag (sim_t *sim, int flag, bool state)
   msg.cmd = CMD_SET_EXT_FLAG;
   msg.arg = flag;
   msg.b = state;
+  send_cmd_to_sim_thread (sim, (gpointer) & msg);
+}
+
+
+void sim_get_display_update (sim_t *sim)
+{
+  sim_msg_t msg;
+  memset (& msg, 0, sizeof (sim_msg_t));
+  msg.cmd = CMD_GET_DISPLAY_UPDATE;
   send_cmd_to_sim_thread (sim, (gpointer) & msg);
 }
 

@@ -1,3 +1,9 @@
+2005-02-16  Eric Smith <eric@brouhaha.com>
+
+	* proc.h proc.c (sim_get_display_update, handle_sim_cmd): Added
+	CMD_GET_DISPLAY_UPDATE for GUI thread to request a display update
+	from simulator thread.
+
 2005-02-12  Eric Smith <eric@brouhaha.com>
 
 	* csim.c (main): We have to call gtk_widget_show_all(main_window)

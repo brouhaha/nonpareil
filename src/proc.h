@@ -115,6 +115,7 @@ void sim_set_ext_flag (sim_t *sim,
 		       int flag,
 		       bool state);
 
+void sim_get_display_update (sim_t *sim);
 
 #ifdef HAS_DEBUGGER
 
