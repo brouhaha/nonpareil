@@ -20,6 +20,7 @@ MA 02111, USA.
 */
 
 #include <pty.h>
+#include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
@@ -39,6 +40,7 @@ MA 02111, USA.
 #endif
 
 #include "util.h"
+#include "display.h"
 #include "proc.h"
 #include "debugger.h"
 
@@ -138,16 +140,16 @@ static int quit_cmd (CMD_ARGS)
 static int help_cmd (CMD_ARGS);
 
 #ifdef USE_TCL
-#define cmd_handler Tcl_CmdProc *
+#define cmd_t Tcl_CmdProc *
 #else
-typedef int (*cmd_handler)(CMD_ARGS);
+typedef int (*cmd_t)(CMD_ARGS);
 #endif
 
 
 typedef struct
 {
   char *name;
-  cmd_handler handler;
+  cmd_t handler;
   int min_chr;
   char *usage;
 } cmd_entry;
@@ -155,12 +157,12 @@ typedef struct
 
 cmd_entry cmd_table [] =
 {
-  { "go",   go_cmd,         1, "Go           start execution\n" },
-  { "halt", halt_cmd,       2, "HAlt         halt execution\n" },
-  { "help", help_cmd,       1, "Help         list commands\n" },
-  { "quit", quit_cmd,       4, "QUIT         quit simulator\n" },
-  { "step", step_cmd,       1, "Step         single-step\n" },
-  { "xyzzy", xyzzy_cmd,     1, "Xyzzy\n" },
+  { "go",    (cmd_t) go_cmd,         1, "Go           start execution\n" },
+  { "halt",  (cmd_t) halt_cmd,       2, "HAlt         halt execution\n" },
+  { "help",  (cmd_t) help_cmd,       1, "Help         list commands\n" },
+  { "quit",  (cmd_t) quit_cmd,       4, "QUIT         quit simulator\n" },
+  { "step",  (cmd_t) step_cmd,       1, "Step         single-step\n" },
+  { "xyzzy", (cmd_t) xyzzy_cmd,     1, "Xyzzy\n" },
   { NULL, NULL, 0, NULL }
 };
 
@@ -259,7 +261,7 @@ static void debugger_command (dbg_t *dbg, char *cmd)
 {
 #ifdef USE_TCL
   int result;
-  char *result_string;
+  const char *result_string;
 #else
   char *s;
   int argc;

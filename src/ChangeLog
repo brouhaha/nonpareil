@@ -1,3 +1,12 @@
+2004-06-15  Eric Smith <eric@brouhaha.com>
+
+	* debugger.c: Added missing includes. Renamed cmd_handler to cmd_t,
+	and added type casts to eliminate warnings.
+
+2004-06-13  Eric Smith <eric@brouhaha.com>
+
+	* proc_woodstock.c:  Fix increment p instruction.
+
 2004-05-07  Eric Smith <eric@brouhaha.com>
 
 	* asm.c: Add command line options for object file and listing file
