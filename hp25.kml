@@ -1,0 +1,149 @@
+# KML script for HP-25
+#
+# $Id$
+# Copyright 2004 Eric L. Smith <eric@brouhaha.com>
+#
+# CSIM is free software; you can redistribute it and/or modify it
+# under the terms of the GNU General Public License version 2 as
+# published by the Free Software Foundation.  Note that I am not
+# granting permission to redistribute or modify CSIM under the terms
+# of any later version of the General Public License.
+#
+# This program is distributed in the hope that it will be useful (or
+# at least amusing), but WITHOUT ANY WARRANTY; without even the
+# implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+# PURPOSE.  See the GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with this program (in the file "COPYING"); if not, write to
+# the Free Software Foundation, Inc., 675 Mass Ave, Cambridge, MA
+# 02139, USA.
+
+
+global
+	title "HP-25 Programmable Scientific Calculator"
+	author "Eric Smith <eric@brouhaha.com>"
+	hardware "Woodstock"
+	model "25"
+	rom "hp25.lst"
+	image "hp25.png"
+	color 0 87 127 152  # background color, used when transparency is off
+	transparency 128
+end
+
+background
+	offset 12 17
+	size 283 542
+end
+
+display
+	offset 43 40
+	size 217 50
+
+	color 0 35 17 17   # background
+	color 1 35 17 17   # unlit segments
+	color 2 255 17 17  # lit segments
+
+	digits 12
+		size 17 12
+		offset 10 10
+	end
+
+	character '0' segment 'a' 'b' 'c' 'd' 'e' 'f'         end
+	character '1' segment     'b' 'c'                     end
+        character '2' segment 'a' 'b'     'd' 'e'     'g'     end
+	character '3' segment 'a' 'b' 'c' 'd'         'g'     end
+	character '4' segment     'b' 'c'         'f' 'g'     end
+	character '5' segment 'a'     'c' 'd'     'f' 'g'     end
+	character '6' segment 'a'     'c' 'd' 'e' 'f' 'g'     end
+	character '7' segment 'a' 'b' 'c'                     end
+	character '8' segment 'a' 'b' 'c' 'd' 'e' 'f' 'g'     end
+	character '9' segment 'a' 'b' 'c' 'd'     'f' 'g'     end
+	character '.' segment                             'h' end
+	character '-' segment                         'g'     end
+	character ' ' segment                                 end
+
+	segment 'a' offset  0  0 size 6 1 end
+	segment 'b' offset  5  0 size 1 6 end
+	segment 'c' offset  5  5 size 1 6 end
+	segment 'd' offset  0 10 size 6 1 end
+	segment 'e' offset  0  5 size 1 6 end
+	segment 'f' offset  0  0 size 1 6 end
+	segment 'g' offset  0  5 size 6 1 end
+	segment 'h' offset  2  8 size 2 2 end
+end
+
+button 11  type 0  size 35 30  offset  39 153  down 2 8  keycode 264  end
+button 12  type 0  size 35 30  offset  87 153  down 2 8  keycode 263  end
+button 13  type 0  size 35 30  offset 135 153  down 2 8  keycode 262  end
+button 14  type 0  size 35 30  offset 183 153  down 2 8  keycode 261  end
+button 15  type 0  size 35 30  offset 231 153  down 2 8  keycode 260  end
+
+button 21  type 0  size 35 30  offset  39 206  down 2 8  keycode 104  end
+button 22  type 0  size 35 30  offset  87 206  down 2 8  keycode 103  end
+button 23  type 0  size 35 30  offset 135 206  down 2 8  keycode 102  end
+button 24  type 0  size 35 30  offset 183 206  down 2 8  keycode 101  end
+button 25  type 0  size 35 30  offset 231 206  down 2 8  keycode 100  end
+
+button 31  type 0  size 83 30  offset  39 259  down 2 8  keycode 323  end
+button 32  type 0  size 35 30  offset 135 259  down 2 8  keycode 321  end
+button 33  type 0  size 35 30  offset 183 259  down 2 8  keycode 320  end
+button 34  type 0  size 35 30  offset 231 259  down 2 8  keycode 324  end
+
+button 41  type 0  size 35 30  offset  39 313  down 2 8  keycode 143  end
+button 42  type 0  size 40 30  offset  98 313  down 2 8  keycode 142  end
+button 43  type 0  size 40 30  offset 162 313  down 2 8  keycode 141  end
+button 44  type 0  size 40 30  offset 225 313  down 2 8  keycode 140  end
+
+button 51  type 0  size 35 30  offset  39 367  down 2 8  keycode 243  end
+button 52  type 0  size 40 30  offset  98 367  down 2 8  keycode 242  end
+button 53  type 0  size 40 30  offset 162 367  down 2 8  keycode 241  end
+button 54  type 0  size 40 30  offset 225 367  down 2 8  keycode 240  end
+
+button 61  type 0  size 35 30  offset  39 420  down 2 8  keycode 163  end
+button 62  type 0  size 40 30  offset  98 420  down 2 8  keycode 162  end
+button 63  type 0  size 40 30  offset 162 420  down 2 8  keycode 161  end
+button 64  type 0  size 40 30  offset 225 420  down 2 8  keycode 160  end
+
+button 71  type 0  size 35 30  offset  39 474  down 2 8  keycode 223  end
+button 72  type 0  size 40 30  offset  98 474  down 2 8  keycode 222  end
+button 73  type 0  size 40 30  offset 162 474  down 2 8  keycode 221  end
+button 74  type 0  size 40 30  offset 225 474  down 2 8  keycode 220  end
+
+# main keyboard:
+scancode 48 map 48 72 end  # 0
+scancode 49 map 49 62 end  # 1
+scancode 50 map 50 63 end  # 2
+scancode 51 map 51 64 end  # 3
+scancode 52 map 52 52 end  # 4
+scancode 53 map 53 53 end  # 5
+scancode 54 map 54 54 end  # 6
+scancode 55 map 55 42 end  # 7
+scancode 56 map 56 43 end  # 8
+scancode 57 map 57 44 end  # 9
+scancode 46 map 46 73 end  # .
+scancode 43 map 43 51 end  # +
+scancode 45 map 45 41 end  # -
+scancode 42 map 42 61 end  # *
+scancode 47 map 47 71 end  # /
+scancode 65293 map 65293 31 end  # ENTER
+scancode 99 map 99 32 end  # c - CHS
+scancode 101 map 101 33 end  # e - EEX
+
+# keypad:
+scancode 65456 map 65456 72 end  # 0
+scancode 65457 map 65457 62 end  # 1
+scancode 65458 map 65458 63 end  # 2
+scancode 65459 map 65459 64 end  # 3
+scancode 65460 map 65460 52 end  # 4
+scancode 65461 map 65461 53 end  # 5
+scancode 65462 map 65462 54 end  # 6
+scancode 65463 map 65463 42 end  # 7
+scancode 65464 map 65464 43 end  # 8
+scancode 65465 map 65465 44 end  # 9
+scancode 65454 map 65454 73 end  # .
+scancode 65451 map 65451 51 end  # +
+scancode 65453 map 65453 41 end  # -
+scancode 65450 map 65450 61 end  # *
+scancode 65455 map 65455 71 end  # /
+scancode 65421 map 65421 31 end  # ENTER
