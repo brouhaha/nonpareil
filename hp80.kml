@@ -85,3 +85,41 @@ button 81  type 0  size 20 20  offset  44 446  down 2 8  keycode 046  end
 button 82  type 0  size 32 20  offset  86 446  down 2 8  keycode 044  end
 button 83  type 0  size 32 20  offset 145 446  down 2 8  keycode 043  end
 button 84  type 0  size 32 20  offset 203 446  down 2 8  keycode 042  end
+
+# main keyboard:
+scancode 48 map 48 82 end  # 0
+scancode 49 map 49 72 end  # 1
+scancode 50 map 50 73 end  # 2
+scancode 51 map 51 74 end  # 3
+scancode 52 map 52 62 end  # 4
+scancode 53 map 53 63 end  # 5
+scancode 54 map 54 64 end  # 6
+scancode 55 map 55 52 end  # 7
+scancode 56 map 56 53 end  # 8
+scancode 57 map 57 54 end  # 9
+scancode 46 map 46 83 end  # .
+scancode 43 map 43 61 end  # +
+scancode 45 map 45 51 end  # -
+scancode 42 map 42 71 end  # *
+scancode 47 map 47 81 end  # /
+scancode 37 map 37 22 end  # %
+scancode 65293 map 65293 41 end  # SAVE
+scancode 99 map 99 43 end  # c - CHS
+
+# keypad:
+scancode 65456 map 65456 82 end  # 0
+scancode 65457 map 65457 72 end  # 1
+scancode 65458 map 65458 73 end  # 2
+scancode 65459 map 65459 74 end  # 3
+scancode 65460 map 65460 62 end  # 4
+scancode 65461 map 65461 63 end  # 5
+scancode 65462 map 65462 64 end  # 6
+scancode 65463 map 65463 52 end  # 7
+scancode 65464 map 65464 53 end  # 8
+scancode 65465 map 65465 54 end  # 9
+scancode 65454 map 65454 83 end  # .
+scancode 65451 map 65451 61 end  # +
+scancode 65453 map 65453 51 end  # -
+scancode 65450 map 65450 71 end  # *
+scancode 65455 map 65455 81 end  # /
+scancode 65421 map 65421 41 end  # SAVE
