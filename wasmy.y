@@ -31,9 +31,12 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #include <stdio.h>
 #include "symtab.h"
 #include "asm.h"
+#include "arch.h"
 
 int ptr_load_map [14];
 int ptr_test_map [14];
+
+int arch = ARCH_WOODSTOCK;
 %}
 
 %union {

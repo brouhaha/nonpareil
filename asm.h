@@ -24,6 +24,9 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 */
 
 
+extern int arch;
+
+
 int pass;
 extern int lineno;
 extern int errors;

@@ -33,6 +33,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #include "symtab.h"
 #include "util.h"
 #include "asm.h"
+#include "arch.h"
 
 
 int pass;
@@ -101,23 +102,34 @@ void format_listing (void)
 
   listptr += sprintf (listptr, "%4d   ", lineno);
 
-  if (objflag)
+  if (arch == ARCH_CLASSIC)
     {
-      listptr += sprintf (listptr, "L%1o%1o%03o:  ", group, rom, pc);
-      for (i = 0x200; i; i >>= 1)
-	*listptr++ = (objcode & i) ? '1' : '.';
-      *listptr = '\0';
+      if (objflag)
+	{
+	  listptr += sprintf (listptr, "L%1o%1o%03o:  ", group, rom, pc);
+	  for (i = 0x200; i; i >>= 1)
+	    *listptr++ = (objcode & i) ? '1' : '.';
+	  *listptr = '\0';
+	}
+      else
+	listptr += sprintf (listptr, "                   ");
+
+      if (targflag)
+	listptr += sprintf (listptr, "  -> L%1o%1o%03o", targgroup, targrom,
+			    targpc);
+      else
+	listptr += sprintf (listptr, "           ");
+	  
+      listptr += sprintf (listptr, "  %c%c%c%c%c    ", flag_char, flag_char,
+			  flag_char, flag_char, flag_char);
     }
   else
-    listptr += sprintf (listptr, "                   ");
-
-  if (targflag)
-    listptr += sprintf (listptr, "  -> L%1o%1o%03o", targgroup, targrom, targpc);
-  else
-    listptr += sprintf (listptr, "           ");
-	  
-  listptr += sprintf (listptr, "  %c%c%c%c%c    ", flag_char, flag_char, flag_char,
-		      flag_char, flag_char);
+    {
+      if (objflag)
+	listptr += sprintf (listptr, "%06o  %04o ", objcode, (rom << 8) + pc);
+      else
+	listptr += sprintf (listptr, "             ");
+    }
   
   strcat (listptr, linebuf);
   listptr += strlen (listptr);
