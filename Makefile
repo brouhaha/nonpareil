@@ -50,4 +50,5 @@ symtab.o: symtab.c symtab.h casm.h
 	$(CC) -c $(CFLAGS) -o $@ $<
 
 casm.tar.gz:	$(DISTRIB)
-	tar -cvzf casm.tar.gz $(DISTRIB)
+	tar -cvzf $@ $(DISTRIB)
+	ls -l $@

@@ -20,6 +20,8 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
 -----------------------------------------------------------------------------
 
+CASM is just a quick weekend hack, so don't expect too much.
+
 CASM requires a single command line argument to specify the source code file.
 
 CASM currently writes a listing to standard out, and doesn't produce any
