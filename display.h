@@ -85,3 +85,10 @@ typedef void display_update_fn_t (display_handle_t *display_handle,
  *             pp
  *
  */
+
+
+#define SEGMENTS_PERIOD (1 << 14)
+#define SEGMENTS_COMMA  ((1 << 14) | (1 << 15))
+#define SEGMENTS_COLON  ((1 << 14) | (1 << 16))
+
+#define SEGMENT_ANN (1 << 17)

@@ -121,7 +121,12 @@ struct sim_t
 
   void (* op_fcn [1024])(struct sim_t *sim, int opcode);
 
-  char prev_display [(WSIZE + 1) * 2 + 1];
+  bool pf_exists [256];
+  bool ram_exists [1024];
+
+  void (* rd_n_fcn [256])(struct sim_t *sim, int n);
+  void (* wr_n_fcn [256])(struct sim_t *sim, int n);
+  void (* wr_fcn   [256])(struct sim_t *sim);
 };
 
 

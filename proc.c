@@ -98,7 +98,7 @@ bool sim_read_object_file (sim_t *sim, char *fn)
 	    {
 	      fprintf (stderr, "duplicate object code for bank %d address %o\n",
 		       bank, addr);
-	      fprintf (stderr, "orig: %s\n", sim->source [i]);
+	      // fprintf (stderr, "orig: %s\n", sim->source [i]);
 	      fprintf (stderr, "dup:  %s\n", buf);
 	    }
 	  sim->ucode      [i] = opcode;
@@ -270,7 +270,6 @@ sim_t *sim_init  (int platform,
   sim->platform = platform;
 
   sim->words_per_usec = clock_frequency / (1.0e6 * arch_info->word_length);
-  printf ("words_per_usec = %f\n", sim->words_per_usec);
 
   sim->prev_state = SIM_UNKNOWN;
   sim->state = SIM_IDLE;
@@ -499,6 +498,7 @@ bool sim_get_debug_flag (sim_t *sim, int debug_flag)
 
 extern processor_dispatch_t classic_processor;
 extern processor_dispatch_t woodstock_processor;
+extern processor_dispatch_t nut_processor;
 
 processor_dispatch_t *processor_dispatch [ARCH_MAX] =
   {
@@ -506,7 +506,7 @@ processor_dispatch_t *processor_dispatch [ARCH_MAX] =
     [ARCH_CLASSIC]   = & classic_processor,
     [ARCH_WOODSTOCK] = & woodstock_processor,
     [ARCH_CRICKET]   = NULL,
-    [ARCH_NUT]       = NULL,
+    [ARCH_NUT]       = & nut_processor,
     [ARCH_CAPRICORN] = NULL,
     [ARCH_SATURN]    = NULL
   };
