@@ -19,6 +19,8 @@ Building:
 
 User interface:
 
+  Add HP-55 mode switch.
+
   Improve KML file utilization, particularly for display.
 
   Keyboard events, at least for numeric entry, basic four functions, and enter.
