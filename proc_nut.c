@@ -1091,18 +1091,22 @@ void nut_execute_instruction (sim_t *sim)
 {
   int opcode;
 
-  sim->env->prev_pc = sim->env->pc;
-  opcode = sim->ucode [sim->env->pc];
+  if (sim->env->inst_state == cxisa)
+    sim->env->prev_pc = sim->env->cxisa_addr;
+  else
+    sim->env->prev_pc = sim->env->pc;
+
+  opcode = sim->ucode [sim->env->prev_pc];
 
 #ifdef HAS_DEBUGGER
   if (sim->debug_flags & (1 << SIM_DEBUG_TRACE))
     {
-      if (sim->source [sim->env->pc])
-	printf ("%s\n", sim->source [sim->env->pc]);
+      if (sim->source [sim->env->prev_pc])
+	printf ("%s\n", sim->source [sim->env->prev_pc]);
       else
 	{
 	  char buf [80];
-	  nut_disassemble (sim, sim->env->pc, buf, sizeof (buf));
+	  nut_disassemble (sim, sim->env->prev_pc, buf, sizeof (buf));
 	  printf ("%s\n", buf);
 	}
     }
