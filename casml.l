@@ -34,7 +34,7 @@ rb		\]
 %%
 {digit}+	{ yylval.integer = atoi (yytext); return INTEGER; }
 
-@{octaldig}+	{ scanf (yytext+1, "%o", &yylval.integer); return INTEGER; }
+@{octaldig}+	{ sscanf (yytext+1, "%o", &yylval.integer); return INTEGER; }
 
 [sS][0-9]		{ yylval.integer = atoi (yytext+1); return STATBIT; }
 [sS]1[0-1]		{ yylval.integer = atoi (yytext+1); return STATBIT; }
