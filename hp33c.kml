@@ -42,8 +42,8 @@ display
 	color 2 255 17 17  # lit segments
 
 	digits 12
-		size 17 12
-		offset 10 20
+		size 18 12
+		offset 17 14
 	end
 
 	character '0' segment 'a' 'b' 'c' 'd' 'e' 'f'         end
