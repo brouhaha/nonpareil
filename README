@@ -6,10 +6,10 @@ $Id$
 
 News:
 
-Release 0.31 of Nonpareil is an interim development release.
+Release 0.40 of Nonpareil is an interim development release.
 
-In this release, the HP-25, HP-33C, HP-35, HP-45, HP-55, and HP-80 are
-simulated.
+In this release, the HP-25, HP-31E, HP-33C, HP-35, HP-37E, HP-41CV, HP-45,
+HP-55, and HP-80 are simulated.
 
 The menu commands other than "Quit" and "About" are not implemented.
 
@@ -78,6 +78,11 @@ processor architecture as the Woodstock series, with the addition of
 an instruction to checksum a 1K region of ROM, used as part of a
 self-test.
 
+In 1979, HP introduced their first expandable scientific handheld
+calculator, the HP-41C (Coconut).  It was the first calculator to use
+the Nut processor architecture, which was also used in the Voyager series
+(HP-11C, HP-12C, etc.) introduced in 1981.
+
 -----------------------------------------------------------------------------
 
 Nonpareil simulator:
@@ -89,6 +94,7 @@ simulating the following calculators:
   Classic series:    HP-35, HP-45, HP-55, HP-70, HP-80
   Woodstock series:  HP-21, HP-22, HP-25, HP-25C, HP-27, HP-29C
   Spice series:      HP-31E, HP-32E, HP-33E, HP-33C, HP-37E
+  Coconut:           HP-41C, HP-41CV
 
 Nonpareil uses the Gtk+ 2.2 toolkit and Glib 2.2.  It should be
 portable to Windows and MacOS X, but has only been tested on Linux.

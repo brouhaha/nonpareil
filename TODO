@@ -10,8 +10,8 @@ Build process:
 
 User interface:
 
-  More general proc_xxx to display interface, to support Spice comma (digit
-  grouping), and Nut and Voyager displays.
+  Display segments from image file rather than as line segments and
+  rectangles.
 
   Transparency/shape: improve support for moving window: add KML
   syntax to specify keyboard rectangle, and use only region outside
@@ -41,9 +41,8 @@ User interface:
 
 Internals:
 
-  Merge Nut CPU code from NSIM.
-
-  Use io_count to improve display update timing.
+  Use io_count to improve display update timing (already done in nut, add to
+  classic and woodstock).
 
   Add reflection API for use by debugger (both GUI and command line).
 
