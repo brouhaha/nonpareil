@@ -89,6 +89,13 @@ int error   (char *format, ...);
 int warning (char *format, ...);
 
 
+int yylex (void);
+
+void yyerror (char *s);
+
+int yywrap (void);
+
+
 typedef struct keyword
 {
   char *name;
@@ -99,4 +106,4 @@ extern keyword_t keywords [];
 
 int keyword (char *string);
 
-int yywrap (void);
+

@@ -1,5 +1,8 @@
 2004-04-04  Eric Smith <eric@brouhaha.com>
 
+	* asm.h: Added prototypes for yylex() and yyerror() to eliminate
+	warnings.
+
 	* asm.c (err_vprintf): Only output messages to listing file during
 	pass 2.
 
