@@ -37,49 +37,55 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 %token <integer> INTEGER
 %token <string> STRING
 
-%token ANNUNCIATOR
-%token AUTHOR
-%token BACKGROUND
-%token BITMAP
-%token BUTTON
-%token CLASS
-%token COLOR
-%token DEBUG
-%token DOWN
-%token ELSE
-%token END
-%token GLOBAL
-%token HARDWARE
-%token IFFLAG
-%token IFPRESSED
-%token LCD
-%token MAP
-%token MENUITEM
-%token MODEL
-%token NOHOLD
-%token OFFSET
-%token ONDOWN
-%token ONUP
-%token OUTIN
-%token PATCH
-%token PRESS
-%token PRINT
-%token RELEASE
-%token RESETFLAG
-%token ROM
-%token SCANCODE
-%token SETFLAG
-%token SIZE
-%token TITLE
-%token TYPE
-%token VIRTUAL
-%token ZOOM
+%token ANNUNCIATOR AUTHOR      BACKGROUND  BITMAP      BUTTON      CLASS
+%token COLOR       DEBUG       DISPLAY     DOWN        ELSE        END
+%token GLOBAL      HARDWARE    IFFLAG      IFPRESSED   KEYCODE     LCD
+%token MAP         MENUITEM    MODEL       NOHOLD      OFFSET      ONDOWN
+%token ONUP        OUTIN       PATCH       PRESS       PRINT       RELEASE
+%token RESETFLAG   ROM         SCANCODE    SETFLAG     SIZE        TITLE
+%token TYPE        VIRTUAL     ZOOM
 
 %%
 
 /*----------------------------------------------------------------------------
+ top level
+----------------------------------------------------------------------------*/
+
+kml			:	sections
+
+sections		:	section
+			|	section sections
+			;
+
+section			:	global_section
+			|	background_section
+			|	lcd_section
+			|	annunciator_section
+			|	button_section
+			|	scancode_section
+			;
+
+/*----------------------------------------------------------------------------
  global section
 ----------------------------------------------------------------------------*/
+
+global_section		:	GLOBAL global_stmt_list END ;
+
+global_stmt_list	:	global_stmt
+			|	global_stmt global_stmt_list
+			;
+
+global_stmt		:	title_stmt
+			|	author_stmt
+			|	hardware_stmt
+			|	model_stmt
+			|	class_stmt
+			|	rom_stmt
+			|	patch_stmt
+			|	bitmap_stmt
+			|	print_stmt
+			|	debug_stmt
+			;
 
 title_stmt		:	TITLE STRING ;
 
@@ -101,81 +107,81 @@ print_stmt		:	PRINT STRING ;
 
 debug_stmt		:	DEBUG INTEGER ;
 
-global_stmt		:	title_stmt
-			|	author_stmt
-			|	hardware_stmt
-			|	model_stmt
-			|	class_stmt
-			|	rom_stmt
-			|	patch_stmt
-			|	bitmap_stmt
-			|	print_stmt
-			|	debug_stmt
-			;
+/*----------------------------------------------------------------------------
+ common statements, used in several sections
+----------------------------------------------------------------------------*/
 
-global_stmt_list	:	global_stmt
-			|	global_stmt global_stmt_list
-			;
+offset_stmt		:	OFFSET INTEGER INTEGER ;
 
-global_section		:	GLOBAL global_stmt_list END ;
+size_stmt		:	SIZE INTEGER INTEGER ;
+
+down_stmt		:	DOWN INTEGER INTEGER ;
 
 /*----------------------------------------------------------------------------
  background section
 ----------------------------------------------------------------------------*/
 
-offset_stmt		:	OFFSET INTEGER INTEGER ;
-
-size_stmt		:	OFFSET INTEGER INTEGER ;
-
-background_stmt		:	offset_stmt
-			|	size_stmt
-			;
+background_section	:	BACKGROUND background_stmt_list END ;
 
 background_stmt_list	:	background_stmt
 			|	background_stmt background_stmt_list
 			;
 
-background_section	:	BACKGROUND background_stmt_list END ;
+background_stmt		:	offset_stmt
+			|	size_stmt
+			;
 
 /*----------------------------------------------------------------------------
  lcd section
 ----------------------------------------------------------------------------*/
 
-zoom_stmt		:	ZOOM INTEGER ;
+lcd_section		:	LCD lcd_stmt_list END ;
 
-color_stmt		:	COLOR INTEGER INTEGER INTEGER INTEGER ;
+lcd_stmt_list		:	lcd_stmt
+			|	lcd_stmt lcd_stmt_list
+			;
 
 lcd_stmt		:	zoom_stmt
 			|	offset_stmt
 			|	color_stmt
 			;
 
-lcd_stmt_list		:	lcd_stmt
-			|	lcd_stmt lcd_stmt_list
-			;
+zoom_stmt		:	ZOOM INTEGER ;
 
-lcd_section		:	LCD lcd_stmt_list END ;
+color_stmt		:	COLOR INTEGER INTEGER INTEGER INTEGER ;
 
 /*----------------------------------------------------------------------------
  annunciator section
 ----------------------------------------------------------------------------*/
 
-down_stmt		:	DOWN INTEGER INTEGER ;
+annunciator_section	:	ANNUNCIATOR INTEGER annunciator_stmt_list END ;
+
+annunciator_stmt_list	:	annunciator_stmt
+			|	annunciator_stmt annunciator_stmt_list
+			;
 
 annunciator_stmt	:	size_stmt
 			|	offset_stmt
 			|	down_stmt
 			;
 
-annunciator_stmt_list	:	annunciator_stmt
-			|	annunciator_stmt annunciator_stmt_list
-			;
-
-annunciator_section	:	ANNUNCIATOR INTEGER annunciator_stmt_list END ;
-
 /*----------------------------------------------------------------------------
  commands (used in button and scancode sections)
 ----------------------------------------------------------------------------*/
+
+command_list		:	command
+			|	command command_list
+			;
+
+command			:	map_command
+			|	press_command
+			|	release_command
+			|	setflag_command
+			|	resetflag_command
+			|	menuitem_command
+			|	ifflag_command
+			|	ifpressed_command
+			;
 
 map_command		:	MAP INTEGER INTEGER ;
 
@@ -197,23 +203,26 @@ ifflag_command		:	IFFLAG INTEGER command_list elsepart END ;
 
 ifpressed_command	:	IFPRESSED INTEGER command_list elsepart END ;
 
-command			:	map_command
-			|	press_command
-			|	release_command
-			|	setflag_command
-			|	resetflag_command
-			|	menuitem_command
-			|	ifflag_command
-			|	ifpressed_command
-			;
-
-command_list		:	command
-			|	command command_list
-			;
-
 /*----------------------------------------------------------------------------
  button section
 ----------------------------------------------------------------------------*/
+
+button_section		:	BUTTON INTEGER button_stmt_list END ;
+
+button_stmt_list	:	button_stmt
+			|	button_stmt button_stmt_list
+			;
+
+button_stmt		:	type_stmt
+			|	size_stmt
+			|	offset_stmt
+			|	down_stmt
+			|	outin_stmt
+			|	virtual_stmt
+			|	nohold_stmt
+			|	onup_stmt
+			|	ondown_stmt
+			;
 
 type_stmt		:	TYPE INTEGER ;
 
@@ -227,39 +236,10 @@ onup_stmt		:	ONUP command_list END ;
 
 ondown_stmt		:	ONDOWN command_list END ;
 
-button_stmt		:	type_stmt
-			|	size_stmt
-			|	offset_stmt
-			|	down_stmt
-			|	outin_stmt
-			|	virtual_stmt
-			|	nohold_stmt
-			|	onup_stmt
-			|	ondown_stmt
-			;
-
-button_stmt_list	:	button_stmt
-			|	button_stmt button_stmt_list
-			;
-
-button_section		:	BUTTON INTEGER button_stmt_list END ;
-
 /*----------------------------------------------------------------------------
  scancode section
 ----------------------------------------------------------------------------*/
 
 scancode_section	:	SCANCODE INTEGER command_list END ;
-
-/*----------------------------------------------------------------------------
- top level
-----------------------------------------------------------------------------*/
-
-section			:	global_section
-			|	background_section
-			|	lcd_section
-			|	annunciator_section
-			|	button_section
-			|	scancode_section
-			;
 
 %%
