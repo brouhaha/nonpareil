@@ -10,9 +10,18 @@ LEX = flex
 CC = gcc
 CFLAGS = -g -Dstricmp=strcasecmp
 
+HEADERS = casm.h symtab.h
+SOURCES = casm.c casm.l casm.y symtab.c
+MISC = COPYING README
+ROMS =  hp55_00.asm hp55_01.asm hp55_02.asm hp55_03.asm \
+	hp55_04.asm hp55_05.asm hp55_06.asm hp55_07.asm \
+	hp55_10.asm hp55_11.asm hp55_12.asm hp55_13.asm
+
 OBJECTS = casm.o y.tab.o lex.yy.o symtab.o
 LIBS = -lc
 # LIBS = -ly -ll
+
+DISTRIB = $(MISC) Makefile $(HEADERS) $(SOURCES) $(ROMS)
 
 .SUFFIXES:
 
@@ -39,3 +48,6 @@ y.tab.c: casm.y
 
 symtab.o: symtab.c symtab.h casm.h
 	$(CC) -c $(CFLAGS) -o $@ $<
+
+casm.tar.gz:	$(DISTRIB)
+	tar -cvzf casm.tar.gz $(DISTRIB)
