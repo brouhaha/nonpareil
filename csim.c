@@ -57,7 +57,10 @@ uchar del_grp;
 uchar ret_pc;
 
 int display_enable;
-int keybuf;
+int key_flag;
+int key_buf;
+int io_count;
+
 
 int prev_pc;  /* used to store complete five-digit octal address of instruction */
 
@@ -543,7 +546,7 @@ void op_del_sel_grp (int opcode)
 
 void op_keys_to_rom_addr (int opcode)
 {
-  pc = keybuf;
+  pc = key_buf;
   printf ("read keys!!!!!!!!!!!!\n");
 }
 
@@ -555,12 +558,14 @@ void op_rom_addr_to_buf (int opcode)
 void op_display_off (int opcode)
 {
   display_enable = 0;
+  io_count = 0;
   printf ("display off\n");
 }
 
 void op_display_toggle (int opcode)
 {
   display_enable = ! display_enable;
+  io_count = 0;
   printf ("display toggle\n");
 }
 
@@ -782,9 +787,11 @@ void handle_io (void)
   i = check_keyboard ();
   if (i >= 0)
     {
-      keybuf = i;
-      s [0] = 1;
+      key_flag = 1;
+      key_buf = i;
     }
+  else
+    key_flag = 0;
 }
 
 
@@ -792,7 +799,6 @@ void debugger (void)
 {
   int opcode;
   int cycle = 0;
-  int io_count = 0;
 
   pc = 0;
   rom = 0;
@@ -803,7 +809,10 @@ void debugger (void)
   op_clear_reg (0);
   op_clear_s (0);
   p = 0;
+
+  io_count = 0;
   display_enable = 0;
+  key_flag = 0;
 
   for (;;)
     {
@@ -821,6 +830,8 @@ void debugger (void)
 	  opcode = ucode [group][rom][pc];
 	  prev_carry = carry;
 	  carry = 0;
+	  if (key_flag)
+	    s [0] = 1;
 	  pc++;
 	  (* op_fcn [opcode]) (opcode);
 	  cycle++;
