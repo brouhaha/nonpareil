@@ -75,10 +75,11 @@ CALCS = hp25 hp35 hp45 hp55 hp80
 
 TARGETS = csim asm
 
-HDRS = asm.h symtab.h util.h proc.h kml.h debugger.h \
+HDRS = asm.h symtab.h util.h proc.h proc_int.h kml.h debugger.h \
 	arch.h platform.h model.h
 CSRCS = asm.c symtab.c csim.c util.c proc.c kml.c debugger.c \
-	arch.c platform.c model.c
+	arch.c platform.c model.c \
+	proc_classic.c proc_woodstock.c
 LSRCS = asml.l casml.l wasml.l kmll.l
 YSRCS = asmy.y casmy.y wasmy.y kmly.y
 MISC = COPYING README ChangeLog
@@ -90,10 +91,12 @@ AUTO_CSRCS = $(LSRCS:.l=.c) $(YSRCS:.y=.tab.c)
 AUTO_HDRS = $(YSRCS:.y=.tab.h)
 AUTO_MISC = $(YSRCS:.y=.output)
 
-ASM_OBJECTS = asm.o symtab.o asml.o asmy.tab.o casml.o casmy.tab.o wasml.o wasmy.tab.o util.o arch.o
+ASM_OBJECTS = asm.o symtab.o util.o arch.o \
+	asml.o asmy.tab.o casml.o casmy.tab.o wasml.o wasmy.tab.o
 
 CSIM_OBJECTS = csim.o util.o proc.o kmll.o kmly.tab.o kml.o \
-	platform.o model.o
+	platform.o model.o \
+	proc_woodstock.o
 ifdef HAS_DEBUGGER_CLI
   CSIM_OBJECTS += debugger.o
 endif

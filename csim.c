@@ -24,6 +24,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
 #include <ctype.h>
 #include <stdarg.h>
+#include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -748,7 +749,9 @@ int main (int argc, char *argv[])
   if (! model_info)
     fatal (2, "Unrecognized model specified in KML\n");
 
-  sim = sim_init (model_info->ram_size, & display_update);
+  sim = sim_init (model_info->cpu_arch,
+		  model_info->ram_size,
+		  & display_update);
 
   file_pixbuf = gdk_pixbuf_new_from_file (kml->image, & error);
   if (! file_pixbuf)
