@@ -1,5 +1,5 @@
 ; HP-45 ROM source code from United States Patent 4,001,569
-; Copyright 1995 Eric L. Smith <eric@brouhaha.com>
+; Copyright 1995, 2003 Eric L. Smith <eric@brouhaha.com>
 ; $Id$
 ; Keyed in by Eric Smith on 9-Mar-1995 - any errors are probably mine.
 ; Typo corrected in "if" instruction in "frac" routine, on 3-Jan-2003,
