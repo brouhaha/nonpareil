@@ -44,21 +44,15 @@ model_info_t model_info [] =
     { "25C",  PLATFORM_WOODSTOCK, ARCH_WOODSTOCK,  16 },
     { "27",   PLATFORM_WOODSTOCK, ARCH_WOODSTOCK,  16 },
     { "29C",  PLATFORM_WOODSTOCK, ARCH_WOODSTOCK,  48 },
-#if 0
     { "31E",  PLATFORM_SPICE,     ARCH_WOODSTOCK,   0 },
-#endif
     { "32E",  PLATFORM_SPICE,     ARCH_WOODSTOCK,  32 },
     { "33C",  PLATFORM_SPICE,     ARCH_WOODSTOCK,  32 },
     { "33E",  PLATFORM_SPICE,     ARCH_WOODSTOCK,  32 },
-#if 0
-    { "34C",  PLATFORM_SPICE,     ARCH_WOODSTOCK,   0 },
-#endif
+    { "34C",  PLATFORM_SPICE,     ARCH_WOODSTOCK,  48 },
     { "35",   PLATFORM_CLASSIC,   ARCH_CLASSIC,     0 },
     { "37E",  PLATFORM_SPICE,     ARCH_WOODSTOCK,  48 },
-#if 0
-    { "38E",  PLATFORM_SPICE,     ARCH_WOODSTOCK,   0 },
-    { "38C",  PLATFORM_SPICE,     ARCH_WOODSTOCK,   0 },
-#endif
+    { "38E",  PLATFORM_SPICE,     ARCH_WOODSTOCK,  48 },
+    { "38C",  PLATFORM_SPICE,     ARCH_WOODSTOCK, 256 },
     { "41C",  PLATFORM_COCONUT,   ARCH_NUT,        80 },
     { "41CV", PLATFORM_COCONUT,   ARCH_NUT,       336 },
     { "41CX", PLATFORM_COCONUT,   ARCH_NUT,       464 },

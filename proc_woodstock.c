@@ -67,6 +67,9 @@ struct sim_env_t
 
   int ram_addr;  /* selected RAM address */
 
+  uint8_t bank [4];  /* for each of four 1K ROM banks, the currently selected
+			bank number */
+
   uint16_t pc;
 
   uint8_t del_rom_flag;
@@ -93,6 +96,13 @@ struct sim_env_t
 
 
 static void woodstock_print_state (sim_t *sim, sim_env_t *env);
+
+
+static inline int woodstock_map_rom_address (sim_t *sim, int addr)
+{
+  int b = sim->env->bank [addr >> 10];
+  return ((b << 12) + addr);
+}
 
 
 static void bad_op (sim_t *sim, int opcode)
@@ -515,6 +525,19 @@ static void op_circulate_a_left (sim_t *sim, int opcode)
 }
 
 
+static void op_bank_switch (sim_t *sim, int opcode)
+{
+  int b = sim->env->prev_pc >> 10;
+  sim->env->bank [b] ^= 1;
+  printf ("bank switch at %04o, selecting bank %o\n",
+	  sim->env->prev_pc, sim->env->bank [b]);
+  /* If the bank switch instruction is in the last word of a ROM,
+     does it bank switch that ROM or the following ROM?  Since the
+     bank switch instruction is executed by the ROM, not the CPU,
+     I expect the former. */
+}
+
+
 static void op_c_to_addr (sim_t *sim, int opcode)
 {
   sim->env->ram_addr = (sim->env->c [1] << 4) + sim->env->c [0];
@@ -894,7 +917,7 @@ static void init_ops (sim_t *sim)
 
   /* 0060 unknown */
   /* 0160..0760 unassigned/unknown */
-  /* sim->op_fcn [01060] = op_bank_switch; */
+  sim->op_fcn [01060] = op_bank_switch;
   sim->op_fcn [01160] = op_c_to_addr;
   sim->op_fcn [01260] = op_clear_data_regs;
   sim->op_fcn [01360] = op_c_to_data;
@@ -922,15 +945,18 @@ static void init_ops (sim_t *sim)
 static void woodstock_disassemble (sim_t *sim, int addr, char *buf, int len)
 {
   int l;
+  int mapped_addr;
 
-  l = snprintf (buf, len, "%04o: ", addr);
+  mapped_addr = woodstock_map_rom_address (sim, addr);
+
+  l = snprintf (buf, len, "[%o]%04o: ",
+		mapped_addr >> 12, mapped_addr & 07777);
   buf += l;
   len -= l;
   if (len <= 0)
     return;
 
-  /* $$$ should use current bank rather than always bank 0 */
-  l = snprintf (buf, len, "%04o", sim->ucode [addr]);
+  l = snprintf (buf, len, "%04o", sim->ucode [mapped_addr]);
   buf += l;
   len -= l;
   if (len <= 0)
@@ -1044,6 +1070,8 @@ static void print_reg (char *label, reg_t reg)
 static void woodstock_print_state (sim_t *sim, sim_env_t *env)
 {
   int i;
+  int mapped_addr;
+
   printf ("pc=%04o  radix=%d  p=%d  f=%x  stat:",
 	  env->prev_pc, env->arithmetic_base, env->p, env->f);
   for (i = 0; i < 16; i++)
@@ -1056,9 +1084,9 @@ static void woodstock_print_state (sim_t *sim, sim_env_t *env)
   print_reg ("m1: ", env->m1);
   print_reg ("m2: ", env->m2);
 
-  /* $$$ need to handle bank switching */
-  if (sim->source [env->prev_pc])
-    printf ("%s\n", sim->source [env->prev_pc]);
+  mapped_addr = woodstock_map_rom_address (sim, env->prev_pc);
+  if (sim->source [mapped_addr])
+    printf ("%s\n", sim->source [mapped_addr]);
   else
     {
       char buf [80];
@@ -1078,8 +1106,7 @@ void woodstock_execute_instruction (sim_t *sim)
   prev_if_flag = sim->env->if_flag;
   sim->env->if_flag = 0;
 
-  /* $$$ need to handle bank switching */
-  opcode = sim->ucode [sim->env->pc];
+  opcode = sim->ucode [woodstock_map_rom_address (sim, sim->env->pc)];
 
 #ifdef HAS_DEBUGGER
   if (sim->debug_flags & (1 << SIM_DEBUG_KEY_TRACE))
