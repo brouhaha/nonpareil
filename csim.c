@@ -516,7 +516,7 @@ static void help_about (GtkWidget *widget, gpointer data)
 
   dialog = gtk_dialog_new_with_buttons ("About CASMSIM",
 					GTK_WINDOW (main_window),
-					GTK_DIALOG_DESTROY_WITH_PARENT,
+					GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
 					GTK_STOCK_OK,
 					GTK_RESPONSE_NONE,
 					NULL);
