@@ -439,7 +439,7 @@ static void op_dec_p (sim_t *sim, int opcode)
 
 static void op_inc_p (sim_t *sim, int opcode)
 {
-  sim->env->p = sim->env->p++;
+  sim->env->p++;
   if (sim->env->p >= WSIZE)
     sim->env->p = 0;
 }
