@@ -39,6 +39,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 char *progname;
 
 gboolean scancode_debug = FALSE;
+gboolean kml_debug = FALSE;
 
 kml_t *kml;
 
@@ -696,6 +697,34 @@ gboolean on_move_window (GtkWidget *widget, GdkEventButton *event)
 }
 
 
+void setup_color (GdkColormap *colormap,
+		  kml_color_t *kml_color,
+		  GdkColor *gdk_color,
+		  char *name,
+		  guint16 default_red,
+		  guint16 default_green,
+		  guint16 default_blue)
+{
+  if (kml_color)
+    {
+      gdk_color->red   = (kml_color->r << 8) + kml_color->r;
+      gdk_color->green = (kml_color->g << 8) + kml_color->g;
+      gdk_color->blue  = (kml_color->b << 8) + kml_color->b;
+    }
+  else
+    {
+      if (kml_debug)
+	fprintf (stderr, "KML doesn't specify %s color, using default\n", name);
+      gdk_color->red   = default_red;
+      gdk_color->green = default_green;
+      gdk_color->blue  = default_blue;
+    }
+  if (! gdk_colormap_alloc_color (colormap, gdk_color, FALSE, TRUE))
+    fatal (2, "can't alloc %s color\n", name);
+}
+
+
+
 #ifndef PATH_MAX
 #define PATH_MAX 256
 #endif
@@ -704,7 +733,7 @@ gboolean on_move_window (GtkWidget *widget, GdkEventButton *event)
 int main (int argc, char *argv[])
 {
   char *kml_fn = NULL;
-  gboolean kml_debug = FALSE;
+  gboolean kml_dump = FALSE;
 
   model_info_t *model_info;
 
@@ -722,7 +751,7 @@ int main (int argc, char *argv[])
   GdkBitmap *image_mask_bitmap = NULL;
 
   GdkColormap *colormap;
-  GdkColor red, black;
+  GdkColor display_fg_color, display_bg_color;
   GdkColor image_bg_color;
 
   char buf [PATH_MAX];
@@ -738,6 +767,8 @@ int main (int argc, char *argv[])
 	{
 	  if (strcasecmp (argv [0], "--kmldebug") == 0)
 	    kml_debug = 1;
+	  else if (strcasecmp (argv [0], "--kmldump") == 0)
+	    kml_dump = 1;
 	  else if (strcasecmp (argv [0], "--scancodedebug") == 0)
 	    scancode_debug = 1;
 #if 0
@@ -766,7 +797,7 @@ int main (int argc, char *argv[])
   if (! kml)
     fatal (2, "can't read KML file '%s'\n", kml_fn);
 
-  if (kml_debug)
+  if (kml_dump)
     {
       print_kml (stdout, kml);
       exit (0);
@@ -851,31 +882,22 @@ int main (int argc, char *argv[])
   display = gtk_drawing_area_new ();
 
   colormap = gtk_widget_get_colormap (main_window);
-  if (! gdk_color_parse ("#ee1111", & red))
-    fatal (2, "can't parse color red\n");
-  if (! gdk_colormap_alloc_color (colormap, & red, FALSE, TRUE))
-    fatal (2, "can't alloc color red\n");
-  if (! gdk_color_parse ("#000000", & black))
-    fatal (2, "can't parse color black\n");
-  if (! gdk_colormap_alloc_color (colormap, & black, FALSE, TRUE))
-    fatal (2, "can't alloc color black\n");
+  setup_color (colormap, kml->global_color [0], & image_bg_color,
+	       "image background", 0x3333, 0x3333, 0x3333);
 
-  if (kml->global_color [0])
-    {
-      /* set the image background color */
-      image_bg_color.red   = kml->global_color [0]->r * 257;
-      image_bg_color.green = kml->global_color [0]->g * 257;
-      image_bg_color.blue  = kml->global_color [0]->b * 257;
-      if (! gdk_colormap_alloc_color (colormap, & image_bg_color, FALSE, TRUE))
-	fatal (2, "can't alloc color\n");
-      gtk_widget_modify_bg (event_box, GTK_STATE_NORMAL, & image_bg_color);
-    }
+  gtk_widget_modify_bg (event_box, GTK_STATE_NORMAL, & image_bg_color);
+
+  setup_color (colormap, kml->display_color [0], & display_bg_color,
+	       "display background", 0x0000, 0x0000, 0x0000);
+
+  setup_color (colormap, kml->display_color [2], & display_fg_color,
+	       "display foreground", 0xffff, 0x1111, 0x1111);
 
   gtk_widget_set_size_request (display,
 			       kml->display_size.width,
 			       kml->display_size.height);
-  gtk_widget_modify_fg (display, GTK_STATE_NORMAL, & red);
-  gtk_widget_modify_bg (display, GTK_STATE_NORMAL, & black);
+  gtk_widget_modify_fg (display, GTK_STATE_NORMAL, & display_fg_color);
+  gtk_widget_modify_bg (display, GTK_STATE_NORMAL, & display_bg_color);
   gtk_fixed_put (GTK_FIXED (fixed),
 		 display,
 		 kml->display_offset.x,

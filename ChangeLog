@@ -1,4 +1,8 @@
-2004-02-15  Eric Smith <eric@brouhaha.com>
+2004-02-16  Eric Smith <eric@brouhaha.com>
+
+	* csim.c (main, setup_color): Use image background, display
+	foreground and background colors from KML file.  Split --kmldump
+	option from --kmldebug.
 
 	* csim.c (main) kmly.y kml.c (free_kml) kml.h: Allow KML to
 	specify background color for window, useful with transparent
