@@ -26,8 +26,7 @@ global
 	hardware "Classic"
 	model "45"
 	rom "hp45.lst"
-#	image "hp45.jpg"
-	image "hp45t.png"
+	image "hp45.png"
 	transparency 128
 end
 
