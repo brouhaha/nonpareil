@@ -967,30 +967,35 @@ gboolean sim_read_listing_file (sim_t *sim, char *fn, int keep_src)
 }
 
 
+static char display_char [16] = "0123456789rHoPE ";
+  
+
 static void handle_io (sim_t *sim)
 {
-  char buf [WSIZE + 2];
+  char buf [24];
   char *bp;
   int i;
 
   bp = & buf [0];
   if (sim->env.display_enable)
     {
-      for (i = WSIZE - 1; i >= 0; i--)
+      for (i = WSIZE; i >= 2; i--)  /* 12 digits rather than 14 */
 	{
-	  if (sim->env.b [i] >= 8)
-	    *bp++ = ' ';
-	  else if ((i == 2) || (i == 13))
+	  if (sim->env.b [i] & 2)
 	    {
-	      if (sim->env.a [i] >= 8)
-		*bp++ = '-';
-	      else
+	      if ((sim->env.a [i] <= 1) || ((sim->env.a [i] & 7) == 7))
 		*bp++ = ' ';
+	      else
+		*bp++ = '-';
 	    }
 	  else
-	    *bp++ = '0' + sim->env.a [i];
-	  if (sim->env.b [i] == 2)
+	    {
+	      *bp++ = display_char [sim->env.a [i]];
+	    }
+	  if (sim->env.b [i] & 1)
 	    *bp++ = '.';
+	  else
+	    *bp++ = ' ';
 	}
     }
   *bp = '\0';
