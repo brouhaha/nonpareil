@@ -43,6 +43,21 @@ display
 	color 2 255 17 17  # lit segments
 end
 
+switch 0
+  size 20 12
+  default 1
+  position 0  offset  87 138  end  # off
+  position 1  offset 107 138  end  # on
+end
+
+switch 1
+  size 17 12
+  default 2
+  position 0  offset 198 140  flag 11  end   # timer
+  position 1  offset 215 140  flag 3   end   # program
+  position 2  offset 232 140           end   # run
+end
+
 button 11  type 0  size 34 24  offset  52 178  down 2 8  keycode 006  end
 button 12  type 0  size 34 24  offset 102 178  down 2 8  keycode 004  end
 button 13  type 0  size 34 24  offset 151 178  down 2 8  keycode 003  end

@@ -247,48 +247,27 @@ typedef struct
   GtkWidget *image [KML_MAX_SWITCH_POSITION];
   GtkWidget *fixed;
   kml_switch_t *kml_switch;
-  int position;
+  gboolean flag [KML_MAX_SWITCH_POSITION];
 } switch_info_t;
 
 
-void switch_select (GtkWidget *widget, switch_info_t *sw)
+void switch_toggled (GtkWidget *widget, switch_info_t *sw)
 {
-  int new_pos;
-  int old_pos = sw->position;
-  GtkWidget *temp;
+  int pos;
+  gboolean state;
 
-  for (new_pos = 0; new_pos < KML_MAX_SWITCH_POSITION; new_pos++)
+  for (pos = 0; pos < KML_MAX_SWITCH_POSITION; pos++)
     {
-      if (widget == sw->widget [new_pos])
+      if (widget == sw->widget [pos])
 	break;
     }
-  if (new_pos >= KML_MAX_SWITCH_POSITION)
+  if (pos >= KML_MAX_SWITCH_POSITION)
     fatal (2, "can't find switch position\n");
 
-#define SWITCH_DEBUG
-#ifdef SWITCH_DEBUG
-  printf ("switch position %d selected", new_pos);
-  if (new_pos == old_pos)
-    printf (": no change");
-  printf ("\n");
-#endif
+  state = gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (widget));
 
-  if (new_pos == old_pos)
-    return;
-
-  gtk_widget_ref (sw->image [old_pos]);
-  gtk_widget_ref (sw->image [new_pos]);
-  gtk_container_remove (GTK_CONTAINER (sw->widget [old_pos]), sw->image [old_pos]);
-  gtk_container_remove (GTK_CONTAINER (sw->widget [new_pos]), sw->image [new_pos]);
-  temp = sw->image [old_pos];
-  sw->image [old_pos] = sw->image [new_pos];
-  sw->image [new_pos] = temp;
-  gtk_container_add (GTK_CONTAINER (sw->widget [old_pos]), sw->image [old_pos]);
-  gtk_container_add (GTK_CONTAINER (sw->widget [new_pos]), sw->image [new_pos]);
-  gtk_widget_unref (sw->image [old_pos]);
-  gtk_widget_unref (sw->image [new_pos]);
-
-  sw->position = new_pos;
+  if (sw->flag [pos])
+    sim_set_ext_flag (sw->flag [pos], state);
 }
 
 
@@ -298,40 +277,38 @@ void add_switch (GtkWidget *fixed,
 		 switch_info_t *switch_info)
 {
   int i;
-  GdkPixbuf *pixbuf;
+  GSList *group = NULL;
 
   switch_info->fixed = fixed;
   switch_info->kml_switch = kml_switch;
-  switch_info->position = kml_switch->default_position;
   
-  /* first construct active_image and inactive_image */
   for (i = 0; i < KML_MAX_SWITCH_POSITION; i++)
     if (kml_switch->position [i])
       {
-	pixbuf = gdk_pixbuf_new_subpixbuf (window_pixbuf,
-					   kml_switch->position [i]->offset.x,
-					   kml_switch->position [i]->offset.y,
-					   kml_switch->size.width,
-					   kml_switch->size.height);
-	switch_info->image [i] = gtk_image_new_from_pixbuf (pixbuf);
+	switch_info->flag [i] = kml_switch->position [i]->flag;
+	switch_info->widget [i] = gtk_radio_button_new (group);
 
-	switch_info->widget [i] = gtk_button_new ();
+	group = gtk_radio_button_get_group (GTK_RADIO_BUTTON (switch_info->widget [i]));
+
+	/* Though it's a radio button, don't display it as one! */
+	gtk_toggle_button_set_mode (GTK_TOGGLE_BUTTON (switch_info->widget [i]),
+				    FALSE);
+
+
 	gtk_button_set_relief (GTK_BUTTON (switch_info->widget [i]), GTK_RELIEF_NONE);
 	gtk_widget_set_size_request (switch_info->widget [i],
 				     kml_switch->size.width,
 				     kml_switch->size.height);
+
 	gtk_fixed_put (GTK_FIXED (fixed),
 		       switch_info->widget [i],
 		       kml_switch->position [i]->offset.x,
 		       kml_switch->position [i]->offset.y);
 
 	g_signal_connect (G_OBJECT (switch_info->widget [i]),
-			  "pressed",
-			  G_CALLBACK (& switch_select),
+			  "toggled",
+			  G_CALLBACK (& switch_toggled),
 			  (gpointer) switch_info);
-
-	gtk_container_add (GTK_CONTAINER (switch_info->widget [i]),
-			   switch_info->image [i]);
       }
 }
 
@@ -571,6 +548,35 @@ static GtkWidget *get_menubar_menu (GtkWidget *window)
 }
 
 
+typedef struct
+{
+  char *name;
+  int ram_size;
+} model_info_t;
+
+
+model_info_t model_info [] =
+  {
+    { "35", 0 },
+    { "45", 10 },
+    { "55", 30 },
+    { "80", 0 }
+  };
+
+
+model_info_t *get_model_info (char *model)
+{
+  int i;
+
+  for (i = 0; i < (sizeof (model_info) / sizeof (model_info_t)); i++)
+    {
+      if (strcasecmp (model, model_info [i].name) == 0)
+	return (& model_info [i]);
+    }
+  return (NULL);
+}
+
+
 #ifndef PATH_MAX
 #define PATH_MAX 256
 #endif
@@ -580,6 +586,8 @@ int main (int argc, char *argv[])
 {
   char *kml_fn = NULL;
   int kml_debug = 0;
+
+  model_info_t *model_info;
 
   int image_width, image_height;
 
@@ -645,6 +653,11 @@ int main (int argc, char *argv[])
 
   if (! kml->rom)
     fatal (2, "No ROM file specified in KML\n");
+
+  if (! kml->model)
+    fatal (2, "No hardware model specified in KML\n");
+
+  model_info = get_model_info (kml->model);
 
   image_pixbuf = gdk_pixbuf_new_from_file (kml->image, & error);
   if (! image_pixbuf)
@@ -715,7 +728,7 @@ int main (int argc, char *argv[])
 		      GTK_SIGNAL_FUNC (quit_callback),
 		      NULL);
 
-  sim_init (10, & display_update);  /* $$$ 10 regs is enough for HP-45 */
+  sim_init (model_info->ram_size, & display_update);
 
   if (! sim_read_listing_file (kml->rom, TRUE))
     fatal (2, "unable to read listing file '%s'\n", kml->rom);
