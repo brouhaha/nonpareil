@@ -1,0 +1,158 @@
+# $Id$
+# Copyright 2004 Eric L. Smith <eric@brouhaha.com>
+
+# Nonpareil is free software; you can redistribute it and/or modify it
+# under the terms of the GNU General Public License version 2 as
+# published by the Free Software Foundation.  Note that I am not
+# granting permission to redistribute or modify Nonpareil under the
+# terms of any later version of the General Public License.
+
+# Nonpareil is distributed in the hope that they will be useful (or at
+# least amusing), but WITHOUT ANY WARRANTY; without even the implied
+# warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+# See the GNU General Public License for more details.
+
+# You should have received a copy of the GNU General Public License
+# along with this program (in the file "COPYING"); if not, write to
+# the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+# Boston, MA 02111, USA.
+
+global
+	title "HP-32E Scientific Calculator"
+	author "Eric Smith <eric@brouhaha.com>"
+	hardware "Spice"
+	model "32e"
+	rom "hp32e.obj"
+	image "hp32e.png"
+	color 0 87 127 152  # background color, used when transparency is off
+	transparency 128
+end
+
+background
+	offset 10 21
+	size 270 523
+end
+
+display
+	offset 27 109
+	size 232 40
+
+	color 0 35 17 17   # background
+	color 1 35 17 17   # unlit segments
+	color 2 255 17 17  # lit segments
+
+	digits 12
+		size 17 12
+		offset 25 14
+	end
+
+	character '0' segment 'a' 'b' 'c' 'd' 'e' 'f'         end
+	character '1' segment     'b' 'c'                     end
+        character '2' segment 'a' 'b'     'd' 'e'     'g'     end
+	character '3' segment 'a' 'b' 'c' 'd'         'g'     end
+	character '4' segment     'b' 'c'         'f' 'g'     end
+	character '5' segment 'a'     'c' 'd'     'f' 'g'     end
+	character '6' segment 'a'     'c' 'd' 'e' 'f' 'g'     end
+	character '7' segment 'a' 'b' 'c'                     end
+	character '8' segment 'a' 'b' 'c' 'd' 'e' 'f' 'g'     end
+	character '9' segment 'a' 'b' 'c' 'd'     'f' 'g'     end
+	character 'r' segment                 'e'     'g'     end
+	character 'H' segment     'b' 'c'     'e' 'f' 'g'     end
+	character 'o' segment         'c' 'd' 'e'     'g'     end
+	character 'P' segment 'a' 'b'         'e' 'f' 'g'     end
+	character 'E' segment 'a'         'd' 'e' 'f' 'g'     end
+	character ' ' segment                                 end
+	character '-' segment                         'g'     end
+	character '.' segment                             'h' end
+
+	segment 'a' offset  0  0 size 6 1 end
+	segment 'b' offset  5  0 size 1 6 end
+	segment 'c' offset  5  5 size 1 6 end
+	segment 'd' offset  0 10 size 6 1 end
+	segment 'e' offset  0  5 size 1 6 end
+	segment 'f' offset  0  0 size 1 6 end
+	segment 'g' offset  0  5 size 6 1 end
+	segment 'h' offset  9 11 size 2 2 end
+end
+
+switch 0
+  size 15 14
+  default 1
+  position 0  offset  79 163 end  # off
+  position 1  offset  94 163 end  # on
+end
+
+button 11  type 0  size 31 27  offset  44 195  down 2 8  keycode 0064  end
+button 12  type 0  size 31 27  offset  86 195  down 2 8  keycode 0063  end
+button 13  type 0  size 31 27  offset 128 195  down 2 8  keycode 0062  end
+button 14  type 0  size 31 27  offset 170 195  down 2 8  keycode 0061  end
+button 15  type 0  size 31 27  offset 212 195  down 2 8  keycode 0060  end
+
+button 21  type 0  size 31 27  offset  44 242  down 2 8  keycode 0224  end
+button 22  type 0  size 31 27  offset  86 242  down 2 8  keycode 0223  end
+button 23  type 0  size 31 27  offset 128 242  down 2 8  keycode 0222  end
+button 24  type 0  size 31 27  offset 170 242  down 2 8  keycode 0221  end
+button 25  type 0  size 31 27  offset 212 242  down 2 8  keycode 0220  end
+
+button 31  type 0  size 73 27  offset  44 289  down 2 8  keycode 0163  end
+button 32  type 0  size 31 27  offset 128 289  down 2 8  keycode 0162  end
+button 33  type 0  size 31 27  offset 170 289  down 2 8  keycode 0161  end
+button 34  type 0  size 31 27  offset 212 289  down 2 8  keycode 0160  end
+
+button 41  type 0  size 31 27  offset  44 336  down 2 8  keycode 0243  end
+button 42  type 0  size 35 27  offset  96 336  down 2 8  keycode 0242  end
+button 43  type 0  size 35 27  offset 152 336  down 2 8  keycode 0241  end
+button 44  type 0  size 35 27  offset 208 336  down 2 8  keycode 0240  end
+
+button 51  type 0  size 31 27  offset  44 383  down 2 8  keycode 0143  end
+button 52  type 0  size 35 27  offset  96 383  down 2 8  keycode 0142  end
+button 53  type 0  size 35 27  offset 152 383  down 2 8  keycode 0141  end
+button 54  type 0  size 35 27  offset 208 383  down 2 8  keycode 0140  end
+
+button 61  type 0  size 31 27  offset  44 430  down 2 8  keycode 0323  end
+button 62  type 0  size 35 27  offset  96 430  down 2 8  keycode 0322  end
+button 63  type 0  size 35 27  offset 152 430  down 2 8  keycode 0321  end
+button 64  type 0  size 35 27  offset 208 430  down 2 8  keycode 0320  end
+
+button 71  type 0  size 31 27  offset  44 477  down 2 8  keycode 0103  end
+button 72  type 0  size 35 27  offset  96 477  down 2 8  keycode 0102  end
+button 73  type 0  size 35 27  offset 152 477  down 2 8  keycode 0101  end
+button 74  type 0  size 35 27  offset 208 477  down 2 8  keycode 0100  end
+
+# main keyboard:
+scancode 48 map 48 72 end  # 0
+scancode 49 map 49 62 end  # 1
+scancode 50 map 50 63 end  # 2
+scancode 51 map 51 64 end  # 3
+scancode 52 map 52 52 end  # 4
+scancode 53 map 53 53 end  # 5
+scancode 54 map 54 54 end  # 6
+scancode 55 map 55 42 end  # 7
+scancode 56 map 56 43 end  # 8
+scancode 57 map 57 44 end  # 9
+scancode 46 map 46 73 end  # .
+scancode 43 map 43 51 end  # +
+scancode 45 map 45 41 end  # -
+scancode 42 map 42 61 end  # *
+scancode 47 map 47 71 end  # /
+scancode 65293 map 65293 31 end  # ENTER
+scancode 99 map 99 32 end  # c - CHS
+scancode 101 map 101 33 end  # e - EEX
+
+# keypad:
+scancode 65456 map 65456 72 end  # 0
+scancode 65457 map 65457 62 end  # 1
+scancode 65458 map 65458 63 end  # 2
+scancode 65459 map 65459 64 end  # 3
+scancode 65460 map 65460 52 end  # 4
+scancode 65461 map 65461 53 end  # 5
+scancode 65462 map 65462 54 end  # 6
+scancode 65463 map 65463 42 end  # 7
+scancode 65464 map 65464 43 end  # 8
+scancode 65465 map 65465 44 end  # 9
+scancode 65454 map 65454 73 end  # .
+scancode 65451 map 65451 51 end  # +
+scancode 65453 map 65453 41 end  # -
+scancode 65450 map 65450 61 end  # *
+scancode 65455 map 65455 71 end  # /
+scancode 65421 map 65421 31 end  # ENTER

@@ -43,7 +43,7 @@ LDFLAGS = -g
 # -----------------------------------------------------------------------------
 
 PACKAGE = nonpareil
-RELEASE = 0.31
+RELEASE = 0.32
 DISTNAME = $(PACKAGE)-$(RELEASE)
 
 PACKAGES = gtk+-2.0 gdk-2.0 gdk-pixbuf-2.0 glib-2.0 gthread-2.0
@@ -73,7 +73,7 @@ ifdef USE_READLINE
 endif
 
 SRC_CALCS = hp35 hp45 hp55 hp80
-OBJ_CALCS = hp25 hp33c
+OBJ_CALCS = hp25 hp32e hp33c hp37e
 
 ALL_CALCS = $(SRC_CALCS) $(OBJ_CALCS)
 
