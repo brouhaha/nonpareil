@@ -417,6 +417,7 @@ static void op_long_branch (sim_t *sim, int opcode)
 {
   sim->env->inst_state = long_branch;
   sim->env->first_word = opcode;
+  sim->env->long_branch_carry = sim->env->prev_carry;
 }
 
 
@@ -427,7 +428,7 @@ static void op_long_branch_word_2 (sim_t *sim, int opcode)
   sim->env->inst_state = norm;
   target = (sim->env->first_word >> 2) | ((opcode & 0x3fc) << 6);
 
-  if ((opcode & 0x001) == sim->env->prev_carry)
+  if ((opcode & 0x001) == sim->env->long_branch_carry)
     {
       if (opcode & 0x002)
 	sim->env->pc = target;

@@ -20,7 +20,7 @@ MA 02111, USA.
 */
 
 
-#define SSIZE 16
+#define SSIZE 14
 #define STACK_DEPTH 4
 
 #define MAX_BANK 4
@@ -69,7 +69,9 @@ struct sim_env_t
   rom_addr_t cxisa_addr;
 
   inst_state_t inst_state;
-  rom_word_t first_word;
+
+  rom_word_t first_word;   /* long branch: remember first word */
+  bool long_branch_carry;  /* and carry */
 
   bool key_flag;      /* true if a key is down */
   int key_buf;        /* most recently pressed key */
