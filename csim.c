@@ -791,6 +791,7 @@ void debugger (void)
 {
   int opcode;
   int cycle = 0;
+  int io_count = 0;
 
   pc = 0;
   rom = 0;
@@ -836,7 +837,9 @@ void debugger (void)
 	      printf ("\n");
 	    }
 	  step = 0;
-	  handle_io ();
+	  if (io_count == 0)
+	    handle_io ();
+	  io_count = (io_count + 1) & 0x3f;
 	}
       /* get a command here */
     }
