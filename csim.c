@@ -40,6 +40,8 @@ char *progname;
 
 kml_t *kml;
 
+struct sim_handle_t *sim;
+
 
 GtkWidget *main_window;
 
@@ -267,7 +269,7 @@ void switch_toggled (GtkWidget *widget, switch_info_t *sw)
   state = gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (widget));
 
   if (sw->flag [pos])
-    sim_set_ext_flag (sw->flag [pos], state);
+    sim_set_ext_flag (sim, sw->flag [pos], state);
 }
 
 
@@ -343,7 +345,7 @@ typedef struct
 
 void button_pressed (GtkWidget *widget, button_info_t *button)
 {
-  sim_press_key (button->kml_button->keycode);
+  sim_press_key (sim, button->kml_button->keycode);
 #ifdef KEYBOARD_DEBUG
   printf ("pressed %d\n", button->kml_button->keycode);
 #endif
@@ -352,7 +354,7 @@ void button_pressed (GtkWidget *widget, button_info_t *button)
 
 void button_released (GtkWidget *widget, button_info_t *button)
 {
-  sim_release_key ();
+  sim_release_key (sim);
 #ifdef KEYBOARD_DEBUG
   printf ("released %d\n", button->kml_button->keycode);
 #endif
@@ -665,6 +667,8 @@ int main (int argc, char *argv[])
   if (! model_info)
     fatal (2, "Unrecognized model specified in KML\n");
 
+  sim = sim_init (model_info->ram_size, & display_update);
+
   image_pixbuf = gdk_pixbuf_new_from_file (kml->image, & error);
   if (! image_pixbuf)
     fatal (2, "can't load image '%s'\n", kml->image);
@@ -734,14 +738,12 @@ int main (int argc, char *argv[])
 		      GTK_SIGNAL_FUNC (quit_callback),
 		      NULL);
 
-  sim_init (model_info->ram_size, & display_update);
-
-  if (! sim_read_listing_file (kml->rom, TRUE))
+  if (! sim_read_listing_file (sim, kml->rom, TRUE))
     fatal (2, "unable to read listing file '%s'\n", kml->rom);
 
-  sim_reset ();
+  sim_reset (sim);
 
-  sim_start ();
+  sim_start (sim);
 
   gtk_main ();
 

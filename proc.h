@@ -87,40 +87,65 @@ typedef struct
  * contents change.  Note that it is called in the simulator thread
  * context, so it will probably have to deal with mutexes.
  */
-void sim_init  (int ram_size,
-		void (*display_update_fn)(char *buf));
+struct sim_handle_t *sim_init  (int ram_size,
+				void (*display_update_fn)(char *buf));
 
 /* kill the sim thread */
-void sim_quit  (void);
+void sim_quit  (struct sim_handle_t *sim);
 
-gboolean sim_read_object_file (char *fn);
-gboolean sim_read_listing_file (char *fn, int keep_src);
+gboolean sim_read_object_file (struct sim_handle_t *sim,
+			       char *fn);
 
-void sim_reset (void);  /* resets simulated processor */
-void sim_step  (void);  /* executes one instruction */
-void sim_start (void);  /* starts simulation */
-void sim_stop  (void);  /* stops simulation */
+gboolean sim_read_listing_file (struct sim_handle_t *sim,
+				char *fn,
+				int keep_src);
 
-gboolean sim_running (void);  /* is the simulation running? */
+void sim_reset (struct sim_handle_t *sim);  /* resets simulated processor */
+void sim_step  (struct sim_handle_t *sim);  /* executes one instruction */
+void sim_start (struct sim_handle_t *sim);  /* starts simulation */
+void sim_stop  (struct sim_handle_t *sim);  /* stops simulation */
 
-uint64_t sim_get_cycle_count (void);
-void sim_set_cycle_count (uint64_t count);
-
-void sim_set_breakpoint (int address);
-void sim_clear_breakpoint (int address);
+gboolean sim_running (struct sim_handle_t *sim);  /* is the simulation running? */
 
 
-void sim_get_env (sim_env_t *env);
-void sim_set_env (sim_env_t *env);
+uint64_t sim_get_cycle_count (struct sim_handle_t *siim);
+
+void sim_set_cycle_count (struct sim_handle_t *sim,
+			  uint64_t count);
+
+void sim_set_breakpoint (struct sim_handle_t *sim,
+			 int address);
+
+void sim_clear_breakpoint (struct sim_handle_t *sim,
+			   int address);
 
 
-romword sim_read_rom (int addr);
+/* copy the simulator state into the sim_env_t supplied by the caller */
+void sim_get_env (struct sim_handle_t *sim,
+		  sim_env_t *env);
 
-void sim_read_ram (int addr, reg_t *val);
-void sim_write_ram (int addr, reg_t *val);
+/* copy a sim_env_t into the simulator state */
+void sim_set_env (struct sim_handle_t *sim,
+		  sim_env_t *env);
 
 
-void sim_press_key (int keycode);
-void sim_release_key (void);
+romword sim_read_rom (struct sim_handle_t *sim,
+		      int addr);
 
-void sim_set_ext_flag (int flag, gboolean state);
+void sim_read_ram (struct sim_handle_t *sim,
+		   int addr,
+		   reg_t *val);
+
+void sim_write_ram (struct sim_handle_t *sim,
+		    int addr,
+		    reg_t *val);
+
+
+void sim_press_key (struct sim_handle_t *sim,
+		    int keycode);
+
+void sim_release_key (struct sim_handle_t *sim);
+
+void sim_set_ext_flag (struct sim_handle_t *sim,
+		       int flag,
+		       gboolean state);

@@ -1,5 +1,10 @@
 2004-01-19  Eric Smith <eric@brouhaha.com>
 
+	* csim.c proc.h proc.c: Eliminate use of globals in proc.c.
+	sim_init() now returns a struct sim_handle_t *, which is used as
+	an argument to all the public functions and most of the private
+	ones.
+	
 	* proc.h proc.c: Made sim_state private to proc.c.
 
 	* csim.c (main): Don't segfault on unrecognized model.
