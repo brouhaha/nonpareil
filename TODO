@@ -3,21 +3,16 @@ Copyright 1995, 2003, 2004 Eric L. Smith <eric@brouhaha.com>
 $Id$
 
 
-Bugs:
-
-  Button presses missed
-
-  HP-45: Anomalous stopwatch display (aliasing?)
-
-
-Building:
+Build process:
 
   Create an RPM .spec file.
 
 
 User interface:
 
-  Add HP-55 mode switch.
+  Transparency/shape:  add support for moving window.
+
+  Transparency/shape:  pop-up menu.
 
   Improve KML file utilization, particularly for display.
 
@@ -28,6 +23,8 @@ User interface:
       Edit - Copy, Paste
 
   Make button hilighting look better.
+
+  Make slide switches look better.
 
   Add help.
 
@@ -40,12 +37,16 @@ User interface:
 
 Internals:
 
+  Use io_count to improve display update timing.
+
   Add a debugger.
 
   Split ALU functions into separate source file.
 
   Create a CPU class, with subclasses for classic, woodstock,
-  spice/spike, and nut/voyager.
+  cricket, spice/spike, and nut/voyager.
+
+  Replace globals in csim.c with structure.  Allow for multiple instances.
 
   Clean up memory usage of symbols in CASM
 
@@ -60,11 +61,7 @@ Internals:
 
 Better model support:
 
-  Model-dependent RAM size.
-
   Scan images.
-
-  Key in partial HP-65 source code from patent.
 
   Implement HP-65, HP-70, HP-80 keyboard legends.
 
