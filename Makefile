@@ -1,6 +1,6 @@
 # Makefile for CASMSIM package
 # Copyright 1995 Eric L. Smith
-# $Header: /home/svn/casmsim/Makefile,v 1.15 1995/03/28 01:33:30 eric Exp $
+# $Header: /home/svn/casmsim/Makefile,v 1.16 1995/03/29 23:27:32 eric Exp $
 #
 # CASMSIM is free software; you can redistribute it and/or modify it under the
 # terms of the GNU General Public License version 2 as published by the Free
@@ -17,7 +17,7 @@
 # these programs (in the file "COPYING"); if not, write to the Free Software
 # Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #
-# $Header: /home/svn/casmsim/Makefile,v 1.15 1995/03/28 01:33:30 eric Exp $
+# $Header: /home/svn/casmsim/Makefile,v 1.16 1995/03/29 23:27:32 eric Exp $
 
 
 # -----------------------------------------------------------------------------
@@ -121,4 +121,4 @@ listings.tar.gz: $(LISTINGS)
 	ls -l $@
 
 clean:
-	rm -f $(PROGRAMS) $(MISC_TARGETS) $(OBJECTS) $(INTERMEDIATE) $(ROMS) $(LISTINGS)
+	rm -f $(PROGRAMS) $(MISC_TARGETS) $(OBJECTS) $(INTERMEDIATE) $(LISTINGS)
