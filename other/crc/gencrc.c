@@ -96,6 +96,26 @@ bool breakpoint [MAX_BANK * MAX_ROM];
 rom_word_t ucode [MAX_BANK * MAX_ROM];
 
 
+void munge_banks (void)
+{
+  int i;
+  bool swap = 0;
+  rom_word_t temp;
+
+  for (i = 0; i < MAX_ROM; i++)
+    {
+      if (ucode [i] == 01060)
+	swap = ! swap;
+      if (swap)
+	{
+	  temp = ucode [i];
+	  ucode [i] = ucode [i + MAX_ROM];
+	  ucode [i + MAX_ROM] = temp;
+	}
+    }
+}
+
+
 void trim_trailing_whitespace (char *s)
 {
   int i;
@@ -217,6 +237,12 @@ bool sim_read_object_file (char *fn)
 #if 1
   fprintf (stderr, "read %d words from '%s'\n", word_count, fn);
 #endif
+
+  if (word_count == MAX_BANK * MAX_ROM)
+    {
+      munge_banks ();
+    }
+
   return (true);
 }
 
