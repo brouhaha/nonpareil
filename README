@@ -1,6 +1,6 @@
 CASMSIM - an HP Classic series calculator micro assembler and simulator
 Copyright 1995 Eric L. Smith (eric@telebit.com)
-Last revised March 13, 1995
+Last revised March 14, 1995
 
 CASMSIM consists of the CASM assembler and the CSIM simulator.  It's just a
 quick hack, so don't expect too much.
@@ -135,22 +135,7 @@ of the name under which it was invoked and "lst".  This allows you to (for
 instance) link CSIM to "hp45" and have it automatically try to load and run
 "hp45.lst".
 
-At this point CSIM just barely parially works with the HP-45 ROM image; it
-doesn't work with the HP-55 image at all.  I don't know how much of this is
-due to errors in CSIM versus errors in my typing of the assembly sources.  In
-this release CSIM should be viewed as a snapshot of a work in progress.  No
-effort has been made to do any performance optimization.  For instance, the
-display is updated and keyboard events are polled after every instruction
-cycle.  At this point I'm more concerned with improving the accuracy of the
-simulation.  Currently the following functions of the HP-45 are known NOT to
-work on CSIM:
-
-    digit entry
-    exponent entry
-    trig functions (including polar conversions)
-    factorial
-    pi
-
-Most everything else works, although obviously without digit entry it is
-pretty useless.
-
+At this point CSIM is known to mostly work with the HP-45 ROM image, but I
+haven't tested it much and I haven't verified the ROM image.  There
+are serious problems with the HP-55 image, which may be CSIM bugs or they
+may be errors in my typing of the assembly sources.
