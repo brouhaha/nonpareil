@@ -25,18 +25,18 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
 char *platform_name [PLATFORM_MAX] =
   {
-    "unknown",
-    "classic",
-    "woodstock",
-    "topcat",
-    "hawkeye",
-    "sting",
-    "cricket",
-    "spice",
-    "coconut",
-    "voyager",
-    "capricorn",
-    "gemini",
-    "kangaroo",
-    "titan"
+    [PLATFORM_UNKNOWN] = "unknown",
+    [PLATFORM_CLASSIC]   = "classic",
+    [PLATFORM_WOODSTOCK] = "woodstock",
+    [PLATFORM_TOPCAT]    = "topcat",
+    [PLATFORM_HAWKEYE]   = "hawkeye",
+    [PLATFORM_STING]     = "sting",
+    [PLATFORM_CRICKET]   = "cricket",
+    [PLATFORM_SPICE]     = "spice",
+    [PLATFORM_COCONUT]   = "coconut",
+    [PLATFORM_VOYAGER]   = "voyager",
+    [PLATFORM_CAPRICORN] = "capricorn",
+    [PLATFORM_GEMINI]    = "gemini",
+    [PLATFORM_KANGAROO]  = "kangaroo",
+    [PLATFORM_TITAN]     = "titan"
   };

@@ -29,13 +29,13 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
 char *arch_name [ARCH_MAX] =
   {
-    "unknown",
-    "classic",
-    "woodstock",
-    "cricket",
-    "nut",
-    "capricorn",
-    "saturn"
+    [ARCH_UNKNOWN]   = "unknown",
+    [ARCH_CLASSIC]   = "classic",
+    [ARCH_WOODSTOCK] = "woodstock",
+    [ARCH_CRICKET]   = "cricket",
+    [ARCH_NUT]       = "nut",
+    [ARCH_CAPRICORN] = "capricorn",
+    [ARCH_SATURN]    = "saturn"
   };
 
 int arch = ARCH_UNKNOWN;
