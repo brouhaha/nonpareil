@@ -546,7 +546,6 @@ void op_del_sel_grp (int opcode)
 void op_keys_to_rom_addr (int opcode)
 {
   pc = key_buf;
-  printf ("read keys!!!!!!!!!!!!\n");
 }
 
 void op_rom_addr_to_buf (int opcode)
@@ -558,14 +557,12 @@ void op_display_off (int opcode)
 {
   display_enable = 0;
   io_count = 0;
-  printf ("display off\n");
 }
 
 void op_display_toggle (int opcode)
 {
   display_enable = ! display_enable;
   io_count = 0;
-  printf ("display toggle\n");
 }
 
 void (* op_fcn [1024])(int);
@@ -869,7 +866,7 @@ int main (int argc, char *argv[])
  
   init_display (argc, argv);
 
-  progn = newstr ("foo" /* argv [0] */);
+  progn = newstr (argv [0]);
 
   while (--argc)
     {
