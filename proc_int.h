@@ -42,7 +42,9 @@ typedef struct
 				rom_word_t *opcode);
 
   void (* reset_processor)     (sim_t *sim);
-  void (* execute_instruction) (sim_t *sim);
+
+  /* returns false if asleep (can't execute instructions) */
+  bool (* execute_instruction) (sim_t *sim);
 
   /* I/O */
   void (* press_key)           (sim_t *sim, int keycode);

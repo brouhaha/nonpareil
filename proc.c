@@ -222,7 +222,8 @@ gpointer sim_thread_func (gpointer data)
 	  /* execute the microinstructions */
 	  while (i--)
 	    {
-	      sim->proc->execute_instruction (sim);
+	      if (! sim->proc->execute_instruction (sim))
+		break;
 	    }
 
 	  /* update the display */

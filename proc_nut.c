@@ -936,7 +936,10 @@ static void op_lld (sim_t *sim, int opcode)
 
 static void op_powoff (sim_t *sim, int opcode)
 {
-  sim->env->awake = 0;
+#if 0
+  printf ("going to sleep!\n");
+#endif
+  sim->env->awake = false;
   sim->env->pc = 0;
   if (sim->env->display_enable)
     {
@@ -1119,9 +1122,12 @@ static void nut_print_state (sim_t *sim, sim_env_t *env)
     }
 }
 
-void nut_execute_instruction (sim_t *sim)
+bool nut_execute_instruction (sim_t *sim)
 {
   int opcode;
+
+  if (! sim->env->awake)
+    return (false);
 
   if (sim->env->inst_state == cxisa)
     sim->env->prev_pc = sim->env->cxisa_addr;
@@ -1168,6 +1174,8 @@ void nut_execute_instruction (sim_t *sim)
     }
   else
     sim->env->display_count --;
+
+  return (true);
 }
 
 
@@ -1237,9 +1245,16 @@ static bool nut_parse_listing_line (char *buf, int *bank, int *addr,
 
 static void nut_press_key (sim_t *sim, int keycode)
 {
+  if ((! sim->env->awake) && (! sim->env->display_enable) && (keycode != 0x18))
+    return;
   sim->env->key_buf = keycode;
   sim->env->key_down = true;
   sim->env->key_flag = true;
+#if 0
+  if (! sim->env->awake)
+    printf ("waking up!\n");
+#endif
+  sim->env->awake = true;
 }
 
 static void nut_release_key (sim_t *sim)
@@ -1276,7 +1291,7 @@ void nut_reset_processor (sim_t *sim)
   sim->env->pt = & sim->env->p;
 
   /* wake from deep sleep */
-  sim->env->awake = 1;
+  sim->env->awake = true;
   sim->env->pc = 0;
   sim->env->inst_state = norm;
   sim->env->carry = 1;
