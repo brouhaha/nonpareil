@@ -27,6 +27,7 @@ global
 	model "45"
 	rom "hp45.lst"
 	image "hp45.png"
+	color 0 137 0 6	  # background color, used when transparency is off
 	transparency 128
 end
 

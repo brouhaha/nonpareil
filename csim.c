@@ -723,6 +723,7 @@ int main (int argc, char *argv[])
 
   GdkColormap *colormap;
   GdkColor red, black;
+  GdkColor image_bg_color;
 
   char buf [PATH_MAX];
  
@@ -858,6 +859,17 @@ int main (int argc, char *argv[])
     fatal (2, "can't parse color black\n");
   if (! gdk_colormap_alloc_color (colormap, & black, FALSE, TRUE))
     fatal (2, "can't alloc color black\n");
+
+  if (kml->global_color [0])
+    {
+      /* set the image background color */
+      image_bg_color.red   = kml->global_color [0]->r * 257;
+      image_bg_color.green = kml->global_color [0]->g * 257;
+      image_bg_color.blue  = kml->global_color [0]->b * 257;
+      if (! gdk_colormap_alloc_color (colormap, & image_bg_color, FALSE, TRUE))
+	fatal (2, "can't alloc color\n");
+      gtk_widget_modify_bg (event_box, GTK_STATE_NORMAL, & image_bg_color);
+    }
 
   gtk_widget_set_size_request (display,
 			       kml->display_size.width,

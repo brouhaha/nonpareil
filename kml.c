@@ -116,7 +116,10 @@ void free_kml (kml_t *kml)
   free (kml->patch);
   free (kml->image);
 
-  for (i = 0; i < KML_MAX_COLOR; i++)
+  for (i = 0; i < KML_MAX_GLOBAL_COLOR; i++)
+    free (kml->global_color [i]);
+
+  for (i = 0; i < KML_MAX_DISPLAY_COLOR; i++)
     free (kml->display_color [i]);
 
   for (i = 0; i < KML_MAX_ANNUNCIATOR; i++)

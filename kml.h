@@ -40,12 +40,14 @@ void yyerror (char *fmt, ...);
 void range_check (int val, int min, int max);
 
 
-#define KML_MAX_COLOR 16
+#define KML_MAX_GLOBAL_COLOR 2
+#define KML_MAX_DISPLAY_COLOR 16
 #define KML_MAX_ANNUNCIATOR 16
 #define KML_MAX_BUTTON 256
 #define KML_MAX_SWITCH 4
 #define KML_MAX_SWITCH_POSITION 4
 #define KML_MAX_SCANCODE 256
+
 
 typedef struct
 {
@@ -149,6 +151,7 @@ typedef struct
   char *image;
   int has_transparency;
   int transparency_threshold;
+  kml_color_t *global_color [KML_MAX_GLOBAL_COLOR];
   int debug;
 
   kml_offset_t background_offset;
@@ -158,7 +161,7 @@ typedef struct
   int display_zoom;
   kml_size_t display_size;
   kml_offset_t display_offset;
-  kml_color_t *display_color [KML_MAX_COLOR];
+  kml_color_t *display_color [KML_MAX_DISPLAY_COLOR];
 
   kml_annunciator_t *annunciator [KML_MAX_ANNUNCIATOR];
 

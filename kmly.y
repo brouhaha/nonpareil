@@ -108,6 +108,7 @@ global_stmt		:	title_stmt
 			|	patch_stmt
 			|	image_stmt
 			|	transparency_stmt
+			|	global_color_stmt
 			|	print_stmt
 			|	debug_stmt
 			;
@@ -135,6 +136,13 @@ image_stmt_name		:	IMAGE
 transparency_stmt	:	TRANSPARENCY INTEGER
 				{ yy_kml->has_transparency = 1;
 				  yy_kml->transparency_threshold = $2; } ;
+
+global_color_stmt	:	COLOR INTEGER INTEGER INTEGER INTEGER
+				{ range_check ($2, 0, KML_MAX_GLOBAL_COLOR);
+				  yy_kml->global_color [$2] = alloc (sizeof (kml_color_t));
+				  yy_kml->global_color [$2]->r = $3;
+				  yy_kml->global_color [$2]->g = $4;
+				  yy_kml->global_color [$2]->b = $5; } ;
 
 print_stmt		:	PRINT STRING { printf ("%s\n", $2); } ;
 
@@ -188,15 +196,15 @@ display_stmt		:	zoom_stmt
 				            yy_kml->display_size.height = $1.b; }
 			|	offset_stmt { yy_kml->display_offset.x = $1.a;
 					      yy_kml->display_offset.y = $1.b; }
-			|	color_stmt
+			|	display_color_stmt
 			;
 
 zoom_stmt		:	ZOOM INTEGER { yy_kml->display_zoom = $2; } ;
 
 digits_stmt		:	DIGITS INTEGER { yy_kml->display_digits = $2; } ;
 
-color_stmt		:	COLOR INTEGER INTEGER INTEGER INTEGER
-				{ range_check ($2, 0, KML_MAX_COLOR);
+display_color_stmt	:	COLOR INTEGER INTEGER INTEGER INTEGER
+				{ range_check ($2, 0, KML_MAX_DISPLAY_COLOR);
 				  yy_kml->display_color [$2] = alloc (sizeof (kml_color_t));
 				  yy_kml->display_color [$2]->r = $3;
 				  yy_kml->display_color [$2]->g = $4;

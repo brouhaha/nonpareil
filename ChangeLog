@@ -1,5 +1,11 @@
 2004-02-15  Eric Smith <eric@brouhaha.com>
 
+	* csim.c (main) kmly.y kml.c (free_kml) kml.h: Allow KML to
+	specify background color for window, useful with transparent
+	images when not in shape mode.
+	
+2004-02-15  Eric Smith <eric@brouhaha.com>
+
 	* Release 0.22.
 	
 2004-02-14  Eric Smith <eric@brouhaha.com>
