@@ -37,6 +37,29 @@ MA 02111, USA.
 #include "dis_nut.h"
 
 
+field_info_t field_info [] =
+{
+  { "a",      4, WSIZE, OFFSET_OF (sim_env_t, a) },
+  { "b",      4, WSIZE, OFFSET_OF (sim_env_t, b) },
+  { "c",      4, WSIZE, OFFSET_OF (sim_env_t, c) },
+  { "m",      4, WSIZE, OFFSET_OF (sim_env_t, m) },
+  { "n",      4, WSIZE, OFFSET_OF (sim_env_t, n) },
+  { "g",      4,     2, OFFSET_OF (sim_env_t, g) },
+  { "p",      4,     1, OFFSET_OF (sim_env_t, p) },
+  { "q",      4,     1, OFFSET_OF (sim_env_t, q) },
+  // pt
+  { "fo",     8,     1, OFFSET_OF (sim_env_t, fo) },
+  { "base",   4,     1, OFFSET_OF (sim_env_t, arithmetic_base) },
+  { "carry",  1,     1, OFFSET_OF (sim_env_t, carry) },
+  // prev_carry
+  { "s",      1, SSIZE, OFFSET_OF (sim_env_t, s) },
+  { "pc",    16,     1, OFFSET_OF (sim_env_t, pc) },
+  // prev_pc
+  { "stack", 16, STACK_DEPTH, OFFSET_OF (sim_env_t, stack) },
+  { NULL, 0 }
+};
+
+
 /* map from high opcode bits to register index */
 static int tmap [16] =
 { 3, 4, 5, 10, 8, 6, 11, -1, 2, 9, 7, 13, 1, 12, 0, -1 };

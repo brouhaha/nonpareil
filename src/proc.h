@@ -38,6 +38,17 @@ typedef struct sim_t sim_t;
 typedef struct sim_env_t sim_env_t;
 
 
+// field_info_t is used to get information on the available architecturally
+// visible state of a simulator.
+typedef struct
+{
+  char   *name;
+  int    element_bits;
+  int    array_element_count;
+  size_t offset;
+} field_info_t;
+
+
 /*
  * Create the sim thread, initially in idle state
  *
