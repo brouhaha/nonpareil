@@ -1861,7 +1861,7 @@ tdmsz0:	clear status
 	go to tdmszj
 
 oflw:	c + 1 -> c[xs]
-	go to fst1
+	jsb fst1
 
 tenxzj:	jsb tnx3
 errr:	0 -> c[w]
