@@ -1,3 +1,8 @@
+2005-02-12  Eric Smith <eric@brouhaha.com>
+
+	* g_async_queue_source.h g_async_queue_source.c: Added generic
+	support for async queues that wake up a glib thread context.
+
 2005-02-05  Eric Smith <eric@brouhaha.com>
 
 	* proc.c proc_int.h: Use glib async message queues for commands
