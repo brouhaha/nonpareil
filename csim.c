@@ -730,18 +730,18 @@ int main (int argc, char *argv[])
   gtk_window_set_title (GTK_WINDOW (main_window),
 			kml->title ? kml->title : "CASMSIM");
 
+  event_box = gtk_event_box_new ();
+  gtk_container_add (GTK_CONTAINER (main_window), event_box);
+
   vbox = gtk_vbox_new (FALSE, 1);
+  gtk_container_add (GTK_CONTAINER (event_box), vbox);
 
   if (image_mask_bitmap)
     {
-      event_box = gtk_event_box_new ();
-      gtk_container_add (GTK_CONTAINER (event_box), vbox);
-      gtk_container_add (GTK_CONTAINER (main_window), event_box);
       menubar = create_menus (main_window, GTK_TYPE_MENU);
     }
   else
     {
-      gtk_container_add (GTK_CONTAINER (main_window), vbox);
       menubar = create_menus (main_window, GTK_TYPE_MENU_BAR);
       gtk_box_pack_start (GTK_BOX (vbox), menubar, FALSE, TRUE, 0);
     }
@@ -803,7 +803,7 @@ int main (int argc, char *argv[])
 
   if (image_mask_bitmap)
     {
-      g_signal_connect (G_OBJECT (event_box),
+      g_signal_connect (G_OBJECT (main_window),
 			"button_press_event",
 			G_CALLBACK (on_move_window),
 			NULL);
