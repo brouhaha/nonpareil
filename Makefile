@@ -1,6 +1,6 @@
 # Makefile for CASMSIM package
 # Copyright 1995, 2003 Eric L. Smith
-# $Id: Makefile,v 1.20 2003/05/31 00:00:08 eric Exp $
+# $Id: Makefile,v 1.21 2003/06/02 22:20:51 eric Exp $
 #
 # CASMSIM is free software; you can redistribute it and/or modify it under the
 # terms of the GNU General Public License version 2 as published by the Free
@@ -49,7 +49,7 @@ PACKAGE = casmsim
 VERSION = 0.13
 DISTNAME = $(PACKAGE)-$(VERSION)
 
-CALCS = hp45 hp55 # hp35
+CALCS = hp45 hp55 hp35
 
 TARGETS = casm csim
 
