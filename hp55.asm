@@ -1,7 +1,9 @@
 ; HP-55 ROM sources from United States Patent 4,009,379
-; keyed in by Eric Smith on 8-Mar-1995 - any errors are probably mine
-; five typos corrected on 30-Mar-2003, found by Peter Monta by OCRing
+; $Id$
+; Keyed in by Eric Smith on 8-Mar-1995 - any errors are probably mine.
+; Five typos corrected on 30-Mar-2003, found by Peter Monta by OCRing
 ;     the listing in the patent
+; May not match released code in actual HP-55 calculators.
 
 ; HP-55 ROM 00
 

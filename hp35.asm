@@ -1,3 +1,6 @@
+; HP-35 ROM code disassembled from dump by Peter Monta
+; $Id$
+
 	.rom @00
 
 	jsb l00067

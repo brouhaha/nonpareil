@@ -1,7 +1,9 @@
 ; HP-45 ROM source code from United States Patent 4,001,569
-; keyed in by Eric Smith on 9-Mar-1995 - any errors are probably mine
-; typo corrected in "if" instruction in "frac" routine, on 3-Jan-2003,
+; $Id$
+; Keyed in by Eric Smith on 9-Mar-1995 - any errors are probably mine.
+; Typo corrected in "if" instruction in "frac" routine, on 3-Jan-2003,
 ;     found by Peter Monta by OCRing the listing in the patent
+; May not match released code in actual HP-45 calculators.
 
 	.rom @00
 
