@@ -78,6 +78,12 @@ Debugger:
 
 Internals:
 
+  Change nut pt (pointer selection) from pointer to boolean.  Replace
+  references to *pt to (pt ? q : p).
+
+  Make word size an architecture-specific parameter, rather than fixed
+  in proc.h.
+
   Only send display update message to GUI thread if display has changed.
 
   Add code to remove async queue g_source when simulator thread exits.
