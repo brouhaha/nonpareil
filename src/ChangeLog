@@ -1,5 +1,12 @@
 2004-07-09  Eric Smith <eric@brouhaha.com>
 
+	* proc_woodstock.c (woodstock_execute_instruction,
+	rom_selftest_done): Moved ROM selftest completion into new
+	function.  If CRC error, set status 5.
+	
+	* proc_woodstock.c (op_clear_reg): Actually clear registers; was
+	previously copying T to all regs.
+	
 	* proc_woodstock.c (op_clear_reg): Actually clear registers; was
 	previously copying T to all regs.
 	

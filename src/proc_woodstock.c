@@ -482,7 +482,19 @@ static void op_rom_selftest (sim_t *sim, int opcode)
   sim->env->crc = 01777;
   sim->env->inst_state = selftest;
   sim->env->pc &= ~ 01777;  // start from beginning of current 1K ROM bank
-  printf ("starting CRC of bank %d addr %04o\n", sim->env->bank, sim->env->pc);
+  printf ("starting ROM CRC of bank %d addr %04o\n", sim->env->bank, sim->env->pc);
+}
+
+
+static void rom_selftest_done (sim_t *sim)
+{
+  // ROM self-test completed, return and set S5 if error
+  printf ("ROM CRC done, crc = %03x: %s\n", sim->env->crc,
+	  sim->env->crc == 0x078 ? "good" : "bad");
+  if (sim->env->crc != 0x078)
+    sim->env->s [5] = 1;  // indicate error
+  sim->env->inst_state = norm;
+  op_return (sim, 0);
 }
 
 
@@ -1081,19 +1093,11 @@ bool woodstock_execute_instruction (sim_t *sim)
 	sim->env->pc = (sim->env->pc & ~01777) | opcode;
       break;
     case selftest:
+      crc_update (sim, opcode);
       if (opcode == 01060)
 	op_bank_switch (sim, opcode);  // bank switch even in self-test
-      crc_update (sim, opcode);
       if (! (sim->env->pc & 01777))    // end of 1K ROM bank?
-	{
-	  // yes, return
-	  // $$$ I'm not sure what to do if CRC is bad, as I've never
-	  //     had a real calculator fail the test.
-	  printf ("done, crc = %03x: %s\n", sim->env->crc,
-		  sim->env->crc == 0x078 ? "good" : "bad");
-	  sim->env->inst_state = norm;
-	  op_return (sim, 0);
-	}
+	rom_selftest_done (sim);
       break;
     }
 
