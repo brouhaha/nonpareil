@@ -7,6 +7,8 @@ Build process:
 
   Create an RPM .spec file.
 
+  Create an NSIS instller script for Windows.
+
 
 User interface:
 
@@ -39,10 +41,9 @@ User interface:
   Create a fancier About box.
 
 
-Internals:
+Debugger:
 
-  Use io_count to improve display update timing (already done in nut, add to
-  classic and woodstock).
+  Add disassemblers for Classic and Nut processors.
 
   Add reflection API for use by debugger (both GUI and command line).
 
@@ -50,7 +51,15 @@ Internals:
 
   Add debugger commands.  Pass dbt_t as arg to commands.
 
+  Create new VTE patch based on feedback from Nalin.
+
   Change Tcl standard I/O streams to use pty file descriptor.
+
+
+Internals:
+
+  Use io_count to improve display update timing (already done in nut, add to
+  classic and woodstock).
 
   Split ALU functions into separate source file.
 
@@ -81,8 +90,10 @@ Better model support:
 Ports:
 
   Windows
-    http://www.mingw.org/
-    http://www.gimp.org/~tml/gimp/win32/
+    MinGW cross-compiler:  http://www.mingw.org/
+    GTK+ for Windows:      http://www.gimp.org/~tml/gimp/win32/
+    GTK+ for Windows runtime installer:  http://members.lycos.co.uk/alexv6/
+    NSIS installer:        http://nsis.sourceforge.net/
 
   MacOS X
     http://www.macgimp.org/index.php?topic=gtk
