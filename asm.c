@@ -34,6 +34,20 @@ MA 02111, USA.
 int arch;
 
 
+void usage (FILE *f)
+{
+  fprintf (f, "uasm microassembler - Nonpareil release %s\n",
+	   MAKESTR(NONPAREIL_RELEASE));
+  fprintf (f, "Copyright 1995, 2003, 2004 Eric L. Smith\n");
+  fprintf (f, "http://nonpareil.brouhaha.com/\n");
+  fprintf (f, "\n");
+  fprintf (f, "usage: %s [options...] sourcefile\n", progname);
+  fprintf (f, "options:\n");
+  fprintf (f, "   -o objfile\n");
+  fprintf (f, "   -l listfile\n");
+}
+
+
 static parser_t *parser [ARCH_MAX] =
   {
     [ARCH_UNKNOWN]   = asm_parse,
@@ -85,26 +99,16 @@ char *errptr;
 char listbuf [MAX_LINE];
 char *listptr;
 
-#ifndef PATH_MAX
-#define PATH_MAX 256
-#endif
 
-char srcfn  [PATH_MAX];
-char objfn  [PATH_MAX];
-char listfn [PATH_MAX];
+char *src_fn = NULL;
 
 FILE *srcfile  = NULL;
 FILE *objfile  = NULL;
 FILE *listfile = NULL;
 
+
 symtab_t *global_symtab;
 symtab_t *symtab [MAXGROUP] [MAXROM];  /* separate symbol tables for each ROM */
-
-
-void usage (FILE *f)
-{
-  fprintf (f, "usage: %s objectfile\n", progname);
-}
 
 
 void format_listing (void)
@@ -189,15 +193,20 @@ void do_pass (int p)
       if (pass == 2)
 	{
 	  if (symtab_flag)
-	    print_symbol_table (symtab [group] [rom], listfile);
+	    {
+	      if (listfile)
+		print_symbol_table (symtab [group] [rom], listfile);
+	    }
 	  else
 	    {
 	      format_listing ();
-	      fprintf (listfile, "%s\n", listbuf);
+	      if (listfile)
+		fprintf (listfile, "%s\n", listbuf);
 	      if (errptr != & errbuf [0])
 		{
 		  fprintf (stderr, "%s\n", listbuf);
-		  fprintf (listfile, "%s", errbuf);
+		  if (listfile)
+		    fprintf (listfile, "%s", errbuf);
 		  fprintf (stderr, "%s",   errbuf);
 		}
 	    }
@@ -207,7 +216,7 @@ void do_pass (int p)
 	pc = (pc + 1) & 0xff;
     }
 
-  if (pass == 2)
+  if ((pass == 2) && listfile)
     {
       fprintf (listfile, "\nGlobal symbols:\n\n");
       print_symbol_table (global_symtab, listfile);
@@ -217,31 +226,46 @@ void do_pass (int p)
   printf ("\n");
 }
 
-void munge_filename (char *dst, char *src, char *ext)
-{
-  int i;
-  int lastdot = 0;
-  for (i = 0; src [i]; i++)
-    {
-      if (src [i] == '.')
-	lastdot = i;
-    }
-  if (lastdot == 0)
-    lastdot = strlen (src);
-  memcpy (dst, src, lastdot);
-  dst [lastdot] = '\0';
-  strcat (dst, ext);
-}
 
 int main (int argc, char *argv[])
 {
+  char *obj_fn = NULL;
+  char *list_fn = NULL;
+
   progname = argv [0];
 
-  if (argc != 2)
+  while (--argc)
     {
-      fprintf (stderr, "Usage: %s sourcefile\n", progname);
-      exit (1);
+      argv++;
+      if (*argv [0] == '-')
+	{
+	  if (strcmp (argv [0], "-o") == 0)
+	    {
+	      if (argc < 2)
+		fatal (1, "'-o' must be followed by object filename\n");
+	      obj_fn = argv [1];
+	      argc--;
+	      argv++;
+	    }
+	  else if (strcmp (argv [0], "-l") == 0)
+	    {
+	      if (argc < 2)
+		fatal (1, "'-l' must be followed by listing filename\n");
+	      list_fn = argv [1];
+	      argc--;
+	      argv++;
+	    }
+	  else
+	    fatal (1, "unrecognized option '%s'\n", argv [0]);
+	}
+      else if (src_fn)
+	fatal (1, "only one source file may be specified\n");
+      else
+	src_fn = argv [0];
     }
+
+  if (! src_fn)
+    fatal (1, "source file must be specified\n");
 
   global_symtab = alloc_symbol_table ();
   if (! global_symtab)
@@ -255,25 +279,24 @@ int main (int argc, char *argv[])
 	  fatal (2, "symbol table allocation failed\n");
       }
 
-  strcpy (srcfn, argv [1]);
-
-  srcfile = fopen (srcfn, "r");
+  srcfile = fopen (src_fn, "r");
 
   if (! srcfile)
-    fatal (2, "can't open input file '%s'\n", srcfn);
+    fatal (2, "can't open input file '%s'\n", src_fn);
 
-  munge_filename (objfn, srcfn, ".obj");
-  munge_filename (listfn, srcfn, ".lst");
+  if (obj_fn)
+    {
+      objfile = fopen (obj_fn, "w");
+      if (! objfile)
+	fatal (2, "can't open input file '%s'\n", obj_fn);
+    }
 
-  objfile = fopen (objfn, "w");
-
-  if (! objfile)
-    fatal (2, "can't open input file '%s'\n", objfn);
-
-  listfile = fopen (listfn, "w");
-
-  if (! listfile)
-    fatal (2, "can't open listing file '%s'\n", listfn);
+  if (list_fn)
+    {
+      listfile = fopen (list_fn, "w");
+      if (! listfile)
+	fatal (2, "can't open listing file '%s'\n", list_fn);
+    }
 
   rom = 0;
   group = 0;
@@ -287,10 +310,13 @@ int main (int argc, char *argv[])
   err_printf ("%d errors, %d warnings\n", errors, warnings);
 
   fclose (srcfile);
-  fclose (objfile);
-  fclose (listfile);
+  if (objfile)
+    fclose (objfile);
+  if (listfile)
+    fclose (listfile);
   exit (0);
 }
+
 
 void do_label (char *s)
 {
@@ -413,7 +439,7 @@ int error   (char *format, ...)
   int res;
   va_list ap;
 
-  err_printf ("error in file %s line %d: ", srcfn, lineno);
+  err_printf ("error in file %s line %d: ", src_fn, lineno);
   va_start (ap, format);
   res = err_vprintf (format, ap);
   va_end (ap);
@@ -427,7 +453,7 @@ int warning (char *format, ...)
   int res;
   va_list ap;
 
-  err_printf ("warning in file %s line %d: ", srcfn, lineno);
+  err_printf ("warning in file %s line %d: ", src_fn, lineno);
   va_start (ap, format);
   res = err_vprintf (format, ap);
   va_end (ap);
