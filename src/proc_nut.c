@@ -1,6 +1,6 @@
 /*
 $Id$
-Copyright 1995, 2003, 2004 Eric L. Smith <eric@brouhaha.com>
+Copyright 1995, 2003, 2004, 2005 Eric L. Smith <eric@brouhaha.com>
 
 Nonpareil is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License version 2 as
@@ -1188,6 +1188,9 @@ bool nut_execute_instruction (sim_t *sim)
 	  voyager_display_update (sim);
 	  break;
 	}
+
+      gui_display_update (sim);
+
       sim->env->display_count = 15;
     }
   else

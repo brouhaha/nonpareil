@@ -74,9 +74,9 @@ Debugger:
 
 Internals:
 
-  Use Glib asynchronous queues for simulator task to notify GUI thread of
-  display updates, rather than simulator thread drawing directly.  Use
-  g_main_context_wakeup(NULL) and a custom g_source to notify GUI task.
+  Only send display update message to GUI thread if display has changed.
+
+  Add code to remove async queue g_source when simulator thread exits.
 
   Implement async queue based functions needed by debugger.
 

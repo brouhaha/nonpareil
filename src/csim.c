@@ -1,6 +1,6 @@
 /*
 $Id$
-Copyright 1995, 2004 Eric L. Smith <eric@brouhaha.com>
+Copyright 1995, 2004, 2005 Eric L. Smith <eric@brouhaha.com>
 
 Nonpareil is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License version 2 as
@@ -31,8 +31,9 @@ MA 02111, USA.
 
 #include "util.h"
 #include "display.h"
-#include "proc.h"
 #include "kml.h"
+#include "display_gtk.h"
+#include "proc.h"
 #include "arch.h"
 #include "platform.h"
 #include "model.h"
@@ -50,9 +51,8 @@ char *default_path = MAKESTR(DEFAULT_PATH);
 
 
 gboolean scancode_debug = FALSE;
-gboolean kml_debug = FALSE;
 
-kml_t *kml;
+static kml_t *kml;
 
 sim_t *sim;
 
@@ -62,15 +62,8 @@ dbg_t *dbg;
 #endif
 
 
-GtkWidget *main_window;
-GtkWidget *menubar;  /* actually a popup menu in transparency/shape mode */
-
-
-static segment_bitmap_t display_segments [KML_MAX_DIGITS];
-
-GtkWidget *display;
-
-GdkGC *annunciator_gc [KML_MAX_ANNUNCIATOR];
+static GtkWidget *main_window;
+static GtkWidget *menubar;  /* actually a popup menu in transparency/shape mode */
 
 
 void usage (FILE *f)
@@ -96,227 +89,6 @@ void usage (FILE *f)
 #ifdef HAS_DEBUGGER
   fprintf (f, "   --stop\n");
 #endif
-}
-
-
-void draw_annunciator (GtkWidget *widget, int i)
-{
-  gdk_draw_rectangle (widget->window,
-		      annunciator_gc [i],
-		      TRUE,
-		      kml->annunciator [i]->offset.x - kml->display_offset.x,
-		      kml->annunciator [i]->offset.y - kml->display_offset.y,
-		      kml->annunciator [i]->size.width,
-		      kml->annunciator [i]->size.height);
-}
-
-
-void draw_digit (GtkWidget *widget, gint x, gint y, segment_bitmap_t segments)
-{
-  int i;
-
-  for (i = 0; i < KML_MAX_SEGMENT; i++)
-    if ((segments & (1 << i)) && (kml->segment [i]))
-      {
-	switch (kml->segment [i]->type)
-	  {
-	  case kml_segment_type_line:
-	    gdk_draw_line (widget->window,
-			   display->style->fg_gc [GTK_WIDGET_STATE (widget)],
-			   x + kml->segment [i]->offset.x,
-			   y + kml->segment [i]->offset.y,
-			   x + kml->segment [i]->offset.x + kml->segment [i]->size.width - 1,
-			   y + kml->segment [i]->offset.y + kml->segment [i]->size.height - 1);
-	    break;
-	  case kml_segment_type_rect:
-	    gdk_draw_rectangle (widget->window,
-				display->style->fg_gc [GTK_WIDGET_STATE (widget)],
-				TRUE,
-				x + kml->segment [i]->offset.x,
-				y + kml->segment [i]->offset.y,
-				kml->segment [i]->size.width,
-				kml->segment [i]->size.height);
-	    break;
-	  }
-      }
-}
-
-
-gboolean display_expose_event_callback (GtkWidget *widget,
-					GdkEventExpose *event,
-					gpointer data)
-{
-  int i;
-  int x;
-
-  /* clear the display */
-  gdk_draw_rectangle (widget->window,
-		      display->style->bg_gc [GTK_WIDGET_STATE (widget)],
-		      TRUE,
-		      0, 0,
-		      display->allocation.width,
-		      display->allocation.height);
-
-  x = kml->digit_offset.x;
-  for (i = 0; i < kml->display_digits; i++)
-    {
-      draw_digit (widget, x, kml->digit_offset.y, display_segments [i]);
-      if ((display_segments [i] & SEGMENT_ANN) && kml->annunciator [i])
-	draw_annunciator (widget, i);
-      x += kml->digit_size.width;
-    }
-
-  return (TRUE);
-}
-
-
-static void display_update (display_handle_t *display_handle,
-			    int digit_count,
-			    segment_bitmap_t *segments)
-{
-  int i;
-  GdkRectangle rect = { 0, 0, 0, 0 };
-  bool changed = 0;
-
-  for (i = 0; i < digit_count; i++)
-    {
-      if (segments [i] != display_segments [i])
-	changed = 1;
-    }
-
-  if (! changed)
-    return;
-
-  memcpy (display_segments, segments,
-	  digit_count * sizeof (segment_bitmap_t));
-
-  rect.width = display->allocation.width;
-  rect.height = display->allocation.height;
-
-  /* invalidate the entire drawing area */
-  gdk_window_invalidate_rect (display->window,
-			      & rect,
-			      FALSE);
-}
-
-
-static void get_pixbuf_pixel (GdkPixbuf *pixbuf, int x, int y,
-			      int *r, int *g, int *b)
-{
-  int width, height, rowstride, n_channels;
-  guchar *pixels, *p;
-
-  n_channels = gdk_pixbuf_get_n_channels (pixbuf);
-
-  g_assert (gdk_pixbuf_get_colorspace (pixbuf) == GDK_COLORSPACE_RGB);
-  g_assert (gdk_pixbuf_get_bits_per_sample (pixbuf) == 8);
-  // g_assert (gdk_pixbuf_get_has_alpha (pixbuf));
-  g_assert (n_channels >= 3);
-
-  width = gdk_pixbuf_get_width (pixbuf);
-  height = gdk_pixbuf_get_height (pixbuf);
-
-  g_assert (x >= 0 && x < width);
-  g_assert (y >= 0 && y < height);
-
-  rowstride = gdk_pixbuf_get_rowstride (pixbuf);
-  pixels = gdk_pixbuf_get_pixels (pixbuf);
-
-  p = pixels + y * rowstride + x * n_channels;
-  *r = p[0];
-  *g = p[1];
-  *b = p[2];
-}
-
-
-#define XBM_LSB_LEFT
-// XBM bit order is defined as being MSB left, but
-// gdk_bitmap_create_from_data() uses the data as LSB left.
-
-static void init_annunciator (GdkPixbuf *file_pixbuf, int i)
-{
-  int row_bytes;
-  char *xbm_data;
-  char *p;
-  int bitmask;
-
-  int bit;
-  int x, y;
-  int r, g, b;
-  GdkBitmap *bitmap;
-
-  row_bytes = (kml->annunciator [i]->size.width + 7) / 8;
-
-  xbm_data = alloc (row_bytes * kml->annunciator [i]->size.height + 9);
-  // $$$ If we don't add at least 9 bytes of padding,
-  // gdk_bitmap_create_from_data() will segfault!
-
-  for (y = 0; y < kml->annunciator [i]->size.height; y++)
-    {
-      p = & xbm_data [y * row_bytes];
-#ifdef XBM_LSB_LEFT
-      bitmask = 0x01;
-#else
-      bitmask = 0x80;
-#endif
-      for (x = 0; x < kml->annunciator [i]->size.width; x++)
-	{
-	  get_pixbuf_pixel (file_pixbuf, 
-			    kml->annunciator [i]->offset.x + x,
-			    kml->annunciator [i]->offset.y + y,
-			    & r, & g, & b);
-
-	  bit = (r == 0) && (g == 0) && (b == 0);
-	  // $$$ This needs to be improved!  Perhaps we should compute
-	  // the Euclidian distance in the color space between this pixel
-	  // value and the display foreground and background colors?
-
-	  if (bit)
-	    (*p) |= bitmask;
-#ifdef XBM_LSB_LEFT
-	  bitmask <<= 1;
-	  if (bitmask == 0x100)
-	    {
-	      p++;
-	      bitmask = 0x01;
-	    }
-#else
-	  bitmask >>= 1;
-	  if (! bitmask)
-	    {
-	      p++;
-	      bitmask = 0x80;
-	    }
-#endif
-	}
-    }
-
-  bitmap = gdk_bitmap_create_from_data (NULL,
-					xbm_data,
-					kml->annunciator [i]->size.width,
-					kml->annunciator [i]->size.height);
-
-  free (xbm_data);
-
-  annunciator_gc [i] = gdk_gc_new (display->window);
-  gdk_gc_copy (annunciator_gc [i],
-	       display->style->fg_gc [GTK_WIDGET_STATE (display)]);
-  gdk_gc_set_clip_mask (annunciator_gc [i], bitmap);
-  gdk_gc_set_clip_origin (annunciator_gc [i],
-			  kml->annunciator [i]->offset.x - kml->display_offset.x,
-			  kml->annunciator [i]->offset.y - kml->display_offset.y);
-  gdk_gc_set_function (annunciator_gc [i], GDK_COPY);
-  gdk_gc_set_fill (annunciator_gc [i], GDK_SOLID);
-}
-
-
-static void init_annunciators (GdkPixbuf *file_pixbuf)
-{
-  int i;
-
-  for (i = 0; i < KML_MAX_ANNUNCIATOR; i++)
-    if (kml->annunciator [i])
-      init_annunciator (file_pixbuf, i);
 }
 
 
@@ -808,33 +580,6 @@ gboolean on_move_window (GtkWidget *widget, GdkEventButton *event)
 }
 
 
-void setup_color (GdkColormap *colormap,
-		  kml_color_t *kml_color,
-		  GdkColor *gdk_color,
-		  char *name,
-		  guint16 default_red,
-		  guint16 default_green,
-		  guint16 default_blue)
-{
-  if (kml_color)
-    {
-      gdk_color->red   = (kml_color->r << 8) + kml_color->r;
-      gdk_color->green = (kml_color->g << 8) + kml_color->g;
-      gdk_color->blue  = (kml_color->b << 8) + kml_color->b;
-    }
-  else
-    {
-      if (kml_debug)
-	fprintf (stderr, "KML doesn't specify %s color, using default\n", name);
-      gdk_color->red   = default_red;
-      gdk_color->green = default_green;
-      gdk_color->blue  = default_blue;
-    }
-  if (! gdk_colormap_alloc_color (colormap, gdk_color, FALSE, TRUE))
-    fatal (2, "can't alloc %s color\n", name);
-}
-
-
 #ifndef PATH_MAX
 #define PATH_MAX 256
 #endif
@@ -863,14 +608,8 @@ int main (int argc, char *argv[])
 
   GdkBitmap *image_mask_bitmap = NULL;
 
-  GdkColormap *colormap;
-  GdkColor display_fg_color, display_bg_color;
-  GdkColor image_bg_color;
-
   char buf [PATH_MAX];
 
-  void *display_handle = NULL;
- 
   progname = newstr (argv [0]);
 
   gtk_init (& argc, & argv);
@@ -884,8 +623,6 @@ int main (int argc, char *argv[])
 	    shape = true;
 	  else if (strcasecmp (argv [0], "--noshape") == 0)
 	    shape = false;
-	  else if (strcasecmp (argv [0], "--kmldebug") == 0)
-	    kml_debug = 1;
 	  else if (strcasecmp (argv [0], "--kmldump") == 0)
 	    kml_dump = 1;
 	  else if (strcasecmp (argv [0], "--scancodedebug") == 0)
@@ -937,9 +674,7 @@ int main (int argc, char *argv[])
 		  model_info->cpu_arch,
 		  model_info->clock_frequency,
 		  model_info->ram_size,
-		  kml->character_segment_map,
-		  display_handle,
-		  & display_update);
+		  kml->character_segment_map);
 
   file_pixbuf = gdk_pixbuf_new_from_file (kml->image, & error);
   if (! file_pixbuf)
@@ -1012,29 +747,7 @@ int main (int argc, char *argv[])
 
   add_keys (background_pixbuf, fixed);
 
-  display = gtk_drawing_area_new ();
-
-  colormap = gtk_widget_get_colormap (main_window);
-  setup_color (colormap, kml->global_color [0], & image_bg_color,
-	       "image background", 0x3333, 0x3333, 0x3333);
-
-  gtk_widget_modify_bg (event_box, GTK_STATE_NORMAL, & image_bg_color);
-
-  setup_color (colormap, kml->display_color [0], & display_bg_color,
-	       "display background", 0x0000, 0x0000, 0x0000);
-
-  setup_color (colormap, kml->display_color [2], & display_fg_color,
-	       "display foreground", 0xffff, 0x1111, 0x1111);
-
-  gtk_widget_set_size_request (display,
-			       kml->display_size.width,
-			       kml->display_size.height);
-  gtk_widget_modify_fg (display, GTK_STATE_NORMAL, & display_fg_color);
-  gtk_widget_modify_bg (display, GTK_STATE_NORMAL, & display_bg_color);
-  gtk_fixed_put (GTK_FIXED (fixed),
-		 display,
-		 kml->display_offset.x - kml->background_offset.x,
-		 kml->display_offset.y - kml->background_offset.y);
+  display_init (kml, main_window, event_box, fixed, file_pixbuf);
 
   if (image_mask_bitmap)
     {
@@ -1047,18 +760,6 @@ int main (int argc, char *argv[])
     }
 
   gtk_widget_show_all (main_window);
-
-  init_annunciators (file_pixbuf);
-
-  g_signal_connect (G_OBJECT (display),
-		    "expose_event",
-		    G_CALLBACK (display_expose_event_callback),
-		    NULL);
-
-  g_signal_connect (G_OBJECT (main_window),
-		    "key_press_event",
-		    G_CALLBACK (on_key_event),
-		    NULL);
 
   g_signal_connect (G_OBJECT (main_window),
 		    "key_release_event",

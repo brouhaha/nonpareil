@@ -1,6 +1,6 @@
 /*
 $Id$
-Copyright 1995, 2004 Eric L. Smith <eric@brouhaha.com>
+Copyright 1995, 2004, 2005 Eric L. Smith <eric@brouhaha.com>
 
 Nonpareil is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License version 2 as
@@ -75,6 +75,7 @@ static void voyager_op_display_blink (sim_t *sim, int opcode)
 
 void voyager_display_init_ops (sim_t *sim)
 {
+  sim->display_digits = VOYAGER_DISPLAY_DIGITS;
   sim->op_fcn [0x030] = voyager_op_display_blink;
   sim->op_fcn [0x2e0] = voyager_op_display_off;
   sim->op_fcn [0x320] = voyager_op_display_toggle;
@@ -167,9 +168,6 @@ void voyager_display_update (sim_t *sim)
 	    }
 	}
     }
-
-  sim->display_update_fn (sim->display_handle, VOYAGER_DISPLAY_DIGITS,
-			  sim->display_segments);
 
   if (sim->env->display_blink)
     {

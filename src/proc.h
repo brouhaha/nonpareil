@@ -1,6 +1,6 @@
 /*
 $Id$
-Copyright 1995, 2004 Eric L. Smith <eric@brouhaha.com>
+Copyright 1995, 2004, 2005 Eric L. Smith <eric@brouhaha.com>
 
 Nonpareil is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License version 2 as
@@ -50,18 +50,21 @@ sim_t *sim_init  (int platform,
 		  int arch,
 		  int clock_frequency,  /* Hz */
 		  int ram_size,
-		  segment_bitmap_t *char_gen,
-		  display_handle_t *display_handle,
-		  display_update_fn_t *display_update_fn);
+		  segment_bitmap_t *char_gen);
 
-/* kill the sim thread */
-void sim_quit  (sim_t *sim);
 
 bool sim_read_object_file (sim_t *sim,
 			   char *fn);
 
 bool sim_read_listing_file (struct sim_t *sim,
 			    char *fn);
+
+/*
+ * The following functions all send messages from the GUI thread to
+ * the simulator thread, and wait for a reply.
+ */
+
+void sim_quit  (sim_t *sim);  /* kill the sim thread */
 
 void sim_reset (sim_t *sim);  /* resets simulated processor */
 void sim_step  (sim_t *sim);  /* executes one instruction */
@@ -124,3 +127,11 @@ void sim_set_debug_flag (sim_t *sim, int debug_flag, bool val);
 bool sim_get_debug_flag (sim_t *sim, int debug_flag);
 
 #endif /* HAS_DEBUGGER */
+
+
+/*
+ * The following functions all send messages from the simulator thread to the
+ * GUI thread, but do not wait for a reply..
+ */
+
+void gui_display_update (sim_t *sim);

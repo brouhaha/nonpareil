@@ -1,6 +1,6 @@
 /*
 $Id$
-Copyright 2004 Eric L. Smith <eric@brouhaha.com>
+Copyright 2004, 2005 Eric L. Smith <eric@brouhaha.com>
 
 Nonpareil is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License version 2 as
@@ -940,8 +940,7 @@ static void display_scan_advance (sim_t *sim)
       while (sim->display_digit_position < MAX_DIGIT_POSITION)
 	sim->display_segments [sim->display_digit_position++] = 0;
 
-      sim->display_update_fn (sim->display_handle, MAX_DIGIT_POSITION,
-			      sim->display_segments);
+      gui_display_update (sim);
 
       sim->display_digit_position = 0;
       sim->display_scan_position = sim->left_scan;
@@ -1295,11 +1294,13 @@ static void woodstock_new_processor (sim_t *sim, int ram_size)
   switch (sim->platform)
     {
     case PLATFORM_WOODSTOCK:
+      sim->display_digits = MAX_DIGIT_POSITION;
       sim->display_scan_fn = woodstock_display_scan;
       sim->left_scan = WSIZE - 1;
       sim->right_scan = 2;
       break;
     case PLATFORM_SPICE:
+      sim->display_digits = MAX_DIGIT_POSITION;
       sim->display_scan_fn = spice_display_scan;
       sim->left_scan = WSIZE - 2;
       sim->right_scan = 3;

@@ -1,6 +1,6 @@
 # SConscript for Nonpareil
 # $Id$
-# Copyright 2004 Eric L. Smith <eric@brouhaha.com>
+# Copyright 2004, 2005 Eric L. Smith <eric@brouhaha.com>
 
 # Nonpareil is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License version 2 as
@@ -106,6 +106,8 @@ if env ['has_debugger_cli']:
     nonpareil_objs.append (debugger_env.Object ('debugger.c'))
 
 nonpareil_objs.append (csim_env.Object ('csim.c'))
+nonpareil_objs.append (csim_env.Object ('display.c'))
+nonpareil_objs.append (csim_env.Object ('glib_async_queue_source.c'))
 
 for src in nonpareil_srcs:
     nonpareil_objs.append (nonpareil_env.Object (src))

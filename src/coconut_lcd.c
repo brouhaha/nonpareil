@@ -1,6 +1,6 @@
 /*
 $Id$
-Copyright 1995, 2004 Eric L. Smith <eric@brouhaha.com>
+Copyright 1995, 2004, 2005 Eric L. Smith <eric@brouhaha.com>
 
 Nonpareil is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License version 2 as
@@ -218,6 +218,7 @@ static void halfnut_lcd_wr (sim_t *sim)
 
 void coconut_display_init_ops (sim_t *sim)
 {
+  sim->display_digits = COCONUT_DISPLAY_DIGITS;
   sim->op_fcn [0x2e0] = coconut_op_display_off;
   sim->op_fcn [0x320] = coconut_op_display_toggle;
   sim->op_fcn [0x3fc] = coconut_op_display_compensation;
@@ -279,8 +280,5 @@ void coconut_display_update (sim_t *sim)
 	}
       sim->display_segments [j++] = segments;
     }
-
-  sim->display_update_fn (sim->display_handle, COCONUT_DISPLAY_DIGITS,
-			  sim->display_segments);
 }
 

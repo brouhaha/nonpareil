@@ -1,6 +1,6 @@
 /*
 $Id$
-Copyright 1995, 2004 Eric L. Smith <eric@brouhaha.com>
+Copyright 1995, 2004, 2005 Eric L. Smith <eric@brouhaha.com>
 
 Nonpareil is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License version 2 as
@@ -32,6 +32,7 @@ MA 02111, USA.
 #include "display.h"
 #include "proc.h"
 #include "proc_int.h"
+#include "glib_async_queue_source.h"
 
 
 // We try to schedule execution in "jiffies".
@@ -104,7 +105,9 @@ typedef enum
 
 typedef struct
 {
-  gui_cmd_t     cmd;
+  gui_cmd_t        cmd;
+  int              display_digits;
+  segment_bitmap_t display_segments [MAX_DIGIT_POSITION];
 } gui_msg_t;
 
 
@@ -121,6 +124,8 @@ struct sim_thread_vars_t
   // simulator threads, but currently are not.
   GAsyncQueue *gui_cmd_q;      // output from sim to GUI
   GAsyncQueue *gui_cmd_free_q; // free messsage blocks for use on gui_cmd_q
+
+  GAsyncQueueSource *gui_cmd_q_source;
 
   GTimeVal last_run_time;
   GTimeVal next_run_time;
@@ -242,7 +247,7 @@ bool sim_read_listing_file (sim_t *sim, char *fn)
 
 // Sends a command from the GUI thread to the sim thread, and waits
 // for a reply.
-void send_cmd_to_sim_thread (sim_t *sim, gpointer msg)
+static void send_cmd_to_sim_thread (sim_t *sim, gpointer msg)
 {
   gpointer msg2;
   g_async_queue_push (sim->thread_vars->cmd_q, msg);
@@ -252,7 +257,7 @@ void send_cmd_to_sim_thread (sim_t *sim, gpointer msg)
 }
 
 
-void handle_sim_cmd (sim_t *sim, sim_msg_t *msg)
+static void handle_sim_cmd (sim_t *sim, sim_msg_t *msg)
 {
   msg->reply = UNIMPLEMENTED;
   switch (msg->cmd)
@@ -423,6 +428,22 @@ static void prefill_gui_cmd_q (GAsyncQueue *q, int count)
 }
 
 
+static gboolean gui_cmd_callback (gpointer data)
+{
+  gui_msg_t *msg = (gui_msg_t *) data;
+
+  switch (msg->cmd)
+    {
+    case CMD_DISPLAY_UPDATE:
+      display_update (msg->display_digits, msg->display_segments);
+      break;
+    case CMD_BREAKPOINT_HIT:
+      break;
+    }
+  return (true);
+}
+
+
 // Called by GUI thread to create a simulator thread
 // $$$ Some of the initialization here should be moved into
 // the thread function.
@@ -431,9 +452,7 @@ sim_t *sim_init  (int platform,
 		  int arch,
 		  int clock_frequency,  /* Hz */
 		  int ram_size,
-		  segment_bitmap_t *char_gen,
-		  display_handle_t *display_handle,
-		  display_update_fn_t *display_update_fn)
+		  segment_bitmap_t *char_gen)
 {
   sim_t *sim;
   arch_info_t *arch_info;
@@ -458,15 +477,17 @@ sim_t *sim_init  (int platform,
 
   prefill_gui_cmd_q (sim->thread_vars->gui_cmd_free_q, 10);
 
-  // $$$ need to add gui_cmd_q as a "source" for GUI thread.
+  // add gui_cmd_q as a "source" for GUI thread.
+  sim->thread_vars->gui_cmd_q_source = g_async_queue_source_add (sim->thread_vars->gui_cmd_q,
+								 sim->thread_vars->gui_cmd_free_q,
+								 NULL,  // use main context
+								 gui_cmd_callback);
 
   sim->proc->new_processor (sim, ram_size);
 
   allocate_ucode (sim);
 
   sim->char_gen = char_gen;
-  sim->display_handle = display_handle;
-  sim->display_update_fn = display_update_fn;
 
   sim->cycle_count = 0;
 
@@ -594,6 +615,23 @@ void sim_free_env (sim_t *sim, sim_env_t *env)
   g_mutex_unlock (sim->thread_vars->sim_mutex);
 }
 #endif
+
+
+
+void gui_display_update (sim_t *sim)
+{
+  gui_msg_t *msg;
+
+  msg = g_async_queue_try_pop (sim->thread_vars->gui_cmd_free_q);
+  if (! msg)
+    msg = alloc (sizeof (gui_msg_t));
+
+  msg->cmd = CMD_DISPLAY_UPDATE;
+  msg->display_digits = sim->display_digits;
+  memcpy (msg->display_segments, sim->display_segments, sizeof (sim->display_segments));
+
+  g_async_queue_source_push (sim->thread_vars->gui_cmd_q_source, msg);
+}
 
 
 extern processor_dispatch_t classic_processor;

@@ -1,5 +1,10 @@
 2005-02-12  Eric Smith <eric@brouhaha.com>
 
+	* csim.c display.h display.c display_gtk.h proc.h proc.c
+	proc_int.h proc_classic.c proc_woodstock.c proc_nut.c
+	voyager_lcd.c coconut_lcd.c: Simulator thread now uses async queue
+	to ask GUI thread to update display.
+	
 	* g_async_queue_source.h g_async_queue_source.c: Added generic
 	support for async queues that wake up a glib thread context.
 

@@ -1,6 +1,6 @@
 /*
 $Id$
-Copyright 2004 Eric L. Smith <eric@brouhaha.com>
+Copyright 2004, 2005 Eric L. Smith <eric@brouhaha.com>
 
 Nonpareil is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License version 2 as
@@ -755,8 +755,7 @@ static void classic_display_scan (sim_t *sim)
       while (sim->display_digit_position < MAX_DIGIT_POSITION)
 	sim->display_segments [sim->display_digit_position++] = 0;
 
-      sim->display_update_fn (sim->display_handle, MAX_DIGIT_POSITION,
-			      sim->display_segments);
+      gui_display_update (sim);
 
       sim->display_digit_position = 0;
       sim->display_scan_position = sim->left_scan;
@@ -1035,6 +1034,7 @@ static void classic_new_processor (sim_t *sim, int ram_size)
   sim->env = alloc (sizeof (sim_env_t) + ram_size * sizeof (reg_t));
   sim->env->max_ram = ram_size;
 
+  sim->display_digits = MAX_DIGIT_POSITION;
   sim->display_scan_fn = classic_display_scan;
   sim->left_scan = WSIZE - 1;
   sim->right_scan = 0;

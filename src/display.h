@@ -1,6 +1,6 @@
 /*
 $Id$
-Copyright 2004 Eric L. Smith <eric@brouhaha.com>
+Copyright 2004, 2005 Eric L. Smith <eric@brouhaha.com>
 
 Nonpareil is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License version 2 as
@@ -32,16 +32,8 @@ MA 02111, USA.
 typedef uint32_t segment_bitmap_t;
 
 
-
-typedef struct display_handle_t display_handle_t;
-
-
-display_handle_t *init_display (int digit_count);
-
-
-typedef void display_update_fn_t (display_handle_t *display_handle,
-				  int digit_count,
-				  segment_bitmap_t *segments);
+void display_update (int digit_count,
+		     segment_bitmap_t *segments);
 
 
 /* 

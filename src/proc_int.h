@@ -1,6 +1,6 @@
 /*
 $Id$
-Copyright 1995, 2004 Eric L. Smith <eric@brouhaha.com>
+Copyright 1995, 2004, 2005 Eric L. Smith <eric@brouhaha.com>
 
 Nonpareil is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License version 2 as
@@ -93,13 +93,13 @@ struct sim_t
   uint64_t cycle_count;
 
   segment_bitmap_t *char_gen;
-  display_handle_t *display_handle;
-  display_update_fn_t *display_update_fn;
 
   int left_scan;
   int right_scan;
   int display_scan_position;   /* word index, left_scan down to right_scan */
   int display_digit_position;  /* character index, 0 to MAX_DIGIT_POSITION-1 */
+
+  int display_digits;
   segment_bitmap_t display_segments [MAX_DIGIT_POSITION];
 
   void (* display_scan_fn) (sim_t *sim);
