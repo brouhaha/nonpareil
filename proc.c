@@ -83,6 +83,8 @@ bool sim_read_object_file (sim_t *sim, char *fn)
   while (fgets (buf, sizeof (buf), f))
     {
       trim_trailing_whitespace (buf);
+      if (! buf [0])
+	continue;
       if (sim->proc->parse_object_line (buf, & bank, & addr, & opcode))
 	{
 	  i = bank * sim->proc->max_rom + addr;
