@@ -439,10 +439,10 @@ tan12:	jsb atc1
 rom0:	select rom 0
 
 lpi11:	jsb atc1
-	c + 1 -> c[w]
-	c + 1 -> c[w]
+	c + c -> c[w]
+	c + c -> c[w]
 	jsb rtn11
-	c + 1 -> c[w]
+	c + c -> c[w]
 	jsb pre11
 	jsb atc1
 	10 -> p
