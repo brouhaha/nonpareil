@@ -1,8 +1,20 @@
 2004-01-16  Eric Smith <eric@brouhaha.com>
 
-	* proc.c: Fix "duplicate listing line" error message.
+	* util.h util.c (alloc): Added alloc().
 	
-	* proc.c: Rearranged init_ops() to match the instruction type
+	* kmll.l: Added default rule for "." (error).
+	
+	* kmll.l: Removed redefinition of YY_INPUT.
+	
+	* kmll.l kmly.y: Added DISPLAY and KEYCODE tokens.
+	* kmly.y: Added KEYCODE statement.
+	
+	* kmly.y: Added "kml" start rule, and reordered for clarity.
+	
+	* proc.c (sim_read_listing_file): Fix "duplicate listing line"
+	error message.
+	
+	* proc.c (init_ops): Rearranged to match the instruction type
 	tables given in the patents.
 	
 	* Makefile hp80.asm csim.c: Added HP-80.

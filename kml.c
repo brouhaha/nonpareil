@@ -29,7 +29,9 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #include <string.h>
 #include <unistd.h>
 
+#include "util.h"
 #include "kml.h"
+
 
 int lineno;
 int errors;
@@ -37,7 +39,26 @@ int errors;
 char linebuf [MAX_LINE];
 char *lineptr;
 
+kml_t *kml;
+
+
 void yyerror (char *s)
 {
-  error ("%s\n", s);
+  fprintf (stderr, "%s\n", s);
+}
+
+
+void read_kml_file (char *fn)
+{
+  kml_t *kml;
+
+  yyin = fopen (fn, "r");
+  if (! yyin)
+    fatal (2, "Can't open KML file\n");
+ 
+  kml = alloc (sizeof (kml_t));
+
+  yyparse ();
+  
+  fclose (yyin);
 }

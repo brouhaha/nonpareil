@@ -25,14 +25,18 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
 %{
 #include <stdio.h>
-#include "symtab.h"
+
+#include "util.h"
 #include "kml.h"
 %}
 
 %union {
-    int integer;
-    char *string;
-  }
+  int integer;
+  char *string;
+  struct { int a; int b; } intpair;
+  struct { int a; int b; int c; int d; } intquad;
+  kml_command_list_t *cmdlist;
+}
 
 %token <integer> INTEGER
 %token <string> STRING
@@ -44,6 +48,20 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 %token ONUP        OUTIN       PATCH       PRESS       PRINT       RELEASE
 %token RESETFLAG   ROM         SCANCODE    SETFLAG     SIZE        TITLE
 %token TYPE        VIRTUAL     ZOOM
+
+%type <string> title_stmt author_stmt hardware_stmt model_stmt
+%type <string> rom_stmt patch_stmt bitmap_stmt print_stmt
+
+%type <integer> class_stmt debug_stmt zoom_stmt
+
+%type <intpair> offset_stmt size_stmt down_stmt
+
+%type <intquad> color_stmt
+
+%type <cmdlist> command_list command elsepart
+%type <cmdlist> map_command press_command release_command setflag_command
+%type <cmdlist> resetflag_command menuitem_command ifflag_command
+%type <cmdlist> ifpressed_command
 
 %%
 
@@ -87,35 +105,35 @@ global_stmt		:	title_stmt
 			|	debug_stmt
 			;
 
-title_stmt		:	TITLE STRING ;
+title_stmt		:	TITLE STRING { $$ = $2; } ;
 
-author_stmt		:	AUTHOR STRING ;
+author_stmt		:	AUTHOR STRING { $$ = $2; } ;
 
-hardware_stmt		:	HARDWARE STRING ;
+hardware_stmt		:	HARDWARE STRING { $$ = $2; } ;
 
-model_stmt		:	MODEL STRING ;
+model_stmt		:	MODEL STRING { $$ = $2; } ;
 
-class_stmt		:	CLASS INTEGER ;
+class_stmt		:	CLASS INTEGER { $$ = $2; } ;
 
-rom_stmt		:	ROM STRING ;
+rom_stmt		:	ROM STRING { $$ = $2; } ;
 
-patch_stmt		:	PATCH STRING ;
+patch_stmt		:	PATCH STRING { $$ = $2; } ;
 
-bitmap_stmt		:	BITMAP STRING ;
+bitmap_stmt		:	BITMAP STRING { $$ = $2; } ;
 
-print_stmt		:	PRINT STRING ;
+print_stmt		:	PRINT STRING { $$ = $2; } ;
 
-debug_stmt		:	DEBUG INTEGER ;
+debug_stmt		:	DEBUG INTEGER { $$ = $2; } ;
 
 /*----------------------------------------------------------------------------
  common statements, used in several sections
 ----------------------------------------------------------------------------*/
 
-offset_stmt		:	OFFSET INTEGER INTEGER ;
+offset_stmt		:	OFFSET INTEGER INTEGER { $$.a = $2; $$.b = $3; } ;
 
-size_stmt		:	SIZE INTEGER INTEGER ;
+size_stmt		:	SIZE INTEGER INTEGER { $$.a = $2; $$.b = $3; };
 
-down_stmt		:	DOWN INTEGER INTEGER ;
+down_stmt		:	DOWN INTEGER INTEGER { $$.a = $2; $$.b = $3; };
 
 /*----------------------------------------------------------------------------
  background section
@@ -146,9 +164,10 @@ lcd_stmt		:	zoom_stmt
 			|	color_stmt
 			;
 
-zoom_stmt		:	ZOOM INTEGER ;
+zoom_stmt		:	ZOOM INTEGER { $$ = $2; } ;
 
-color_stmt		:	COLOR INTEGER INTEGER INTEGER INTEGER ;
+color_stmt		:	COLOR INTEGER INTEGER INTEGER INTEGER
+				{ $$.a = $2; $$.b = $3; $$.c = $4; $$.d = $5 };
 
 /*----------------------------------------------------------------------------
  annunciator section
@@ -169,39 +188,69 @@ annunciator_stmt	:	size_stmt
  commands (used in button and scancode sections)
 ----------------------------------------------------------------------------*/
 
-command_list		:	command
-			|	command command_list
+command_list		:	command { $$ = $1; }
+			|	command command_list { $$ = $1; $$->next = $2; }
 			;
 
-command			:	map_command
-			|	press_command
-			|	release_command
-			|	setflag_command
-			|	resetflag_command
-			|	menuitem_command
-			|	ifflag_command
-			|	ifpressed_command
+command			:	map_command { $$ = $1; }
+			|	press_command { $$ = $1; }
+			|	release_command { $$ = $1; }
+			|	setflag_command { $$ = $1; }
+			|	resetflag_command { $$ = $1; }
+			|	menuitem_command { $$ = $1; }
+			|	ifflag_command { $$ = $1; }
+			|	ifpressed_command { $$ = $1; }
 			;
 
-map_command		:	MAP INTEGER INTEGER ;
+map_command		:	MAP INTEGER INTEGER
+				{ $$ = alloc (sizeof (kml_command_list_t));
+				  $$->cmd = KML_CMD_MAP;
+				  $$->arg1 = $2;
+				  $$->arg1 = $3; } ;
 
-press_command		:	PRESS INTEGER ;
+press_command		:	PRESS INTEGER
+				{ $$ = alloc (sizeof (kml_command_list_t));
+				  $$->cmd = KML_CMD_PRESS;
+				  $$->arg1 = $2; } ;
 
-release_command		:	RELEASE INTEGER ;
+release_command		:	RELEASE INTEGER
+				{ $$ = alloc (sizeof (kml_command_list_t));
+				  $$->cmd = KML_CMD_RELEASE;
+				  $$->arg1 = $2; } ;
 
-setflag_command		:	SETFLAG INTEGER ;
+setflag_command		:	SETFLAG INTEGER
+				{ $$ = alloc (sizeof (kml_command_list_t));
+				  $$->cmd = KML_CMD_SETFLAG;
+				  $$->arg1 = $2; } ;
 
-resetflag_command	:	RESETFLAG INTEGER ;
+resetflag_command	:	RESETFLAG INTEGER
+				{ $$ = alloc (sizeof (kml_command_list_t));
+				  $$->cmd = KML_CMD_RESETFLAG;
+				  $$->arg1 = $2; } ;
 
-menuitem_command	:	MENUITEM INTEGER ;
+menuitem_command	:	MENUITEM INTEGER
+				{ $$ = alloc (sizeof (kml_command_list_t));
+				  $$->cmd = KML_CMD_MENUITEM;
+				  $$->arg1 = $2; } ;
 
-elsepart		:	/* null */
-			|	ELSE command_list
+elsepart		:	/* null */ { $$ = NULL; }
+			|	ELSE command_list { $$ = $2; }
 			;
 
-ifflag_command		:	IFFLAG INTEGER command_list elsepart END ;
+ifflag_command		:	IFFLAG INTEGER command_list elsepart END
+				{ $$ = alloc (sizeof (kml_command_list_t));
+				  $$->cmd = KML_CMD_IFFLAG;
+				  $$->arg1 = $2;
+				  $$->then_part = $3;
+				  $$->else_part = $4; };
 
-ifpressed_command	:	IFPRESSED INTEGER command_list elsepart END ;
+ifpressed_command	:	IFPRESSED INTEGER command_list elsepart END
+				{ $$ = alloc (sizeof (kml_command_list_t));
+				  $$->cmd = KML_CMD_IFPRESSED;
+				  $$->arg1 = $2;
+				  $$->then_part = $3;
+				  $$->else_part = $4; };
+
 
 /*----------------------------------------------------------------------------
  button section
