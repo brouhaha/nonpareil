@@ -101,14 +101,10 @@ void draw_annunciator (GtkWidget *widget, int i)
   gdk_draw_rectangle (widget->window,
 		      annunciator_gc [i],
 		      TRUE,
-#if 1
-		      0, 0, 1000, 1000);
-#else
 		      kml->annunciator [i]->offset.x - kml->display_offset.x,
 		      kml->annunciator [i]->offset.y - kml->display_offset.y,
 		      kml->annunciator [i]->size.width,
 		      kml->annunciator [i]->size.height);
-#endif
 }
 
 
@@ -230,43 +226,6 @@ static void get_pixbuf_pixel (GdkPixbuf *pixbuf, int x, int y,
 }
 
 
-static void print_bitmap (GdkBitmap *bitmap)
-{
-  GdkPixbuf *pixbuf;
-  gint width, height;
-  int x, y;
-  int r, g, b;
-
-  gdk_drawable_get_size (bitmap, & width, & height);
-  printf ("width: %d  height: %d\n", width, height);
-
-  pixbuf = gdk_pixbuf_get_from_drawable (NULL,  /* pixbuf */
-					 bitmap,
-					 NULL,  /* cmap */
-					 0,  /* src x */
-					 0,  /* src y */
-					 0,  /* dest x */
-					 0,  /* dest y */
-					 width,
-					 height);
-
-  for (y = 0; y < height; y++)
-    {
-      for (x = 0; x < width; x++)
-	{
-	  get_pixbuf_pixel (pixbuf, x, y, & r, & g, & b);
-	  if ((r == 0) && (g == 0) && (b == 0))
-	    printf (".");
-	  else if ((r == 255) && (g == 255) && (b == 255))
-	    printf ("*");
-	  else
-	    printf ("?");
-	}
-      printf ("\n");
-    }
-}
-
-
 #define XBM_LSB_LEFT
 // XBM bit order is defined as being MSB left, but
 // gdk_bitmap_create_from_data() uses the data as LSB left.
@@ -289,15 +248,6 @@ static void init_annunciator (GdkPixbuf *file_pixbuf, int i)
   // $$$ If we don't add at least 9 bytes of padding,
   // gdk_bitmap_create_from_data() will segfault!
 
-#undef ANN_DEBUG
-#ifdef ANN_DEBUG
-  printf ("Annunciator %d:\n", i);
-  printf ("height: %d  width: %d  row_bytes: %d\n",
-	  kml->annunciator [i]->size.height,
-	  kml->annunciator [i]->size.width,
-	  row_bytes);
-#endif
-
   for (y = 0; y < kml->annunciator [i]->size.height; y++)
     {
       p = & xbm_data [y * row_bytes];
@@ -318,9 +268,6 @@ static void init_annunciator (GdkPixbuf *file_pixbuf, int i)
 	  // the Euclidian distance in the color space between this pixel
 	  // value and the display foreground and background colors?
 
-#ifdef ANN_DEBUG
-	  printf (bit ? "*" : ".");
-#endif
 	  if (bit)
 	    (*p) |= bitmask;
 #ifdef XBM_LSB_LEFT
@@ -339,26 +286,12 @@ static void init_annunciator (GdkPixbuf *file_pixbuf, int i)
 	    }
 #endif
 	}
-#ifdef ANN_DEBUG
-      printf ("\n");
-#endif
     }
-
-#ifdef ANN_DEBUG
-  for (x = 0; x < row_bytes * kml->annunciator [i]->size.height; x++)
-    printf (" %02x", xbm_data [x] & 0xff);
-  printf ("\n");
-#endif
 
   bitmap = gdk_bitmap_create_from_data (NULL,
 					xbm_data,
 					kml->annunciator [i]->size.width,
 					kml->annunciator [i]->size.height);
-
-#ifdef ANN_DEBUG
-  printf ("bitmap returned for ann %d\n", i);
-  print_bitmap (bitmap);
-#endif
 
   free (xbm_data);
 
