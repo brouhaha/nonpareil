@@ -34,18 +34,96 @@ MA 02111, USA.
 #include "proc_int.h"
 
 
-/* we try to schedule execution in "jiffies": */
+// We try to schedule execution in "jiffies".
 #define JIFFY_PER_SEC 30
 
 #define JIFFY_USEC (1.0e6 / JIFFY_PER_SEC)
 
 
+// Don't try to execute more than MAX_INST_BURST instructions per
+// jiffy.  If we can't, we'll just fall behind.
+#define MAX_INST_BURST 5000
+
+
+typedef uint32_t addr_t;  // $$$ should be somewhere else
+
+
+// Messages sent from GUI thread to simulator thread, and
+// sent back as replies.
+
+typedef enum
+{
+  CMD_QUIT,
+  CMD_RESET,
+  CMD_WRITE_ROM,
+  CMD_READ_ROM,
+  CMD_WRITE_RAM,
+  CMD_READ_RAM,
+  CMD_GET_CYCLE_COUNT,
+  CMD_SET_CYCLE_COUNT,
+  CMD_SET_RUN_FLAG,
+  CMD_GET_RUN_FLAG,
+  CMD_SET_DEBUG_FLAG,
+  CMD_GET_DEBUG_FLAG,
+  CMD_STEP,
+  CMD_SET_BREAKPOINT,
+  CMD_PRESS_KEY,
+  CMD_RELEASE_KEY,
+  CMD_SET_EXT_FLAG
+} sim_cmd_t;
+
+typedef enum
+{
+  OK,
+  UNIMPLEMENTED,
+  BAD_CMD
+} sim_reply_t;
+
+
+typedef struct
+{
+  sim_cmd_t     cmd;
+  sim_reply_t   reply;
+  bool          b;
+  uint64_t      cycle_count;
+  addr_t        addr;
+  reg_t         reg_val;
+  int           arg;  // keycode, flag number, etc.
+} sim_msg_t;
+
+
+// Messages sent from simulator thread to GUI thread, for display
+// updates, breakpoint notification, and the like.  There are no replies,
+// though the messages get recycled through a free queue.
+
+typedef enum
+{
+  CMD_DISPLAY_UPDATE,
+  CMD_BREAKPOINT_HIT
+} gui_cmd_t;
+
+typedef struct
+{
+  gui_cmd_t     cmd;
+} gui_msg_t;
+
+
+
 struct sim_thread_vars_t
 {
   GThread  *gthread;
-  GCond    *sim_cond;
-  GCond    *ui_cond;
-  GMutex   *sim_mutex;
+
+  // The cmd_q and reply_q are simulator thread specific.
+  GAsyncQueue *cmd_q;          // commands from GUI to sim
+  GAsyncQueue *reply_q;        // replies from sim to GUI
+
+  // The gui_cmd_q and qui_cmd_free_q could be shared between multiple
+  // simulator threads, but currently are not.
+  GAsyncQueue *gui_cmd_q;      // output from sim to GUI
+  GAsyncQueue *gui_cmd_free_q; // free messsage blocks for use on gui_cmd_q
+
+  GTimeVal last_run_time;
+  GTimeVal next_run_time;
 
   GTimeVal tv;
   GTimeVal prev_tv;
@@ -74,7 +152,8 @@ static void allocate_ucode (sim_t *sim)
 bool sim_read_object_file (sim_t *sim, char *fn)
 {
   FILE *f;
-  int bank, addr, i;
+  int bank, i;
+  addr_t addr;
   rom_word_t opcode;
   int count = 0;
   char buf [80];
@@ -117,7 +196,8 @@ bool sim_read_object_file (sim_t *sim, char *fn)
 bool sim_read_listing_file (sim_t *sim, char *fn)
 {
   FILE *f;
-  int bank, addr, i;
+  int bank, i;
+  addr_t addr;
   rom_word_t opcode;
   int count = 0;
   char buf [80];
@@ -160,95 +240,192 @@ bool sim_read_listing_file (sim_t *sim, char *fn)
 }
 
 
-gpointer sim_thread_func (gpointer data)
+// Sends a command from the GUI thread to the sim thread, and waits
+// for a reply.
+void send_cmd_to_sim_thread (sim_t *sim, gpointer msg)
 {
-  int i;
-  long usec;
-
-  sim_t *sim = (sim_t *) data;
-
-  for (;;)
-    {
-      g_mutex_lock (sim->thread_vars->sim_mutex);
-      if (sim->state != sim->prev_state)
-	{
-	  if (sim->state == SIM_RUN)
-	    g_get_current_time (& sim->thread_vars->prev_tv);
-	}
-      sim->prev_state = sim->state;
-      switch (sim->state)
-	{
-	case SIM_QUIT:
-	  g_mutex_unlock (sim->thread_vars->sim_mutex);
-	  g_thread_exit (0);
-
-	case SIM_RESET:
-	  sim->proc->reset_processor (sim);
-	  sim->state = SIM_IDLE;
-	  g_cond_signal (sim->thread_vars->ui_cond);
-	  g_cond_wait (sim->thread_vars->sim_cond, sim->thread_vars->sim_mutex);
-	  break;
-
-	case SIM_IDLE:
-	  g_cond_wait (sim->thread_vars->sim_cond, sim->thread_vars->sim_mutex);
-	  break;
-
-	case SIM_STEP:
-	  sim->proc->execute_instruction (sim);
-	  /* handle_io (sim); */
-	  sim->state = SIM_IDLE;
-	  g_cond_signal (sim->thread_vars->ui_cond);
-	  g_cond_wait (sim->thread_vars->sim_cond, sim->thread_vars->sim_mutex);
-	  break;
-
-	case SIM_RUN:
-	  /* find out how much time has elapsed, saturated at one second */
-	  g_get_current_time (& sim->thread_vars->tv);
-
-	  /* compute how many microinstructions we want to execute */
-	  usec = sim->thread_vars->tv.tv_usec - sim->thread_vars->prev_tv.tv_usec;
-	  switch (sim->thread_vars->tv.tv_sec - sim->thread_vars->prev_tv.tv_sec)
-	    {
-	    case 0: break;
-	    case 1: usec += 1000000; break;
-	    default: usec = 1000000;
-	    }
-	  i = usec * sim->words_per_usec;
-#if 0
-	  printf ("tv %d.%06d, usec %d, i %d\n", sim->thread_vars->tv.tv_sec,
-		  sim->thread_vars->tv.tv_usec, usec, i);
-#endif
-
-	  /* execute the microinstructions */
-	  while (i--)
-	    {
-	      if (! sim->proc->execute_instruction (sim))
-		break;
-	    }
-
-	  /* update the display */
-	  /* handle_io (sim); */
-
-	  /* remember when we ran */
-	  memcpy (& sim->thread_vars->prev_tv, & sim->thread_vars->tv, sizeof (GTimeVal));
-
-	  /* sleep a while */
-	  g_time_val_add (& sim->thread_vars->tv, JIFFY_USEC);
-	  g_cond_timed_wait (sim->thread_vars->sim_cond, sim->thread_vars->sim_mutex,
-			     & sim->thread_vars->tv);
-	  break;
-
-	default:
-	  fatal (2, "bad simulator state\n");
-	}
-      g_mutex_unlock (sim->thread_vars->sim_mutex);
-    }
-
-  return (NULL);  /* $$$ Hmmm... what are we supposed to return? */
+  gpointer msg2;
+  g_async_queue_push (sim->thread_vars->cmd_q, msg);
+  msg2 = g_async_queue_pop (sim->thread_vars->reply_q);
+  if (msg2 != msg)
+    fatal (2, "async reply != msg\n");
 }
 
 
-/* The following functions can be called from the main thread: */
+void handle_sim_cmd (sim_t *sim, sim_msg_t *msg)
+{
+  msg->reply = UNIMPLEMENTED;
+  switch (msg->cmd)
+    {
+    case CMD_QUIT:
+      sim->quit_flag = true;
+      msg->reply = OK;
+      break;
+    case CMD_RESET:
+      // $$$ what to do
+      // $$$ Allow reset while runflag is true?
+      break;
+    case CMD_READ_ROM:
+      break;
+    case CMD_WRITE_ROM:
+      break;
+    case CMD_READ_RAM:
+      // deal with bad addr?
+      sim->proc->read_ram (sim, msg->addr, & msg->reg_val);
+      msg->reply = OK;
+      break;
+    case CMD_WRITE_RAM:
+      // deal with bad addr?
+      sim->proc->write_ram (sim, msg->addr, & msg->reg_val);
+      msg->reply = OK;
+      break;
+    case CMD_GET_CYCLE_COUNT:
+      msg->cycle_count = sim->cycle_count;
+      msg->reply = OK;
+      break;
+    case CMD_SET_CYCLE_COUNT:
+      sim->cycle_count = msg->cycle_count;
+      msg->reply = OK;
+      break;
+    case CMD_SET_RUN_FLAG:
+      sim->run_flag = msg->b;
+      g_get_current_time (& sim->thread_vars->last_run_time);
+      g_get_current_time (& sim->thread_vars->next_run_time);
+      msg->reply = OK;
+      break;
+    case CMD_GET_RUN_FLAG:
+      msg->b = sim->run_flag;
+      msg->reply = OK;
+      break;
+#ifdef HAS_DEBUGGER
+    case CMD_SET_DEBUG_FLAG:
+      if (msg->b)
+	sim->debug_flags |= (1 << msg->arg);
+      else
+	sim->debug_flags &= ~ (1 << msg->arg);
+      msg->reply = OK;
+      break;
+    case CMD_GET_DEBUG_FLAG:
+      msg->b = ((sim->debug_flags & (1 << msg->arg)) != 0);
+      msg->reply = OK;
+      break;
+#endif // HAS_DEBUGGER
+    case CMD_STEP:
+      // $$$ Allow step while runflag is true?
+      sim->step_flag = true;
+      msg->reply = OK;
+      break;
+    case CMD_SET_BREAKPOINT:
+      break;
+    case CMD_PRESS_KEY:
+      sim->proc->press_key (sim, msg->arg);
+      msg->reply = OK;
+      break;
+    case CMD_RELEASE_KEY:
+      // $$$ might be nice to allow releasing a specific key!
+      sim->proc->release_key (sim);
+      msg->reply = OK;
+      break;
+    case CMD_SET_EXT_FLAG:
+      sim->proc->set_ext_flag (sim, msg->arg, msg->b);
+      msg->reply = OK;
+      break;
+    default:
+      msg->reply = BAD_CMD;
+    }
+  g_async_queue_push (sim->thread_vars->reply_q, msg);
+}
+
+
+void sim_run (sim_t *sim)
+{
+  GTimeVal now;
+  int inst_count;
+  long usec;
+
+  g_get_current_time (& now);
+
+  /* compute how many microinstructions we want to execute */
+  usec = now.tv_usec - sim->thread_vars->last_run_time.tv_usec;
+  switch (now.tv_sec - sim->thread_vars->last_run_time.tv_sec)
+    {
+    case 0: break;
+    case 1: usec += 1000000; break;
+    default: usec = 1000000;
+    }
+  inst_count = usec * sim->words_per_usec;
+  if (inst_count > MAX_INST_BURST)
+    inst_count = MAX_INST_BURST;
+#if 0
+  printf ("tv %d.%06d, usec %d, inst_count %d\n",
+	  sim->thread_vars->tv.tv_sec,
+	  sim->thread_vars->tv.tv_usec,
+	  usec,
+	  inst_count);
+#endif
+
+  /* execute the microinstructions */
+  while (inst_count--)
+    {
+      if (! sim->proc->execute_instruction (sim))
+	break;
+    }
+
+  // Remember when we ran, and figure out when to run next.
+  memcpy (& sim->thread_vars->last_run_time, & now, sizeof (GTimeVal));
+
+  memcpy (& sim->thread_vars->next_run_time, & now, sizeof (GTimeVal));
+  g_time_val_add (& sim->thread_vars->next_run_time, JIFFY_USEC);
+}
+
+
+gpointer sim_thread_func (gpointer data)
+{
+  sim_t *sim = (sim_t *) data;
+  sim_msg_t *msg;
+
+  while (! sim->quit_flag)
+    {
+      if (sim->run_flag)
+	msg = g_async_queue_timed_pop (sim->thread_vars->cmd_q,
+				       & sim->thread_vars->next_run_time);
+      else
+	msg = g_async_queue_pop (sim->thread_vars->cmd_q);
+
+      if (msg)
+	{
+	  handle_sim_cmd (sim, msg);
+	  continue;
+	}
+
+      if (sim->step_flag)
+	{
+	  sim->proc->execute_instruction (sim);
+	  sim->step_flag = false;
+	}
+      else if (sim->run_flag)
+	sim_run (sim);
+
+      // handle_io (sim);
+    }
+
+  return (NULL);  // Exit thread
+}
+
+
+static void prefill_gui_cmd_q (GAsyncQueue *q, int count)
+{
+  while (count--)
+    {
+      gui_msg_t *msg = alloc (sizeof (gui_msg_t));
+      g_async_queue_push (q, msg);
+    }
+}
+
+
+// Called by GUI thread to create a simulator thread
+// $$$ Some of the initialization here should be moved into
+// the thread function.
 
 sim_t *sim_init  (int platform,
 		  int arch,
@@ -272,16 +449,16 @@ sim_t *sim_init  (int platform,
 
   sim->words_per_usec = clock_frequency / (1.0e6 * arch_info->word_length);
 
-  sim->prev_state = SIM_UNKNOWN;
-  sim->state = SIM_IDLE;
-
   g_thread_init (NULL);  /* $$$ has Gtk already done this? */
 
-  sim->thread_vars->sim_cond = g_cond_new ();
-  sim->thread_vars->ui_cond = g_cond_new ();
-  sim->thread_vars->sim_mutex = g_mutex_new ();
+  sim->thread_vars->cmd_q = g_async_queue_new ();
+  sim->thread_vars->reply_q = g_async_queue_new ();
+  sim->thread_vars->gui_cmd_q = g_async_queue_new ();
+  sim->thread_vars->gui_cmd_free_q = g_async_queue_new ();
 
-  g_mutex_lock (sim->thread_vars->sim_mutex);
+  prefill_gui_cmd_q (sim->thread_vars->gui_cmd_free_q, 10);
+
+  // $$$ need to add gui_cmd_q as a "source" for GUI thread.
 
   sim->proc->new_processor (sim, ram_size);
 
@@ -291,120 +468,64 @@ sim_t *sim_init  (int platform,
   sim->display_handle = display_handle;
   sim->display_update_fn = display_update_fn;
 
-  sim->state = SIM_IDLE;
-
   sim->cycle_count = 0;
 
   sim->thread_vars->gthread = g_thread_create (sim_thread_func, sim, TRUE, NULL);
-
-  g_mutex_unlock (sim->thread_vars->sim_mutex);
 
   return (sim);
 }
 
 
-void sim_quit (sim_t *sim)
-{
-  g_mutex_lock (sim->thread_vars->sim_mutex);
-  sim->state = SIM_QUIT;
-
-  g_thread_join (sim->thread_vars->gthread);
-
-  free (sim);
-}
-
-
 void sim_reset (sim_t *sim)
 {
-  g_mutex_lock (sim->thread_vars->sim_mutex);
-  if (sim->state != SIM_IDLE)
-    fatal (2, "can't reset when not idle\n");
-  sim->state = SIM_RESET;
-  g_cond_signal (sim->thread_vars->sim_cond);
-  while (sim->state != SIM_IDLE)
-    g_cond_wait (sim->thread_vars->ui_cond, sim->thread_vars->sim_mutex);
-  g_mutex_unlock (sim->thread_vars->sim_mutex);
-}
-
-
-void sim_step (sim_t *sim)
-{
-  g_mutex_lock (sim->thread_vars->sim_mutex);
-  if (sim->state != SIM_IDLE)
-    fatal (2, "can't step when not idle\n");
-  sim->state = SIM_STEP;
-  g_cond_signal (sim->thread_vars->sim_cond);
-  while (sim->state != SIM_IDLE)
-    g_cond_wait (sim->thread_vars->ui_cond, sim->thread_vars->sim_mutex);
-  g_mutex_unlock (sim->thread_vars->sim_mutex);
+  sim_msg_t msg;
+  memset (& msg, 0, sizeof (sim_msg_t));
+  msg.cmd = CMD_RESET;
+  send_cmd_to_sim_thread (sim, (gpointer) & msg);
 }
 
 
 void sim_start (sim_t *sim)
 {
-  g_mutex_lock (sim->thread_vars->sim_mutex);
-  if (sim->state != SIM_IDLE)
-    fatal (2, "can't start when not idle\n");
-  sim->state = SIM_RUN;
-  g_cond_signal (sim->thread_vars->sim_cond);
-  g_mutex_unlock (sim->thread_vars->sim_mutex);
+  sim_msg_t msg;
+  memset (& msg, 0, sizeof (sim_msg_t));
+  msg.cmd = CMD_SET_RUN_FLAG;
+  msg.b = true;
+  send_cmd_to_sim_thread (sim, (gpointer) & msg);
 }
 
 
-void sim_stop (sim_t *sim)
+void sim_press_key (sim_t *sim, int keycode)
 {
-  g_mutex_lock (sim->thread_vars->sim_mutex);
-  if (sim->state == SIM_IDLE)
-    goto done;
-  if (sim->state != SIM_RUN)
-    fatal (2, "can't stop when not running\n");
-  sim->state = SIM_IDLE;
-  g_cond_signal (sim->thread_vars->sim_cond);
-done:
-  g_mutex_unlock (sim->thread_vars->sim_mutex);
+  sim_msg_t msg;
+  memset (& msg, 0, sizeof (sim_msg_t));
+  msg.cmd = CMD_PRESS_KEY;
+  msg.arg = keycode;
+  send_cmd_to_sim_thread (sim, (gpointer) & msg);
 }
 
 
-uint64_t sim_get_cycle_count (sim_t *sim)
+void sim_release_key (sim_t *sim)
 {
-  uint64_t count;
-  g_mutex_lock (sim->thread_vars->sim_mutex);
-  count = sim->cycle_count;
-  g_mutex_unlock (sim->thread_vars->sim_mutex);
-  return (count);
+  sim_msg_t msg;
+  memset (& msg, 0, sizeof (sim_msg_t));
+  msg.cmd = CMD_RELEASE_KEY;
+  send_cmd_to_sim_thread (sim, (gpointer) & msg);
 }
 
 
-void sim_set_cycle_count (sim_t *sim, uint64_t count)
+void sim_set_ext_flag (sim_t *sim, int flag, bool state)
 {
-  g_mutex_lock (sim->thread_vars->sim_mutex);
-  sim->cycle_count = count;
-  g_mutex_unlock (sim->thread_vars->sim_mutex);
+  sim_msg_t msg;
+  memset (& msg, 0, sizeof (sim_msg_t));
+  msg.cmd = CMD_SET_EXT_FLAG;
+  msg.arg = flag;
+  msg.b = state;
+  send_cmd_to_sim_thread (sim, (gpointer) & msg);
 }
 
 
-void sim_set_breakpoint (sim_t *sim, int address)
-{
-  /* $$$ not yet implemented */
-}
-
-
-void sim_clear_breakpoint (sim_t *sim, int address)
-{
-  /* $$$ not yet implemented */
-}
-
-
-bool sim_running (sim_t *sim)
-{
-  bool result;
-  g_mutex_lock (sim->thread_vars->sim_mutex);
-  result = (sim->state == SIM_RUN);
-  g_mutex_unlock (sim->thread_vars->sim_mutex);
-  return (result);
-}
-
-
+#if 0
 sim_env_t *sim_get_env (sim_t *sim)
 {
   sim_env_t *env;
@@ -430,71 +551,7 @@ void sim_free_env (sim_t *sim, sim_env_t *env)
   sim->proc->free_env (sim, env);
   g_mutex_unlock (sim->thread_vars->sim_mutex);
 }
-
-
-rom_word_t sim_read_rom (sim_t *sim, int addr)
-{
-  /* The ROM is read-only, so we don't have to grab the mutex. */
-  /* $$$ not yet implemented */
-  return (0);
-}
-
-
-void sim_read_ram (sim_t *sim, int addr, reg_t *val)
-{
-  g_mutex_lock (sim->thread_vars->sim_mutex);
-  sim->proc->read_ram (sim, addr, val);
-  g_mutex_unlock (sim->thread_vars->sim_mutex);
-}
-
-void sim_write_ram (sim_t *sim, int addr, reg_t *val)
-{
-  g_mutex_lock (sim->thread_vars->sim_mutex);
-  sim->proc->write_ram (sim, addr, val);
-  g_mutex_unlock (sim->thread_vars->sim_mutex);
-}
-
-
-void sim_press_key (sim_t *sim, int keycode)
-{
-  g_mutex_lock (sim->thread_vars->sim_mutex);
-  sim->proc->press_key (sim, keycode);
-  g_mutex_unlock (sim->thread_vars->sim_mutex);
-}
-
-
-void sim_release_key (sim_t *sim)
-{
-  g_mutex_lock (sim->thread_vars->sim_mutex);
-  sim->proc->release_key (sim);
-  g_mutex_unlock (sim->thread_vars->sim_mutex);
-}
-
-
-void sim_set_ext_flag (sim_t *sim, int flag, bool state)
-{
-  g_mutex_lock (sim->thread_vars->sim_mutex);
-  sim->proc->set_ext_flag (sim, flag, state);
-  g_mutex_unlock (sim->thread_vars->sim_mutex);
-}
-
-
-#ifdef HAS_DEBUGGER
-
-void sim_set_debug_flag (sim_t *sim, int debug_flag, bool val)
-{
-  if (val)
-    sim->debug_flags |= (1 << debug_flag);
-  else
-    sim->debug_flags &= ~ (1 << debug_flag);
-}
-
-bool sim_get_debug_flag (sim_t *sim, int debug_flag)
-{
-  return ((sim->debug_flags & (1 << debug_flag)) != 0);
-}
-
-#endif /* HAS_DEBUGGER */
+#endif
 
 
 extern processor_dispatch_t classic_processor;

@@ -59,9 +59,17 @@ Debugger:
 
 Internals:
 
-  Use Glib asynchronous queues for communication between GUI and simulator
-  threads, rather than mutexes and conditions.  Use g_main_context_wakeup(NULL)
-  and a custom g_source to notify GUI task.
+  Use Glib asynchronous queues for simulator task to notify GUI thread of
+  display updates, rather than simulator thread drawing directly.  Use
+  g_main_context_wakeup(NULL) and a custom g_source to notify GUI task.
+
+  Implement async queue based functions needed by debugger.
+
+  Move more of the simulator initialization into the simulator thread.
+
+  Load ROM using CMD_WRITE_ROM.
+
+  Split proc.c into separate GUI thread and simulator thread portions.
 
   Use io_count to improve display update timing (already done in nut, add to
   classic and woodstock).

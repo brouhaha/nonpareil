@@ -1,3 +1,9 @@
+2005-02-05  Eric Smith <eric@brouhaha.com>
+
+	* proc.c proc_int.h: Use glib async message queues for commands
+	from GUI task to simulator task, and replies.  Debugger support
+	not yet updated.
+
 2004-07-12  Eric Smith <eric@brouhaha.com>
 
 	* proc_classic.c (classic_execute_instruction): Added key trace

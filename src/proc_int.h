@@ -68,26 +68,17 @@ extern processor_dispatch_t *processor_dispatch [ARCH_MAX];
 
 /* common to all architectures: */
 
-typedef enum
-  {
-    SIM_UNKNOWN,
-    SIM_IDLE,
-    SIM_RESET,
-    SIM_STEP,
-    SIM_RUN,
-    SIM_QUIT
-  } sim_state_t;
-
-
 typedef struct sim_thread_vars_t sim_thread_vars_t;
 
 
 struct sim_t
 {
-  sim_thread_vars_t *thread_vars;
+  bool quit_flag;
 
-  sim_state_t state;
-  sim_state_t prev_state;
+  bool run_flag;
+  bool step_flag;
+
+  sim_thread_vars_t *thread_vars;
 
   int arch;
   processor_dispatch_t *proc;
