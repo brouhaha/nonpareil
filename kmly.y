@@ -218,6 +218,7 @@ button_stmt		:	type_stmt
 			|	offset_stmt
 			|	down_stmt
 			|	outin_stmt
+			|	keycode_stmt
 			|	virtual_stmt
 			|	nohold_stmt
 			|	onup_stmt
@@ -227,6 +228,8 @@ button_stmt		:	type_stmt
 type_stmt		:	TYPE INTEGER ;
 
 outin_stmt		:	OUTIN INTEGER INTEGER ;
+
+keycode_stmt		:	KEYCODE INTEGER ;
 
 virtual_stmt		:	VIRTUAL ;
 
