@@ -1,6 +1,6 @@
 CASMSIM - an HP Classic series calculator micro assembler and simulator
 Copyright 1995 Eric L. Smith (eric@telebit.com)
-Last revised March 14, 1995
+Last revised March 16, 1995
 
 CASMSIM consists of the CASM assembler and the CSIM simulator.  It's just a
 quick hack, so don't expect too much.
@@ -139,3 +139,30 @@ At this point CSIM is known to mostly work with the HP-45 ROM image, but I
 haven't tested it much and I haven't verified the ROM image.  There
 are serious problems with the HP-55 image, which may be CSIM bugs or they
 may be errors in my typing of the assembly sources.
+
+There are two compile time options currently defined in the Makefile:
+
+-DUS_TIMER
+	Enables the code to use the BSD-style interval timer to prevent the
+	simulator from executing more than 35 microinstructions every 1/100
+	of a second.  This allows for an approximation of the performance of
+	the real HP calculators.  If your operating system doesn't support
+	the setitimer() system call you'll have to take this define out.
+	With this define in place, CSIM uses sufficiently little CPU time
+	that it isn't a problem to leave it running all the time (at least
+	on my DX4-100, a VAX-11/725 might be a different story).  I use it
+	instead of "xcalc -rpn".
+
+-DENTER_KEY_MOD
+	Causes the ENTER^ key to generate the keycode for the normally
+        unused right hand button under the key.  On the HP-45 this button
+	works just like the normal ENTER^ button except when pressed after
+	RCL, in  which case it activates the undocumented and unsupported
+	stopwatch mode.  On a real HP-45 this button can also be "pressed"
+	as a phantom key by simultaneously pressing CHS, 7, and 8.  It is
+	fairly hard to consistenly press the three keys simultaneously, so
+	often this was done by the "penny trick".  CSIM doesn't support
+	multiple key presses at all, so this define is necessary to get into
+	stopwatch mode.  Note that CSIM doesn't actually get very accurate
+	timing.  On my DX4-100 the stopwatch runs at about 1/2 real time.
+	Don't blame me if you try to use it and burn your eggs.
