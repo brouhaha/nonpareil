@@ -61,6 +61,9 @@ void emit_arith (int op);  /* use for arithmetic instructions that may set carry
 void emit_test  (int op);  /* use for test instructions */
 
 
+void target (int g, int r, int p);
+
+
 /*
  * Check that val is in the range [min, max].  If so, return val.
  * If not, issue an error and return min.
