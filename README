@@ -35,25 +35,29 @@ S-record format object files in the next version.
 In the HP classic series processor, unlike modern microprocessors, various
 instructions were interpreted by various chips.  The core processor consists
 of the C&T (control and timing), A&R (arithmetic and registers) and the ROM
-or QUAD ROM chips.  Additions chips may be present for data storage or program
-storage.  Since different calculator models have different combinations of
-these chips, some instructions are not available on all models.  For instance,
-the "delayed select" instructions are probably not implemented in the HP-35
-and HP-80 which use single ROMs, and the "search for label" instruction is
-only available in the HP-65.
+or QUAD ROM chips.  Additions chips may be present for data storage or
+program storage.  Since different calculator models have different
+combinations of these chips, some instructions are not available on all
+models.  For instance, the "delayed select" instructions are probably not
+implemented in the HP-35 and HP-80 which use single ROMs, and the "search for
+label" instruction is only available in the HP-65.
 
 The design of the processor and the instruction set are described in detail
 in United States patents 3,863,060 and 4,001,569.
 
 CASM is supplied with twelve source code files containing the code from
-United States patent number 4,009,379 titled "Portable Programmable Calculator
-Displaying Absolute Line Number Addresses and Key Codes and Automatically
-Altering Display Formats", granted February 22, 1977 to Bernard E. Musch of
-Palo Alto, California, and assigned to the Hewlett-Packard Company of Palo
-Alto, California.  This patent appears to cover the HP-55 calculator.  I don't
-have an HP-55, so I can't verify that the code in the patent matches that in
-the ROMs of an actual HP-55.  There are likely to be errors in my transcription
-of the code, as the listing in my copy of the patent is hard to read.  Caveat
+United States patent number 4,009,379 titled "Portable Programmable
+Calculator Displaying Absolute Line Number Addresses and Key Codes and
+Automatically Altering Display Formats", granted February 22, 1977 to Bernard
+E. Musch of Palo Alto, California, and assigned to the Hewlett-Packard
+Company of Palo Alto, California.  These source code files are not part of
+CASM, are not copyrighted by me, and are not subject to the General Public
+License.
+
+The '379 patent appears to cover the HP-55 calculator.  I don't have an
+HP-55, so I can't verify that the code in the patent matches that in the ROMs
+of an actual HP-55.  There are likely to be errors in my transcription of the
+code, as the listing in my copy of the patent is hard to read.  Caveat
 Emptor!
 
 Various other United States patents assigned to Hewlett-Packard appear to
@@ -71,18 +75,19 @@ emphatic source code be my guest.
 
 The current version of CASM doesn't enforce the use of the appropriate form
 of the "go to" instruction.  For instance, the plain "go to" should only be
-used after instructions that can't set the carry flag.  The "then go to"
-form should only be used after "if" instructions.  The "if no carry go to"
-form should only be used after arithmetic instructions.
+used after instructions that can't set the carry flag.  The "then go to" form
+should only be used after "if" instructions.  The "if no carry go to" form
+should only be used after arithmetic instructions.
 
-CASM considers the keywords which are used to form instructions to be reserved
-words, so they can't be used as labels.  HP's assembler was more flexible in
-this regard; I had to change the label "go" in the HP-55 source code to "go_".
+CASM considers the keywords which are used to form instructions to be
+reserved words, so they can't be used as labels.  HP's assembler was more
+flexible in this regard; I had to change the label "go" in the HP-55 source
+code to "go_".
 
-CASM does a better job of displaying the branch target addresses than the
-HP assembler did.  It will actually show the correct target address based on
-the delayed select instructions, unless the delay instruction is in the last
-word of a page.  I have added a single directive ".rom" to the
-assembler which can be used to provide the rom number.  This is vaguely
-similar to the origin directive in a typical assembler, except that CASM
-always start assembling code at location 0 of the selected ROM.
+CASM does a better job of displaying the branch target addresses than the HP
+assembler did.  It will actually show the correct target address based on the
+delayed select instructions, unless the delay instruction is in the last word
+of a page.  I have added a single directive ".rom" to the assembler which can
+be used to provide the rom number.  This is vaguely similar to the origin
+directive in a typical assembler, except that CASM always start assembling
+code at location 0 of the selected ROM.
