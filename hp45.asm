@@ -599,4 +599,285 @@ tan14:	a exchange c[wp]
 
 	.symtab
 
+; HP-45 ROM 02 source from United States Patent 4,001,569
+; keyed in by Eric Smith on 3/9/95 - any errors are probably mine
 
+	.rom @02
+
+err21:	select rom 6
+ln24:	a exchange b[s]
+	a + 1 -> a[s]
+	shift right c[ms]
+	shift left a[wp]
+	go to ln26
+
+xty22:	stack -> a
+	jsb mpy21
+
+xty21:	c -> a[w]
+	if s8 # 1
+	     then go to exp21
+ln22:	0 -> a[w]
+	a - c -> a[m]
+	if no carry go to err21
+	shift right a[w]
+	c - 1 -> c[s]
+	if no carry go to err21
+ln25:	c + 1 -> c[s]
+ln26:	a -> b[w]
+	jsb eca22
+	a - 1 -> a[p]
+	if no carry go to ln25
+	a exchange b[wp]
+	a + b -> a[s]
+	if no carry go to ln24
+	7 -> p
+	jsb pqo23
+	8 -> p
+	jsb pmu22
+	9 -> p
+	jsb pmu21
+	jsb lncd3
+	10 -> p
+	jsb pmu21
+	jsb lncd2
+	11 -> p
+	jsb pmu21
+	jsb lncd1
+	jsb pmu21
+	jsb lnc2
+	jsb pmu21
+	jsb lnc10
+	a exchange c[w]
+	a - c -> c[w]
+	if b[xs] = 0
+	     then go to ln27
+	a - c -> c[w]
+ln27:	a exchange b[w]
+ln28:	p - 1 -> p
+	shift left a[w]
+	if p # 1
+	     then go to ln28
+	a exchange c[w]
+	if c[s] = 0
+	     then go to ln29
+	0 - c - 1 -> c[m]
+ln29:	c + 1 -> c[x]
+	11 -> p
+	jsb mpy27
+	if s9 # 1
+	     then go to xty22
+	if s5 # 1
+	     then go to rtn21
+	jsb lnc10
+	jsb mpy22
+	go to rtn21
+
+exp21:	jsb lnc10
+	jsb pre21
+	jsb lnc2
+	11 -> p
+	jsb pqo21
+	jsb lncd1
+	10 -> p
+	jsb pqo21
+	jsb lncd2
+	9 -> p
+	jsb pqo21
+	jsb lncd3
+	8 -> p
+	jsb pqo21
+	jsb pqo21
+	jsb pqo21
+	6 -> p
+	0 -> a[wp]
+	13 -> p
+	b exchange c[w]
+	a exchange c[w]
+	load constant 6
+	go to exp23
+
+pre23:	if s2 # 1
+	     then go to pre24
+	a + 1 -> a[x]
+pre29:	if a[xs] >= 1
+	     then go to pre27
+pre24:	a - b -> a[ms]
+	if no carry go to pre23
+	a + b -> a[ms]
+	shift left a[w]
+	c - 1 -> c[x]
+	if no carry go to pre29
+pre25:	shift right a[w]
+	0 -> c[wp]
+	a exchange c[x]
+pre26:	if c[s] = 0
+	     then go to pre28
+	a exchange b[w]
+	a - b -> a[w]
+	0 - c - 1 -> c[w]
+pre28:	shift right a[w]
+pqo23:	b exchange c[w]
+	0 -> c[w]
+	c - 1 -> c[m]
+	if s2 # 1
+	     then go to pqo28
+	load constant 4
+	c + 1 -> c[m]
+	if no carry go to pqo24
+pqo27:	load constant 6
+pqo28:	if p # 1
+	     then go to pqo27
+	shift right c[w]
+pqo24:	shift right c[w]
+nrm26:	if s2 # 1
+	     then go to rtn21
+	return
+
+lncd2:	7 -> p
+lnc6:	load constant 3
+	load constant 3
+	load constant 0
+lnc7:	load constant 8
+	load constant 5
+	load constant 0
+	load constant 9
+	go to lnc9
+
+exp29:	jsb eca22
+	a + 1 -> a[p]
+exp22:	a -> b[w]
+	c - 1 -> c[s]
+	if no carry go to exp29
+	shift right a[wp]
+	a exchange c[w]
+	shift left a[ms]
+exp23:	a exchange c[w]
+	a - 1 -> a[s]
+	if no carry go to exp22
+	a exchange b[w]
+	a + 1 -> a[p]
+	jsb nrm21
+rtn21:	select rom 1
+
+eca21:	shift right a[wp]
+eca22:	a - 1 -> a[s]
+	if no carry go to eca21
+	0 -> a[s]
+	a + b -> a[w]
+	return
+
+pqo21:	select rom 1
+
+pmu21:	shift right a[w]
+pmu22:	b exchange c[w]
+	go to pmu24
+
+pmu23:	a + b -> a[w]
+pmu24:	c - 1 -> c[s]
+	if no carry go to pmu23
+	a exchange c[w]
+	shift left a[ms]
+	a exchange c[w]
+	go to pqo23
+
+mpy21:	3 -> p
+mpy22:	a + c -> c[x]
+div21:	a - c -> c[s]
+	if no carry go to div22
+	0 - c -> c[s]
+div22:	a exchange b[m]
+	0 -> a[w]
+	if p # 12
+	     then go to mpy27
+	if c[m] >= 1
+	     then go to div23
+	if s1 # 1
+	     then go to err21
+	select rom 5
+	go to nrm25
+
+	no operation
+
+div23:	b exchange c[wp]
+	a exchange c[m]
+	select rom 1
+
+lnc2:	0 -> s8
+	load constant 6
+	load constant 9
+	load constant 3
+	load constant 1
+	load constant 4
+	load constant 7
+	load constant 1
+	go to lnc8
+
+pre27:	a + 1 -> a[m]
+	if no carry go to pre25
+mpy26:	a + b -> a[w]
+mpy27:	c - 1 -> c[p]
+	if no carry go to mpy26
+mpy28:	shift right a[w]
+	p + 1 -> p
+	if p # 13
+	     then go to mpy27
+nrm20:	c + 1 -> c[x]
+nrm21:	0 -> a[s]
+	12 -> p
+	0 -> b[w]
+nrm23:	if a[p] >= 1
+	     then go to nrm24
+	shift left a[w]
+	c - 1 -> c[x]
+	if a[w] >= 1
+	     then go to nrm23
+	0 -> c[w]
+nrm24:	a -> b[x]
+	a + b -> a[w]
+	if a[s] >= 1
+	     then go to mpy28
+	a exchange c[m]
+nrm25:	c -> a[w]
+	0 -> b[w]
+nrm27:	12 -> p
+	go to nrm26
+
+lncd1:	9 -> p
+	load constant 3
+	load constant 1
+	load constant 0
+	load constant 1
+	load constant 7
+	load constant 9
+lnc8:	load constant 8
+	load constant 0
+	load constant 5
+	load constant 5
+lnc9:	load constant 3
+	go to nrm27
+
+pre21:	a exchange c[w]
+	a -> b[w]
+	c -> a[m]
+	c + c -> c[xs]
+	if no carry go to pre24
+	c + 1 -> c[xs]
+pre22:	shift right a[w]
+	c + 1 -> c[x]
+	if no carry go to pre22
+	go to pre26
+
+lnc10:	0 -> c[w]
+	12 -> p
+	load constant 2
+	load constant 3
+	load constant 0
+	load constant 2
+	load constant 5
+	go to lnc7
+
+lncd3:	5 -> p
+	go to lnc6
+
+	.symtab
