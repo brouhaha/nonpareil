@@ -485,12 +485,31 @@ void sim_reset (sim_t *sim)
 }
 
 
+void sim_step (sim_t *sim)
+{
+  sim_msg_t msg;
+  memset (& msg, 0, sizeof (sim_msg_t));
+  msg.cmd = CMD_STEP;
+  send_cmd_to_sim_thread (sim, (gpointer) & msg);
+}
+
+
 void sim_start (sim_t *sim)
 {
   sim_msg_t msg;
   memset (& msg, 0, sizeof (sim_msg_t));
   msg.cmd = CMD_SET_RUN_FLAG;
   msg.b = true;
+  send_cmd_to_sim_thread (sim, (gpointer) & msg);
+}
+
+
+void sim_stop (sim_t *sim)
+{
+  sim_msg_t msg;
+  memset (& msg, 0, sizeof (sim_msg_t));
+  msg.cmd = CMD_SET_RUN_FLAG;
+  msg.b = false;
   send_cmd_to_sim_thread (sim, (gpointer) & msg);
 }
 
@@ -523,6 +542,29 @@ void sim_set_ext_flag (sim_t *sim, int flag, bool state)
   msg.b = state;
   send_cmd_to_sim_thread (sim, (gpointer) & msg);
 }
+
+
+#ifdef HAS_DEBUGGER
+void sim_set_debug_flag (sim_t *sim, int debug_flag, bool state)
+{
+  sim_msg_t msg;
+  memset (& msg, 0, sizeof (sim_msg_t));
+  msg.cmd = CMD_SET_DEBUG_FLAG;
+  msg.arg = debug_flag;
+  msg.b = state;
+  send_cmd_to_sim_thread (sim, (gpointer) & msg);
+}
+
+bool sim_get_debug_flag (sim_t *sim, int debug_flag)
+{
+  sim_msg_t msg;
+  memset (& msg, 0, sizeof (sim_msg_t));
+  msg.cmd = CMD_GET_DEBUG_FLAG;
+  msg.arg = debug_flag;
+  send_cmd_to_sim_thread (sim, (gpointer) & msg);
+  return (msg.b);
+}
+#endif // HAS_DEBUGGER
 
 
 #if 0
