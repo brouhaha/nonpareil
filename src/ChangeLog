@@ -1,5 +1,8 @@
 2004-06-15  Eric Smith <eric@brouhaha.com>
 
+	* util.h release.c asm.c csim.c: Added string var nonpareil_release
+	for use in messages.
+
 	* debugger.c: Added missing includes. Renamed cmd_handler to cmd_t,
 	and added type casts to eliminate warnings.
 

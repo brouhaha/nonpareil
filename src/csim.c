@@ -46,6 +46,9 @@ MA 02111, USA.
 #endif
 
 
+char *default_path = MAKESTR(DEFAULT_PATH);
+
+
 gboolean scancode_debug = FALSE;
 gboolean kml_debug = FALSE;
 
@@ -72,8 +75,8 @@ GdkGC *annunciator_gc [KML_MAX_ANNUNCIATOR];
 
 void usage (FILE *f)
 {
-  fprintf (f, "Nonpareil release %s:  Microcode-level calculator simulator\n",
-	   MAKESTR(NONPAREIL_RELEASE));
+  fprintf (f, "%s:  Microcode-level calculator simulator\n",
+	   nonpareil_release);
   fprintf (f, "Copyright 1995, 2003, 2004 Eric L. Smith\n");
   fprintf (f, "http://nonpareil.brouhaha.com/\n");
   fprintf (f, "\n");
@@ -1081,7 +1084,7 @@ int main (int argc, char *argv[])
 #ifdef HAS_DEBUGGER
   if (kml->rom_listing)
     if (! sim_read_listing_file (sim, kml->rom_listing))
-      fatal (2, "unable to read listing file '%s'\n", kml->rom_listing);
+      fprintf (stderr, "warning: unable to read listing file '%s'\n", kml->rom_listing);
 #endif
 
   sim_reset (sim);

@@ -36,8 +36,7 @@ int arch;
 
 void usage (FILE *f)
 {
-  fprintf (f, "uasm microassembler - Nonpareil release %s\n",
-	   MAKESTR(NONPAREIL_RELEASE));
+  fprintf (f, "uasm microassembler - %s\n", nonpareil_release);
   fprintf (f, "Copyright 1995, 2003, 2004 Eric L. Smith\n");
   fprintf (f, "http://nonpareil.brouhaha.com/\n");
   fprintf (f, "\n");

@@ -1,6 +1,6 @@
 /*
 $Id$
-Copyright 1995, 2004 Eric L. Smith <eric@brouhaha.com>
+Copyright 2004 Eric L. Smith <eric@brouhaha.com>
 
 Nonpareil is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License version 2 as
@@ -19,24 +19,12 @@ Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
 MA 02111, USA.
 */
 
+#include <stdio.h>
 
-#define QMAKESTR(x) #x
-#define MAKESTR(x) QMAKESTR(x)
+#include "util.h"
 
-
-extern char *progname;  /* must be set by main program */
-
-extern char *nonpareil_release;   /* defined in release.c */
-
-void usage (FILE *f);    /* must be implemented in main program */
-
-void fatal (int ret, char *format, ...);
-
-void *alloc (size_t size);
-
-char *newstr (char *orig);
-
-char *newstrn (char *orig, int max_len);
-
-void trim_trailing_whitespace (char *s);
-
+#ifdef NONPAREIL_RELEASE
+char *nonpareil_release = "Nonpareil release " MAKESTR(NONPAREIL_RELEASE);
+#else
+char *nonpareil_release = "Nonpareil";
+#endif
