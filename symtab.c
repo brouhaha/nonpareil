@@ -1,6 +1,6 @@
 /*
 symtab.c: a simple binary tree symbol table
-$Id: symtab.c,v 1.9 2003/05/30 23:38:12 eric Exp $
+$Id$
 Copyright 1995 Eric L. Smith
 
 CASM is an assembler for the processor used in the HP "Classic" series
@@ -87,7 +87,7 @@ static int insert_symbol (sym **p, sym *newsym)
       return (1);
     }
 
-  i = stricmp (newsym->name, (*p)->name);
+  i = strcasecmp (newsym->name, (*p)->name);
 
   if (i == 0)
     return (0);
@@ -128,7 +128,7 @@ int lookup_symbol (t_symtab t, char *name, int *value)
 
   while (p)
     {
-      i = stricmp (name, p->name);
+      i = strcasecmp (name, p->name);
       if (i == 0)
 	{
 	  *value = p->value;
