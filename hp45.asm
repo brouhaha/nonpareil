@@ -2118,11 +2118,16 @@ fact5:	a + c -> a[w]
 	b -> c[w]
 	0 -> b[wp]
 	shift right b[w]
+	a exchange b[w]
+	a + b -> a[ms]
+	if no carry go to fact3
 	a exchange c[w]
 	b exchange c[x]
 fact6:	c + 1 -> c[x]
 fact7:	jsb nrm20
 tnx3:	0 -> s8
+	select rom 2
+
 shft:	if b[p] = 0
 	     then go to shfr
 	shift right b[wp]
