@@ -57,12 +57,7 @@ void do_pass (int p, FILE *srcf, FILE *listf)
       lineptr = & linebuf [0];
 
       listptr = & listbuf [0];
-
-      if (pass == 2)
-	{
-	  sprintf (listptr, "%3d   ", lineno);
-	  listptr += strlen (listptr);
-	}
+      listbuf [0] = '\0';
 
       objflag = 0;
       targflag = 0;
@@ -72,6 +67,9 @@ void do_pass (int p, FILE *srcf, FILE *listf)
 
       if (pass == 2)
 	{
+	  sprintf (listptr, "%3d   ", lineno);
+	  listptr += strlen (listptr);
+
 	  if (objflag)
 	    {
 	      int i;
