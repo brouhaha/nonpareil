@@ -109,10 +109,18 @@ label:		IDENT ':'	{ do_label ($1); }
 expr		: INTEGER { $$ = $1; }
 		| IDENT { if (pass == 1)
                             $$ = 0;
-                          else if (! lookup_symbol (symtab [group] [rom], $1, &$$))
-			    {
-			      error ("undefined symbol '%s'\n", $1);
-			      $$ = 0;
+                          else
+                            {
+			      symtab_t *table;
+			      if ($1 [0] == '$')
+				table = global_symtab;
+			      else
+				table = symtab [group][rom];
+			      if (! lookup_symbol (table, $1, &$$))
+				{
+				  error ("undefined symbol '%s'\n", $1);
+				  $$ = 0;
+				}
 			    }
 			}
 		;

@@ -1,5 +1,8 @@
 2004-04-04  Eric Smith <eric@brouhaha.com>
 
+	* asm.h asm.c casmy.y wasmy.y: Added a global symbol table for
+	symbols starting with a '$'.
+	
 	* symtab.h symtab.c asm.h asm.c: Cleaned up typedefs, and use separate
 	structs/typedefs for symbol table and symbol.
 

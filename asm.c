@@ -85,6 +85,7 @@ FILE *srcfile  = NULL;
 FILE *objfile  = NULL;
 FILE *listfile = NULL;
 
+symtab_t *global_symtab;
 symtab_t *symtab [MAXGROUP] [MAXROM];  /* separate symbol tables for each ROM */
 
 
@@ -222,6 +223,10 @@ int main (int argc, char *argv[])
       exit (1);
     }
 
+  global_symtab = alloc_symbol_table ();
+  if (! global_symtab)
+    fatal (2, "symbol table allocation failed\n");
+
   for (group = 0; group < MAXGROUP; group++)
     for (rom = 0; rom < MAXROM; rom++)
       {
@@ -275,13 +280,19 @@ void yyerror (char *s)
 void do_label (char *s)
 {
   int prev_val;
+  symtab_t *table;
+
+  if (*s == '$')
+    table = global_symtab;
+  else
+    table = symtab [group][rom];
 
   if (pass == 1)
     {
-      if (! create_symbol (symtab [group] [rom], s, pc, lineno))
+      if (! create_symbol (table, s, pc, lineno))
 	error ("multiply defined symbol '%s'\n", s);
     }
-  else if (! lookup_symbol (symtab [group] [rom], s, & prev_val))
+  else if (! lookup_symbol (table, s, & prev_val))
     error ("undefined symbol '%s'\n", s);
   else if (prev_val != pc)
     error ("phase error for symbol '%s'\n", s);
