@@ -286,7 +286,7 @@ cnvex	a=0
 	return
 	end
 
-	file	cr11
+	file	cri1
 
 	entry	cnvdsp
 	entry	swapmd

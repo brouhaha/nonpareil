@@ -67,9 +67,12 @@ struct sim_handle_t
 
   void (*display_update)(char *buf);
 
-  romword ucode [MAX_GROUP] [MAX_ROM] [ROM_SIZE];
-  uint8_t bpt     [MAX_GROUP] [MAX_ROM] [ROM_SIZE];
-  char *source  [MAX_GROUP] [MAX_ROM] [ROM_SIZE];
+  romword ucode    [MAX_GROUP] [MAX_ROM] [ROM_SIZE];
+  uint8_t bpt      [MAX_GROUP] [MAX_ROM] [ROM_SIZE];
+  uint8_t accessed [MAX_GROUP] [MAX_ROM] [ROM_SIZE];
+  char *source     [MAX_GROUP] [MAX_ROM] [ROM_SIZE];
+
+  uint32_t accessed_count;
 
   void (* op_fcn [1024])(struct sim_handle_t *sim, int opcode);
 
@@ -860,6 +863,7 @@ static void handle_io (struct sim_handle_t *sim)
   if (strcmp (buf, sim->prev_display) != 0)
     {
       sim->display_update (buf);
+      debug_update (sim->accessed_count);
       strncpy (sim->prev_display, buf, sizeof (buf));
     }
 }
@@ -872,6 +876,12 @@ void execute_instruction (struct sim_handle_t *sim)
 
   sim->env.prev_pc = (sim->env.group << 12) | (sim->env.rom << 9) | sim->env.pc;
   opcode = sim->ucode [sim->env.group] [sim->env.rom] [sim->env.pc];
+
+  if (! sim->accessed [sim->env.group] [sim->env.rom] [sim->env.pc])
+    {
+      sim->accessed_count++;
+      sim->accessed [sim->env.group] [sim->env.rom] [sim->env.pc] = 1;
+    }
 
 #if 0
   printf ("%s\n", sim->source [sim->env.group] [sim->env.rom] [sim->env.pc]);
@@ -1204,6 +1214,16 @@ romword sim_read_rom (struct sim_handle_t *sim, int addr)
 }
 
 
+uint32_t sim_get_rom_accessed_count (struct sim_handle_t *sim)
+{
+  uint32_t result;
+
+  g_mutex_lock (sim->sim_mutex);
+  result = sim->accessed_count;
+  g_mutex_unlock (sim->sim_mutex);
+}
+
+
 void sim_read_ram (struct sim_handle_t *sim, int addr, reg_t *val)
 {
   if (addr > sim->env.max_ram)
@@ -1247,3 +1267,5 @@ void sim_set_ext_flag (struct sim_handle_t *sim, int flag, gboolean state)
   sim->env.ext_flag [flag] = state;
   g_mutex_unlock (sim->sim_mutex);
 }
+
+

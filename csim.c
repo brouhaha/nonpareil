@@ -45,6 +45,10 @@ struct sim_handle_t *sim;
 
 GtkWidget *main_window;
 
+GtkWidget *reg_window;
+GtkWidget *reg_vbox;
+GtkWidget *rom_accessed_entry;
+
 
 #define DISPLAY_DIGIT_POSITIONS 15
 int display_digit [DISPLAY_DIGIT_POSITIONS];
@@ -240,6 +244,17 @@ static void display_update (char *buf)
   gdk_window_invalidate_rect (display->window,
 			      & rect,
 			      FALSE);
+}
+
+
+void debug_update (uint32_t rom_accessed_count)
+{
+  /* uint32_t rom_accessed_count; */
+  char buf [11];
+
+  /* rom_accessed_count = sim_get_rom_accessed_count (sim); */
+  sprintf (buf, "%d", rom_accessed_count);
+  gtk_entry_set_text (GTK_ENTRY (rom_accessed_entry), buf);
 }
 
 
@@ -501,7 +516,10 @@ static void help_about (GtkWidget *widget, gpointer data)
 
 void debug_show_reg (GtkWidget *widget, gpointer data)
 {
-  /* $$$ not yet implemented */
+  if (GTK_WIDGET_VISIBLE (reg_window))
+    gtk_widget_hide (reg_window);
+  else
+    gtk_widget_show (reg_window);
 }
 
 
@@ -529,7 +547,7 @@ static GtkItemFactoryEntry menu_items [] =
     { "/Edit/_Copy",    "<control>C", edit_copy,     0, "<StockItem>", GTK_STOCK_COPY },
     { "/Edit/_Paste",   "<control>V", edit_paste,    0, "<StockItem>", GTK_STOCK_PASTE },
     { "/_Debug",        NULL,         NULL,          0, "<Branch>" },
-    { "/Debug/Show Reg", NULL,        debug_show_reg, 0, "<Item>" },
+    { "/Debug/Show registers", NULL,  debug_show_reg, 0, "<ToggleItem>" },
     { "/Debug/Run",     NULL,         debug_run,     0, "<Item>" },
     { "/Debug/Step",    NULL,         debug_step,    0, "<Item>" },
     { "/_Help",         NULL,         NULL,          0, "<LastBranch>" },
@@ -588,6 +606,41 @@ model_info_t *get_model_info (char *model)
 #endif
 
 
+void create_rom_accessed_item (void)
+{
+  GtkWidget *hbox;
+  GtkWidget *label;
+
+  hbox = gtk_hbox_new (FALSE, 1);
+
+  label = gtk_label_new ("ROM locations accessed:");
+  gtk_container_add (GTK_CONTAINER (hbox), label);
+
+  rom_accessed_entry = gtk_entry_new ();
+  gtk_entry_set_editable (GTK_ENTRY (rom_accessed_entry), FALSE);
+  gtk_container_add (GTK_CONTAINER (hbox), rom_accessed_entry);
+
+  gtk_container_add (GTK_CONTAINER (reg_vbox), hbox);
+
+  /* gtk_widget_show_all (hbox); */
+}
+
+
+void create_reg_window (void)
+{
+  reg_window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
+
+  gtk_window_set_title (GTK_WINDOW (reg_window), "registers");
+
+  reg_vbox = gtk_vbox_new (FALSE, 1);
+  gtk_container_add (GTK_CONTAINER (reg_window), reg_vbox);
+
+  create_rom_accessed_item ();
+
+  gtk_widget_show_all (reg_vbox);
+}
+
+
 int main (int argc, char *argv[])
 {
   char *kml_fn = NULL;
@@ -605,11 +658,12 @@ int main (int argc, char *argv[])
   GError *error = NULL;
   GtkWidget *image;
 
+  GdkBitmap *image_mask_bitmap = NULL;
+
   GdkColormap *colormap;
   GdkColor red, black;
 
   char buf [PATH_MAX];
-
  
   progname = newstr (argv [0]);
 
@@ -677,6 +731,22 @@ int main (int argc, char *argv[])
   image_height = gdk_pixbuf_get_height (image_pixbuf);
 
   main_window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
+
+  if (kml->has_transparency)
+    {
+      image_mask_bitmap = (GdkBitmap *) gdk_pixmap_new (GTK_WINDOW (main_window)->frame,
+							image_width,
+							image_height,
+							1);
+      gdk_pixbuf_render_threshold_alpha (image_pixbuf,
+					 image_mask_bitmap,
+					 0, 0,  /* src_x, _y */
+					 0, 0,  /* dest_x, _y */
+					 image_width,
+					 image_height,
+					 kml->transparency_threshold);
+    }
+
   gtk_window_set_resizable (GTK_WINDOW (main_window), FALSE);
 
   gtk_window_set_title (GTK_WINDOW (main_window),
@@ -685,8 +755,11 @@ int main (int argc, char *argv[])
   vbox = gtk_vbox_new (FALSE, 1);
   gtk_container_add (GTK_CONTAINER (main_window), vbox);
 
-  menubar = get_menubar_menu (main_window);
-  gtk_box_pack_start (GTK_BOX (vbox), menubar, FALSE, TRUE, 0);
+  if (! image_mask_bitmap)
+    {
+      menubar = get_menubar_menu (main_window);
+      gtk_box_pack_start (GTK_BOX (vbox), menubar, FALSE, TRUE, 0);
+    }
 
   fixed = gtk_fixed_new ();
   gtk_widget_set_size_request (fixed, image_width, image_height);
@@ -726,6 +799,16 @@ int main (int argc, char *argv[])
 		 kml->display_offset.x,
 		 kml->display_offset.y);
 
+  if (image_mask_bitmap)
+    {
+      gtk_widget_shape_combine_mask (main_window,
+				     image_mask_bitmap,
+				     0,
+				     0);
+
+      gtk_window_set_decorated (GTK_WINDOW (main_window), FALSE);
+    }
+
   gtk_widget_show_all (main_window);
 
   g_signal_connect (G_OBJECT (display),
@@ -737,6 +820,8 @@ int main (int argc, char *argv[])
 		      "destroy",
 		      GTK_SIGNAL_FUNC (quit_callback),
 		      NULL);
+
+  create_reg_window ();
 
   if (! sim_read_listing_file (sim, kml->rom, TRUE))
     fatal (2, "unable to read listing file '%s'\n", kml->rom);

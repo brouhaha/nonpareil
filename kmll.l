@@ -106,6 +106,7 @@ setflag		return (SETFLAG);
 size		return (SIZE);
 switch		return (SWITCH);
 title		return (TITLE);
+transparency	return (TRANSPARENCY);
 type		return (TYPE);
 virtual		return (VIRTUAL);
 zoom		return (ZOOM);

@@ -138,6 +138,8 @@ typedef struct
   char *rom;
   char *patch;
   char *image;
+  int has_transparency;
+  int transparency_threshold;
   int debug;
 
   kml_offset_t background_offset;

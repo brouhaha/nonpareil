@@ -132,6 +132,9 @@ void sim_set_env (struct sim_handle_t *sim,
 romword sim_read_rom (struct sim_handle_t *sim,
 		      int addr);
 
+uint32_t sim_get_rom_accessed_count (struct sim_handle_t *sim);
+
+
 void sim_read_ram (struct sim_handle_t *sim,
 		   int addr,
 		   reg_t *val);
