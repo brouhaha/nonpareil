@@ -8,20 +8,13 @@ CASMSIM consists of the CASM assembler and the CSIM simulator.
 
 IMPORTANT NOTES
 
-Release 0.21 of CASMSIM is an interim development release.  This release
-improves the microinstruction timing in CSIM.
+Release 0.22 of CASMSIM is an interim development release.  This release
+adds host keyboard support and transparency.  Calculator images have been
+provided by David G. Hicks of the Museum of HP Calculators.
 
 CSIM now uses (modified) KML files and the GTK+ toolkit.
 
 In this release, the HP-35, HP-45, HP-55, and HP-80 are simulated.
-
-To use the simulator, you will need suitable digital images (photographs
-or scans) of the calculators you wish to simulate.  No images are provided
-in the release, however suitable ones may be obtained from the Museum of
-HP Calculators:
-    http://www.hpmuseum.org/
-The appropriate image files may be downloaded and renamed to the correct
-names automatically by commands like "make hp45.jpg".
 
 The menu commands other than "Quit" and "About" are not implemented.
 
@@ -53,17 +46,17 @@ instruction is only available in the HP-65.
 The design of the processor and the instruction set are described in
 detail in United States patents 3,863,060 and 4,001,569.
 
-I've typed in the source code from the '569 and '379 patents which
-cover the HP-45 and HP-55 respectively.  The listings in the patents
-were poorly reproduced.  Peter Monta wrote a specialized OCR program
-to verify the listing against the patent, and corrected several
-errors.  The code in the patents might not be identical to that in
-production units; I plan to eventually dump the ROMs from actual
-calculators.
+I've typed in the source code from the '569, '379, and '060 patents
+which cover the HP-45, HP-55, and HP-80 respectively.  The listings in
+the patents were poorly reproduced.  Peter Monta found and corrected
+several errors.  The code in the patents might not be identical to
+that in production units; I plan to eventually dump the ROMs from
+actual calculators.
 
 Peter Monta also *optically* dumped the contents of the HP-35 ROMs,
 and disassembled the resulting code.  I've cleaned it up a bit and
 added labels using the HP-45 source code as a guide.
+        http://www.pmonta.com/calculators/hp-35/
 
 -----------------------------------------------------------------------------
 
@@ -128,11 +121,11 @@ eventually be able to simulate the HP-65.
 CSIM uses the Gtk+ 2.2 toolkit and Glib 2.2.  It should be portable to
 Windows and MacOS X, but has only been tested on Linux.
 
-CSIM uses a single command line argument to specify the KML file.
-If no argument is found, CSIM will try to find a file using the
-concatentation of the name under which it was invoked and
-".kml".  This allows you to (for instance) link CSIM to "hp45" and
-have it automatically try to use "hp45.kml".
+CSIM uses a single command line argument to specify the KML file.  If
+no argument is found, CSIM will try to find a file using the
+concatentation of the name under which it was invoked and ".kml".
+This allows you to (for instance) link CSIM to "hp45" and have it
+automatically try to use "hp45.kml".
 
 CSIM attempts to maintain a simulation speed of 3500 microinstructions
 per second, the nominal rate of the real calculators, so that the
@@ -146,7 +139,7 @@ and burn your eggs.
 If you want to use the undocumented timer mode of the HP-45, there are
 comments in hp45.kml explaining the change necessary to that file.  On
 a real HP-45 this feature was accessed by pressing RCL then the "right
-half of the ENTER key".  The ENTER key actually covered two swithes,
+half of the ENTER key".  The ENTER key actually covered two switches,
 but the key was shaped so that it only pressed the left switch, and
 the ROM was written so the right switch would provide the ENTER
 function as well as allowing use of the timer mode.  It was possible
@@ -157,22 +150,30 @@ button produce the keycode for the right switch.
 
 -----------------------------------------------------------------------------
 
-Credits (and blame)
+Credits:
 
 CASMSIM was originally written by Eric Smith.  Any bugs in it are
-almost certainly my fault.
+my fault.
 
-Peter Monta developed a specialized OCR program for use on the ROM
-listings in the US patents, and found one typo in my HP-45 source code
-and several in my HP-55 source code.  He also provided modifications
-to xio.c to support the HP-55 keyboard.
+Peter Monta provided the HP-35 code.  He also found and corrected
+typographical errors in my entry of the HP-45 and HP-55 source code.
 
-Dave Hicks translated CSIM to Java:
+Images of the HP-35, HP-45, HP-55, and HP-80 are copyrighted by
+David G. Hicks of the Museum of HP Calculators and have been included
+in this package by his permission:
+        http://www.hpmuseum.org/
+
+David G. Hicks translated CSIM to Java:
         http://www.hpmuseum.org/simulate/sim45.htm
+
+Jonathan Purvis ported CSIM to PalmOS:
+        http://one-two-three-four-five.com/palm/csim/
 
 -----------------------------------------------------------------------------
 
-Notices
+Notices:
+
+CASMSIM is not an HP product, and is not endorsed by HP.
 
 CASMSIM is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License version 2 as

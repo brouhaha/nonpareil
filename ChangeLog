@@ -1,3 +1,7 @@
+2004-02-15  Eric Smith <eric@brouhaha.com>
+
+	* Release 0.22.
+	
 2004-02-14  Eric Smith <eric@brouhaha.com>
 
 	* csim.c (main, on_key_event): Fix keyboard event handling so ENTER
