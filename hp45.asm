@@ -1853,6 +1853,290 @@ retnzx:	return
 
 	.rom @06
 
+factz4:	go to fact
+
+err2z1:	go to errr
+
+tdmsz0:	clear status
+	go to tdmszj
+
+oflw:	c + 1 -> c[xs]
+	go to fst1
+
+tenxzj:	jsb tnx3
+errr:	0 -> c[w]
+	clear status
+	1 -> s5
+rnd0z3:	c -> a[w]
+	m -> c
+	a exchange c[w]
+	go to rndx
+
+rnd3:	shift right a[ms]
+	a + 1 -> a[x]
+	if no carry go to rnd3
+rnd4:	13 -> p
+rnd5:	a exchange b[xs]
+	a -> b[xs]
+rnd6:	p - 1 -> p
+	if p # 2
+	     then go to rnd7
+rnof:	0 -> a[w]
+	a - 1 -> a[x]
+rndx:	0 -> b[w]
+	1 -> s8
+	1 -> p
+	a -> b[xs]
+	c -> a[m]
+	shift left a[ms]
+	if a[p] >= 1
+	     then go to rnd4
+	0 -> s8
+	14 -> p
+	c -> a[x]
+	if c[xs] >= 1
+	     then go to rnd3
+rnd1:	p - 1 -> p
+	if p # 2
+	     then go to rnd2
+	go to rnof
+
+rnd2:	a - 1 -> a[x]
+	if no carry go to rnd1
+	go to rnd5
+
+rnd7:	a - 1 -> a[xs]
+	if no carry go to rnd6
+	a -> b[p]
+	p - 1 -> p
+	0 -> a[wp]
+	c -> a[x]
+	a + b -> a[ms]
+	if no carry go to rnd8
+	shift right a[ms]
+	a + 1 -> a[s]
+	a + 1 -> a[x]
+	if s8 # 1
+	     then go to rnd9
+rnd8:	p + 1 -> p
+rnd9:	shift right a[ms]
+	0 -> b[ms]
+	a - 1 -> a[xs]
+	if a[xs] >= 1
+	     then go to rn10
+	go to rnof
+
+rn10:	a + 1 -> a[xs]
+	a exchange b[w]
+	a + 1 -> a[p]
+	a + 1 -> a[p]
+rn11:	shift left a[ms]
+	a - 1 -> a[xs]
+	if no carry go to rn11
+	0 -> a[wp]
+	a - 1 -> a[wp]
+	shift right a[ms]
+	a exchange b[w]
+	if s8 # 1
+	     then go to rnrt
+	a exchange c[x]
+	0 -> b[x]
+	if c[xs] = 0
+	     then go to rtrn
+	0 - c -> c[x]
+	c - 1 -> c[xs]
+rtrn:	a exchange c[x]
+rnrt:	if s5 # 1
+	     then go to ret3
+	go to fst2
+
+	no operation
+	no operation
+	no operation
+	no operation
+	no operation
+	no operation
+	no operation
+	no operation
+	no operation
+	no operation
+	no operation
+
+savezx:	go to save
+
+sav2zx:	go to sav2
+
+adr9z4:	c -> a[w]
+	0 -> c[w]
+	c - 1 -> c[p]
+	c -> data address
+	a exchange c[w]
+	c -> a[w]
+	go to svrt
+
+	no operation
+	no operation
+	no operation
+	no operation
+	no operation
+	no operation
+
+consz4:	go to cons
+
+piiiz4:	jsb push
+	clear status
+	select rom 1
+
+push:	if s7 # 1
+	     then go to pret
+	c -> stack
+pret:	0 -> c[w]
+	return
+
+	no operation
+
+lstxzj:	0 -> s10
+	jsb sav2zx
+fst1:	select rom 3
+
+tdmszj:	jsb rndx
+fst2:	select rom 3
+
+cons:	shift left a[w]
+	shift left a[w]
+	jsb push
+	a - 1 -> a[xs]
+	if no carry go to con7
+	go to lstxzj
+
+con7:	a - 1 -> a[xs]
+	if no carry go to con8
+	load constant 2
+	load constant 5
+	load constant 4
+	go to fst1
+
+con8:	a - 1 -> a[xs]
+	if no carry go to con9
+	load constant 4
+	load constant 5
+	load constant 3
+	load constant 5
+	load constant 9
+	load constant 2
+	load constant 3
+	load constant 7
+	c - 1 -> c[x]
+	jsb fst1
+
+con9:	load constant 3
+	load constant 7
+	load constant 8
+	load constant 5
+	load constant 4
+	load constant 1
+	load constant 1
+	load constant 7
+	load constant 8
+	load constant 4
+	go to fst1
+
+sav2:	0 -> p
+sav1:	shift left a[w]
+	p + 1 -> p
+	if p # 12
+	     then go to sav1
+	0 -> a[s]
+	a exchange c[w]
+	c -> data address
+	0 -> s2
+	data -> c
+	a exchange c[w]
+	0 -> s11
+	0 -> b[w]
+	if s1 # 1
+	     then go to svrt
+	go to adr9z4
+
+save:	a -> b[w]
+	a exchange c[w]
+	0 -> c[w]
+	c -> data address
+	b -> c[w]
+	a exchange c[w]
+	c -> data
+	go to sav2zx
+
+fact:	if c[s] >= 1
+	     then go to errr
+	if c[xs] >= 1
+	     then go to errr
+fac0:	if c[x] >= 1
+	     then go to fac1
+	p - 1 -> p
+	go to fact1
+fac1:	p - 1 -> p
+	if p # 3
+	     then go to fac2
+	go to oflw
+
+fac2:	c - 1 -> c[x]
+	jsb fac0
+nrm20:	select rom 2
+
+fact1:	if c[wp] >= 1
+	     then go to errr
+	a exchange c[x]
+	11 -> p
+	if c[x] = 0
+	     then go to fact2
+	c - 1 -> c[x]
+	if c[x] >= 1
+	     then go to oflw
+	shift left a[w]
+fact2:	a exchange c[w]
+	0 -> a[w]
+	a + 1 -> a[p]
+	0 - c -> c[w]
+	if no carry go to nrm20
+	a exchange c[w]
+	shift right c[w]
+	c + 1 -> c[s]
+fact3:	12 -> p
+	a -> b[ms]
+fact4:	a + c -> a[w]
+	if no carry go to fact4
+	a - c -> a[w]
+	shift left a[w]
+fact5:	a + c -> a[w]
+	if no carry go to fact5
+	a + 1 -> a[s]
+	a exchange b[w]
+	jsb shft
+	11 -> p
+	jsb shft
+	b -> c[w]
+	0 -> b[wp]
+	shift right b[w]
+	a exchange c[w]
+	b exchange c[x]
+fact6:	c + 1 -> c[x]
+fact7:	jsb nrm20
+tnx3:	0 -> s8
+shft:	if b[p] = 0
+	     then go to shfr
+	shift right b[wp]
+	a + 1 -> a[x]
+shfr:	return
+
+svrt:	if s10 # 1
+	     then go to ret3
+ret4:	select rom 4
+
+ret3:	select rom 3
+
+	no operation
+
 	.symtab
 
 	.rom @07
