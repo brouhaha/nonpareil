@@ -1,3 +1,8 @@
+2004-01-12  Eric Smith <eric@brouhaha.com>
+
+	* hp35.asm: replaced octal branch targets with labels.  Added
+	"then" where needed.
+	
 2003-06-02  Peter Monta
 
 	* hp35.asm: dissassembled code extracted by peeling chips
