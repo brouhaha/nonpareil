@@ -18,7 +18,7 @@
 # Boston, MA 02111, USA.
 
 
-HAS_DEBUGGER=1
+#HAS_DEBUGGER=1
 ifdef HAS_DEBUGGER
 #HAS_DEBUGGER_CLI=1
 ifdef HAS_DEBUGGER_CLI
@@ -42,7 +42,7 @@ LDFLAGS = -g
 # -----------------------------------------------------------------------------
 
 PACKAGE = nonpareil
-RELEASE = 0.42
+RELEASE = 0.43
 DISTNAME = $(PACKAGE)-$(RELEASE)
 
 PACKAGES = gtk+-2.0 gdk-2.0 gdk-pixbuf-2.0 glib-2.0 gthread-2.0

@@ -6,7 +6,7 @@ $Id$
 
 News:
 
-Release 0.42 of Nonpareil is an interim development release.
+Release 0.43 of Nonpareil is an interim development release.
 
 In this release, the HP-25, HP-31E, HP-33C, HP-35, HP-37E, HP-41CV, HP-45,
 HP-55, and HP-80 are simulated.
@@ -191,10 +191,13 @@ my fault.
 Peter Monta provided the HP-35 code.  He also found and corrected
 typographical errors in my entry of the HP-45 and HP-55 source code.
 
-Images of the HP-25, HP-33C, HP-35, HP-45, HP-55, and HP-80 are
-copyrighted by David G. Hicks of the Museum of HP Calculators and have
-been included in this package by his permission:
+Images of the HP-25, HP-32E, HP-33C, HP-35, HP-37E, HP-45, HP-55, and
+HP-80 are copyrighted by David G. Hicks of the Museum of HP
+Calculators and have been included in this package by his permission:
         http://www.hpmuseum.org/
+
+The HP-41C image (hp41.png) is a stylized illustration rendered by
+my older NSIM simulator with improvements by Maciej Bartosiak.
 
 David G. Hicks translated the earlier csim HP-45 simulator to Java:
         http://www.hpmuseum.org/simulate/sim45.htm
