@@ -32,8 +32,8 @@ global
 end
 
 background
-	offset 0 0
-	size 303 551
+	offset 14 9
+	size 277 530
 end
 
 display
