@@ -46,9 +46,6 @@ MA 02111, USA.
 #define MAX_INST_BURST 5000
 
 
-typedef uint32_t addr_t;  // $$$ should be somewhere else
-
-
 // Messages sent from GUI thread to simulator thread, and
 // sent back as replies.
 

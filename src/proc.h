@@ -26,6 +26,8 @@ typedef uint8_t digit_t;
 typedef digit_t reg_t [WSIZE];
 
 
+typedef uint32_t addr_t;
+
 typedef uint16_t rom_word_t;
 
 
@@ -41,10 +43,6 @@ typedef struct sim_env_t sim_env_t;
  *
  * ram_size is the count of RAM registers external to the ARC chip,
  * 10 for HP-45, 30 for HP-55.
- *
- * display_update_fn() is a callback invoked whenever the display
- * contents change.  Note that it is called in the simulator thread
- * context, so it will probably have to deal with mutexes.
  */
 sim_t *sim_init  (int platform,
 		  int arch,
