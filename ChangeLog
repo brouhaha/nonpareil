@@ -1,4 +1,4 @@
-2004-04-07  Eric Smith <eric@brouhaha.com>
+2004-04-08  Eric Smith <eric@brouhaha.com>
 
 	* proc_woodstock.c (op_clear_data_regs): The CLEAR DATA REGISTERS
 	instruction only clears the single selected RAM chip (16
