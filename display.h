@@ -66,17 +66,19 @@ typedef void display_update_fn_t (display_handle_t *display_handle,
  * classic series, put the '.' inside the seven segments, and dedicate a
  * full digit position to the radix mark.
  *
- * For fourteen-segment dsiplays, by convention the segments are labelled
- * 'a' through 'n'.  We designate '.' and ',' as 'o' and 'p', respectively.
- * The second dot for the ':' is 'q'.  For instance, see the data sheet for
- * the Noritake AH1616A 14-segment VFD, though that does not have the second
- * dot for the colon.
+ * For fourteen-segment dsiplays, by convention the segments are
+ * labelled 'a' through 'n'.  We designate '.' and ',' as 'o' and 'p',
+ * respectively.  The second dot for the ':' is 'q'.  The segment
+ * designations do not match the HP 1LA4 documentation, but rather are
+ * based on commercial 14-segment displays such as the Noritake
+ * AH1616A 14-segment VFD (though that does not have the second dot
+ * for the colon).
  *
  *     aaaaaaa
- *    fl  i  kb
- *    f l i k b
- *    f  lik  b  qq
- *     ggg hhh   qq
+ *    fl  i  kb  qq
+ *    f l i k b  qq
+ *    f  lik  b
+ *     ggg hhh 
  *    e  njm  c
  *    e n j m c
  *    en  j  mc  oo

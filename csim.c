@@ -67,7 +67,7 @@ static segment_bitmap_t display_segments [KML_MAX_DIGITS];
 
 GtkWidget *display;
 
-GdkBitmap *annunciator_bitmap [KML_MAX_ANNUNCIATOR];
+GdkGC *annunciator_gc [KML_MAX_ANNUNCIATOR];
 
 
 void usage (FILE *f)
@@ -96,12 +96,28 @@ void usage (FILE *f)
 }
 
 
+void draw_annunciator (GtkWidget *widget, int i)
+{
+  gdk_draw_rectangle (widget->window,
+		      annunciator_gc [i],
+		      TRUE,
+#if 1
+		      0, 0, 1000, 1000);
+#else
+		      kml->annunciator [i]->offset.x - kml->display_offset.x,
+		      kml->annunciator [i]->offset.y - kml->display_offset.y,
+		      kml->annunciator [i]->size.width,
+		      kml->annunciator [i]->size.height);
+#endif
+}
+
+
 void draw_digit (GtkWidget *widget, gint x, gint y, segment_bitmap_t segments)
 {
   int i;
 
   for (i = 0; i < KML_MAX_SEGMENT; i++)
-    if (segments & (1 << i))
+    if ((segments & (1 << i)) && (kml->segment [i]))
       {
 	switch (kml->segment [i]->type)
 	  {
@@ -146,6 +162,8 @@ gboolean display_expose_event_callback (GtkWidget *widget,
   for (i = 0; i < kml->display_digits; i++)
     {
       draw_digit (widget, x, kml->digit_offset.y, display_segments [i]);
+      if ((display_segments [i] & SEGMENT_ANN) && kml->annunciator [i])
+	draw_annunciator (widget, i);
       x += kml->digit_size.width;
     }
 
@@ -212,14 +230,58 @@ static void get_pixbuf_pixel (GdkPixbuf *pixbuf, int x, int y,
 }
 
 
+static void print_bitmap (GdkBitmap *bitmap)
+{
+  GdkPixbuf *pixbuf;
+  gint width, height;
+  int x, y;
+  int r, g, b;
+
+  gdk_drawable_get_size (bitmap, & width, & height);
+  printf ("width: %d  height: %d\n", width, height);
+
+  pixbuf = gdk_pixbuf_get_from_drawable (NULL,  /* pixbuf */
+					 bitmap,
+					 NULL,  /* cmap */
+					 0,  /* src x */
+					 0,  /* src y */
+					 0,  /* dest x */
+					 0,  /* dest y */
+					 width,
+					 height);
+
+  for (y = 0; y < height; y++)
+    {
+      for (x = 0; x < width; x++)
+	{
+	  get_pixbuf_pixel (pixbuf, x, y, & r, & g, & b);
+	  if ((r == 0) && (g == 0) && (b == 0))
+	    printf (".");
+	  else if ((r == 255) && (g == 255) && (b == 255))
+	    printf ("*");
+	  else
+	    printf ("?");
+	}
+      printf ("\n");
+    }
+}
+
+
+#define XBM_LSB_LEFT
+// XBM bit order is defined as being MSB left, but
+// gdk_bitmap_create_from_data() uses the data as LSB left.
+
 static void init_annunciator (GdkPixbuf *file_pixbuf, int i)
 {
   int row_bytes;
   char *xbm_data;
   char *p;
+  int bitmask;
+
   int bit;
   int x, y;
   int r, g, b;
+  GdkBitmap *bitmap;
 
   row_bytes = (kml->annunciator [i]->size.width + 7) / 8;
 
@@ -227,6 +289,7 @@ static void init_annunciator (GdkPixbuf *file_pixbuf, int i)
   // $$$ If we don't add at least 9 bytes of padding,
   // gdk_bitmap_create_from_data() will segfault!
 
+#undef ANN_DEBUG
 #ifdef ANN_DEBUG
   printf ("Annunciator %d:\n", i);
   printf ("height: %d  width: %d  row_bytes: %d\n",
@@ -238,7 +301,11 @@ static void init_annunciator (GdkPixbuf *file_pixbuf, int i)
   for (y = 0; y < kml->annunciator [i]->size.height; y++)
     {
       p = & xbm_data [y * row_bytes];
-      bit = 0x80;
+#ifdef XBM_LSB_LEFT
+      bitmask = 0x01;
+#else
+      bitmask = 0x80;
+#endif
       for (x = 0; x < kml->annunciator [i]->size.width; x++)
 	{
 	  get_pixbuf_pixel (file_pixbuf, 
@@ -255,27 +322,55 @@ static void init_annunciator (GdkPixbuf *file_pixbuf, int i)
 	  printf (bit ? "*" : ".");
 #endif
 	  if (bit)
-	    {
-	      (*p) |= bit;
-	    }
-	  bit >>= 1;
-	  if (! bit)
+	    (*p) |= bitmask;
+#ifdef XBM_LSB_LEFT
+	  bitmask <<= 1;
+	  if (bitmask == 0x100)
 	    {
 	      p++;
-	      bit = 0x80;
+	      bitmask = 0x01;
 	    }
+#else
+	  bitmask >>= 1;
+	  if (! bitmask)
+	    {
+	      p++;
+	      bitmask = 0x80;
+	    }
+#endif
 	}
 #ifdef ANN_DEBUG
       printf ("\n");
 #endif
     }
 
-  annunciator_bitmap [i] = gdk_bitmap_create_from_data (NULL,
-							xbm_data,
-							kml->annunciator [i]->size.width,
-							kml->annunciator [i]->size.height);
+#ifdef ANN_DEBUG
+  for (x = 0; x < row_bytes * kml->annunciator [i]->size.height; x++)
+    printf (" %02x", xbm_data [x] & 0xff);
+  printf ("\n");
+#endif
+
+  bitmap = gdk_bitmap_create_from_data (NULL,
+					xbm_data,
+					kml->annunciator [i]->size.width,
+					kml->annunciator [i]->size.height);
+
+#ifdef ANN_DEBUG
+  printf ("bitmap returned for ann %d\n", i);
+  print_bitmap (bitmap);
+#endif
 
   free (xbm_data);
+
+  annunciator_gc [i] = gdk_gc_new (display->window);
+  gdk_gc_copy (annunciator_gc [i],
+	       display->style->fg_gc [GTK_WIDGET_STATE (display)]);
+  gdk_gc_set_clip_mask (annunciator_gc [i], bitmap);
+  gdk_gc_set_clip_origin (annunciator_gc [i],
+			  kml->annunciator [i]->offset.x - kml->display_offset.x,
+			  kml->annunciator [i]->offset.y - kml->display_offset.y);
+  gdk_gc_set_function (annunciator_gc [i], GDK_COPY);
+  gdk_gc_set_fill (annunciator_gc [i], GDK_SOLID);
 }
 
 
