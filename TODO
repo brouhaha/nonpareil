@@ -5,7 +5,11 @@ $Id$
 
 Bugs:
 
-  Multiplication doesn't work on HP-80.
+  Button presses missed
+
+  HP-45: Anomalous stopwatch display (aliasing?)
+
+  HP-80: Multiplication doesn't work
 
 
 Building:
