@@ -111,11 +111,11 @@ SIM_LIBS = $(LOADLIBES)
 
 ROM_SRCS =  $(SRC_CALCS:=.asm)
 ROM_LISTINGS = $(ROM_SRCS:.asm=.lst)
-ROM_OBJS = $(ROM_SRCS:.asm=.obj) $(OBJ_CALCS:=.obj)
+ROM_OBJS = $(ROM_SRCS:.asm=.obj) 
+ROM_OBJS_NOSRC = $(OBJ_CALCS:=.obj)
 
 DIST_FILES = $(MISC) Makefile $(HDRS) $(CSRCS) $(LSRCS) $(YSRCS) \
-	$(ROM_SRCS) $(OBJ_CALCS:=.obj) \
-	$(KML) $(IMAGES)
+	$(ROM_SRCS) $(ROM_OBJS_NOSRC) $(KML) $(IMAGES)
 
 CFLAGS += -DNONPAREIL_RELEASE=$(RELEASE)
 
@@ -130,7 +130,7 @@ hp%: hp%.obj nonpareil
 	ln -s nonpareil $@
 
 
-all: $(TARGETS) $(ALL_CALCS) $(ROM_LISTINGS)
+all: $(TARGETS) $(ALL_CALCS) $(ROM_OBJS) $(ROM_LISTINGS)
 
 
 nonpareil:	$(NONPAREIL_OBJECTS)
