@@ -625,8 +625,6 @@ static void op_load_constant (sim_t *sim, int opcode)
       ;
 #endif
     }
-  else if ((opcode >> 6) > 9)
-    printf ("load constant > 9\n");
   else
     sim->env.c [sim->env.p] = opcode >> 6;
   sim->env.p = (sim->env.p - 1) & 0xf;
@@ -683,14 +681,14 @@ static void op_set_p (sim_t *sim, int opcode)
 static void op_test_p_eq (sim_t *sim, int opcode)
 {
   sim->env.if_flag = 1;
-  sim->env.carry = ! (p_test_map [sim->env.p] == (opcode >> 6));
+  sim->env.carry = ! (sim->env.p == p_test_map [opcode >> 6]);
 }
 
 
 static void op_test_p_ne (sim_t *sim, int opcode)
 {
   sim->env.if_flag = 1;
-  sim->env.carry = ! (p_test_map [sim->env.p] != (opcode >> 6));
+  sim->env.carry = ! (sim->env.p != p_test_map [opcode >> 6]);
 }
 
 
