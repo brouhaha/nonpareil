@@ -246,6 +246,7 @@ void op_arith (int opcode)
       carry = 0;
       break;
     case 0x0d:  /* if c[f] = 0 */
+      carry = 1;
       for (i = first; i <= last; i++)
 	carry &= (c [i] != 0);
       break;
