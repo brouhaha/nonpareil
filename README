@@ -20,6 +20,12 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
 -----------------------------------------------------------------------------
 
+CASM requires a single command line argument to specify the source code file.
+
+CASM currently writes a listing to standard out, and doesn't produce any
+object file at all.  I'll probably have it generate Intel hex or Motorola
+S-record format object files in the next version.
+
 In the HP classic series processor, unlike modern microprocessors, various
 instructions were interpreted by various chips.  The core processor consists
 of the C&T (control and timing), A&R (arithmetic and registers) and the ROM
@@ -66,4 +72,7 @@ form should only be used after arithmetic instructions.
 CASM does a better job of displaying the branch target addresses than the
 HP assembler did.  It will actually show the correct target address based on
 the delayed select instructions, unless the delay instruction is in the last
-word of a page.
+word of a page.  I have added a single directive ".rom" to the
+assembler which can be used to provide the rom number.  This is vaguely
+similar to the origin directive in a typical assembler, except that CASM
+always start assembling code at location 0 of the selected ROM.
