@@ -559,8 +559,10 @@ static void op_keys_to_rom_addr (int opcode)
 
 static void op_rom_addr_to_buf (int opcode)
 {
-  /* I don't know what the heck this instruction is supposed to do! */
+  /* I don't know what this instruction is supposed to do! */
+#if 0
   fprintf (stderr, "rom addr to buf!!!!!!!!!!!!\n");
+#endif
 }
 
 
@@ -618,7 +620,7 @@ static void init_ops (void)
   op_fcn [0x2b4] = op_del_sel_grp;
 
   /* type 4 instructions: ppppff1100 */
-  for (i = 0; i < 15; i ++)
+  for (i = 0; i <= 15; i ++)
     {
       op_fcn [0x00c + (i << 6)] = op_set_p;
       op_fcn [0x02c + (i << 6)] = op_test_p;
