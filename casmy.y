@@ -1,6 +1,6 @@
 /*
 casm.y: grammar
-$Id: casmy.y,v 1.11 2003/05/30 23:38:12 eric Exp $
+$Id$
 Copyright 1995 Eric L. Smith
 
 CASM is an assembler for the processor used in the HP "Classic" series
@@ -42,6 +42,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 %token ARROW
 
 %token <integer> STATBIT
+%token <integer> FLAGBIT
 
 %token A B C M P
 
@@ -135,6 +136,7 @@ instruction	: jsb_inst
 	        | goto_inst
 	        | arith_inst
 		| status_inst
+		| flag_inst
 	        | pointer_inst
 		| misc_inst
 	        ;
@@ -273,6 +275,11 @@ inst_tst_stat_n : IF STATBIT '#' expr { $4 = range ($4, 1, 1);
                                         emit_test (($2 << 6) | 0x014); } ;
 inst_tst_stat_e : IF STATBIT '=' expr { $4 = range ($4, 0, 0);
                                         emit_test (($2 << 6) | 0x014); } ;
+
+flag_inst	: inst_set_flag ;
+
+inst_set_flag	: expr ARROW FLAGBIT { $1 = range ($1, 0, 1);
+                                  emit (($3 << 7) | ($1 ? 0x020 : 0x060)); } ;
 
 pointer_inst    : inst_load_p
                 | inst_test_p

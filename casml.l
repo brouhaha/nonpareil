@@ -66,6 +66,8 @@ rb		\]
 [sS][0-9]		{ yylval.integer = atoi (yytext+1); return STATBIT; }
 [sS]1[0-1]		{ yylval.integer = atoi (yytext+1); return STATBIT; }
 
+[fF][0-7]		{ yylval.integer = atoi (yytext+1); return FLAGBIT; }
+
 {alpha}{alphanum}*	{
                           if ((yylval.integer = keyword (yytext)))
                             return yylval.integer;
