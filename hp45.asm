@@ -1210,3 +1210,359 @@ fst5:	1 -> s7
 retnzx:	return
 
 	.symtab
+
+; HP-45 ROM 04 source from United States Patent 4,001,569
+; keyed in by Eric Smith on 3/9/95 - any errors are probably mine
+
+	.rom @04
+
+prfx:	no operation
+prfxz3:	go to pfx1
+
+sci1:	go to sci2
+
+tenx:	go to tnx2
+
+logg:	go to log2
+
+tnx3:	select rom 6
+
+xtoy:	jsb save
+	go to xty1
+
+dpct:	go to dpc1
+
+percz3:	go to pct1
+
+dmst:	0 -> s8
+tdms:	go to tdm1
+
+stdd:	go to std1
+
+dmsd:	select rom 0
+
+fact:	jsb save
+	go to fac2
+
+tdm1:	jsb save
+	go to dmsd
+
+dig6:	go to dsp0
+dig5:	go to dsp0
+dig4:	go to dsp0
+
+sig2:	select rom 5
+
+addd:	no operation
+adddz3:	go to amd1
+
+tpolz0:	go to tpl3
+
+	no operation
+
+dig3:	go to dsp0
+dig2:	go to dsp0
+dig1:	go to dsp0
+
+	no operation
+
+mult:	no operation
+multz3:	go to amd4
+
+std1:	jsb sav1
+	select rom 5
+
+sigmz3:	go to sgma
+
+dspt:	go to piii
+
+dig0:	go to cons
+	no operation
+
+divdz3:	go to amd5
+
+atn2:	1 -> s5
+atan:	jsb sav9
+	go to sqt1
+
+acos:	go to acs1
+
+asin:	go to atn2
+
+trec:	go to trc1
+
+tpolz3:	go to tpl1
+
+sqrt:	jsb save
+	go to sqt1
+
+	no operation
+	no operation
+
+dig9:	a + 1 -> a[w]
+dig8:	a + 1 -> a[w]
+dig7:	if no carry go to con1
+
+tpl6:	select rom 5
+
+subt:	no operation
+subtz3:	go to amd2
+
+cler:	jsb save
+	go to clr2
+
+grad:	a + 1 -> a[w]
+radn:	if no carry go to mode
+
+clok:	no operation
+	no operation
+degr:	a - 1 -> a[w]
+mode:	0 -> p
+	go to shft
+
+sqt1:	select rom 3
+
+pct1:	jsb sav1
+	0 -> s8
+c100:	down rotate
+	c -> stack
+	c - 1 -> c[x]
+	c - 1 -> c[x]
+	if s8 # 1
+mul0z3:	     then go to mul0
+div0z3:	go to div0
+
+acs1:	jsb sav9
+	select rom 3
+
+trc2:	select rom 3
+
+shft:	shift left a[w]
+	p + 1 -> p
+	if p # 13
+	     then go to shft
+mrg0:	c exchange m
+	a exchange c[p]
+mreg:	c exchange m
+	select rom 3
+
+	no operation
+	no operation
+
+log2:	1 -> s5
+	select rom 3
+
+xty1:	jsb exch
+	select rom 3
+
+sci2:	0 -> s10
+	select rom 3
+
+sav9:	1 -> s1
+	go to save
+
+sav1:	1 -> s3
+save:	1 -> s10
+	select rom 6
+
+savx:	select rom 6
+
+adr9:	select rom 6
+
+sav2:	1 -> s10
+	1 -> s3
+	go to savx
+
+amd1:	1 -> s6
+	1 -> s4
+	go to amd7
+
+amd2:	0 -> s6
+amd3:	1 -> s4
+	go to amd7
+
+amd4:	1 -> s6
+	go to amd6
+
+con1:	a + 1 -> a[w]
+cons:	select rom 6
+
+piii:	select rom 6
+
+amd5:	0 -> s6
+amd6:	0 -> s4
+amd7:	if s2 # 1
+	     then go to amd8
+	0 -> s10
+	select rom 3
+
+am13:	0 -> s10
+	select rom 5
+
+	no operation
+
+amd9z3:	go to amd9
+
+	no operation
+
+fst1:	select rom 3
+
+amd8:	jsb save
+	stack -> a
+	go to am13
+
+dsp0:	0 -> s10
+	go to dspx
+
+pfx1:	1 -> s10
+dspx:	0 -> s9
+	select rom 3
+
+exch:	stack -> a
+exc1:	c -> stack
+	a exchange c[w]
+	return
+
+amd9:	if s9 # 1
+	     then go to am12
+am10:	jsb sav1
+am11:	a exchange c[w]
+	go to am13
+
+am12:	jsb sav2
+	c -> data
+	go to am11
+
+trc1:	jsb sav9
+	stack -> a
+	1 -> s3
+	0 -> s10
+	go to trc2
+
+dpc1:	jsb sav1
+	down rotate
+	c -> stack
+	jsb sub1
+	go to c100
+
+	no operation
+	no operation
+
+rcxy:	select rom 5
+
+tkraz3:	keys -> rom address
+
+div0:	0 -> s3
+	go to div1
+
+mul0:	0 -> s3
+mul1:	select rom 1
+
+div1:	select rom 1
+
+sub1:	0 - c - 1 -> c[s]
+add1:	select rom 0
+
+tpl1:	jsb sav9
+	1 -> s3
+	0 -> s4
+	if c[s] = 0
+	     then go to tpl2
+	1 -> s4
+tpl2:	down rotate
+	jsb exc1
+	if a[m] >= 1
+	     then go to tpl6
+	0 -> c[wp]
+	c + 1 -> c[p]
+	jsb tpl6
+
+tpl3:	0 -> s1
+	jsb exch
+	c -> a[w]
+	jsb mul1
+	c -> data
+	jsb rest
+	jsb adr9
+	jsb mul1
+	data -> c
+	jsb add1
+	a - 1 -> a[xs]
+	a - 1 -> a[xs]
+	a - 1 -> a[xs]
+	if no carry go to tpl5
+	c - 1 -> c[xs]
+	jsb reg9
+
+tpl5:	c -> a[w]
+	jsb sqt1
+	go to reg9	
+
+tnx2:	jsb save
+	1 -> s2
+	go to tnx3
+
+rest:	0 -> c[w]
+	c -> data address
+	no operation
+	data -> c
+	return
+
+sgma:	if s9 # 1
+	     then go to sig1
+	go to rcxy
+
+sig1:	jsb sav1
+	go to sig2
+
+	no operation
+	no operation
+	no operation
+	no operation
+	no operation
+	no operation
+	no operation
+	no operation
+	no operation
+	no operation
+	no operation
+	no operation
+	no operation
+	no operation
+	no operation
+	no operation
+	no operation
+	no operation
+	no operation
+	no operation
+	no operation
+	no operation
+	no operation
+	no operation
+	no operation
+	no operation
+	no operation
+	no operation
+
+reg9:	select rom 0
+
+	no operation
+	no operation
+	no operation
+
+clr2:	select rom 5
+
+	no operation
+	no operation
+	no operation
+	no operation
+	no operation
+	no operation
+	no operation
+	no operation
+
+retnzx:	return
+
+fac2:	select rom 6
+
+	.symtab
