@@ -94,14 +94,14 @@ MISC = COPYING README ChangeLog
 KML = $(ALL_CALCS:=.kml)
 IMAGES = $(ALL_CALCS:=.png)
 
-AUTO_CSRCS = $(LSRCS:.l=.c) $(YSRCS:.y=.tab.c)
-AUTO_HDRS = $(YSRCS:.y=.tab.h)
+AUTO_CSRCS = $(LSRCS:.l=.c) $(YSRCS:.y=.c)
+AUTO_HDRS = $(YSRCS:.y=.h)
 AUTO_MISC = $(YSRCS:.y=.output)
 
 UASM_OBJECTS = asm.o symtab.o util.o arch.o \
-	asml.o asmy.tab.o casml.o casmy.tab.o wasml.o wasmy.tab.o
+	asml.o asmy.o casml.o casmy.o wasml.o wasmy.o
 
-NONPAREIL_OBJECTS = csim.o util.o proc.o kmll.o kmly.tab.o kml.o \
+NONPAREIL_OBJECTS = csim.o util.o proc.o kmll.o kmly.o kml.o \
 	arch.o platform.o model.o \
 	proc_classic.o \
 	proc_woodstock.o dis_woodstock.o \
@@ -124,11 +124,11 @@ DIST_FILES = $(MISC) Makefile $(HDRS) $(CSRCS) $(LSRCS) $(YSRCS) \
 
 CFLAGS += -DNONPAREIL_RELEASE=$(RELEASE)
 
-%.tab.c %.tab.h %.output: %.y
-	$(YACC) $(YFLAGS) $<
+%.c %.h %.output: %.y
+	$(YACC) $(YFLAGS) $< -o $*.c
 
 %.obj %.lst: %.asm uasm
-	./uasm $<
+	./uasm $< -o $*.obj -l $*.lst
 
 hp%: hp%.obj nonpareil
 	rm -f $@
