@@ -38,11 +38,6 @@ sim_state_t sim_state = SIM_IDLE;
 sim_env_t sim_env;
 
 
-#define MAX_RAM 100
-int max_ram;
-reg_t ram [MAX_RAM];
-
-
 void (*display_update)(char *buf);
 
 
@@ -383,12 +378,11 @@ static void op_m_to_c (int opcode)
 
 static void op_c_to_addr (int opcode)
 {
-#ifdef HP55
-  sim_env.ram_addr = sim_env.c [12] * 10 + sim_env.c [11];
-#else
-  sim_env.ram_addr = sim_env.c [12];
-#endif
-  if (sim_env.ram_addr >= max_ram)
+  if (sim_env.max_ram > 10)
+    sim_env.ram_addr = sim_env.c [12] * 10 + sim_env.c [11];
+  else
+    sim_env.ram_addr = sim_env.c [12];
+  if (sim_env.ram_addr >= sim_env.max_ram)
     printf ("c -> ram addr: address %d out of range\n", sim_env.ram_addr);
 }
 
@@ -396,20 +390,20 @@ static void op_c_to_addr (int opcode)
 static void op_c_to_data (int opcode)
 {
   int i;
-  if (sim_env.ram_addr >= max_ram)
+  if (sim_env.ram_addr >= sim_env.max_ram)
     {
       printf ("c -> data: address %d out of range\n", sim_env.ram_addr);
       return;
     }
   for (i = 0; i < WSIZE; i++)
-    ram [sim_env.ram_addr] [i] = sim_env.c [i];
+    sim_env.ram [sim_env.ram_addr] [i] = sim_env.c [i];
 }
 
 
 static void op_data_to_c (int opcode)
 {
   int i;
-  if (sim_env.ram_addr >= max_ram)
+  if (sim_env.ram_addr >= sim_env.max_ram)
     {
       printf ("data -> c: address %d out of range, loading 0\n", sim_env.ram_addr);
       for (i = 0; i < WSIZE; i++)
@@ -417,7 +411,7 @@ static void op_data_to_c (int opcode)
       return;
     }
   for (i = 0; i < WSIZE; i++)
-    sim_env.c [i] = ram [sim_env.ram_addr] [i];
+    sim_env.c [i] = sim_env.ram [sim_env.ram_addr] [i];
 }
 
 
@@ -979,12 +973,15 @@ void sim_init (int ram_size,
   init_breakpoints ();
   init_source ();
 
-  max_ram = ram_size;
+  memset ((char *) & sim_env, 0, sizeof (sim_env_t));
+
+  sim_env.max_ram = ram_size;
+  sim_env.ram = alloc (ram_size * sizeof (reg_t));
+
   display_update = display_update_fn;
 
   sim_state = SIM_IDLE;
 
-  memset ((char *) & sim_env, 0, sizeof (sim_env_t));
   sim_env.key_buf = -1;  /* no key has been pressed */
 
   cycle_count = 0;
@@ -1121,20 +1118,20 @@ romword sim_read_rom (int addr)
 
 void sim_read_ram (int addr, reg_t *val)
 {
-  if (addr > MAX_RAM)
+  if (addr > sim_env.max_ram)
     fatal (2, "sim_read_ram: address %d out of range\n", addr);
   g_mutex_lock (sim_mutex);
-  memcpy (val, & ram [addr], sizeof (reg_t));
+  memcpy (val, & sim_env.ram [addr], sizeof (reg_t));
   g_mutex_unlock (sim_mutex);
 }
 
 
 void sim_write_ram (int addr, reg_t *val)
 {
-  if (addr > MAX_RAM)
+  if (addr > sim_env.max_ram)
     fatal (2, "sim_write_ram: address %d out of range\n", addr);
   g_mutex_lock (sim_mutex);
-  memcpy (& ram [addr], val, sizeof (reg_t));
+  memcpy (& sim_env.ram [addr], val, sizeof (reg_t));
   g_mutex_unlock (sim_mutex);
 }
 

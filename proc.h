@@ -63,6 +63,9 @@ typedef struct
 
   int ram_addr;  /* selected RAM address */
 
+  int max_ram;
+  reg_t *ram;
+
   uint8_t pc;
   uint8_t rom;
   uint8_t group;

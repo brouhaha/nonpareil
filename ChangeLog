@@ -1,5 +1,12 @@
 2004-01-18  Eric Smith <eric@brouhaha.com>
 
+	* proc.h proc.c (op_c_to_addr, op_c_to_data, op_data_to_c,
+	sim_init, sim_read_ram, sim_write_ram): Moved ram and max_ram into
+	sim_env.  Determine how many digits to use for address based on
+	max_ram.
+	
+	* proc.h proc.c: Added external flag support.
+	
 	* kml.h kml.c csim.c: Added --kmldebug option.
 	
 	* kml.h kml.c kmll.l kmly.y: Added "switch" section.
