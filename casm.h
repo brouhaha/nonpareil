@@ -58,10 +58,8 @@ void do_label (char *s);
 
 void emit       (int op);  /* use for instructions that never set carry */
 void emit_arith (int op);  /* use for arithmetic instructions that may set carry */
-void emit_test  (int op);  /* use for test instructions that
+void emit_test  (int op);  /* use for test instructions */
 
-
-void etarget (int targrom, int targpc);  /* for branch target info */
 
 /*
  * Check that val is in the range [min, max].  If so, return val.
