@@ -41,6 +41,7 @@ int octal_escape (char *p);
 %option case-insensitive
 
 octaldig	[0-7]
+hexdig		[0-9a-fA-F]
 digit		[0-9]
 alpha		[a-zA-Z]
 
@@ -49,6 +50,7 @@ alpha		[a-zA-Z]
 [1-9]{digit}*	{ yylval.integer = atoi (yytext); return INTEGER; }
 0{octaldig}*	{ sscanf (yytext+1, "%o", &yylval.integer); return INTEGER; }
 @{octaldig}+	{ sscanf (yytext+1, "%o", &yylval.integer); return INTEGER; }
+0x{hexdig}+	{ sscanf (yytext, "%x", &yylval.integer); return INTEGER; }
 
 \"[^\"\n]*\"	{ yylval.string = newstrn (yytext + 1, strlen (yytext + 1) - 1);
                   return STRING; }

@@ -1,3 +1,7 @@
+2004-01-17  Eric Smith <eric@brouhaha.com>
+
+	* kmll.l: Allow hexadecimal constants (leading "0x").
+	
 2004-01-16  Eric Smith <eric@brouhaha.com>
 
 	* util.h util.c (alloc, newstrn): New functions.
