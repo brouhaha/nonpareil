@@ -135,7 +135,7 @@ void free_kml (kml_t *kml)
 }
 
 
-static print_kml_string (FILE *f, char *name, char *val)
+static void print_kml_string (FILE *f, char *name, char *val)
 {
   if (name)
     fprintf (f, "\t%s \"%s\"\n", name, val);
