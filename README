@@ -4,21 +4,29 @@ $Id$
 
 -----------------------------------------------------------------------------
 
-IMPORTANT NOTES
+News:
 
-Release 0.30 of Nonpareil is an interim development release.  This release
-adds host keyboard support and transparency.  Calculator images have been
-provided by David G. Hicks of the Museum of HP Calculators.
+Release 0.30 of Nonpareil is an interim development release.
 
-CSIM now uses (modified) KML files and the GTK+ toolkit.
-
-In this release, the HP-35, HP-45, HP-55, and HP-80 are simulated.
+In this release, the HP-25, HP-35, HP-45, HP-55, and HP-80 are
+simulated.
 
 The menu commands other than "Quit" and "About" are not implemented.
 
+There are a few known bugs in the simulations:
+
+* The HP-55 simulation does not correctly support user registers
+  .0 through .9.
+
+* The HP-25 logarithmic and exponential functions do not work correctly.
+
 -----------------------------------------------------------------------------
 
-Background
+Background:
+
+Nonpareil is a microcode-level simulator for electronic calculators.
+Currently it is able to simulate some of the HP Classic and Woodstock
+series calculators.
 
 The HP-35, the first of HP's classic series of handheld calculators,
 was introduced in 1972 and described as the "Electronic Slide Rule".
@@ -30,7 +38,7 @@ calculators used essentially the same processor, which was also used
 in the HP 3380 Integrator, the HP 5830 and HP 5840 Gas Chromatographs,
 and the HP 1722 Oscilliscope.
 
-In the HP classic series processor, unlike modern microprocessors,
+In the HP Classic series processor, unlike modern microprocessors,
 various instructions were interpreted by various chips.  The core
 processor consists of the C&T (control and timing), A&R (arithmetic
 and registers) and the ROM or QUAD ROM chips.  Additions chips may be
@@ -56,83 +64,42 @@ and disassembled the resulting code.  I've cleaned it up a bit and
 added labels using the HP-45 source code as a guide.
         http://www.pmonta.com/calculators/hp-35/
 
------------------------------------------------------------------------------
-
-CASM
-
-I used GNU tools to build CASM.  Originally I used GCC 2.5.8, Flex
-2.4.7, Bison 1.22, and Make 3.71.  Most recently I'm using GCC 3.3.2,
-Flex 2.5.4a, Bison 1.875, and Make 3.79.1.  Flex versions prior to
-2.4.2 will not work.
-
-CASM requires a single command line argument to specify the source
-code file.
-
-CASM derives names for the object and listing files from the source
-filename by replacing the extension (everything after the last dot,
-typically "asm") with "obj" or "lst".  If the source filename doesn't
-have an extension CASM adds one.  The object file format is one word
-per line with the five digit octal address, a colon and the
-instruction word in hexadecimal.
-
-I personally prefer my assembly source code to be in all lower case,
-so it doesn't look like it is shouting at me.  All the source code I
-have typed in from patents is in lower case, but CASM is case
-insensitive so if you prefer emphatic source code be my guest.
-
-CASM considers the keywords which are used to form instructions to be
-reserved words, so they can't be used as labels.  HP's assembler was
-more flexible in this regard; I had to change the label "go" in the
-HP-55 source code to "go_".
-
-CASM does a better job of displaying the branch target addresses than
-the HP assembler did.  It will actually show the correct target
-address based on the delayed select instructions, unless the delay
-instruction is in the last word of a page.  CASM has a ".rom"
-directive which can be used to provide the rom number.  This is
-roughly equivalent to the origin directive in a typical assembler,
-except that CASM always start assembling code at location 0 of the
-selected ROM.
-
-Because HP assembled each ROM separately, they were able to use the
-same symbols in multiple ROMs.  CASM therefore has a separate name
-space and keeps a separate symbol table for each ROM.
-
-CASM has a .symtab directive which causes the symbol table to be
-printed to the listing file.  If the source file contains multiple
-ROMs, each ROM should have its own .symtab directive.
-
-The file "hp55.asm" when assembled with CASM will produce one warning,
-which will be printed to standard out twice (once during each pass).
-This warning can be ignored as it is the result of CASM being pickier
-than the HP assembler about forms of the "go to" instruction.
+In 1975 HP introduced their second generation handheld calculators,
+known internally as the Woodstock series.  These use an improved
+processor architecture described in the article "Inside the New Pocket
+Calculators" in the November 1975 issue of Hewlett-Packard Journal.
+An online copy of this article is available from the Museum of HP
+Calculators:
+        http://www.hpmuseum.org/journals/woodb.htm
 
 -----------------------------------------------------------------------------
 
-CSIM
+Nonpareil simulator:
 
-CSIM is a simulator for the hardware of the HP Classic series of
-calculators.  It should be capable of simulating the HP-35, HP-45,
-HP-55, HP-70, and HP-80.  With some additional work it should
-eventually be able to simulate the HP-65.
+Nonpareil is a microcode-level simulator for the hardware of the HP
+Classic and Woodstock series of calculators.  It should be capable of
+simulating the following calculators:
 
-CSIM uses the Gtk+ 2.2 toolkit and Glib 2.2.  It should be portable to
-Windows and MacOS X, but has only been tested on Linux.
+  Classic series:  HP-35, HP-45, HP-55, HP-70, HP-80
+  Woodstock series:  HP-21, HP-22, HP-25, HP-25C, HP-27, HP-29C
 
-CSIM uses a single command line argument to specify the KML file.  If
-no argument is found, CSIM will try to find a file using the
+Nonpareil uses the Gtk+ 2.2 toolkit and Glib 2.2.  It should be
+portable to Windows and MacOS X, but has only been tested on Linux.
+
+Nonpareil uses a single command line argument to specify the KML file.
+If no argument is found, nonpareil will try to find a file using the
 concatentation of the name under which it was invoked and ".kml".
-This allows you to (for instance) link CSIM to "hp45" and have it
+This allows you to (for instance) link nonpareil to "hp45" and have it
 automatically try to use "hp45.kml".
 
-CSIM attempts to maintain a simulation speed of 3500 microinstructions
-per second, the nominal rate of the real calculators, so that the
-HP-55 timer mode runs at roughly the correct rate.  Other than the
-HP-55, the calculators used an LC oscillator that was not very
-accurate.  On a computer that is heavily loaded, the microinstruction
-rate will be reduced, so the HP-55 timer mode (and the undocumented
-HP-45 timer mode) will run slow.  Don't blame me if you try to use it
-and burn your eggs.
+Nonpareil attempts to maintain a simulation speed of 3500
+microinstructions per second, the nominal rate of the real
+calculators, so that the HP-55 timer mode runs at roughly the correct
+rate.  Other than the HP-55, the calculators used an LC oscillator
+that was not very accurate.  On a computer that is heavily loaded, the
+microinstruction rate will be reduced, so the HP-55 timer mode (and
+the undocumented HP-45 timer mode) will run slow.  Don't blame me if
+you try to use it and burn your eggs.
 
 If you want to use the undocumented timer mode of the HP-45, there are
 comments in hp45.kml explaining the change necessary to that file.  On
@@ -142,29 +109,84 @@ but the key was shaped so that it only pressed the left switch, and
 the ROM was written so the right switch would provide the ENTER
 function as well as allowing use of the timer mode.  It was possible
 to either put a shim on the key, or to create a a phantom keystroke by
-simultaneously pressing CHS, 7, and 8.  CSIM doesn't support multiple
+simultaneously pressing CHS, 7, and 8.  Nonpareil doesn't support multiple
 key presses at all, so the KML change makes the simulator's ENTER
 button produce the keycode for the right switch.
 
 -----------------------------------------------------------------------------
 
+Uasm microassembler:
+
+Uasm requires a single command line argument to specify the source
+code file.
+
+Uasm derives names for the object and listing files from the source
+filename by replacing the extension (everything after the last dot,
+typically "asm") with "obj" or "lst".  If the source filename doesn't
+have an extension uasm adds one.  The object file format is one word
+per line with the five digit octal address, a colon and the
+instruction word in hexadecimal.
+
+I personally prefer my assembly source code to be in all lower case,
+so it doesn't look like it is shouting at me.  All the source code I
+have typed in from patents is in lower case, but uasm is case
+insensitive so if you prefer emphatic source code be my guest.
+
+Uasm considers the keywords which are used to form instructions to be
+reserved words, so they can't be used as labels.  HP's assembler was
+more flexible in this regard; I had to change the label "go" in the
+HP-55 source code to "go_".
+
+Uasm does a better job of displaying the branch target addresses than
+the HP assembler did.  It will actually show the correct target
+address based on the delayed select instructions, unless the delay
+instruction is in the last word of a page.  Uasm has a ".rom"
+directive which can be used to provide the rom number.  This is
+roughly equivalent to the origin directive in a typical assembler,
+except that uasm always start assembling code at location 0 of the
+selected ROM.
+
+Because HP assembled each ROM separately, they were able to use the
+same symbols in multiple ROMs.  uasm therefore has a separate name
+space and keeps a separate symbol table for each ROM.
+
+Uasm has a .symtab directive which causes the symbol table to be
+printed to the listing file.  If the source file contains multiple
+ROMs, each ROM should have its own .symtab directive.
+
+The file "hp55.asm" when assembled with uasm will produce one warning,
+which will be printed to standard out twice (once during each pass).
+This warning can be ignored as it is the result of uasm being pickier
+than the HP assembler about forms of the "go to" instruction.
+
+-----------------------------------------------------------------------------
+
+Development tools:
+
+I used GNU tools to build nonpareil and uasm.  Originally I used GCC
+2.5.8, Flex 2.4.7, Bison 1.22, and Make 3.71.  Most recently I'm using
+GCC 3.3.2, Flex 2.5.4a, Bison 1.875, and Make 3.79.1.  Flex versions
+prior to 2.4.2 will not work.
+
+-----------------------------------------------------------------------------
+
 Credits:
 
-CASMSIM was originally written by Eric Smith.  Any bugs in it are
+Nonpareil was originally written by Eric Smith.  Any bugs in it are
 my fault.
 
 Peter Monta provided the HP-35 code.  He also found and corrected
 typographical errors in my entry of the HP-45 and HP-55 source code.
 
-Images of the HP-35, HP-45, HP-55, and HP-80 are copyrighted by
+Images of the HP-25, HP-35, HP-45, HP-55, and HP-80 are copyrighted by
 David G. Hicks of the Museum of HP Calculators and have been included
 in this package by his permission:
         http://www.hpmuseum.org/
 
-David G. Hicks translated CSIM to Java:
+David G. Hicks translated the earlier csim HP-45 simulator to Java:
         http://www.hpmuseum.org/simulate/sim45.htm
 
-Jonathan Purvis ported CSIM to PalmOS:
+Jonathan Purvis ported csim to PalmOS:
         http://one-two-three-four-five.com/palm/csim/
 
 -----------------------------------------------------------------------------

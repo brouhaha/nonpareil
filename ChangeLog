@@ -1,5 +1,10 @@
 2004-04-04  Eric Smith <eric@brouhaha.com>
 
+	* all files: Merged from Woodstock branch.  This changed all files.
+	The package has been renamed "nonpareil".
+
+2004-04-04  Eric Smith <eric@brouhaha.com>
+
 	* asm.h asm.c arch.h arch.c casmy.y wasmy.y csim.c Makefile: Added
 	architecture and platform definitions.  Move model table from csim
 	into arch.  Use architecture-specific listing file format.
