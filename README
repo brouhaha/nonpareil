@@ -8,7 +8,7 @@ CASMSIM consists of the CASM assembler and the CSIM simulator.
 
 IMPORTANT NOTES
 
-Release 0.20 of CASMSIM is an interim development release.  This release
+Release 0.21 of CASMSIM is an interim development release.  This release
 improves the microinstruction timing in CSIM.
 
 CSIM now uses (modified) KML files and the GTK+ toolkit.

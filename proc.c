@@ -1014,10 +1014,6 @@ struct sim_handle_t *sim_init (int ram_size,
 {
   struct sim_handle_t *sim;
 
-  printf ("UINST_PER_SEC: %d\n", UINST_PER_SEC);
-  printf ("JIFFY_PER_SEC: %d\n", JIFFY_PER_SEC);
-  printf ("UINST_USEC: %f\n", UINST_USEC);
-
   sim = alloc (sizeof (struct sim_handle_t));
   sim->prev_state = SIM_UNKNOWN;
   sim->state = SIM_IDLE;
