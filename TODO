@@ -60,7 +60,8 @@ Debugger:
 Internals:
 
   Use Glib asynchronous queues for communication between GUI and simulator
-  threads, rather than mutexes and conditions.
+  threads, rather than mutexes and conditions.  Use g_main_context_wakeup(NULL)
+  and a custom g_source to notify GUI task.
 
   Use io_count to improve display update timing (already done in nut, add to
   classic and woodstock).
