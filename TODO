@@ -1,13 +1,8 @@
 TODO list for CASMSIM
 Eric L. Smith
-3/24/95
-
-Implement HP-55 keyboard legends
+$Id$
 
 Dump actual HP-45 and HP-55 ROMs and compare to CASM output
-
-Dump HP-35 ROMs
-Implement HP-35 keyboard legends
 
 Key in partial HP-65 source code from patent
 Dump HP-65 ROMs
@@ -33,8 +28,6 @@ Implement debugging in CSIM
 		break
 		quit
 		print
-
-Write Imakefile
 
 Pretty up the display
 	Implement seven-segment LED font
