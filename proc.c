@@ -73,7 +73,7 @@ struct sim_t
 
   void (* op_fcn [1024])(struct sim_t *sim, int opcode);
 
-  char prev_display [WSIZE + 2];
+  char prev_display [25];
 };
 
 
@@ -972,14 +972,14 @@ static char display_char [16] = "0123456789rHoPE ";
 
 static void handle_io (sim_t *sim)
 {
-  char buf [24];
+  char buf [25];
   char *bp;
   int i;
 
   bp = & buf [0];
   if (sim->env.display_enable)
     {
-      for (i = WSIZE; i >= 2; i--)  /* 12 digits rather than 14 */
+      for (i = WSIZE - 1; i >= 2; i--)  /* 12 digits rather than 14 */
 	{
 	  if (sim->env.b [i] & 2)
 	    {
