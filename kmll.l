@@ -36,6 +36,11 @@ int octal_escape (char *p);
 
 #define MAX_STR_CONST 300
 
+#define MAX_INCLUDE_DEPTH 10
+
+int include_stack_ptr = 0;
+YY_BUFFER_STATE include_stack [MAX_INCLUDE_DEPTH];
+
 %}
 
 %option case-insensitive
@@ -82,8 +87,9 @@ flag		return (FLAG);
 global		return (GLOBAL);
 hardware	return (HARDWARE);
 ifflag		return (IFFLAG);
-image		return (IMAGE);
 ifpressed	return (IFPRESSED);
+image		return (IMAGE);
+include		return (INCLUDE);
 keycode		return (KEYCODE);
 lcd		return (LCD);
 map		return (MAP);
@@ -115,7 +121,28 @@ zoom		return (ZOOM);
 
 .		yyerror ("invalid character");
 
+<<EOF>>		{
+		  if (--include_stack_ptr < 0)
+		    yyterminate ();
+		  else
+		    {
+		      yy_delete_buffer (YY_CURRENT_BUFFER);
+		      yy_switch_to_buffer (include_stack [include_stack_ptr]);
+		    }
+		}
+
 %%
+
+void kml_include (char *fn)
+{
+  if (include_stack_ptr >= MAX_INCLUDE_DEPTH)
+    fatal (2, "includes nexted too deeply\n");
+  include_stack [include_stack_ptr++] = YY_CURRENT_BUFFER;
+  yyin = fopen (fn, "r");
+  if (! yyin)
+    fatal (2, "error opening include file '%s'\n", fn);
+  yy_switch_to_buffer (yy_create_buffer (yyin, YY_BUF_SIZE));
+}
 
 int octal_escape (char *p)
 {

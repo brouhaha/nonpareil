@@ -32,6 +32,7 @@ extern int kml_errors;
 #define KML_LINEBUF_SIZE 500
 extern char kml_linebuf [KML_LINEBUF_SIZE];
 
+void kml_include (char *fn);
 
 int yylex (void);
 int yyparse (void);

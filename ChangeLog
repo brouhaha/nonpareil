@@ -1,3 +1,6 @@
+2004-02-06  Eric Smith <eric@brouhaha.com>
+	* kml.h kmll.l kmly.y: Added kml include file support.
+
 2004-01-21  Eric Smith <eric@brouhaha.com>
 
 	* csim.c (main) kml.h kml.c kmll.l kmly.y hp45.kml: Added

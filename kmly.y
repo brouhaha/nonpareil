@@ -49,12 +49,12 @@ int kml_cur_idx2;
 %token CLASS        COLOR        DEBUG        DEFAULT      DIGITS
 %token DISPLAY      DOWN         ELSE         END          FLAG
 %token GLOBAL       HARDWARE     IFFLAG       IFPRESSED    IMAGE
-%token KEYCODE      LCD          MAP          MENUITEM     MODEL
-%token NOHOLD       OFFSET       ONDOWN       ONUP         OUTIN
-%token PATCH        POSITION     PRESS        PRINT        RELEASE
-%token RESETFLAG    ROM          SCANCODE     SETFLAG      SIZE
-%token SWITCH       TITLE        TRANSPARENCY TYPE         VIRTUAL
-%token ZOOM
+%token INCLUDE      KEYCODE      LCD          MAP          MENUITEM
+%token MODEL        NOHOLD       OFFSET       ONDOWN       ONUP
+%token OUTIN        PATCH        POSITION     PRESS        PRINT
+%token RELEASE      RESETFLAG    ROM          SCANCODE     SETFLAG
+%token SIZE         SWITCH       TITLE        TRANSPARENCY TYPE
+%token VIRTUAL      ZOOM
 
 %type <intpair> offset_stmt size_stmt down_stmt
 
@@ -82,7 +82,12 @@ section			:	global_section
 			|	switch_section
 			|	button_section
 			|	scancode_section
+			|	include_stmt
 			;
+
+include_stmt		:	INCLUDE STRING { kml_include ($2); }
+			;
+
 
 /*----------------------------------------------------------------------------
  global section
