@@ -590,51 +590,87 @@ static void (* op_fcn [1024])(int);
 
 static void init_ops (void)
 {
-  int i;
+  int i, j;
+
   for (i = 0; i < 1024; i += 4)
     {
       op_fcn [i + 0] = bad_op;
-      op_fcn [i + 1] = op_jsb;
-      op_fcn [i + 2] = op_arith;
-      op_fcn [i + 3] = op_goto;
+      op_fcn [i + 1] = op_jsb;    /* type 1: aaaaaaaa01 */
+      op_fcn [i + 2] = op_arith;  /* type 2: ooooowww10 */
+      op_fcn [i + 3] = op_goto;   /* type 1: aaaaaaaa11 */
     }
 
-  op_fcn [0x000] = op_nop;
-  op_fcn [0x01c] = op_dec_p;
-  op_fcn [0x028] = op_display_toggle;
-  op_fcn [0x030] = op_return;
-  op_fcn [0x034] = op_clear_s;
-  op_fcn [0x03c] = op_inc_p;
-  op_fcn [0x0d0] = op_keys_to_rom_addr;
-  op_fcn [0x0a8] = op_c_exch_m;
-  op_fcn [0x128] = op_c_to_stack;
-  op_fcn [0x1a8] = op_stack_to_a;
-  op_fcn [0x200] = op_rom_addr_to_buf;
-  op_fcn [0x228] = op_display_off;
-  op_fcn [0x270] = op_c_to_addr;
-  op_fcn [0x2a8] = op_m_to_c;
-  op_fcn [0x2f0] = op_c_to_data;
-  op_fcn [0x2f8] = op_data_to_c;
-  op_fcn [0x328] = op_down_rotate;
-  op_fcn [0x3a8] = op_clear_reg;
+  /* type 3 instructions: nnnnff0100*/
+  for (i = 0; i <= 15; i ++)
+    {
+      op_fcn [0x004 + (i << 6)] = op_set_s;
+      op_fcn [0x014 + (i << 6)] = op_test_s;
+      op_fcn [0x024 + (i << 6)] = op_clr_s;
+      op_fcn [0x034 /* + (i << 6) */ ] = op_clear_s;
+    }
 
+  /* New instructions in HP-55 and maybe HP-65, wedged into the unused
+     port of the type 3 instruction space.  On the HP-35 and HP-80 these
+     probably cleared all status like 0x034. */
+  for (i = 0; i <= 7; i ++)
+    {
+      op_fcn [0x074 + (i << 7)] = op_del_sel_rom;
+    }
   op_fcn [0x234] = op_del_sel_grp;
   op_fcn [0x2b4] = op_del_sel_grp;
 
-  for (i = 0; i < 1024; i += 128)
+  /* type 4 instructions: ppppff1100 */
+  for (i = 0; i < 15; i ++)
     {
-      op_fcn [i | 0x010] = op_sel_rom;
-      op_fcn [i | 0x074] = op_del_sel_rom;
+      op_fcn [0x00c + (i << 6)] = op_set_p;
+      op_fcn [0x02c + (i << 6)] = op_test_p;
+      op_fcn [0x01c /* + (i << 6) */ ] = op_dec_p;
+      op_fcn [0x03c /* + (i << 6) */ ] = op_inc_p;
     }
-  for (i = 0; i < 1024; i += 64)
+
+  /* type 5 instructions: nnnnff1000 */
+  for (i = 0; i <= 9; i++)
+      op_fcn [0x018 + (i << 6)] = op_load_constant;
+  for (i = 0; i <= 1; i++)
     {
-      op_fcn [i | 0x018] = op_load_constant;
-      op_fcn [i | 0x004] = op_set_s;
-      op_fcn [i | 0x024] = op_clr_s;
-      op_fcn [i | 0x014] = op_test_s;
-      op_fcn [i | 0x00c] = op_set_p;
-      op_fcn [i | 0x02c] = op_test_p;
+      op_fcn [0x028 /* + (i << 4) */ ] = op_display_toggle;
+      op_fcn [0x0a8 /* + (i << 4) */ ] = op_c_exch_m;
+      op_fcn [0x128 /* + (i << 4) */ ] = op_c_to_stack;
+      op_fcn [0x1a8 /* + (i << 4) */ ] = op_stack_to_a;
+      op_fcn [0x228 /* + (i << 4) */ ] = op_display_off;
+      op_fcn [0x2a8 /* + (i << 4) */ ] = op_m_to_c;
+      op_fcn [0x328 /* + (i << 4) */ ] = op_down_rotate;
+      op_fcn [0x3a8 /* + (i << 4) */ ] = op_clear_reg;
+      for (j = 0; j <= 3; j++)
+	{
+#if 0
+	  op_fcn [0x068 + (j << 8) + (i << 4)] = op_is_to_a;
+#endif
+	  op_fcn [0x0e8 + (j << 8) + (i << 4)] = op_data_to_c;
+	  /* BCD->C is nominally 0x2f8 */
+	}
     }
+
+  /* type 6 instructions: nnnff10000 */
+  for (i = 0; i <= 7; i++)
+    {
+      op_fcn [0x010 + (i << 7)] = op_sel_rom;
+      op_fcn [0x030 /* + (i << 7) */ ] = op_return;
+      if (i & 1)
+	op_fcn [0x050 + 0x080 /* + (i << 7) */ ] = op_keys_to_rom_addr;
+#if 0
+      else
+	op_fcn [0x050 /* + (i << 7) */ ] = op_external_entry;
+#endif
+    }
+  op_fcn [0x270] = op_c_to_addr;  /* also 0x370 */
+  op_fcn [0x2f0] = op_c_to_data;
+
+  /* no type 7 or type 8 instructions: xxxx100000, xxx1000000 */
+
+  /* type 9 and 10 instructions: xxx0000000 */
+  op_fcn [0x200] = op_rom_addr_to_buf;
+  op_fcn [0x000] = op_nop;
 }
 
 
@@ -761,7 +797,7 @@ gboolean sim_read_listing_file (char *fn, int keep_src)
 	      fprintf (stderr, "duplicate listing line for address %1o%1o%03o\n",
 		       g, r, p);
 	      fprintf (stderr, "orig: %s\n", source [g][r][p]);
-	      fprintf (stderr, "dup:  %s\n", source [g][r][p]);
+	      fprintf (stderr, "dup:  %s\n", buf);
 	    }
 	  else
 	    {
