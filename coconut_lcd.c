@@ -265,7 +265,7 @@ void coconut_display_update (sim_t *sim)
 	  if (sim->env->lcd_ann & (1 << i))
 	    segments |= SEGMENT_ANN;
 	}
-      sim->display_segments [i] = segments;
+      sim->display_segments [LEFT - i] = segments;
     }
 
   sim->display_update_fn (sim->display_handle, DISPLAY_DIGITS,
