@@ -5,8 +5,8 @@ Copyright 1995, 2003, 2004 Eric L. Smith <eric@brouhaha.com>
 Nonpareil is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License version 2 as
 published by the Free Software Foundation.  Note that I am not
-granting permission to redistribute or modify CASM under the terms of
-any later version of the General Public License.
+granting permission to redistribute or modify Nonpareil under the
+terms of any later version of the General Public License.
 
 Nonpareil is distributed in the hope that it will be useful (or at
 least amusing), but WITHOUT ANY WARRANTY; without even the implied

@@ -4,8 +4,8 @@
 # Nonpareil is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License version 2 as
 # published by the Free Software Foundation.  Note that I am not
-# granting permission to redistribute or modify CASM under the terms
-# of any later version of the General Public License.
+# granting permission to redistribute or modify Nonpareil under the
+# terms of any later version of the General Public License.
 
 # Nonpareil is distributed in the hope that they will be useful (or at
 # least amusing), but WITHOUT ANY WARRANTY; without even the implied
@@ -42,8 +42,8 @@ LDFLAGS = -g
 # let me know why so I can improve this Makefile.
 # -----------------------------------------------------------------------------
 
-PACKAGE = casmsim
-RELEASE = 0.24
+PACKAGE = nonpareil
+RELEASE = 0.30
 DISTNAME = $(PACKAGE)-$(RELEASE)
 
 PACKAGES = gtk+-2.0 gdk-2.0 gdk-pixbuf-2.0 glib-2.0 gthread-2.0
@@ -74,7 +74,7 @@ endif
 
 CALCS = hp25 hp35 hp45 hp55 hp80
 
-TARGETS = csim asm
+TARGETS = nonpareil uasm
 
 HDRS = asm.h symtab.h util.h proc.h proc_int.h kml.h debugger.h \
 	arch.h platform.h model.h
@@ -92,17 +92,17 @@ AUTO_CSRCS = $(LSRCS:.l=.c) $(YSRCS:.y=.tab.c)
 AUTO_HDRS = $(YSRCS:.y=.tab.h)
 AUTO_MISC = $(YSRCS:.y=.output)
 
-ASM_OBJECTS = asm.o symtab.o util.o arch.o \
+UASM_OBJECTS = asm.o symtab.o util.o arch.o \
 	asml.o asmy.tab.o casml.o casmy.tab.o wasml.o wasmy.tab.o
 
-CSIM_OBJECTS = csim.o util.o proc.o kmll.o kmly.tab.o kml.o \
+NONPAREIL_OBJECTS = csim.o util.o proc.o kmll.o kmly.tab.o kml.o \
 	platform.o model.o \
 	proc_classic.o proc_woodstock.o
 ifdef HAS_DEBUGGER_CLI
-  CSIM_OBJECTS += debugger.o
+  NONPAREIL_OBJECTS += debugger.o
 endif
 
-OBJECTS = $(ASM_OBJECTS) $(CSIM_OBJECTS)
+OBJECTS = $(UASM_OBJECTS) $(NONPAREIL_OBJECTS)
 
 SIM_LIBS = $(LOADLIBES)
 
@@ -113,27 +113,27 @@ ROM_OBJS = $(ROM_SRCS:.asm=.obj)
 DIST_FILES = $(MISC) Makefile $(HDRS) $(CSRCS) $(LSRCS) $(YSRCS) $(ROM_SRCS) \
 	$(KML) $(IMAGES)
 
-CFLAGS += -DCASMSIM_RELEASE=$(RELEASE)
+CFLAGS += -DNONPAREIL_RELEASE=$(RELEASE)
 
 %.tab.c %.tab.h %.output: %.y
 	$(YACC) $(YFLAGS) $<
 
-%.obj %.lst: %.asm csim
-	./asm $<
+%.obj %.lst: %.asm uasm
+	./uasm $<
 
-hp%: hp%.lst csim
+hp%: hp%.lst nonpareil
 	rm -f $@
-	ln -s csim $@
+	ln -s nonpareil $@
 
 
 all: $(TARGETS) $(CALCS) $(ROM_LISTINGS)
 
 
-csim:	$(CSIM_OBJECTS)
-	$(CC) -o $@ $(CSIM_OBJECTS) $(SIM_LIBS) 
+nonpareil:	$(NONPAREIL_OBJECTS)
+	$(CC) -o $@ $(NONPAREIL_OBJECTS) $(SIM_LIBS) 
 
-asm:	$(ASM_OBJECTS)
-	$(CC) -o $@ $(ASM_OBJECTS)
+uasm:	$(UASM_OBJECTS)
+	$(CC) -o $@ $(UASM_OBJECTS)
 
 dist:	$(DIST_FILES)
 	-rm -rf $(DISTNAME) $(DISTNAME).tar.gz
@@ -146,18 +146,6 @@ listings.tar.gz: $(LISTINGS)
 	tar -cvzf $@ $(LISTINGS)
 	ls -l $@
 
-
-hp35.jpg:
-	wget http://www.hpmuseum.org/35first.jpg -O hp35.jpg
-
-hp45.jpg:
-	wget http://www.hpmuseum.org/45.jpg -O hp45.jpg
-
-hp55.jpg:
-	wget http://www.hpmuseum.org/55.jpg -O hp55.jpg
-
-hp80.jpg:
-	wget http://www.hpmuseum.org/80.jpg -O hp80.jpg
 
 clean:
 	rm -f $(TARGETS) $(MISC_TARGETS) $(OBJECTS) \

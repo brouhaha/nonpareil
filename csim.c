@@ -5,8 +5,8 @@ Copyright 1995, 2004 Eric L. Smith <eric@brouhaha.com>
 Nonpareil is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License version 2 as
 published by the Free Software Foundation.  Note that I am not
-granting permission to redistribute or modify CASM under the terms of
-any later version of the General Public License.
+granting permission to redistribute or modify Nonpareil under the
+terms of any later version of the General Public License.
 
 Nonpareil is distributed in the hope that it will be useful (or at
 least amusing), but WITHOUT ANY WARRANTY; without even the implied
@@ -67,10 +67,10 @@ GtkWidget *display;
 
 void usage (FILE *f)
 {
-  fprintf (f, "CASMSIM release %s:  Microcode-level calculator simulator\n",
-	   MAKESTR(CASMSIM_RELEASE));
+  fprintf (f, "Nonpareil release %s:  Microcode-level calculator simulator\n",
+	   MAKESTR(NONPAREIL_RELEASE));
   fprintf (f, "Copyright 1995, 2003, 2004 Eric L. Smith\n");
-  fprintf (f, "http://www.brouhaha.com/~eric/software/casmsim/\n");
+  fprintf (f, "http://nonpareil.brouhaha.com//\n");
   fprintf (f, "\n");
   fprintf (f, "usage: %s [options...] kmlfile\n", progname);
   fprintf (f, "options:\n");
@@ -485,7 +485,7 @@ static void help_about (GtkWidget *widget, gpointer data)
   GtkWidget *dialog;
   char buf [200];
 
-  dialog = gtk_dialog_new_with_buttons ("About CASMSIM",
+  dialog = gtk_dialog_new_with_buttons ("About Nonpareil",
 					GTK_WINDOW (main_window),
 					GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
 					GTK_STOCK_OK,
@@ -494,13 +494,13 @@ static void help_about (GtkWidget *widget, gpointer data)
 
   gtk_dialog_set_has_separator (GTK_DIALOG (dialog), TRUE);
 
-  sprintf (buf, "CASMSIM release %s", MAKESTR(CASMSIM_RELEASE));
+  sprintf (buf, "Nonpareil release %s", MAKESTR(NONPAREIL_RELEASE));
   gtk_container_add (GTK_CONTAINER (GTK_DIALOG (dialog)->vbox),
 		     gtk_label_new (buf));
   gtk_container_add (GTK_CONTAINER (GTK_DIALOG (dialog)->vbox),
 		     gtk_label_new ("Microcode-level calculator simulator\n"
 				    "Copyright 1995, 2003, 2004 Eric L. Smith\n"
-				    "http://www.brouhaha.com/~eric/software/casmsim/"));
+				    "http://nonpareil.brouhaha.com/"));
   if (kml->title || kml->author)
     {
       gtk_container_add (GTK_CONTAINER (GTK_DIALOG (dialog)->vbox),
@@ -787,7 +787,7 @@ int main (int argc, char *argv[])
   gtk_window_set_resizable (GTK_WINDOW (main_window), FALSE);
 
   gtk_window_set_title (GTK_WINDOW (main_window),
-			kml->title ? kml->title : "CASMSIM");
+			kml->title ? kml->title : "Nonpareil");
 
   event_box = gtk_event_box_new ();
   gtk_container_add (GTK_CONTAINER (main_window), event_box);
