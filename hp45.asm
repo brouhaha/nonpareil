@@ -1,4 +1,4 @@
-; HP-45 ROM 00 source from United States Patent 4,001,569
+; HP-45 ROM source code from United States Patent 4,001,569
 ; keyed in by Eric Smith on 3/9/95 - any errors are probably mine
 
 	.rom @00
@@ -309,9 +309,6 @@ err2:	select rom 2
 
 	.symtab
 
-; HP-45 ROM 01 source from United States Patent 4,001,569
-; keyed in by Eric Smith on 3/9/95 - any errors are probably mine
-
 	.rom @01
 
 	b exchange c[s]
@@ -599,9 +596,6 @@ tan14:	a exchange c[wp]
 
 	.symtab
 
-; HP-45 ROM 02 source from United States Patent 4,001,569
-; keyed in by Eric Smith on 3/9/95 - any errors are probably mine
-
 	.rom @02
 
 err21:	select rom 6
@@ -881,9 +875,6 @@ lncd3:	5 -> p
 	go to lnc6
 
 	.symtab
-
-; HP-45 ROM 03 source from United States Patent 4,001,569
-; keyed in by Eric Smith on 3/9/95 - any errors are probably mine
 
 	.rom @03
 
@@ -1210,9 +1201,6 @@ fst5:	1 -> s7
 retnzx:	return
 
 	.symtab
-
-; HP-45 ROM 04 source from United States Patent 4,001,569
-; keyed in by Eric Smith on 3/9/95 - any errors are probably mine
 
 	.rom @04
 
@@ -1564,5 +1552,309 @@ clr2:	select rom 5
 retnzx:	return
 
 fac2:	select rom 6
+
+	.symtab
+
+	.rom @05
+
+err2:	select rom 6
+
+adr5:	c + 1 -> c[p]
+adr6:	c + 1 -> c[p]
+adr7:	c + 1 -> c[p]
+adr8:	c + 1 -> c[p]
+adr9:	c + 1 -> c[p]
+adr0:	a - c -> c[w]
+	c -> data address
+	no operation
+	data -> c
+	if s4 # 1
+	     then go to retnzx
+	a exchange c[w]
+	if s8 # 1
+	     then go to add1
+	go to sub1
+
+fst2:	select rom 3
+
+	no operation
+	no operation
+	no operation
+	no operation
+
+pwo2z0:	go to pwo2
+
+sgmaz4:	1 -> s4
+	0 -> s10
+	jsb mul1
+	jsb adr6
+	jsb stor
+	jsb rest
+	c -> a[w]
+	jsb adr7
+	go to sig1
+
+	no operation
+	no operation
+	no operation
+
+stddz4:	go to stdd
+
+sig1:	jsb stor
+	jsb yget
+	jsb adr8
+	jsb stor
+	0 -> c[w]
+	c + 1 -> c[p]
+	c -> a[w]
+	jsb adr5
+	jsb stor
+	go to fst2
+
+rest:	0 -> c[w]
+	c -> data address
+	no operation
+	data -> c
+	return
+
+yget:	down rotate
+	c -> stack
+	c -> a[w]
+	return
+
+tploz4:	0 -> s8
+	0 -> s9
+tpl0zj:	jsb div1
+
+	no operation
+	no operation
+	no operation
+	no operation
+	no operation
+	no operation
+	no operation
+	no operation
+
+sqt1:	select rom 3
+
+stdd:	0 -> s10
+	0 -> s4
+	jsb adr7
+	c -> a[w]
+	jsb mul1
+	jsb adr5
+	if c[s] >= 1
+	     then go to err2
+	jsb div1
+	jsb adr6
+	a exchange c[w]
+	jsb sub1
+	c -> stack
+	jsb adr5
+	a exchange c[w]
+	0 -> c[w]
+	c + 1 -> c[p]
+	jsb sub1
+	stack -> a
+	jsb div1
+	jsb sqt1
+	c -> stack
+	jsb adr7
+	c -> a[w]
+	jsb adr5
+	jsb div0
+rcxy:	0 -> s4
+	if s7 # 1
+	     then go to rxy1
+	c -> stack
+rxy1:	c -> a[w]
+	jsb adr8
+	c -> stack
+	c -> a[w]
+	jsb adr7
+	go to fst1
+
+	no operation
+	no operation
+	no operation
+	no operation
+	no operation
+	no operation
+	no operation
+	no operation
+	no operation
+	no operation
+	no operation
+	no operation
+	no operation
+	no operation
+	no operation
+
+am10:	jsb stor
+	a exchange c[w]
+	select rom 3
+
+	no operation
+	no operation
+	no operation
+
+amd0z4:	jsb dcod		; unsure of label
+	if s9 # 1
+	     then go to am10
+fst1:	select rom 3
+
+	no operation
+	no operation
+	no operation
+	no operation
+	no operation
+	no operation
+	no operation
+	no operation
+	no operation
+	no operation
+	no operation
+	no operation
+	no operation
+	no operation
+	no operation
+	no operation
+	no operation
+	no operation
+	no operation
+	no operation
+	no operation
+	no operation
+	no operation
+	no operation
+	no operation
+	no operation
+	no operation
+	no operation
+	no operation
+	no operation
+	no operation
+	no operation
+	no operation
+
+rcxyz4:	go to rcxy
+
+div0:	0 -> s3
+	go to div1
+
+mul0:	0 -> s3
+mul1:	select rom 1
+
+div1:	select rom 1
+
+sub1:	0 - c - 1 -> c[s]
+add1:	select rom 0
+
+	no operation
+	no operation
+	no operation
+	no operation
+	no operation
+	no operation
+	no operation
+	no operation
+
+dvof:	0 -> c[wp]
+	c - 1 -> c[wp]
+	0 -> c[xs]
+	select rom 2
+
+dvofz2:	go to dvof
+
+ofl1:	0 -> c[wp]
+	c - 1 -> c[wp]
+	0 -> c[xs]
+	a + b -> a[x]
+	if no carry go to stor
+	0 -> c[w]
+stor:	c -> a[w]
+ofl4:	12 -> p
+	a -> b[x]
+	c -> a[x]
+	if c[xs] = 0
+	     then go to ofl5
+	0 - c -> c[x]
+	c - 1 -> c[xs]
+	if no carry go to ofl1
+ofl5:	a exchange c[ms]
+	data -> c
+	a exchange c[w]
+	c -> data
+	return
+
+	no operation
+	no operation
+	no operation
+	no operation
+	no operation
+	no operation
+	no operation
+	no operation
+	no operation
+	no operation
+	no operation
+	no operation
+	no operation
+	no operation
+	no operation
+	no operation
+	no operation
+	no operation
+	no operation
+
+dcod:	if s4 # 1
+	     then go to dcd1
+	if s6 # 1
+	     then go to sub1
+	go to add1
+
+dcd1:	if s6 # 1
+	     then go to div1
+	go to mul1
+
+pwo2:	0 -> c[w]
+	c - 1 -> c[s]
+	2 -> p
+	load constant 2
+	c exchange m
+	0 -> c[w]
+clr2:	0 -> a[w]
+	12 -> p
+clr3:	c - 1 -> c[p]
+	c -> data address
+	a exchange c[w]
+	c -> stack
+	c -> data
+	a exchange c[w]
+	c + 1 -> c[p]
+	c + 1 -> c[p]
+	if no carry go to clr3
+	go to fst1
+
+clr1z4:	0 -> c[w]
+	load constant 6
+	go to clr2
+
+	no operation
+	no operation
+	no operation
+	no operation
+	no operation
+	no operation
+
+retnzx:	return
+
+	.symtab
+
+	.rom @06
+
+	.symtab
+
+	.rom @07
 
 	.symtab
