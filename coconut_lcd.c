@@ -254,7 +254,9 @@ void coconut_display_update (sim_t *sim)
       if (sim->env->display_enable)
 	{
 	  int b = sim->env->lcd_b [i];
-	  int c = ((b & 3) << 4) + sim->env->lcd_a [i];
+	  int c = ((sim->env->lcd_c [i] << 6) +
+		   ((b & 3) << 4) +
+		   sim->env->lcd_a [i]);
 	  segments = sim->char_gen [c];
 	  switch (b >> 2)
 	    {
