@@ -1,4 +1,8 @@
-2004-04-10  Eric Smith <eric@brouhaha.com>
+2004-04-12  Eric Smith <eric@brouhaha.com>
+
+	* model.h model.c: Added clock frequency to model_info_t.
+
+2004-04-11  Eric Smith <eric@brouhaha.com>
 
 	* proc_woodstock.c (op_load_constant): Fix pointer wrap.
 

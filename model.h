@@ -26,6 +26,7 @@ typedef struct
   int platform;
   int cpu_arch;
   int ram_size;
+  int clock_frequency;  /* Hz */
 } model_info_t;
 
 model_info_t *get_model_info (char *model);
