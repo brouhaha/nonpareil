@@ -25,6 +25,11 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #include <stdio.h>
 #include "xio.h"
 
+#ifdef USE_TIMER
+#include <signal.h>
+#include <sys/time.h>
+#endif /* USE_TIMER */
+
 char * progn;
 
 typedef unsigned char uchar;
@@ -796,11 +801,23 @@ void handle_io (void)
 }
 
 
+#ifdef USE_TIMER
+void alarm_handler (int signo)
+{
+  signal (SIGALRM, alarm_handler);  /* resinstall the signal handler */
+}
+#endif /* USE_TIMER */
+
+
 void debugger (void)
 {
   int opcode;
-  int cycle = 0;
+  int cycle;
+#ifdef USE_TIMER
+  struct itimerval itv;
+#endif /* USE_TIMER */
 
+  cycle = 0;
   pc = 0;
   rom = 0;
   group = 0;
@@ -814,6 +831,15 @@ void debugger (void)
   io_count = 0;
   display_enable = 0;
   key_flag = 0;
+
+#ifdef USE_TIMER
+  itv.it_interval.tv_sec = 0;
+  itv.it_interval.tv_usec = 10000;
+  itv.it_value.tv_sec = 0;
+  itv.it_value.tv_usec = 10000;
+  setitimer (ITIMER_REAL, &itv, NULL);
+  signal (SIGALRM, alarm_handler);
+#endif /* USE_TIMER */
 
   for (;;)
     {
@@ -850,9 +876,15 @@ void debugger (void)
 	      printf ("\n");
 	    }
 	  step = 0;
-	  if (io_count == 0)
-	    handle_io ();
-	  io_count = (io_count + 1) & 0x3f;
+	  io_count--;
+	  if (io_count <= 0)
+	    {
+	      handle_io ();
+	      io_count = 35;
+#ifdef USE_TIMER
+	      pause ();
+#endif
+	    }
 	}
       /* get a command here */
     }
