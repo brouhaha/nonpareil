@@ -1028,7 +1028,7 @@ static void woodstock_print_state (sim_t *sim, sim_env_t *env)
 {
   int i;
   printf ("pc=%04o  radix=%d  p=%d  f=%x  stat:",
-	  env->pc, env->arithmetic_base, env->p, env->f);
+	  env->prev_pc, env->arithmetic_base, env->p, env->f);
   for (i = 0; i < 16; i++)
     if (env->s [i])
       printf (" %d", i);
