@@ -1,25 +1,24 @@
 /*
-NSIM is a simulator for the processor used in the HP-41 (Nut) and in the HP
-Series 10 (Voyager) calculators.
-
 $Id$
-Copyright 1995, 2003 Eric Smith <eric@brouhaha.com>
+Copyright 1995, 2004 Eric L. Smith <eric@brouhaha.com>
 
-NSIM is free software; you can redistribute it and/or modify it under the
-terms of the GNU General Public License version 2 as published by the Free
-Software Foundation.  Note that I am not granting permission to redistribute
-or modify NSIM under the terms of any later version of the General Public
-License.
+Nonpareil is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.  Note that I am not
+granting permission to redistribute or modify Nonpareil under the
+terms of any later version of the General Public License.
 
-This program is distributed in the hope that it will be useful (or at least
-amusing), but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General
-Public License for more details.
+Nonpareil is distributed in the hope that it will be useful (or at
+least amusing), but WITHOUT ANY WARRANTY; without even the implied
+warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See
+the GNU General Public License for more details.
 
-You should have received a copy of the GNU General Public License along with
-this program (in the file "COPYING"); if not, write to the Free Software
-Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+You should have received a copy of the GNU General Public License
+along with this program (in the file "COPYING"); if not, write to the
+Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
+MA 02111, USA.
 */
+
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -56,7 +55,7 @@ static void coconut_op_display_toggle (sim_t *sim, int opcode)
 #define ABC 7
 
 
-#define LEFT (DISPLAY_DIGITS - 1)
+#define LEFT (COCONUT_DISPLAY_DIGITS - 1)
 #define RIGHT 0
 
 
@@ -234,7 +233,7 @@ void coconut_display_reset (sim_t *sim)
   sim->wr_n_fcn  [HALFNUT] = & halfnut_lcd_wr_n;
   sim->wr_fcn    [HALFNUT] = & halfnut_lcd_wr;
 
-  for (i = 0; i < DISPLAY_DIGITS; i++)
+  for (i = 0; i < COCONUT_DISPLAY_DIGITS; i++)
     {
       sim->env->lcd_a [i] = 0;
       sim->env->lcd_b [i] = 0;
@@ -270,7 +269,7 @@ void coconut_display_update (sim_t *sim)
       sim->display_segments [j++] = segments;
     }
 
-  sim->display_update_fn (sim->display_handle, DISPLAY_DIGITS,
+  sim->display_update_fn (sim->display_handle, COCONUT_DISPLAY_DIGITS,
 			  sim->display_segments);
 }
 

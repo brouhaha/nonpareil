@@ -20,17 +20,11 @@ MA 02111, USA.
 */
 
 
-#define COCONUT_DISPLAY_DIGITS 12
+#define VOYAGER_DISPLAY_DIGITS 10
 
 
-// I/O addresses:
+void voyager_display_init_ops (sim_t *sim);
 
-#define LCD_DISPLAY 0xfd
-#define HALFNUT     0x10
+void voyager_display_reset (sim_t *sim);
 
-
-void coconut_display_init_ops (sim_t *sim);
-
-void coconut_display_reset (sim_t *sim);
-
-void coconut_display_update (sim_t *sim);
+void voyager_display_update (sim_t *sim);

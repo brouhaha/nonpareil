@@ -26,12 +26,17 @@ MA 02111, USA.
 #include <string.h>
 
 #include "arch.h"
+#include "platform.h"
 #include "util.h"
 #include "display.h"
 #include "proc.h"
 #include "proc_int.h"
 #include "coconut_lcd.h"
+#include "voyager_lcd.h"
 #include "proc_nut.h"
+
+
+#define SLEEP_DEBUG
 
 
 /* map from high opcode bits to register index */
@@ -936,7 +941,7 @@ static void op_lld (sim_t *sim, int opcode)
 
 static void op_powoff (sim_t *sim, int opcode)
 {
-#if 0
+#ifdef SLEEP_DEBUG
   printf ("going to sleep!\n");
 #endif
   sim->env->awake = false;
@@ -1169,7 +1174,15 @@ bool nut_execute_instruction (sim_t *sim)
 
   if (sim->env->display_count == 0)
     {
-      coconut_display_update (sim);
+      switch (sim->platform)
+	{
+	case PLATFORM_COCONUT:
+	  coconut_display_update (sim);
+	  break;
+	case PLATFORM_VOYAGER:
+	  voyager_display_update (sim);
+	  break;
+	}
       sim->env->display_count = 15;
     }
   else
@@ -1250,7 +1263,7 @@ static void nut_press_key (sim_t *sim, int keycode)
   sim->env->key_buf = keycode;
   sim->env->key_down = true;
   sim->env->key_flag = true;
-#if 0
+#ifdef SLEEP_DEBUG
   if (! sim->env->awake)
     printf ("waking up!\n");
 #endif
@@ -1300,7 +1313,15 @@ void nut_reset_processor (sim_t *sim)
 
   sim->env->key_flag = 0;
 
-  coconut_display_reset (sim);
+  switch (sim->platform)
+    {
+    case PLATFORM_COCONUT:
+      coconut_display_reset (sim);
+      break;
+    case PLATFORM_VOYAGER:
+      voyager_display_reset (sim);
+      break;
+    }
 }
 
 
@@ -1359,7 +1380,15 @@ static void nut_new_processor (sim_t *sim, int ram_size)
     sim->ram_exists [i] = true;
 
   nut_init_ops (sim);
-  coconut_display_init_ops (sim);
+  switch (sim->platform)
+    {
+    case PLATFORM_COCONUT:
+      coconut_display_init_ops (sim);
+      break;
+    case PLATFORM_VOYAGER:
+      voyager_display_init_ops (sim);
+      break;
+    }
 }
 
 

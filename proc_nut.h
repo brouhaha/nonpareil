@@ -82,10 +82,10 @@ struct sim_env_t
 
   int display_count;
 
-  /* Coconut diplay: */
-  digit_t lcd_a [DISPLAY_DIGITS];
-  digit_t lcd_b [DISPLAY_DIGITS];
-  digit_t lcd_c [DISPLAY_DIGITS];
+  /* Coconut display: */
+  digit_t lcd_a [COCONUT_DISPLAY_DIGITS];
+  digit_t lcd_b [COCONUT_DISPLAY_DIGITS];
+  digit_t lcd_c [COCONUT_DISPLAY_DIGITS];
   uint16_t lcd_ann;
 
   int pf_addr;  /* selected peripheral address */

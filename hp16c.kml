@@ -1,0 +1,141 @@
+# $Id$
+# Copyright 2004 Eric L. Smith <eric@brouhaha.com>
+
+# Nonpareil is free software; you can redistribute it and/or modify it
+# under the terms of the GNU General Public License version 2 as
+# published by the Free Software Foundation.  Note that I am not
+# granting permission to redistribute or modify Nonpareil under the
+# terms of any later version of the General Public License.
+
+# Nonpareil is distributed in the hope that they will be useful (or at
+# least amusing), but WITHOUT ANY WARRANTY; without even the implied
+# warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+# See the GNU General Public License for more details.
+
+# You should have received a copy of the GNU General Public License
+# along with this program (in the file "COPYING"); if not, write to
+# the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+# Boston, MA 02111, USA.
+
+global
+	title "HP-16C Computer Scientist Calculator"
+	author "Eric Smith <eric@brouhaha.com>"
+	hardware "Voyager"
+	model "16C"
+	rom "hp16c.obj"
+	image "hp16c.png"
+	color 0 137 0 6	  # background color, used when transparency is off
+	transparency 128
+end
+
+background
+	offset 0 0
+	size 654 410
+end
+
+display
+	offset 118 35
+	size 307 60
+
+	color 0 130 134 120   # background
+	color 1 130 134 120   # unlit segments
+	color 2   0   0   0   # lit segments
+
+	digits 10
+		size 25 11
+		offset 8 10
+	end
+
+	segment 'a' line offset   0  0 size  11  1 end
+	segment 'b' line offset  10  0 size   1 11 end
+	segment 'c' line offset  10 10 size   1 11 end
+	segment 'd' line offset   0 20 size  11  1 end
+	segment 'e' line offset   0 10 size   1 11 end
+	segment 'f' line offset   0  0 size   1 11 end
+	segment 'g' line offset   0 10 size  11  1 end
+
+	segment 'h' rect offset  18 22 size 4 4 end  # period
+	segment 'i' rect offset  16 26 size 4 4 end  # comma
+end
+
+button 11  type 0  size 45 40  offset  40 144  down 2 8  keycode 0x10  end
+button 12  type 0  size 45 40  offset  99 144  down 2 8  keycode 0x30  end
+button 13  type 0  size 45 40  offset 158 144  down 2 8  keycode 0x70  end
+button 14  type 0  size 45 40  offset 217 144  down 2 8  keycode 0x80  end
+button 15  type 0  size 45 40  offset 276 144  down 2 8  keycode 0xc0  end
+button 16  type 0  size 45 40  offset 335 144  down 2 8  keycode 0x11  end
+button 17  type 0  size 45 40  offset 393 144  down 2 8  keycode 0x31  end
+button 18  type 0  size 45 40  offset 451 144  down 2 8  keycode 0x71  end
+button 19  type 0  size 45 40  offset 510 144  down 2 8  keycode 0x81  end
+button 10  type 0  size 45 40  offset 568 144  down 2 8  keycode 0xc1  end
+
+button 21  type 0  size 45 40  offset  40 208  down 2 8  keycode 0x12  end
+button 22  type 0  size 45 40  offset  99 208  down 2 8  keycode 0x32  end
+button 23  type 0  size 45 40  offset 158 208  down 2 8  keycode 0x72  end
+button 24  type 0  size 45 40  offset 217 208  down 2 8  keycode 0x82  end
+button 25  type 0  size 45 40  offset 276 208  down 2 8  keycode 0xc2  end
+button 26  type 0  size 45 40  offset 335 208  down 2 8  keycode 0x13  end
+button 27  type 0  size 45 40  offset 393 208  down 2 8  keycode 0x33  end
+button 28  type 0  size 45 40  offset 451 208  down 2 8  keycode 0x73  end
+button 29  type 0  size 45 40  offset 510 208  down 2 8  keycode 0x83  end
+button 20  type 0  size 45 40  offset 568 208  down 2 8  keycode 0xc3  end
+
+button 31  type 0  size 45 40  offset  40 273  down 2 8  keycode 0x14  end
+button 32  type 0  size 45 40  offset  99 273  down 2 8  keycode 0x34  end
+button 33  type 0  size 45 40  offset 158 273  down 2 8  keycode 0x74  end
+button 34  type 0  size 45 40  offset 217 273  down 2 8  keycode 0x84  end
+button 35  type 0  size 45 40  offset 276 273  down 2 8  keycode 0xc4  end
+button 36  type 0  size 45 106 offset 335 273  down 2 8  keycode 0x15  end
+button 37  type 0  size 45 40  offset 393 273  down 2 8  keycode 0x35  end
+button 38  type 0  size 45 40  offset 451 273  down 2 8  keycode 0x75  end
+button 39  type 0  size 45 40  offset 510 273  down 2 8  keycode 0x85  end
+button 30  type 0  size 45 40  offset 568 273  down 2 8  keycode 0xc5  end
+
+button 41  type 0  size 45 40  offset  40 339  down 2 8  keycode 0x18  end
+button 42  type 0  size 45 40  offset  99 339  down 2 8  keycode 0x36  end
+button 43  type 0  size 45 40  offset 158 339  down 2 8  keycode 0x76  end
+button 44  type 0  size 45 40  offset 217 339  down 2 8  keycode 0x86  end
+button 45  type 0  size 45 40  offset 276 339  down 2 8  keycode 0xc6  end
+# no 46, bottom half of ENTER^ key
+button 47  type 0  size 45 40  offset 393 339  down 2 8  keycode 0x37  end
+button 48  type 0  size 45 40  offset 451 339  down 2 8  keycode 0x77  end
+button 49  type 0  size 45 40  offset 510 339  down 2 8  keycode 0x87  end
+button 40  type 0  size 45 40  offset 568 339  down 2 8  keycode 0xc7  end
+
+
+# main keyboard:
+scancode 48 map 48 47 end  # 0
+scancode 49 map 49 37 end  # 1
+scancode 50 map 50 38 end  # 2
+scancode 51 map 51 39 end  # 3
+scancode 52 map 52 27 end  # 4
+scancode 53 map 53 28 end  # 5
+scancode 54 map 54 29 end  # 6
+scancode 55 map 55 17 end  # 7
+scancode 56 map 56 18 end  # 8
+scancode 57 map 57 19 end  # 9
+scancode 46 map 46 48 end  # .
+scancode 43 map 43 40 end  # +
+scancode 45 map 45 30 end  # -
+scancode 42 map 42 20 end  # *
+scancode 47 map 47 10 end  # /
+scancode 65293 map 65293 36 end  # ENTER
+scancode 99 map 99 49 end  # c - CHS
+
+# keypad:
+scancode 65456 map 65456 47 end  # 0
+scancode 65457 map 65457 37 end  # 1
+scancode 65458 map 65458 38 end  # 2
+scancode 65459 map 65459 39 end  # 3
+scancode 65460 map 65460 27 end  # 4
+scancode 65461 map 65461 28 end  # 5
+scancode 65462 map 65462 29 end  # 6
+scancode 65463 map 65463 17 end  # 7
+scancode 65464 map 65464 18 end  # 8
+scancode 65465 map 65465 19 end  # 9
+scancode 65454 map 65454 48 end  # .
+scancode 65451 map 65451 40 end  # +
+scancode 65453 map 65453 30 end  # -
+scancode 65450 map 65450 20 end  # *
+scancode 65455 map 65455 10 end  # /
+scancode 65421 map 65421 36 end  # ENTER
