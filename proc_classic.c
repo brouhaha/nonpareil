@@ -87,7 +87,7 @@ struct sim_env_t
 
 static void bad_op (sim_t *sim, int opcode)
 {
-  printf ("illegal opcode %02x at %02o%03o\n", opcode,
+  printf ("illegal opcode %04o at %02o%03o\n", opcode,
 	  sim->env->prev_pc >> 8, sim->env->prev_pc & 0377);
 }
 

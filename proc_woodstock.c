@@ -107,7 +107,7 @@ static int trace = 0;
 
 static void bad_op (sim_t *sim, int opcode)
 {
-  printf ("illegal opcode %02x at %05o\n", opcode, sim->env->prev_pc);
+  printf ("illegal opcode %04o at %05o\n", opcode, sim->env->prev_pc);
 }
 
 
