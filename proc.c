@@ -1088,6 +1088,8 @@ void reset_processor (sim_t *sim)
 
   sim->env.display_enable = 0;
   sim->env.key_flag = 0;
+
+  sim->env.ext_flag [5] = 1;  /* force battery ok */
 }
 
 
