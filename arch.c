@@ -38,8 +38,6 @@ char *arch_name [ARCH_MAX] =
     [ARCH_SATURN]    = "saturn"
   };
 
-int arch = ARCH_UNKNOWN;
-
 
 int find_arch_by_name (char *s)
 {
