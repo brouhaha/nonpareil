@@ -101,7 +101,7 @@ bool sim_read_object_file (sim_t *sim, char *fn)
 	}
     }
 
-#if 1
+#if 0
   fprintf (stderr, "read %d words from '%s'\n", count, fn);
 #endif
   return (true);
@@ -147,7 +147,7 @@ bool sim_read_listing_file (sim_t *sim, char *fn)
 	}
     }
 
-#if 1
+#if 0
   fprintf (stderr, "read %d words from '%s'\n", count, fn);
 #endif
   return (true);
