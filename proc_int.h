@@ -42,7 +42,9 @@ typedef struct
 				rom_word_t *opcode);
 
   void (* reset_processor)     (sim_t *sim);
-  void (* execute_instruction) (sim_t *sim);
+
+  /* returns false if asleep (can't execute instructions) */
+  bool (* execute_instruction) (sim_t *sim);
 
   /* I/O */
   void (* press_key)           (sim_t *sim, int keycode);
@@ -121,7 +123,12 @@ struct sim_t
 
   void (* op_fcn [1024])(struct sim_t *sim, int opcode);
 
-  char prev_display [(WSIZE + 1) * 2 + 1];
+  bool pf_exists [256];
+  bool ram_exists [1024];
+
+  void (* rd_n_fcn [256])(struct sim_t *sim, int n);
+  void (* wr_n_fcn [256])(struct sim_t *sim, int n);
+  void (* wr_fcn   [256])(struct sim_t *sim);
 };
 
 

@@ -1036,7 +1036,7 @@ static void woodstock_print_state (sim_t *sim, sim_env_t *env)
 }
 
 
-void woodstock_execute_instruction (sim_t *sim)
+bool woodstock_execute_instruction (sim_t *sim)
 {
   int i;
   int opcode;
@@ -1086,6 +1086,8 @@ void woodstock_execute_instruction (sim_t *sim)
   sim->cycle_count++;
 
   sim->display_scan_fn (sim);
+
+  return (true);  /* never sleeps */
 }
 
 

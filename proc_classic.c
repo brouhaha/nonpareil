@@ -789,7 +789,7 @@ static void classic_print_state (sim_t *sim, sim_env_t *env)
   print_reg ("m: ", env->m);
 }
 
-void classic_execute_instruction (sim_t *sim)
+bool classic_execute_instruction (sim_t *sim)
 {
   int addr;
   int i;
@@ -827,6 +827,8 @@ void classic_execute_instruction (sim_t *sim)
   sim->cycle_count++;
 
   sim->display_scan_fn (sim);
+
+  return (true);  /* never sleeps */
 }
 
 
