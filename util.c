@@ -46,17 +46,24 @@ void fatal (int ret, char *format, ...)
 }
 
 
+void *alloc (size_t size)
+{
+  void *p;
+
+  p = calloc (1, size);
+  if (! p)
+    fatal (2, "Memory allocation failed\n");
+  return (p);
+}
+
+
 char *newstr (char *orig)
 {
   int len;
   char *r;
 
   len = strlen (orig);
-  r = (char *) malloc (len + 10);
-  
-  if (! r)
-    fatal (2, "memory allocation failed\n");
-
+  r = (char *) alloc (len + 10);
   memcpy (r, orig, len + 1);
   return (r);
 }

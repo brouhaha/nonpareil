@@ -26,6 +26,9 @@ extern char * progname;
 
 void fatal (int ret, char *format, ...);
 
+void *alloc (size_t size);
+
 char *newstr (char *orig);
 
 void trim_trailing_whitespace (char *s);
+
