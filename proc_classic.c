@@ -959,6 +959,7 @@ static void classic_free_env (sim_t *sim, sim_env_t *env)
 static void classic_new_processor (sim_t *sim, int ram_size)
 {
   sim->env = alloc (sizeof (sim_env_t) + ram_size * sizeof (reg_t));
+  sim->env->max_ram = ram_size;
 
   init_ops (sim);
 }
