@@ -22,17 +22,6 @@ this program (in the file "COPYING"); if not, write to the Free Software
 Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 */
 
-typedef enum
-  {
-    SIM_IDLE,
-    SIM_RESET,
-    SIM_STEP,
-    SIM_RUN,
-    SIM_QUIT
-  } sim_state_t;
-
-extern sim_state_t sim_state;
-
 
 #define WSIZE 14
 

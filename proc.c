@@ -32,6 +32,16 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #include "util.h"
 
 
+typedef enum
+  {
+    SIM_IDLE,
+    SIM_RESET,
+    SIM_STEP,
+    SIM_RUN,
+    SIM_QUIT
+  } sim_state_t;
+
+
 sim_state_t sim_state = SIM_IDLE;
 
 

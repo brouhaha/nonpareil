@@ -1,5 +1,7 @@
 2004-01-19  Eric Smith <eric@brouhaha.com>
 
+	* proc.h proc.c: Made sim_state private to proc.c.
+
 	* csim.c (main): Don't segfault on unrecognized model.
 
 	* casml.l casmy.y: Added set flag instruction, used in HP-65.
