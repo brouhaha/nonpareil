@@ -284,4 +284,5 @@ int nut_disassemble_inst (int addr, int op1, int op2,
     case 3:
       return (nut_disassemble_short_branch (addr, op1, buf, len));
     }
+  return (0);  // can't happen, but avoid compiler warning
 }
