@@ -1,8 +1,19 @@
+2003-06-02  Peter Monta
+
+	* hp35.asm: dissassembled code extracted by peeling chips
+
 2003-05-30  Eric Smith  <eric@brouhaha.com>
 
-	* hp55.asm: corrected typos found by Peter Monta.
+	* hp45.asm: removed "unsure" comments since Peter Monta checked
+	all object code against listings using OCR.
 
-	* xio.c: changes from Peter Monta for HP-55 keyboard
+	* hp55.asm: rearranged comments.
+
+2003-05-30  Peter Monta
+
+	* hp55.asm: corrected typos
+
+	* xio.c: HP-35 and HP-55 keyboard support
 
 2003-05-29  Eric Smith  <eric@brouhaha.com>
 
