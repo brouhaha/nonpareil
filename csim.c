@@ -560,7 +560,10 @@ void op_keys_to_rom_addr (int opcode)
 
 void op_rom_addr_to_buf (int opcode)
 {
+/* I don't know what the heck this instruction is supposed to do! */
+#ifdef DEBUG
   printf ("rom addr to buf!!!!!!!!!!!!\n");
+#endif /* DEBUG */
 }
 
 void op_display_off (int opcode)
