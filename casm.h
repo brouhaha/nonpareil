@@ -21,6 +21,8 @@ Public License for more details.
 You should have received a copy of the GNU General Public License along with
 this program (in the file "COPYING"); if not, write to the Free Software
 Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+
+$Header: /home/svn/casmsim/casm.h,v 1.7 1995/03/28 01:34:48 eric Exp $
 */
 
 extern int pass;
