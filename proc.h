@@ -72,11 +72,13 @@ typedef struct
 
   uint8_t ret_pc;
 
+  int prev_pc;  /* used to store complete five-digit octal address of instruction */
+
   int display_enable;
-  int key_buf;  /* keycode of currently pressed key, or -1 if none */
   int io_count;
 
-  int prev_pc;  /* used to store complete five-digit octal address of instruction */
+  gboolean key_flag;  /* true if a key is down */
+  int key_buf;        /* most recently pressed key */
 } sim_env_t;
 
 

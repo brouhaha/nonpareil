@@ -865,7 +865,7 @@ void execute_instruction (void)
   sim_env.prev_carry = sim_env.carry;
   sim_env.carry = 0;
 
-  if (sim_env.key_buf >= 0)
+  if (sim_env.key_flag)
     sim_env.s [0] = 1;
 #if HP55
   if (learn_mode)
@@ -895,7 +895,7 @@ void reset_processor (void)
   sim_env.p = 0;
 
   sim_env.display_enable = 0;
-  sim_env.key_buf = -1;
+  sim_env.key_flag = 0;
 }
 
 
@@ -904,8 +904,13 @@ GCond *ui_cond;
 GMutex *sim_mutex;
 
 
-#define JIFFY ((G_USEC_PER_SEC)/100)
+#define UINST_PER_SEC 3500
+
 #define UINST_PER_JIFFY 35
+
+#define JIFFY_PER_SEC (UINST_PER_SEC/UINST_PER_JIFFY)
+#define JIFFY_USEC ((G_USEC_PER_SEC)/JIFFY_PER_SEC)
+
 
 gpointer sim_thread_func (gpointer data)
 {
@@ -939,9 +944,11 @@ gpointer sim_thread_func (gpointer data)
 	case SIM_RUN:
 	  g_get_current_time (& tv);
 	  for (i = 0; i < UINST_PER_JIFFY; i++)
-	    execute_instruction ();
-	  handle_io ();
-	  g_time_val_add (& tv, JIFFY);
+	    {
+	      execute_instruction ();
+	      handle_io ();
+	    }
+	  g_time_val_add (& tv, JIFFY_USEC);
 	  g_cond_timed_wait (sim_cond, sim_mutex, & tv);
 	  break;
 	}
@@ -978,7 +985,7 @@ void sim_init (int ram_size,
   sim_state = SIM_IDLE;
 
   memset ((char *) & sim_env, 0, sizeof (sim_env_t));
-  sim_env.key_buf = -1;  /* no key pressed */
+  sim_env.key_buf = -1;  /* no key has been pressed */
 
   cycle_count = 0;
 
@@ -1136,6 +1143,7 @@ void sim_press_key (int keycode)
 {
   g_mutex_lock (sim_mutex);
   sim_env.key_buf = keycode;
+  sim_env.key_flag = TRUE;
   g_mutex_unlock (sim_mutex);
 }
 
@@ -1143,6 +1151,6 @@ void sim_press_key (int keycode)
 void sim_release_key (void)
 {
   g_mutex_lock (sim_mutex);
-  sim_env.key_buf = -1;
+  sim_env.key_flag = FALSE;
   g_mutex_unlock (sim_mutex);
 }
