@@ -81,7 +81,9 @@
 line		:	label instruction '\n'
 		|	label '\n'
 		|	instruction '\n'
+		|	pseudo_op '\n'
 		|	'\n'
+		|	error '\n'
 		;
 
 label:		IDENT ':'	{ do_label ($1); }
@@ -96,6 +98,14 @@ expr		: INTEGER { $$ = $1; }
 			      errors++;
                             }
 			}
+		;
+
+pseudo_op	: ps_rom
+		;
+
+ps_rom		: '.' ROM expr { range ($3, 0, 017);
+				 group = dsg = ($3 >> 3);
+				 rom = dsr = ($3 & 7); }
 		;
 
 instruction	: jsb_inst
@@ -283,32 +293,37 @@ inst_c_to_stack : C ARROW STACK             { emit (0x128); } ;
 inst_stack_to_a : STACK ARROW A             { emit (0x1a8); } ;
 inst_down_rot   : DOWN ROTATE               { emit (0x328); } ;
 inst_clr_reg    : CLEAR REGISTERS           { emit (0x3a8); } ;
+
 inst_sel_rom    : SELECT ROM expr           { range ($3, 0, 7);
                                               emit (($3 << 7) | 0x010);
 					      target (dsg, $3, (pc + 1) & 0xff);
 					      dsr = rom;
 					      dsg = group;
 					      flag_char = '*'; } ;
+
 inst_del_rom    : DELAYED SELECT ROM expr   { range ($4, 0, 7); 
                                               emit (($4 << 7) | 0x074);
 					      dsr = $4;
 					      flag_char = '$'; } ;
+
 inst_del_grp    : DELAYED SELECT GROUP expr { range ($4, 0, 1); 
                                               emit (($4 << 7) | 0x234);
 					      dsg = $4;
 					      flag_char = '#'; } ;
-inst_noop       : NO OPERATION              { emit (0); } ;
+
 inst_c_to_addr	: C ARROW DATA ADDRESS      { emit (0x270); } ;
 inst_c_to_data	: C ARROW DATA              { emit (0x2f0); } ;
 inst_data_to_c	: DATA ARROW C              { emit (0x2f8); } ;
 inst_key_to_rom	: KEYS ARROW ROM ADDRESS    { emit (0x0d0); } ;
 inst_return	: RETURN                    { emit (0x030); } ;
-inst_ptr_adv	: POINTER ADVANCE           { emit (0x300); } ;
-inst_rom_to_buf	: ROM ADDRESS ARROW BUFFER  { emit (0x200); } ;
-inst_mem_delete : MEMORY DELETE             { emit (0x180); } ;
-inst_mark_srch	: MARK AND SEARCH           { emit (0x100); } ;
-inst_mem_insert	: MEMORY INSERT             { emit (0x080); } ;
 inst_buf_to_rom	: BUFFER ARROW ROM ADDRESS  { emit (0x040); } ;
+
+inst_noop       : NO OPERATION              { emit (0x000); } ;
+inst_mem_insert	: MEMORY INSERT             { emit (0x080); } ;
+inst_mark_srch	: MARK AND SEARCH           { emit (0x100); } ;
+inst_mem_delete : MEMORY DELETE             { emit (0x180); } ;
+inst_rom_to_buf	: ROM ADDRESS ARROW BUFFER  { emit (0x200); } ;
 inst_srch_label	: SEARCH FOR LABEL          { emit (0x280); } ;
+inst_ptr_adv	: POINTER ADVANCE           { emit (0x300); } ;
 
 %%
