@@ -3,8 +3,8 @@ CSIM is a simulator for the processor used in the HP "Classic" series
 of calculators, which includes the HP-35, HP-45, HP-55, HP-65, HP-70,
 and HP-80.
 
-$Id: csim.c,v 1.17 2003/05/30 23:38:12 eric Exp $
-Copyright 1995 Eric L. Smith
+$Id$
+Copyright 1995, 2004 Eric L. Smith
 
 CSIM is free software; you can redistribute it and/or modify it under the
 terms of the GNU General Public License version 2 as published by the Free
@@ -23,891 +23,455 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 */
 
 #include <stdarg.h>
+#include <stdint.h>
 #include <stdio.h>
-#include "xio.h"
+#include <stdlib.h>
+#include <string.h>
+#include <gdk/gdk.h>
+#include <gtk/gtk.h>
 
-#ifdef USE_TIMER
-#include <signal.h>
-#include <sys/time.h>
-#endif /* USE_TIMER */
+#include "util.h"
+#include "proc.h"
 
-char * progn;
 
-typedef unsigned char uchar;
+char *progname;
 
-#define WSIZE 14
 
-typedef uchar digit;
-typedef digit reg [WSIZE];
+#define DISPLAY_DIGIT_POSITIONS 15
+int display_digit [DISPLAY_DIGIT_POSITIONS];
 
-reg a, b, c, d, e, f, m;
-digit p;
 
-#define MAX_RAM 100
-int max_ram = MAX_RAM;
-int ram_addr;
-reg ram [MAX_RAM];
+GtkWidget *display;
 
-#define SSIZE 12
-uchar s [SSIZE];
 
-uchar carry, prev_carry;
-
-uchar pc;
-uchar rom;
-uchar group;
-
-uchar del_rom;
-uchar del_grp;
-
-uchar ret_pc;
-
-int display_enable;
-int key_flag;
-int key_buf;
-int io_count;
-
-
-int prev_pc;  /* used to store complete five-digit octal address of instruction */
-
-
-#define MAX_GROUP 2
-#define MAX_ROM 8
-#define ROM_SIZE 256
-
-typedef unsigned short romword;
-romword ucode [MAX_GROUP] [MAX_ROM] [ROM_SIZE];
-uchar bpt     [MAX_GROUP] [MAX_ROM] [ROM_SIZE];
-char *source  [MAX_GROUP] [MAX_ROM] [ROM_SIZE];
-
-int run = 1;
-int step = 0;
-int trace = 0;
-
-
-/* generate fatal error message to stderr, doesn't return */
-void fatal (int ret, char *format, ...)
-{
-  va_list ap;
-
-  fprintf (stderr, "fatal error: ");
-  va_start (ap, format);
-  vfprintf (stderr, format, ap);
-  va_end (ap);
-  if (ret == 1)
-    fprintf (stderr, "usage: %s objectfile\n", progn);
-  exit (ret);
-}
-
-
-char *newstr (char *orig)
-{
-  int len;
-  char *r;
-
-  len = strlen (orig);
-  r = (char *) malloc (len + 1);
-  
-  if (! r)
-    fatal (2, "memory allocation failed\n");
-
-  memcpy (r, orig, len + 1);
-  return (r);
-}
-
-
-void bad_op (int opcode)
-{
-  printf ("illegal opcode %02x at %05o\n", opcode, prev_pc);
-}
-
-digit do_add (digit x, digit y)
-{
-  int res;
-
-  res = x + y + carry;
-  if (res > 9)
-    {
-      res -= 10;
-      carry = 1;
-    }
-  else
-    carry = 0;
-  return (res);
-}
-
-digit do_sub (digit x, digit y)
-{
-  int res;
-
-  res = (x - y) - carry;
-  if (res < 0)
-    {
-      res += 10;
-      carry = 1;
-    }
-  else
-    carry = 0;
-  return (res);
-}
-
-void op_arith (int opcode)
-{
-  uchar op, field;
-  int first, last;
-  int temp;
-  int i;
-  reg t;
-
-  op = opcode >> 5;
-  field = (opcode >> 2) & 7;
-
-  switch (field)
-    {
-    case 0:  /* p  */
-      first =  p; last =  p;
-      if (p >= WSIZE)
-	{
-	  printf ("Warning! p > WSIZE at %05o\n", prev_pc);
-	  last = 0;  /* don't do anything */
-	}
-      break;
-    case 1:  /* m  */  first =  3; last = 12; break;
-    case 2:  /* x  */  first =  0; last =  2; break;
-    case 3:  /* w  */  first =  0; last = 13; break;
-    case 4:  /* wp */
-      first =  0; last =  p; break;
-      if (p > 13)
-	{
-	  printf ("Warning! p >= WSIZE at %05o\n", prev_pc);
-	  last = 13;
-	}
-      break;
-    case 5:  /* ms */  first =   3; last = 13; break;
-    case 6:  /* xs */  first =   2; last =  2; break;
-    case 7:  /* s  */  first =  13; last = 13; break;
-    }
-
-  switch (op)
-    {
-    case 0x00:  /* if b[f] = 0 */
-      for (i = first; i <= last; i++)
-	carry |= (b [i] != 0);
-      break;
-    case 0x01:  /* 0 -> b[f] */
-      for (i = first; i <= last; i++)
-	b [i] = 0;
-      carry = 0;
-      break;
-    case 0x02:  /* if a >= c[f] */
-      carry = 0;
-      for (i = first; i <= last; i++)
-	t [i] = do_sub (a [i], c [i]);
-      break;
-    case 0x03:  /* if c[f] >= 1 */
-      carry = 1;
-      for (i = first; i <= last; i++)
-	carry &= (c [i] == 0);
-      break;
-    case 0x04:  /* b -> c[f] */
-      for (i = first; i <= last; i++)
-	c [i] = b [i];
-      carry = 0;
-      break;
-    case 0x05:  /* 0 - c -> c[f] */
-      carry = 0;
-      for (i = first; i <= last; i++)
-	c [i] = do_sub (0, c [i]);
-      break;
-    case 0x06:  /* 0 -> c[f] */
-      for (i = first; i <= last; i++)
-	c [i] = 0;
-      carry = 0;
-      break;
-    case 0x07:  /* 0 - c - 1 -> c[f] */
-      carry = 1;
-      for (i = first; i <= last; i++)
-	c [i] = do_sub (0, c [i]);
-      break;
-    case 0x08:  /* shift left a[f] */
-      for (i = last; i >= first; i--)
-	a [i] = (i == first) ? 0 : a [i-1];
-      carry = 0;
-      break;
-    case 0x09:  /* a -> b[f] */
-      for (i = first; i <= last; i++)
-	b [i] = a [i];
-      carry = 0;
-      break;
-    case 0x0a:  /* a - c -> c[f] */
-      carry = 0;
-      for (i = first; i <= last; i++)
-	c [i] = do_sub (a [i], c [i]);
-      break;
-    case 0x0b:  /* c - 1 -> c[f] */
-      carry = 1;
-      for (i = first; i <= last; i++)
-	c [i] = do_sub (c [i], 0);
-      break;
-    case 0x0c:  /* c -> a[f] */
-      for (i = first; i <= last; i++)
-	a [i] = c [i];
-      carry = 0;
-      break;
-    case 0x0d:  /* if c[f] = 0 */
-      for (i = first; i <= last; i++)
-	carry |= (c [i] != 0);
-      break;
-    case 0x0e:  /* a + c -> c[f] */
-      carry = 0;
-      for (i = first; i <= last; i++)
-	c [i] = do_add (a [i], c [i]);
-      break;
-    case 0x0f:  /* c + 1 -> c[f] */
-      carry = 1;
-      for (i = first; i <= last; i++)
-	c [i] = do_add (c [i], 0);
-      break;
-    case 0x10:  /* if a >= b[f] */
-      carry = 0;
-      for (i = first; i <= last; i++)
-	t [i] = do_sub (a [i], b [i]);
-      break;
-    case 0x11:  /* b exchange c[f] */
-      for (i = first; i <= last; i++)
-	{ temp = b[i]; b [i] = c [i]; c [i] = temp; }
-      carry = 0;
-      break;
-    case 0x12:  /* shift right c[f] */
-      for (i = first; i <= last; i++)
-	c [i] = (i == last) ? 0 : c [i+1];
-      carry = 0;
-      break;
-    case 0x13:  /* if a[f] >= 1 */
-      carry = 1;
-      for (i = first; i <= last; i++)
-	carry &= (a [i] == 0);
-      break;
-    case 0x14:  /* shift right b[f] */
-      for (i = first; i <= last; i++)
-	b [i] = (i == last) ? 0 : b [i+1];
-      carry = 0;
-      break;
-    case 0x15:  /* c + c -> c[f] */
-      carry = 0;
-      for (i = first; i <= last; i++)
-	c [i] = do_add (c [i], c [i]);
-      break;
-    case 0x16:  /* shift right a[f] */
-      for (i = first; i <= last; i++)
-	a [i] = (i == last) ? 0 : a [i+1];
-      carry = 0;
-      break;
-    case 0x17:  /* 0 -> a[f] */
-      for (i = first; i <= last; i++)
-	a [i] = 0;
-      carry = 0;
-      break;
-    case 0x18:  /* a - b -> a[f] */
-      carry = 0;
-      for (i = first; i <= last; i++)
-	a [i] = do_sub (a [i], b [i]);
-      break;
-    case 0x19:  /* a exchange b[f] */
-      for (i = first; i <= last; i++)
-	{ temp = a[i]; a [i] = b [i]; b [i] = temp; }
-      carry = 0;
-      break;
-    case 0x1a:  /* a - c -> a[f] */
-      carry = 0;
-      for (i = first; i <= last; i++)
-        a [i] = do_sub (a [i], c [i]);
-      break;
-    case 0x1b:  /* a - 1 -> a[f] */
-      carry = 1;
-      for (i = first; i <= last; i++)
-	a [i] = do_sub (a [i], 0);
-      break;
-    case 0x1c:  /* a + b -> a[f] */
-      carry = 0;
-      for (i = first; i <= last; i++)
-	a [i] = do_add (a [i], b [i]);
-      break;
-    case 0x1d:  /* a exchange c[f] */
-      for (i = first; i <= last; i++)
-	{ temp = a[i]; a [i] = c [i]; c [i] = temp; }
-      carry = 0;
-      break;
-    case 0x1e:  /* a + c -> a[f] */
-      carry = 0;
-      for (i = first; i <= last; i++)
-	a [i] = do_add (a [i], c [i]);
-      break;
-    case 0x1f:  /* a + 1 -> a[f] */
-      carry = 1;
-      for (i = first; i <= last; i++)
-	a [i] = do_add (a [i], 0);
-      break;
-    }
-}
-
-void op_goto (int opcode)
-{
-  if (! prev_carry)
-    {
-      pc = opcode >> 2;
-      rom = del_rom;
-      group = del_grp;
-    }
-}
-
-void op_jsb (int opcode)
-{
-  ret_pc = pc;
-  pc = opcode >> 2;
-  rom = del_rom;
-  group = del_grp;
-}
-
-void op_return (int opcode)
-{
-  pc = ret_pc;
-}
-
-void op_nop (int opcode)
-{
-}
-
-void op_dec_p (int opcode)
-{
-  p = (p - 1) & 0xf;
-}
-
-void op_inc_p (int opcode)
-{
-  p = (p + 1) & 0xf;
-}
-
-void op_clear_s (int opcode)
-{
-  int i;
-  for (i = 0; i < SSIZE; i++)
-    s [i] = 0;
-}
-
-void op_c_exch_m (int opcode)
-{
-  int i, t;
-  for (i = 0; i < WSIZE; i++)
-    {
-      t = c [i]; c [i] = m[i]; m [i] = t;
-    }
-}
-
-void op_m_to_c (int opcode)
-{
-  int i;
-  for (i = 0; i < WSIZE; i++)
-    c [i] = m [i];
-}
-
-void op_c_to_addr (int opcode)
-{
-#ifdef HP55
-  ram_addr = c [12] * 10 + c[11];
-#else
-  ram_addr = c [12];
-#endif
-  if (ram_addr >= max_ram)
-    printf ("c -> ram addr: address %d out of range\n", ram_addr);
-}
-
-void op_c_to_data (int opcode)
-{
-  int i;
-  if (ram_addr >= max_ram)
-    {
-      printf ("c -> data: address %d out of range\n", ram_addr);
-      return;
-    }
-  for (i = 0; i < WSIZE; i++)
-    ram [ram_addr][i] = c [i];
-}
-
-void op_data_to_c (int opcode)
-{
-  int i;
-  if (ram_addr >= max_ram)
-    {
-      printf ("data -> c: address %d out of range, loading 0\n", ram_addr);
-      for (i = 0; i < WSIZE; i++)
-	c [i] = 0;
-      return;
-    }
-  for (i = 0; i < WSIZE; i++)
-    c [i] = ram [ram_addr][i];
-}
-
-void op_c_to_stack (int opcode)
-{
-  int i;
-  for (i = 0; i < WSIZE; i++)
-    {
-      f [i] = e [i];
-      e [i] = d [i];
-      d [i] = c [i];
-    }
-}
-
-void op_stack_to_a (int opcode)
-{
-  int i;
-  for (i = 0; i < WSIZE; i++)
-    {
-      a [i] = d [i];
-      d [i] = e [i];
-      e [i] = f [i];
-    }
-}
-
-void op_down_rotate (int opcode)
-{
-  int i, t;
-  for (i = 0; i < WSIZE; i++)
-    {
-      t = c [i];
-      c [i] = d [i];
-      d [i] = e [i];
-      e [i] = f [i];
-      f [i] = t;
-    }
-}
-
-void op_clear_reg (int opcode)
-{
-  int i;
-  for (i = 0; i < WSIZE; i++)
-    a [i] = b [i] = c [i] = d [i] = e [i] = f [i] = m [i] = 0;
-}
-
-void op_load_constant (int opcode)
-{
-  if (p >= WSIZE)
-    {
-#if 0 /* HP-45 depends on load constant with p > 13 not affecting C */
-      printf ("load constant w/ p >= WSIZE at %05o\n", prev_pc)
-      ;
-#endif
-    }
-  else if ((opcode >> 6) > 9)
-    printf ("load constant > 9\n");
-  else
-    c [p] = opcode >> 6;
-  p = (p - 1) & 0xf;
-}
-
-void op_set_s (int opcode)
-{
-  if ((opcode >> 6) >= SSIZE)
-    printf ("stat >= SSIZE at %05o\n", prev_pc);
-  else
-    s [opcode >> 6] = 1;
-}
-
-void op_clr_s (int opcode)
-{
-  if ((opcode >> 6) >= SSIZE)
-    printf ("stat >= SSIZE at %05o\n", prev_pc);
-  else
-    s [opcode >> 6] = 0;
-}
-
-void op_test_s (int opcode)
-{
-  if ((opcode >> 6) >= SSIZE)
-    printf ("stat >= SSIZE at %05o\n", prev_pc);
-  else
-    carry = s [opcode >> 6];
-}
-
-void op_set_p (int opcode)
-{
-  p = opcode >> 6;
-}
-
-void op_test_p (int opcode)
-{
-  carry = (p == (opcode >> 6));
-}
-
-void op_sel_rom (int opcode)
-{
-  rom = opcode >> 7;
-  group = del_grp;
-
-  del_rom = rom;
-}
-
-void op_del_sel_rom (int opcode)
-{
-  del_rom = opcode >> 7;
-}
-
-void op_del_sel_grp (int opcode)
-{
-  del_grp = (opcode >> 7) & 1;
-}
-
-void op_keys_to_rom_addr (int opcode)
-{
-  pc = key_buf;
-}
-
-void op_rom_addr_to_buf (int opcode)
-{
-/* I don't know what the heck this instruction is supposed to do! */
-#ifdef DEBUG
-  printf ("rom addr to buf!!!!!!!!!!!!\n");
-#endif /* DEBUG */
-}
-
-void op_display_off (int opcode)
-{
-  display_enable = 0;
-  io_count = 2;
-  /*
-   * Don't immediately turn off display because the very next instruction
-   * might be a display_toggle to turn it on.  This happens in the HP-45
-   * stopwatch.
-   */
-}
-
-void op_display_toggle (int opcode)
-{
-  display_enable = ! display_enable;
-  io_count = 0;  /* force immediate display update */
-}
-
-void (* op_fcn [1024])(int);
-
-void init_ops (void)
-{
-  int i;
-  for (i = 0; i < 1024; i += 4)
-    {
-      op_fcn [i + 0] = bad_op;
-      op_fcn [i + 1] = op_jsb;
-      op_fcn [i + 2] = op_arith;
-      op_fcn [i + 3] = op_goto;
-    }
-
-  op_fcn [0x000] = op_nop;
-  op_fcn [0x01c] = op_dec_p;
-  op_fcn [0x028] = op_display_toggle;
-  op_fcn [0x030] = op_return;
-  op_fcn [0x034] = op_clear_s;
-  op_fcn [0x03c] = op_inc_p;
-  op_fcn [0x0d0] = op_keys_to_rom_addr;
-  op_fcn [0x0a8] = op_c_exch_m;
-  op_fcn [0x128] = op_c_to_stack;
-  op_fcn [0x1a8] = op_stack_to_a;
-  op_fcn [0x200] = op_rom_addr_to_buf;
-  op_fcn [0x228] = op_display_off;
-  op_fcn [0x270] = op_c_to_addr;
-  op_fcn [0x2a8] = op_m_to_c;
-  op_fcn [0x2f0] = op_c_to_data;
-  op_fcn [0x2f8] = op_data_to_c;
-  op_fcn [0x328] = op_down_rotate;
-  op_fcn [0x3a8] = op_clear_reg;
-
-  op_fcn [0x234] = op_del_sel_grp;
-  op_fcn [0x2b4] = op_del_sel_grp;
-
-  for (i = 0; i < 1024; i += 128)
-    {
-      op_fcn [i | 0x010] = op_sel_rom;
-      op_fcn [i | 0x074] = op_del_sel_rom;
-    }
-  for (i = 0; i < 1024; i += 64)
-    {
-      op_fcn [i | 0x018] = op_load_constant;
-      op_fcn [i | 0x004] = op_set_s;
-      op_fcn [i | 0x024] = op_clr_s;
-      op_fcn [i | 0x014] = op_test_s;
-      op_fcn [i | 0x00c] = op_set_p;
-      op_fcn [i | 0x02c] = op_test_p;
-    }
-}
-
-void disassemble_instruction (int g, int r, int p, int opcode)
-{
-  int i;
-  printf ("L%1o%1o%3o:  ", g, r, p);
-  for (i = 0x200; i; i >>= 1)
-    printf ((opcode & i) ? "1" : ".");
-}
+#define DIGIT_RADIX 10
+#define DIGIT_NEG   11
+#define DIGIT_BLANK 12
 
 /*
- * set breakpoints at every location so we know if we hit
- * uninitialized ROM
+ *     aaa
+ *    f   b
+ *    f   b
+ *    f   b
+ *     ggg
+ *    e   c
+ *    e hhc
+ *    e hhc
+ *     ddd
  */
-void init_breakpoints (void)
-{
-  int g, r, p;
 
-  for (g = 0; g < MAX_GROUP; g++)
-    for (r = 0; r < MAX_ROM; r++)
-      for (p = 0; p < ROM_SIZE; p++)
-	bpt [g] [r] [p] = 1;
+typedef int seven_seg_t [8];
+
+seven_seg_t seven_seg [13] =
+  {
+  /*       a   b  c  d  e  f  g  h */
+  /* 0 */ { 1, 1, 1, 1, 1, 1, 0, 0 },
+  /* 1 */ { 0, 1, 1, 0, 0, 0, 0, 0 },
+  /* 2 */ { 1, 1, 0, 1, 1, 0, 1, 0 },
+  /* 3 */ { 1, 1, 1, 1, 0, 0, 1, 0 },
+  /* 4 */ { 0, 1, 1, 0, 0, 1, 1, 0 },
+  /* 5 */ { 1, 0, 1, 1, 0, 1, 1, 0 },
+  /* 6 */ { 1, 0, 1, 1, 1, 1, 1, 0 },
+  /* 7 */ { 1, 1, 1, 0, 0, 0, 0, 0 },
+  /* 8 */ { 1, 1, 1, 1, 1, 1, 1, 0 },
+  /* 9 */ { 1, 1, 1, 1, 0, 1, 1, 0 },
+  /* . */ { 0, 0, 0, 0, 0, 0, 0, 1 },
+  /* - */ { 0, 0, 0, 0, 0, 0, 1, 0 },
+  /*   */ { 0, 0, 0, 0, 0, 0, 0, 0 }
+  };
+
+
+GdkSegment digit_segment [7] =
+  {
+    { 0,  0, 5,  0 },
+    { 5,  0, 5,  5 },
+    { 5,  5, 5, 10 },
+    { 5, 10, 0, 10 },
+    { 0, 10, 0,  5 },
+    { 0,  5, 0,  0 },
+    { 0,  5, 5,  5 }
+  };
+
+
+GdkPixbuf *digit_pixbuf [13];
+
+
+GdkPixbuf *create_digit (seven_seg_t *segs,
+			 guint32 fg_color,
+			 guint32 bg_color)
+{
+  GdkPixbuf *pixbuf;
+
+  pixbuf = gdk_pixbuf_new (GDK_COLORSPACE_RGB,
+			   FALSE,  /* has_alpha */
+			   8,  /* bits per sample */
+			   5,  /* width */
+			   9);  /* height */
+  gdk_pixbuf_fill (pixbuf, bg_color);
+  return (pixbuf);
 }
 
 
-void init_source (void)
-{
-  int g, r, p;
-
-  for (g = 0; g < MAX_GROUP; g++)
-    for (r = 0; r < MAX_ROM; r++)
-      for (p = 0; p < ROM_SIZE; p++)
-	source [g] [r] [p] = NULL;
-}
-
-
-void read_object_file (char *fn, FILE *f)
+void create_digits (void)
 {
   int i;
-  char buf [80];
-  int g, r, p, opcode;
-  int count = 0;
+  guint32 fg_color = 0xaa111100;
+  guint32 bg_color = 0x00000000;
 
-  while (fgets (buf, sizeof (buf), f))
+  for (i = 0; i < 13; i++)
+    digit_pixbuf [i] = create_digit (& seven_seg [i], fg_color, bg_color);
+}
+
+
+void draw_digit (GtkWidget *widget, gint x, gint y, int val)
+{
+  int i;
+  int seg_count = 0;
+  GdkSegment segs [8];
+  GdkGC *gc = display->style->fg_gc [GTK_WIDGET_STATE (widget)];
+
+#if 1
+  for (i = 0; i < 7; i++)
     {
-      i = sscanf (buf, "%1o%1o%3o:%3x", & g, & r, & p, & opcode);
-      if (i != 4)
-	fprintf (stderr, "only converted %d items\n", i);
-      else if ((g >= MAX_GROUP) || (r >= MAX_ROM) || (p >= ROM_SIZE))
-	fprintf (stderr, "bad address\n");
-      else
+      if (seven_seg [val] [i])
 	{
-	  ucode [g][r][p] = opcode;
-	  bpt   [g][r][p] = 0;
-	  count ++;
+	  segs [seg_count].x1 = digit_segment [i].x1 + x;
+	  segs [seg_count].y1 = digit_segment [i].y1 + y;
+	  segs [seg_count].x2 = digit_segment [i].x2 + x;
+	  segs [seg_count].y2 = digit_segment [i].y2 + y;
+	  seg_count++;
 	}
+      if (seg_count)
+	gdk_draw_segments (widget->window, gc, & segs [0], seg_count);
     }
-  fprintf (stderr, "read %d words from '%s'\n", count, fn);
-}
-
-
-int parse_address (char *oct, int *g, int *r, int *p)
-{
-  return (sscanf (oct, "%1o%1o%3o", g, r, p) == 3);
-}
-
-
-int parse_opcode (char *bin, int *opcode)
-{
-  int i;
-
-  *opcode = 0;
-  for (i = 0; i < 10; i++)
-    {
-      (*opcode) <<= 1;
-      if (*bin == '1')
-	(*opcode) += 1;
-      else if (*bin == '.')
-	(*opcode) += 0;
-      else
-	return (0);
-      *bin++;
-    }
-  return (1);
-}
-
-
-void read_listing_file (char *fn, FILE *f, int keep_src)
-{
-  int i;
-  char buf [80];
-  int g, r, p, opcode;
-  int count = 0;
-
-  while (fgets (buf, sizeof (buf), f))
-    {
-      if ((strlen (buf) >= 25) && (buf [7] == 'L') && (buf [13] == ':') &&
-	  parse_address (& buf [8], & g, &r, &p) &&
-	  parse_opcode (& buf [16], & opcode))
-	{
-	  if ((g >= MAX_GROUP) || (r >= MAX_ROM) || (p >= ROM_SIZE))
-	    fprintf (stderr, "bad address\n");
-	  else if (! bpt [g][r][p])
-	    {
-	      fprintf (stderr, "duplicate listing line for address %1o%1o%03o\n",
-		       g, r, p);
-	      fprintf (stderr, "orig: %s\n", source [g][r][p]);
-	      fprintf (stderr, "dup:  %s\n", source [g][r][p]);
-	    }
-	  else
-	    {
-	      ucode  [g][r][p] = opcode;
-	      bpt    [g][r][p] = 0;
-	      if (keep_src)
-		source [g][r][p] = newstr (& buf [0]);
-	      count ++;
-	    }
-	}
-    }
-  fprintf (stderr, "read %d words from '%s'\n", count, fn);
-}
-
-
-void print_reg (reg r)
-{
-  int i;
-  for (i = WSIZE - 1; i >= 0; i--)
-    printf ("%x", r [i]);
-}
-
-
-void print_stat (void)
-{
-  int i;
-  for (i = 0; i < SSIZE; i++)
-    printf (s [i] ? "%x" : ".", i);
-}
-
-
-void handle_io (void)
-{
-  char buf [WSIZE + 2];
-  char *bp;
-  int i;
-
-  bp = & buf [0];
-  if (display_enable)
-    {
-      for (i = WSIZE - 1; i >= 0; i--)
-	{
-	  if (b [i] >= 8)
-	    *bp++ = ' ';
-	  else if ((i == 2) || (i == 13))
-	    {
-	      if (a [i] >= 8)
-		*bp++ = '-';
-	      else
-		*bp++ = ' ';
-	    }
-	  else
-	    *bp++ = '0' + a [i];
-	  if (b [i] == 2)
-	    *bp++ = '.';
-	}
-    }
-  *bp = '\0';
-  update_display (buf);
-  i = check_keyboard ();
-  if (i >= 0)
-    {
-      key_flag = 1;
-      key_buf = i;
-    }
-  else
-    key_flag = 0;
-}
-
-
-#ifdef USE_TIMER
-void alarm_handler (int signo)
-{
-  signal (SIGALRM, alarm_handler);  /* resinstall the signal handler */
-}
-#endif /* USE_TIMER */
-
-
-void debugger (void)
-{
-  int opcode;
-  int cycle;
-#ifdef USE_TIMER
-  struct itimerval itv;
-#endif /* USE_TIMER */
-
-  cycle = 0;
-  pc = 0;
-  rom = 0;
-  group = 0;
-  del_rom = 0;
-  del_grp = 0;
-
-  op_clear_reg (0);
-  op_clear_s (0);
-  p = 0;
-
-  io_count = 0;
-  display_enable = 0;
-  key_flag = 0;
-
-#ifdef USE_TIMER
-  itv.it_interval.tv_sec = 0;
-  itv.it_interval.tv_usec = 10000;
-  itv.it_value.tv_sec = 0;
-  itv.it_value.tv_usec = 10000;
-  setitimer (ITIMER_REAL, &itv, NULL);
-  signal (SIGALRM, alarm_handler);
-#endif /* USE_TIMER */
-
-  for (;;)
-    {
-      while (run || step)
-	{
-	  if (trace)
-	    {
-	      if (source [group][rom][pc])
-		printf ("%s", source [group][rom][pc]);
-	      else
-		disassemble_instruction (group, rom, pc, opcode);
-	      printf ("\n");
-	    }
-	  prev_pc = (group << 12) | (rom << 9) | pc;
-	  opcode = ucode [group][rom][pc];
-	  prev_carry = carry;
-	  carry = 0;
-	  if (key_flag)
-	    s [0] = 1;
-#if HP55
-	  if (learn_mode)
-	    s [3] = 1;
-	  if (stopwatch_mode)
-	    s [11] = 1;
+  if (val == DIGIT_RADIX)
+    gdk_draw_rectangle (widget->window, gc, TRUE, x + 2, y + 6, 2, 2);
+#else
+  gdk_draw_pixbuf (widget->window,
+		   NULL, /* gc for clipping */
+		   digit_pixbuf [val],
+		   0, 0, /* src x, y */
+		   x, y, /* dest x, y */
+		   5, 9, /* width, height */
+		   GDK_RGB_DITHER_NORMAL,
+		   0, 0); /* x_dither, y_dither */
 #endif
-	  pc++;
-	  (* op_fcn [opcode]) (opcode);
-	  cycle++;
-	  if (trace)
-	    {
-	      printf ("  p=%x", p);
-	      printf (" stat=");
-	      print_stat ();
-	      printf (" a=");
-	      print_reg (a);
-	      printf (" b=");
-	      print_reg (b);
-	      printf (" c=");
-	      print_reg (c);
-	      printf ("\n");
-	    }
-	  step = 0;
-	  io_count--;
-	  if (io_count <= 0)
-	    {
-	      handle_io ();
-	      io_count = 35;
-#ifdef USE_TIMER
-	      pause ();
-#endif
-	    }
-	}
-      /* get a command here */
+}
+
+
+gboolean display_expose_event_callback (GtkWidget *widget,
+					GdkEventExpose *event,
+					gpointer data)
+{
+  int i;
+  gdouble x;
+
+  /* clear the display */
+  gdk_draw_rectangle (widget->window,
+		      display->style->bg_gc [GTK_WIDGET_STATE (widget)],
+		      TRUE,
+		      0, 0,
+		      display->allocation.width,
+		      display->allocation.height);
+
+  x = 0.0;
+  for (i = 0; i < DISPLAY_DIGIT_POSITIONS; i++)
+    {
+      draw_digit (widget, (gint) (x + 0.5), 0, display_digit [i]);
+		       
+      x += 13.29;
     }
+
+  return (TRUE);
+}
+
+
+static void display_update (char *buf)
+{
+  int i;
+  int l;
+  GdkRectangle rect = { 0, 0, 0, 0 };
+
+#ifdef DISPLAY_DEBUG
+  printf ("%s\n", buf);
+#endif
+
+  l = strlen (buf);
+
+  for (i = 0; i < DISPLAY_DIGIT_POSITIONS; i++)
+    {
+      if (i >= l)
+	{
+	  display_digit [i] = DIGIT_BLANK;
+	  continue;
+	}
+      if (isdigit (buf [i]))
+	display_digit [i] = buf [i] - '0';
+      else
+	switch (buf [i])
+	  {
+	  case '-':
+	    display_digit [i] = DIGIT_NEG;
+	    break;
+	  case '.':
+	    display_digit [i] = DIGIT_RADIX;
+	    break;
+	  case ' ':
+	    display_digit [i] = DIGIT_BLANK;
+	    break;
+	  default:
+	    fatal (2, "illegal display char '%c'\n", buf [i]);
+	  }
+    }
+
+  rect.width = display->allocation.width;
+  rect.height = display->allocation.height;
+    
+  /* invalidate the entire drawing area */
+  gdk_window_invalidate_rect (display->window,
+			      & rect,
+			      FALSE);
+}
+
+
+typedef struct
+{
+  GdkRectangle rect;
+  int keycode;
+} keyinfo;
+
+
+keyinfo (*keys)[35];
+
+
+keyinfo keys_hp35 [35] =
+{
+  {{  24, 120, 30, 24 }, 006 },
+  {{  72, 120, 30, 24 }, 004 },
+  {{ 120, 120, 30, 24 }, 003 },
+  {{ 168, 120, 30, 24 }, 002 },
+  {{ 216, 120, 30, 24 }, 000 },
+
+  {{  24, 168, 30, 24 }, 056 },
+  {{  72, 168, 30, 24 }, 054 },
+  {{ 120, 168, 30, 24 }, 053 },
+  {{ 168, 168, 30, 24 }, 052 },
+  {{ 216, 168, 30, 24 }, 050 },
+
+  {{  24, 216, 30, 24 }, 016 },
+  {{  72, 216, 30, 24 }, 014 },
+  {{ 120, 216, 30, 24 }, 013 },
+  {{ 168, 216, 30, 24 }, 012 },
+  {{ 216, 216, 30, 24 }, 010 },
+
+  {{  24, 264, 78, 24 }, 076 },
+  {{ 120, 264, 30, 24 }, 073 },
+  {{ 168, 264, 30, 24 }, 072 },
+  {{ 216, 264, 30, 24 }, 070 },
+
+  {{  24, 312, 24, 24 }, 066},
+  {{  73, 312, 37, 24 }, 064 },
+  {{ 141, 312, 37, 24 }, 063 },
+  {{ 209, 312, 37, 24 }, 062 },
+
+  {{  24, 360, 24, 24 }, 026},
+  {{  73, 360, 37, 24 }, 024 },
+  {{ 141, 360, 37, 24 }, 023 },
+  {{ 209, 360, 37, 24 }, 022 },
+
+  {{  24, 408, 24, 24 }, 036 },
+  {{  73, 408, 37, 24 }, 034 },
+  {{ 141, 408, 37, 24 }, 033 },
+  {{ 209, 408, 37, 24 }, 032 },
+
+  {{  24, 456, 24, 24 }, 046 },
+  {{  73, 456, 37, 24 }, 044 },
+  {{ 141, 456, 37, 24 }, 043 },
+  {{ 209, 456, 37, 24 }, 042 },
+};
+
+keyinfo keys_hp45 [35] =
+{
+  {{  48, 156, 32, 24 }, 006 },
+  {{  91, 156, 32, 24 }, 004 },
+  {{ 134, 156, 32, 24 }, 003 },
+  {{ 176, 156, 32, 24 }, 002 },
+  {{ 219, 156, 32, 24 }, 000 },
+
+  {{  48, 201, 32, 24 }, 056 },
+  {{  91, 201, 32, 24 }, 054 },
+  {{ 134, 201, 32, 24 }, 053 },
+  {{ 176, 201, 32, 24 }, 052 },
+  {{ 219, 201, 32, 24 }, 050 },
+
+  {{  48, 246, 32, 24 }, 016 },
+  {{  91, 246, 32, 24 }, 014 },
+  {{ 134, 246, 32, 24 }, 013 },
+  {{ 176, 246, 32, 24 }, 012 },
+  {{ 219, 246, 32, 24 }, 010 },
+
+#if ENTER_KEY_MOD
+  {{  48, 291, 74, 24 }, 074 },
+#else
+  {{  48, 291, 74, 24 }, 075 },
+#endif /* ENTER_KEY_MOD */
+  {{ 134, 291, 32, 24 }, 073 },
+  {{ 176, 291, 32, 24 }, 072 },
+  {{ 219, 291, 32, 24 }, 070 },
+
+  {{  48, 336, 24, 24 }, 066 },
+  {{  92, 336, 36, 24 }, 064 },
+  {{ 153, 336, 36, 24 }, 063 },
+  {{ 214, 336, 36, 24 }, 062 },
+
+  {{  48, 381, 24, 24 }, 026 },
+  {{  92, 381, 36, 24 }, 024 },
+  {{ 153, 381, 36, 24 }, 023 },
+  {{ 214, 381, 36, 24 }, 022 },
+
+  {{  48, 425, 24, 24 }, 036 },
+  {{  92, 425, 36, 24 }, 034 },
+  {{ 153, 425, 36, 24 }, 033 },
+  {{ 214, 425, 36, 24 }, 032 },
+
+  {{  48, 470, 24, 24 }, 046 },
+  {{  92, 470, 36, 24 }, 044 },
+  {{ 153, 470, 36, 24 }, 043 },
+  {{ 214, 470, 36, 24 }, 042 },
+};
+
+keyinfo keys_hp55 [35] =
+{
+  {{  28, 120, 36, 24 }, 006 },
+  {{  85, 120, 36, 24 }, 004 },
+  {{ 142, 120, 36, 24 }, 003 },
+  {{ 199, 120, 36, 24 }, 002 },
+  {{ 256, 120, 36, 24 }, 000 },
+
+  {{  28, 168, 36, 24 }, 056 },
+  {{  85, 168, 36, 24 }, 054 },
+  {{ 142, 168, 36, 24 }, 053 },
+  {{ 199, 168, 36, 24 }, 052 },
+  {{ 256, 168, 36, 24 }, 050 },
+
+  {{  28, 216, 36, 24 }, 016 },
+  {{  85, 216, 36, 24 }, 014 },
+  {{ 142, 216, 36, 24 }, 013 },
+  {{ 199, 216, 36, 24 }, 012 },
+  {{ 256, 216, 36, 24 }, 010 },
+
+  {{  28, 264, 92, 24 }, 075 },
+  {{ 142, 264, 36, 24 }, 073 },
+  {{ 199, 264, 36, 24 }, 072 },
+  {{ 256, 264, 36, 24 }, 070 },
+
+  {{  28, 312, 28, 24 }, 066 },
+  {{  87, 312, 44, 24 }, 064 },
+  {{ 167, 312, 44, 24 }, 063 },
+  {{ 248, 312, 44, 24 }, 062 },
+
+  {{  28, 360, 28, 24 }, 026 },
+  {{  87, 360, 44, 24 }, 024 },
+  {{ 167, 360, 44, 24 }, 023 },
+  {{ 248, 360, 44, 24 }, 022 },
+
+  {{  28, 408, 28, 24 }, 036 },
+  {{  87, 408, 44, 24 }, 034 },
+  {{ 167, 408, 44, 24 }, 033 },
+  {{ 248, 408, 44, 24 }, 032 },
+
+  {{  28, 456, 28, 24 }, 046 },
+  {{  87, 456, 44, 24 }, 044 },
+  {{ 167, 456, 44, 24 }, 043 },
+  {{ 248, 456, 44, 24 }, 042 },
+};
+
+
+typedef struct
+{
+  GtkWidget *fixed;
+  int keycode;
+} button_info_t;
+
+
+void button_pressed (GtkWidget *widget, button_info_t *button)
+{
+  sim_press_key (button->keycode);
+#ifdef KEYBOARD_DEBUG
+  printf ("pressed %d\n", button->keycode);
+#endif
+}
+
+
+void button_released (GtkWidget *widget, button_info_t *button)
+{
+  sim_release_key ();
+#ifdef KEYBOARD_DEBUG
+  printf ("released %d\n", button->keycode);
+#endif
+}
+
+
+void add_key (GtkWidget *fixed,
+	      GdkPixbuf *window_pixbuf,
+	      keyinfo *key)
+{
+  GtkWidget *button;
+  GdkPixbuf *button_pixbuf;
+  GtkWidget *button_image;
+  button_info_t *button_info;
+
+  button_pixbuf = gdk_pixbuf_new_subpixbuf (window_pixbuf,
+					    key->rect.x,
+					    key->rect.y,
+					    key->rect.width,
+					    key->rect.height);
+
+  button_image = gtk_image_new_from_pixbuf (button_pixbuf);
+  gtk_widget_show (button_image);
+
+  button_info = calloc (1, sizeof (button_info_t));
+  if (! button_info)
+    fatal (2, "can't allocate button info\n");
+
+  button_info->fixed = fixed;
+  button_info->keycode = key->keycode;
+  
+  button = gtk_button_new ();
+
+  gtk_button_set_relief (GTK_BUTTON (button), GTK_RELIEF_NONE);
+
+  gtk_widget_set_size_request (button, key->rect.width, key->rect.height);
+
+  gtk_fixed_put (GTK_FIXED (fixed), button, key->rect.x, key->rect.y);
+
+  g_signal_connect (G_OBJECT (button),
+		    "pressed",
+		    G_CALLBACK (& button_pressed),
+		    (gpointer) button_info);
+  g_signal_connect (G_OBJECT (button),
+		    "released",
+		    G_CALLBACK (& button_released),
+		    (gpointer) button_info);
+
+  gtk_widget_show (button);
+
+  gtk_container_add (GTK_CONTAINER (button), button_image);
+}
+
+
+void add_keys (GdkPixbuf *window_pixbuf, GtkWidget *fixed)
+{
+  int i;
+
+  for (i = 0; i < (sizeof (keys_hp45) / sizeof (keyinfo)); i++)
+    add_key (fixed, window_pixbuf, & keys_hp45 [i]);
+}
+
+
+static void quit_callback (GtkWidget *widget, gpointer data)
+{
+  gtk_main_quit ();
 }
 
 
@@ -915,26 +479,48 @@ void debugger (void)
 #define PATH_MAX 256
 #endif
 
+
+#define DISPLAY_X 54
+#define DISPLAY_Y 58
+#define DISPLAY_WIDTH 192
+#define DISPLAY_HEIGHT 11
+
+
 int main (int argc, char *argv[])
 {
   char *objfn = NULL;
-  FILE *f;
-  char buf [PATH_MAX];
- 
-  init_display (argc, argv);
 
-  progn = newstr (argv [0]);
+  int window_width, window_height;
+
+  GtkWidget *window;
+  GtkWidget *fixed;
+
+  GdkPixbuf *image_pixbuf;
+  GError *error = NULL;
+  GtkWidget *image;
+
+  GdkColormap *colormap;
+  GdkColor red, black;
+
+  char buf [PATH_MAX];
+
+ 
+  progname = newstr (argv [0]);
+
+  gtk_init (& argc, & argv);
 
   while (--argc)
     {
       argv++;
       if (*argv [0] == '-')
 	{
-	  if (stricmp (argv [0], "-stop") == 0)
+#if 0
+	  if (strcasecmp (argv [0], "-stop") == 0)
 	    run = 0;
-	  else if (stricmp (argv [0], "-trace") == 0)
+	  else if (strcasecmp (argv [0], "-trace") == 0)
 	    trace = 1;
 	  else
+#endif
 	    fatal (1, "unrecognized option '%s'\n", argv [0]);
 	}
       else if (objfn)
@@ -943,30 +529,80 @@ int main (int argc, char *argv[])
 	objfn = argv [0];
     }
 
-  if (objfn)
+
+  image_pixbuf = gdk_pixbuf_new_from_file ("hp45.jpg", & error);
+  if (! image_pixbuf)
+    fatal (2, "can't load image\n");
+
+  window_width = gdk_pixbuf_get_width (image_pixbuf);
+  window_height = gdk_pixbuf_get_height (image_pixbuf);
+
+  window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
+  gtk_widget_set_size_request (window, window_width, window_height);
+  gtk_window_set_resizable (GTK_WINDOW (window), FALSE);
+  gtk_window_set_title (GTK_WINDOW (window), "HP-45");
+
+  fixed = gtk_fixed_new ();
+  gtk_container_add (GTK_CONTAINER (window), fixed);
+  gtk_widget_show (fixed);
+
+  if (image_pixbuf != NULL)
     {
-      f = fopen (objfn, "r");
-      if (! f)
-	fatal (2, "unable to read listing file '%s'\n", objfn);
+      image = gtk_image_new_from_pixbuf (image_pixbuf);
+      gtk_fixed_put (GTK_FIXED (fixed), image, 0, 0);
+      gtk_widget_show (image);
     }
-  else
+
+  add_keys (image_pixbuf, fixed);
+
+  gtk_widget_show (window);
+
+  create_digits ();
+
+  display = gtk_drawing_area_new ();
+
+  colormap = gtk_widget_get_colormap (window);
+  if (! gdk_color_parse ("#ee1111", & red))
+    fatal (2, "can't parse color red\n");
+  if (! gdk_colormap_alloc_color (colormap, & red, FALSE, TRUE))
+    fatal (2, "can't alloc color red\n");
+  if (! gdk_color_parse ("#000000", & black))
+    fatal (2, "can't parse color black\n");
+  if (! gdk_colormap_alloc_color (colormap, & black, FALSE, TRUE))
+    fatal (2, "can't alloc color black\n");
+
+  gtk_widget_set_size_request (display, DISPLAY_WIDTH, DISPLAY_HEIGHT);
+  gtk_widget_modify_fg (display, GTK_STATE_NORMAL, & red);
+  gtk_widget_modify_bg (display, GTK_STATE_NORMAL, & black);
+  gtk_fixed_put (GTK_FIXED (fixed), display, DISPLAY_X, DISPLAY_Y);
+  gtk_widget_show (display);
+  g_signal_connect (G_OBJECT (display),
+		    "expose_event",
+		    G_CALLBACK (display_expose_event_callback),
+		    NULL);
+
+  gtk_signal_connect (GTK_OBJECT (window),
+		      "destroy",
+		      GTK_SIGNAL_FUNC (quit_callback),
+		      NULL);
+
+  sim_init (10, & display_update);  /* $$$ 10 regs is enough for HP-45 */
+
+  if (! objfn)
     {
-      strcpy (buf, progn);
-      strcat (buf, ".lst");
+      strncpy (buf, progname, sizeof (buf));
+      strncat (buf, ".lst", sizeof (buf));
       objfn = & buf [0];
-      f = fopen (buf, "r");
-      if (! f)
-	fatal (2, "listing file must be specified\n");
     }
 
-  init_breakpoints ();
-  init_source ();
-  read_listing_file (objfn, f, trace);
-  fclose (f);
+  if (! sim_read_listing_file (objfn, TRUE))
+    fatal (2, "unable to read listing file '%s'\n", objfn);
 
-  init_ops ();
+  sim_reset ();
 
-  debugger ();
+  sim_start ();
+
+  gtk_main ();
 
   exit (0);
 }

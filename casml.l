@@ -1,6 +1,6 @@
 /*
 casm.l: lexical analyzer specification
-$Id: casml.l,v 1.13 2003/05/30 23:38:12 eric Exp $
+$Id$
 Copyright 1995, 2003 Eric L. Smith
 
 CASM is an assembler for the processor used in the HP "Classic" series
@@ -154,7 +154,7 @@ int keyword (char *string)
   struct keyword *ptr;
 
   for (ptr = keywords; ptr->name; ptr++)
-    if (stricmp (string, ptr->name) == 0)
+    if (strcasecmp (string, ptr->name) == 0)
       return ptr->value;
   return 0;
 }

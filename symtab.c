@@ -1,6 +1,6 @@
 /*
 symtab.c: a simple binary tree symbol table
-$Id: symtab.c,v 1.9 2003/05/30 23:38:12 eric Exp $
+$Id$
 Copyright 1995 Eric L. Smith
 
 CASM is an assembler for the processor used in the HP "Classic" series
@@ -24,8 +24,12 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 */
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
+
 #include "symtab.h"
+#include "util.h"
+
 
 typedef struct sym
 {
@@ -36,23 +40,6 @@ typedef struct sym
   struct sym *right;
 } sym;
 
-static char *newstr (char *orig)
-{
-  int len;
-  char *r;
-
-  len = strlen (orig);
-  r = (char *) malloc (len + 10);
-  
-  if (! r)
-    {
-      fprintf (stderr, "memory allocation failed\n");
-      exit (2);
-    }
-
-  memcpy (r, orig, len + 1);
-  return (r);
-}
 
 t_symtab alloc_symbol_table (void)
 {
@@ -87,7 +74,7 @@ static int insert_symbol (sym **p, sym *newsym)
       return (1);
     }
 
-  i = stricmp (newsym->name, (*p)->name);
+  i = strcasecmp (newsym->name, (*p)->name);
 
   if (i == 0)
     return (0);
@@ -102,7 +89,6 @@ static int insert_symbol (sym **p, sym *newsym)
 int create_symbol (t_symtab t, char *name, int value, int lineno)
 {
   sym **table = t;
-  sym *p = *table;
   sym *newsym;
 
   newsym = (sym *) calloc (1, sizeof (sym));
@@ -128,7 +114,7 @@ int lookup_symbol (t_symtab t, char *name, int *value)
 
   while (p)
     {
-      i = stricmp (name, p->name);
+      i = strcasecmp (name, p->name);
       if (i == 0)
 	{
 	  *value = p->value;

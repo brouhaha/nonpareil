@@ -1,6 +1,6 @@
 /*
 casm.h
-$Id: casm.h,v 1.8 2003/05/30 23:38:12 eric Exp $
+$Id$
 Copyright 1995 Eric L. Smith
 
 CASM is an assembler for the processor used in the HP "Classic" series
@@ -67,7 +67,6 @@ void emit_test  (int op);  /* use for test instructions */
  */
 int range (int val, int min, int max);
 
-char *newstr (char *orig);
 
 /*
  * print to both listing error buffer and standard error
@@ -81,6 +80,3 @@ int err_printf (char *format, ...);
 /* generate error or warning messages and increment appropriate counter */
 int error   (char *format, ...);
 int warning (char *format, ...);
-
-/* generate fatal error message to stderr, doesn't return */
-void fatal  (char *format, ...);

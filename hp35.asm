@@ -1,4 +1,5 @@
 ; HP-35 ROM code disassembled from dump by Peter Monta
+; Copyright 2004 Eric L. Smith <eric@brouhaha.com>
 ; $Id$
 
 ; Much of the code is similar to the HP-45 ROM source code, so labels
@@ -307,6 +308,8 @@ den6:	shift right b[wp]
 l00376:	m -> c
 	go to l00333
 
+	.symtab
+
 	.rom @01
 
 	go to tan13
@@ -588,6 +591,8 @@ tan14:	a exchange c[wp]
 	c - 1 -> c[s]
 	b exchange c[s]
 
+	.symtab
+
 	.rom @02
 
 err21:	select rom 0		; -> l00001
@@ -863,3 +868,5 @@ lnc10:	0 -> c[w]
 
 lncd3:	5 -> p
 	go to lnc6
+
+	.symtab

@@ -1,4 +1,5 @@
 ; HP-55 ROM sources from United States Patent 4,009,379
+; Copyright 1995 Eric L. Smith <eric@brouhaha.com>
 ; $Id$
 ; Keyed in by Eric Smith on 8-Mar-1995 - any errors are probably mine.
 ; Five typos corrected on 30-Mar-2003, found by Peter Monta by OCRing

@@ -1,6 +1,6 @@
 /*
 casm.c
-$Id: casm.c,v 1.14 2003/05/30 23:38:12 eric Exp $
+$Id$
 Copyright 1995 Eric L. Smith
 
 CASM is an assembler for the processor used in the HP "Classic" series
@@ -26,12 +26,16 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
 #include <stdarg.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+
 #include "symtab.h"
+#include "util.h"
 #include "casm.h"
 
 char *progname;
+
 int pass;
 int lineno;
 int errors;
@@ -217,7 +221,7 @@ int main (int argc, char *argv[])
       {
 	symtab [group] [rom] = alloc_symbol_table ();
 	if (! symtab [group] [rom])
-	  fatal ("symbol table allocation failed\n");
+	  fatal (2, "symbol table allocation failed\n");
       }
 
   strcpy (srcfn, argv [1]);
@@ -225,7 +229,7 @@ int main (int argc, char *argv[])
   srcfile = fopen (srcfn, "r");
 
   if (! srcfile)
-    fatal ("can't open input file '%s'\n", srcfn);
+    fatal (2, "can't open input file '%s'\n", srcfn);
 
   munge_filename (objfn, srcfn, ".obj");
   munge_filename (listfn, srcfn, ".lst");
@@ -233,12 +237,12 @@ int main (int argc, char *argv[])
   objfile = fopen (objfn, "w");
 
   if (! objfile)
-    fatal ("can't open input file '%s'\n", objfn);
+    fatal (2, "can't open input file '%s'\n", objfn);
 
   listfile = fopen (listfn, "w");
 
   if (! listfile)
-    fatal ("can't open listing file '%s'\n", listfn);
+    fatal (2, "can't open listing file '%s'\n", listfn);
 
   rom = 0;
   group = 0;
@@ -254,6 +258,7 @@ int main (int argc, char *argv[])
   fclose (srcfile);
   fclose (objfile);
   fclose (listfile);
+  exit (0);
 }
 
 void yyerror (char *s)
@@ -319,20 +324,6 @@ int range (int val, int min, int max)
   return val;
 }
 
-char *newstr (char *orig)
-{
-  int len;
-  char *r;
-
-  len = strlen (orig);
-  r = (char *) malloc (len + 1);
-  
-  if (! r)
-    fatal ("memory allocation failed\n");
-
-  memcpy (r, orig, len + 1);
-  return (r);
-}
 
 /*
  * print to both listing error buffer and standard error
@@ -360,19 +351,6 @@ int err_printf (char *format, ...)
   res = err_vprintf (format, ap);
   va_end (ap);
   return (res);
-}
-
-
-/* generate fatal error message to stderr, doesn't return */
-void fatal (char *format, ...)
-{
-  va_list ap;
-
-  fprintf (stderr, "fatal error: ");
-  va_start (ap, format);
-  vfprintf (stderr, format, ap);
-  va_end (ap);
-  exit (2);
 }
 
 

@@ -19,25 +19,21 @@
 
 
 # -----------------------------------------------------------------------------
-# You may need to change the following definitions.  In particular you will
-# need to remove the -DUSE_TIMER if you don't have the setitimer() system
-# call, and you may need to chage X11LIBS and X11INCS if X isn't in
-# /usr/X11R6.
-#
 # If you are using Flex version 2.4.1 or earlier, you will need to add
 # -DOLD_FLEX to CFLAGS.
 # -----------------------------------------------------------------------------
-
-CC = gcc
-CFLAGS = -g -Dstricmp=strcasecmp -DUSE_TIMER -DENTER_KEY_MOD
 
 YACC = bison
 YFLAGS = -d -v
 
 LEX = flex
 
-X11LIBS = -L/usr/X11R6/lib -lX11
-X11INCS = -I/usr/X11R6/include
+CDEFINES =  -Dstricmp=strcasecmp -DENTER_KEY_MOD
+
+LDFLAGS = -g
+
+CFLAGS = -g -Wall `pkg-config gtk+-2.0 glib-2.0 --cflags`
+LOADLIBES = `pkg-config gtk+-2.0 glib-2.0 --libs` -lgthread-2.0
 
 
 # -----------------------------------------------------------------------------
@@ -46,15 +42,15 @@ X11INCS = -I/usr/X11R6/include
 # -----------------------------------------------------------------------------
 
 PACKAGE = casmsim
-VERSION = 0.14
+VERSION = 0.15
 DISTNAME = $(PACKAGE)-$(VERSION)
 
 CALCS = hp45 hp55 hp35
 
 TARGETS = casm csim
 
-HDRS = casm.h symtab.h xio.h
-CSRCS = casm.c symtab.c csim.c xio.c
+HDRS = casm.h symtab.h util.h proc.h
+CSRCS = casm.c symtab.c csim.c util.c proc.c
 OSRCS = casml.l casmy.y 
 MISC = COPYING README ChangeLog
 
@@ -62,12 +58,12 @@ AUTO_CSRCS = casml.c casmy.tab.c
 AUTO_HDRS = casmy.tab.h
 AUTO_MISC = casmy.output
 
-CASM_OBJECTS = casm.o symtab.o casml.o casmy.tab.o
-CSIM_OBJECTS = csim.o xio.o
+CASM_OBJECTS = casm.o symtab.o casml.o casmy.tab.o util.o
+CSIM_OBJECTS = csim.o util.o proc.o
 
 OBJECTS = $(CASM_OBJECTS) $(CSIM_OBJECTS)
 
-SIM_LIBS = $(X11LIBS)
+SIM_LIBS = $(LOADLIBES)
 
 ROM_SRCS =  $(CALCS:=.asm)
 ROM_LISTINGS = $(ROM_SRCS:.asm=.lst)
@@ -117,6 +113,6 @@ ALL_CSRCS = $(CSRCS) $(AUTO_CSRCS)
 DEPENDS = $(ALL_CSRCS:.c=.d)
 
 %.d: %.c
-	$(CC) -M -MG $(CFLAGS) $< | sed -e 's@ /[^ ]*@@g' -e 's@^\(.*\)\.o:@\1.d \1.o:@' > $@
+	$(CC) -M -MG $(CFLAGS) $(CDEFINES) $< | sed -e 's@ /[^ ]*@@g' -e 's@^\(.*\)\.o:@\1.d \1.o:@' > $@
 
 include $(DEPENDS)
