@@ -54,7 +54,7 @@ extern char *lineptr;
 #define MAXGROUP 2
 #define MAXROM 16     /* max 8 for classic, 16 for woodstock */
 
-extern t_symtab symtab [MAXGROUP] [MAXROM];  /* separate symbol tables for each ROM */
+extern symtab_t *symtab [MAXGROUP] [MAXROM];  /* separate symbol tables for each ROM */
 
 void do_label (char *s);
 

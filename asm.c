@@ -85,7 +85,7 @@ FILE *srcfile  = NULL;
 FILE *objfile  = NULL;
 FILE *listfile = NULL;
 
-t_symtab symtab [MAXGROUP] [MAXROM];  /* separate symbol tables for each ROM */
+symtab_t *symtab [MAXGROUP] [MAXROM];  /* separate symbol tables for each ROM */
 
 
 void usage (FILE *f)

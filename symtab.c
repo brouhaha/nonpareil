@@ -31,24 +31,30 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #include "util.h"
 
 
-typedef struct sym
+typedef struct sym_t
 {
   char *name;
   int value;
   int lineno;
-  struct sym *left;
-  struct sym *right;
-} sym;
+  struct sym_t *left;
+  struct sym_t *right;
+} sym_t;
 
 
-t_symtab alloc_symbol_table (void)
+struct symtab_t
 {
-  sym **table;
-  table = (sym **) calloc (1, sizeof (sym *));
+  sym_t *root;
+};
+
+
+symtab_t *alloc_symbol_table (void)
+{
+  symtab_t *table;
+  table = calloc (1, sizeof (symtab_t));
   return (table);
 }
 
-static void free_entry (sym *p)
+static void free_entry (sym_t *p)
 {
   if (p->left)
     free_entry (p->left);
@@ -57,14 +63,13 @@ static void free_entry (sym *p)
   free (p);
 }
 
-void free_symbol_table (t_symtab t)
+void free_symbol_table (symtab_t *t)
 {
-  sym **table = t;
-  free_entry (*table);
-  free (table);
+  free_entry (t->root);
+  free (t);
 }
 
-static int insert_symbol (sym **p, sym *newsym)
+static int insert_symbol (sym_t **p, sym_t *newsym)
 {
   int i;
 
@@ -86,12 +91,11 @@ static int insert_symbol (sym **p, sym *newsym)
 
 
 /* returns 1 for success, 0 if duplicate name */
-int create_symbol (t_symtab t, char *name, int value, int lineno)
+int create_symbol (symtab_t *table, char *name, int value, int lineno)
 {
-  sym **table = t;
-  sym *newsym;
+  sym_t *newsym;
 
-  newsym = (sym *) calloc (1, sizeof (sym));
+  newsym = calloc (1, sizeof (sym_t));
   if (! newsym)
     {
       fprintf (stderr, "memory allocation failure\n");
@@ -102,14 +106,13 @@ int create_symbol (t_symtab t, char *name, int value, int lineno)
   newsym->value = value;
   newsym->lineno = lineno;
 
-  return (insert_symbol (table, newsym));
+  return (insert_symbol (& table->root, newsym));
 }
 
 /* returns 1 for success, 0 if not found */
-int lookup_symbol (t_symtab t, char *name, int *value)
+int lookup_symbol (symtab_t *table, char *name, int *value)
 {
-  sym **table = t;
-  sym *p = *table;
+  sym_t *p = table->root;
   int i;
 
   while (p)
@@ -128,7 +131,7 @@ int lookup_symbol (t_symtab t, char *name, int *value)
   return (0);
 }
 
-static void print_symbols (FILE *f, sym *p)
+static void print_symbols (FILE *f, sym_t *p)
 {
   if (! p)
     return;
@@ -137,8 +140,7 @@ static void print_symbols (FILE *f, sym *p)
   print_symbols (f, p->right);
 }
 
-void print_symbol_table (t_symtab t, FILE *f)
+void print_symbol_table (symtab_t *table, FILE *f)
 {
-  sym **table = t;
-  print_symbols (f, *table);
+  print_symbols (f, table->root);
 }

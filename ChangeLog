@@ -1,6 +1,12 @@
+2004-04-04  Eric Smith <eric@brouhaha.com>
+
+	* symtab.h symtab.c asm.h asm.c: Cleaned up typedefs, and use separate
+	structs/typedefs for symbol table and symbol.
+
 2004-04-03  Eric Smith <eric@brouhaha.com>
 
-	* wasml.l wasmy.y Makefile: Started development of Woodstock assembler "wasm".
+	* wasml.l wasmy.y Makefile: Started development of Woodstock
+	assembler "wasm".
 
 2004-04-02  Eric Smith <eric@brouhaha.com>
 
