@@ -1,0 +1,324 @@
+# KML script for HP-45
+#
+# $Id$
+# Copyright 2004 Eric L. Smith <eric@brouhaha.com>
+#
+# CSIM is free software; you can redistribute it and/or modify it
+# under the terms of the GNU General Public License version 2 as
+# published by the Free Software Foundation.  Note that I am not
+# granting permission to redistribute or modify CSIM under the terms
+# of any later version of the General Public License.
+#
+# This program is distributed in the hope that it will be useful (or
+# at least amusing), but WITHOUT ANY WARRANTY; without even the
+# implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+# PURPOSE.  See the GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with this program (in the file "COPYING"); if not, write to
+# the Free Software Foundation, Inc., 675 Mass Ave, Cambridge, MA
+# 02139, USA.
+
+
+global
+	title "HP-45 Advanced Scientific Calculator"
+	author "Eric Smith <eric@brouhaha.com>"
+	hardware "Classic"
+	model "45"
+	rom "hp45.lst"
+	bitmap "hp45.jpg"
+end
+
+background
+	offset 0 0
+	size 303 551
+end
+
+led
+	digits 15
+	offset 54 58
+	size 192 11
+	color 0 0 0 0      # background
+	color 1 238 17 17  # foreground
+end
+
+button 11
+	type 0
+	size 32 24
+	offset 48 156
+	down 2 8
+	keycode 006
+end
+
+button 12
+	type 0
+	size 32 24
+	offset 91 156
+	down 2 8
+	keycode 004
+end
+
+button 13
+	type 0
+	size 32 24
+	offset 134 156
+	down 2 8
+	keycode 003
+end
+
+button 14
+	type 0
+	size 32 24
+	offset 176 156
+	down 2 8
+	keycode 002
+end
+
+button 15
+	type 0
+	size 32 24
+	offset 48 201
+	down 2 8
+	keycode 000
+end
+
+button 21
+	type 0
+	size 32 24
+	offset 48 201
+	down 2 8
+	keycode 056
+end
+
+button 22
+	type 0
+	size 32 24
+	offset 91 201
+	down 2 8
+	keycode 054
+end
+
+button 23
+	type 0
+	size 32 24
+	offset 134 201
+	down 2 8
+	keycode 053
+end
+
+button 24
+	type 0
+	size 32 24
+	offset 176 201
+	down 2 8
+	keycode 052
+end
+
+button 25
+	type 0
+	size 32 24
+	offset 219 201
+	down 2 8
+	keycode 050
+end
+
+button 31
+	type 0
+	size 32 24
+	offset 48 246
+	down 2 8
+	keycode 016
+end
+
+button 32
+	type 0
+	size 32 24
+	offset 91 246
+	down 2 8
+	keycode 014
+end
+
+button 33
+	type 0
+	size 32 24
+	offset 134 246
+	down 2 8
+	keycode 013
+end
+
+button 34
+	type 0
+	size 32 24
+	offset 176 246
+	down 2 8
+	keycode 012
+end
+
+button 35
+	type 0
+	size 32 24
+	offset 219 246
+	down 2 8
+	keycode 010
+end
+
+button 41
+	type 0
+	size 74 24
+	offset 48 291
+	down 2 8
+	keycode 075    # change to 074 to enable HP-45 timer ("RCL ENTER^")
+end
+
+button 42
+	type 0
+	size 32 24
+	offset 134 291
+	down 2 8
+	keycode 073
+end
+
+button 43
+	type 0
+	size 32 24
+	offset 176 291
+	down 2 8
+	keycode 072
+end
+
+button 44
+	type 0
+	size 32 24
+	offset 219 291
+	down 2 8
+	keycode 070
+end
+
+button 51
+	type 0
+	size 24 24
+	offset 48 336
+	down 2 8
+	keycode 066
+end
+
+button 52
+	type 0
+	size 36 24
+	offset 92 336
+	down 2 8
+	keycode 064
+end
+
+button 53
+	type 0
+	size 36 24
+	offset 153 336
+	down 2 8
+	keycode 063
+end
+
+button 54
+	type 0
+	size 36 24
+	offset 214 336
+	down 2 8
+	keycode 062
+end
+
+button 61
+	type 0
+	size 24 24
+	offset 48 381
+	down 2 8
+	keycode 026
+end
+
+button 62
+	type 0
+	size 36 24
+	offset 92 381
+	down 2 8
+	keycode 024
+end
+
+button 63
+	type 0
+	size 36 24
+	offset 153 381
+	down 2 8
+	keycode 023
+end
+
+button 64
+	type 0
+	size 36 24
+	offset 214 381
+	down 2 8
+	keycode 022
+end
+
+button 71
+	type 0
+	size 24 24
+	offset 48 425
+	down 2 8
+	keycode 036
+end
+
+button 72
+	type 0
+	size 36 24
+	offset 92 425
+	down 2 8
+	keycode 034
+end
+
+button 73
+	type 0
+	size 36 24
+	offset 153 425
+	down 2 8
+	keycode 033
+end
+
+button 74
+	type 0
+	size 36 24
+	offset 214 425
+	down 2 8
+	keycode 032
+end
+
+button 81
+	type 0
+	size 24 24
+	offset 48 425
+	down 2 8
+	keycode 036
+end
+
+button 82
+	type 0
+	size 36 24
+	offset 92 425
+	down 2 8
+	keycode 034
+end
+
+button 83
+	type 0
+	size 36 24
+	offset 153 425
+	down 2 8
+	keycode 033
+end
+
+button 84
+	type 0
+	size 36 24
+	offset 214 425
+	down 2 8
+	keycode 032
+end
+
