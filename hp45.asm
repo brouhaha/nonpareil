@@ -2146,4 +2146,286 @@ ret3:	select rom 3
 
 	.rom @07
 
+prfx:	go to wt22
+wt30:	go to wt29
+fix1:	go to wt22
+expn:	go to wt22
+lnnn:	go to wt22
+wt22:	go to wt21
+invx:	go to wt22
+wt18:	go to wt17
+perc:	go to wt22
+wt09:	go to wt08
+rcal:	go to wt22
+stor:	go to wt22
+rold:	go to wt22
+wt21:	go to wt20
+exc1:	go to wt22
+reg9:	load constant 9
+	go to rega
+wt17:	go to wt16
+dig6:	go to reg6
+dig5:	go to reg5
+dig4:	load constant 4
+	go to reg1
+addd:	go to wt22
+reg8:	load constant 8
+	go to rega
+wt06:	go to wt05
+dig3:	go to reg3
+dig2:	go to reg2
+dig1:	load constant 1
+	go to reg1
+mult:	go to wt22
+reg5:	load constant 5
+	go to rega
+wt11:	go to wt10
+sigp:	go to chs3
+dcpt:	go to retn
+dig0:	load constant 0
+	go to reg1
+divd:	go to wt22
+wt10:	go to wt09
+tang:	go to wt22
+dl06:	go to dl05
+coss:	go to wt22
+sinn:	go to wt22
+tpol:	go to wt22
+dl05:	go to dl04
+sqar:	go to wt22
+dl04:	go to dl03
+reg6:	load constant 6
+	go to rega
+dig9:	go to reg9
+dig8:	go to reg8
+dig7:	load constant 7
+	go to reg1
+subt:	go to wt22
+dl03:	go to rtrn
+clrx:	0 -> a[w]
+	jsb wt21
+eexx:	go to eex1
+chs1:	go to chs2
+clok:	go to chs4
+ent1:	select rom 3
+
+ent1z3:	if s9 # 1
+	     then go to ent1
+init:	clear status
+	if c[s] >= 1
+	     then go to err2
+	c - 1 -> c[x]
+	c - 1 -> c[x]
+	if c[xs] = 0
+	     then go to err2
+	go to int2
+int1:	shift right c[m]
+int2:	c + 1 -> c[x]
+	if no carry go to int1
+int3:	a exchange c[w]
+	m -> c
+	load constant 1
+	load constant 3
+	if a >= c[m]
+	     then go to err2
+	load constant 6
+	10 -> p
+	if a >= c[p]
+	     then go to err2
+	8 -> p
+	shift right a[wp]
+	7 -> p
+	load constant 6
+	7 -> p
+	if a >= c[p]
+	     then go to err2
+	c exchange m
+	5 -> p
+	shift right a[wp]
+	shift right a[wp]
+	shift right a[wp]
+	shift right a[wp]
+	a exchange b[w]
+	a - 1 -> a[wp]
+	0 -> a[x]
+	8 -> p
+	a - 1 -> a[p]
+	11 -> p
+	a + 1 -> a[p]
+	a + 1 -> a[p]
+	a - 1 -> a[s]
+	a exchange b[w]
+key2:	0 -> s0
+	jsb dl06
+	jsb dl06
+	if s0 # 1
+	     then go to key3
+	go to wt12
+
+chs4:	1 -> s10
+	go to wt20
+
+eex1:	if b[x] = 0
+	     then go to eex2
+	0 -> b[x]
+	go to wt18
+
+	no operation
+	no operation
+
+reg3:	load constant 3
+	go to rega
+
+reg2:	load constant 2
+reg1:	go to rega
+
+fst1:	select rom 3
+
+key1:	if s0 # 1
+	     then go to wt30
+	if s8 # 1
+	     then go to key2
+	display off
+	0 -> s8
+	12 -> p
+	0 -> c[w]
+	keys -> rom address
+
+eex2:	a exchange b[x]
+	a - 1 -> a[x]
+	a exchange b[x]
+	go to wt16
+
+key3:	1 -> s8
+	go to wt11
+
+chs2:	if s10 # 1
+	     then go to chs4
+chs3:	0 -> s10
+	c -> data address
+	go to chs5
+
+rega:	c -> data address
+	if s10 # 1
+	     then go to regb
+chs5:	a exchange c[w]
+	c -> a[w]
+	shift right c[m]
+	c -> data
+	go to wt12
+
+regb:	data -> c
+	12 -> p
+	if c[p] = 0
+	     then go to regc
+	0 -> c[w]
+regc:	a exchange c[w]
+	shift left a[ms]
+wt29:	jsb dl05
+wt24:	jsb dl04
+wt20:	jsb dl04
+wt16:	jsb dl04
+wt12:	jsb dl04
+wt08:	jsb dl03
+wt05:	m -> c
+	display off
+	display toggle
+	if s10 # 1
+	     then go to key1
+
+tim0:	1 -> p			; increment hundredths of seconds
+	a + 1 -> a[wp]
+	if no carry go to key1
+
+	6 -> p			; increment seconds
+	a + 1 -> a[p]
+	if no carry go to wt29
+	7 -> p
+	a + 1 -> a[p]
+	if a >= c[p]
+	     then go to tim1
+	go to wt24
+
+tim1:	0 -> a[wp]
+
+	9 -> p			; increment minutes
+	a + 1 -> a[p]
+	if no carry go to wt21
+	10 -> p
+	a + 1 -> a[p]
+	if a >= c[p]
+	     then go to tim2
+	go to wt16
+
+tim2:	0 -> c[wp]
+	0 -> a[wp]
+
+	11 -> p			; increment hours
+	a + 1 -> a[p]
+	if no carry go to tim3
+	0 -> a[w]
+	12 -> p
+	a + 1 -> a[p]
+	if no carry go to wt08
+
+tim3:	if a >= c[m]
+	     then go to tim4
+	go to wt09
+
+tim4:	0 -> a[w]
+	11 -> p
+	a + 1 -> a[p]
+	if no carry go to wt06
+
+retn:	m -> c
+	0 -> c[wp]
+	2 -> p
+	if b[x] = 0
+	     then go to ret1
+	load constant 4
+	go to ret2
+
+ret1:	load constant 6
+ret2:	c exchange m
+	0 -> c[w]
+	12 -> p
+	0 -> b[w]
+ret3:	c -> data address
+	b exchange c[w]
+	data -> c
+	if c[p] >= 1
+	     then go to ret4
+	jsb fixx
+	c -> data
+ret4:	b exchange c[w]
+	c + 1 -> c[p]
+	if no carry go to ret3
+	shift right a[m]
+	a exchange c[w]
+	jsb fixx
+	go to fst1
+
+fixx:	if c[wp] = 0
+	     then go to rtrn
+	a exchange c[w]
+	shift left a[w]
+	8 -> p
+	shift left a[wp]
+	6 -> p
+	shift left a[wp]
+	shift left a[wp]
+	shift left a[wp]
+	12 -> p
+	a + 1 -> a[x]
+fix2:	if a[p] >= 1
+	     then go to fxrt
+	a - 1 -> a[x]
+	shift left a[m]
+	go to fix2
+fxrt:	a exchange c[w]
+rtrn:	return
+
+err2:	0 -> c[w]
+	jsb int3
+
 	.symtab
