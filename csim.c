@@ -41,6 +41,10 @@ MA 02111, USA.
   #include "debugger.h"
 #endif
 
+#ifndef SHAPE_DEFAULT
+#define SHAPE_DEFAULT true
+#endif
+
 
 gboolean scancode_debug = FALSE;
 gboolean kml_debug = FALSE;
@@ -73,7 +77,14 @@ void usage (FILE *f)
   fprintf (f, "\n");
   fprintf (f, "usage: %s [options...] kmlfile\n", progname);
   fprintf (f, "options:\n");
-  fprintf (f, "   --noshape\n");
+  fprintf (f, "   --shape");
+  if (SHAPE_DEFAULT)
+    fprintf (f, " (default)");
+  fprintf (f, "\n");
+  fprintf (f, "   --noshape");
+  if (! (SHAPE_DEFAULT))
+    fprintf (f, " (default)");
+  fprintf (f, "\n");
   fprintf (f, "   --kmldebug\n");
   fprintf (f, "   --kmldump\n");
   fprintf (f, "   --scancodedebug\n");
@@ -694,7 +705,7 @@ int main (int argc, char *argv[])
 {
   char *kml_fn = NULL;
 
-  gboolean no_shape = FALSE;
+  gboolean shape = SHAPE_DEFAULT;
   gboolean kml_dump = FALSE;
   gboolean run = TRUE;
 
@@ -730,8 +741,10 @@ int main (int argc, char *argv[])
       argv++;
       if (*argv [0] == '-')
 	{
-	  if (strcasecmp (argv [0], "--noshape") == 0)
-	    no_shape = 1;
+	  if (strcasecmp (argv [0], "--shape") == 0)
+	    shape = true;
+	  else if (strcasecmp (argv [0], "--noshape") == 0)
+	    shape = false;
 	  else if (strcasecmp (argv [0], "--kmldebug") == 0)
 	    kml_debug = 1;
 	  else if (strcasecmp (argv [0], "--kmldump") == 0)
@@ -807,7 +820,7 @@ int main (int argc, char *argv[])
 
   main_window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
 
-  if (kml->has_transparency && ! no_shape)
+  if (kml->has_transparency && shape)
     {
       image_mask_bitmap = (GdkBitmap *) gdk_pixmap_new (GTK_WINDOW (main_window)->frame,
 							kml->background_size.width,

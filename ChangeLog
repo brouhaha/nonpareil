@@ -1,3 +1,7 @@
+2004-04-29  Eric Smith <eric@brouhaha.com>
+
+	* csim.c: Add --shape option and SHAPE_DEFAULT define.
+
 2004-04-14  Eric Smith <eric@brouhaha.com>
 
 	* proc_int.h proc.c proc_classic.c proc_woodstock.c: Remove glib.h
