@@ -53,6 +53,7 @@ int main (int argc, char *argv[])
       pass = 2;
       lineno = 1;
       pc = 0;
+      yyrestart (stdin);
       yyparse ();
     }
 
@@ -124,3 +125,22 @@ void range (int val, int min, int max)
       errors++;
     }
 }
+
+char *newstr (char *orig)
+{
+  int len;
+  char *r;
+
+  len = strlen (orig);
+  r = (char *) malloc (len + 10);
+  
+  if (! r)
+    {
+      fprintf (stderr, "memory allocation failed\n");
+      exit (2);
+    }
+
+  memcpy (r, orig, len + 1);
+  return (r);
+}
+

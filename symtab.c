@@ -9,6 +9,7 @@
  */
 
 #include <stdio.h>
+#include "casm.h"
 #include "symtab.h"
 
 typedef struct sym
@@ -36,7 +37,7 @@ int insert_symbol (sym **p, sym *newsym)
       return (1);
     }
 
-  i = stricmp ((*p)->name, newsym->name);
+  i = stricmp (newsym->name, (*p)->name);
 
   if (i == 0)
     return (0);
@@ -60,13 +61,7 @@ int create_symbol (char *name, int value, int lineno)
       exit (2);
     }
 
-  newsym->name = (char *) malloc (strlen (name));
-  if (! newsym->name)
-    {
-      fprintf (stderr, "memory allocation failure\n");
-      exit (2);
-    }
-  strcpy (newsym->name, name);
+  newsym->name = newstr (name);
   newsym->value = value;
   newsym->lineno = lineno;
 
@@ -81,7 +76,7 @@ int lookup_symbol (char *name, int *value)
 
   while (p)
     {
-      i = stricmp (p->name, name);
+      i = stricmp (name, p->name);
       if (i == 0)
 	{
 	  *value = p->value;

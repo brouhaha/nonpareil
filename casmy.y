@@ -31,29 +31,40 @@
 %token A B C M P
 
 %token ADDRESS
+%token ADVANCE
+%token AND
+%token BUFFER
 %token CARRY
 %token CLEAR
 %token CONSTANT
 %token DATA
 %token DELAYED
+%token DELETE
 %token DISPLAY
 %token DOWN
 %token EXCHANGE
+%token FOR
 %token GO
 %token GROUP
 %token IF
+%token INSERT
 %token JSB
 %token KEYS
+%token LABEL
 %token LEFT
 %token LOAD
+%token MARK
+%token MEMORY
 %token NO
 %token OFF
 %token OPERATION
+%token POINTER
 %token REGISTERS
 %token RETURN
 %token RIGHT
 %token ROM
 %token ROTATE
+%token SEARCH
 %token SELECT
 %token SHIFT
 %token STACK
@@ -74,6 +85,7 @@ line		:	label instruction '\n' { endline (); }
 		|	label '\n' { endline (); }
 		|	instruction '\n' { endline (); }
 		|	'\n' { endline (); }
+		|	error '\n' { yyerrok; endline (); }
 		;
 
 label:		IDENT ':'	{ do_label ($1); }
@@ -246,6 +258,13 @@ misc_inst       : inst_load_const
 		| inst_data_to_c
 		| inst_key_to_rom
 		| inst_return
+		| inst_ptr_adv
+		| inst_mem_delete
+		| inst_rom_to_buf
+		| inst_buf_to_rom
+		| inst_mem_insert
+		| inst_mark_srch
+		| inst_srch_label
                 ;
 
 inst_load_const : LOAD CONSTANT expr        { range ($3, 0, 9); 
@@ -270,5 +289,12 @@ inst_c_to_data	: C ARROW DATA              { emit (0x2f0); } ;
 inst_data_to_c	: DATA ARROW C              { emit (0x2f8); } ;
 inst_key_to_rom	: KEYS ARROW ROM ADDRESS    { emit (0x0d0); } ;
 inst_return	: RETURN                    { emit (0x030); } ;
+inst_ptr_adv	: POINTER ADVANCE           { emit (0x300); } ;
+inst_rom_to_buf	: ROM ADDRESS ARROW BUFFER  { emit (0x200); } ;
+inst_mem_delete : MEMORY DELETE             { emit (0x180); } ;
+inst_mark_srch	: MARK AND SEARCH           { emit (0x100); } ;
+inst_mem_insert	: MEMORY INSERT             { emit (0x080); } ;
+inst_buf_to_rom	: BUFFER ARROW ROM ADDRESS  { emit (0x040); } ;
+inst_srch_label	: SEARCH FOR LABEL          { emit (0x280); } ;
 
 %%

@@ -20,3 +20,5 @@ void emit (int op);
 void endline (void);
 
 void range (int val, int min, int max);
+
+char *newstr (char *orig);

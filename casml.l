@@ -11,21 +11,12 @@
 %{
 #include "y.tab.h"
 #include "casm.h"
-
-#define ALLOC(x,s,t) do { x = (t) malloc (s); \
-                          if (! x) { fprintf (stderr, "memory allocation failed\n");\
-                                     exit (2); }} while (0)
-#define BCOPY(from,to,size) memcpy(to,from,size)
-#define NEWSTR(from,to) do { int len = strlen (from);\
-                             ALLOC(to, len+1, char *);\
-                             BCOPY(from, to, len+1);\
-                           } while (0)
 %}
 
 octaldig	[0-7]
 digit		[0-9]
 alpha		[a-zA-Z]
-alphanum	[a-zA-Z0-9]
+alphanum	[a-zA-Z0-9_]
 comment		\;.*$
 lb		\[
 rb		\]
@@ -34,19 +25,13 @@ rb		\]
 
 @{octaldig}+	{ scanf (yytext+1, "%o", &yylval.integer); return INTEGER; }
 
-[sS][1-9]		{ yylval.integer = atoi (yytext+1); return STATBIT; }
-[sS]1[0-2]		{ yylval.integer = atoi (yytext+1); return STATBIT; }
+[sS][0-9]		{ yylval.integer = atoi (yytext+1); return STATBIT; }
+[sS]1[0-1]		{ yylval.integer = atoi (yytext+1); return STATBIT; }
 
 {alpha}{alphanum}*	{
                           if (yylval.integer = keyword (yytext))
                             return yylval.integer;
-/*
-                          if ((yytext [0] == 's') || (yytext [0] == 'S'))
-                            {
-                              if (
-                            }
-*/
-                          NEWSTR(yytext, yylval.string);
+                          yylval.string = newstr (yytext);
                           return IDENT;
                         }
 
@@ -83,29 +68,40 @@ keywords [] =
   "p",         P,
 
   "address",   ADDRESS,
+  "advance",   ADVANCE,
+  "and",       AND,
+  "buffer",    BUFFER,
   "carry",     CARRY,
   "clear",     CLEAR,
   "constant",  CONSTANT,
   "data",      DATA,
   "delayed",   DELAYED,
+  "delete",    DELETE,
   "display",   DISPLAY,
   "down",      DOWN,
   "exchange",  EXCHANGE,
+  "for",       FOR,
   "go",        GO,
   "group",     GROUP,
   "if",        IF,
+  "insert",    INSERT,
   "jsb",       JSB,
   "keys",      KEYS,
+  "label",     LABEL,
   "left",      LEFT,
   "load",      LOAD,
+  "mark",      MARK,
+  "memory",    MEMORY,
   "no",        NO,
   "off",       OFF,
   "operation", OPERATION,
+  "pointer",   POINTER,
   "registers", REGISTERS,
   "return",    RETURN,
   "right",     RIGHT,
   "rom",       ROM,
   "rotate",    ROTATE,
+  "search",    SEARCH,
   "select",    SELECT,
   "shift",     SHIFT,
   "stack",     STACK,
