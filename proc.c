@@ -940,7 +940,10 @@ void sim_init (int ram_size,
   display_update = display_update_fn;
 
   sim_state = SIM_IDLE;
+
   memset ((char *) & sim_env, 0, sizeof (sim_env_t));
+  sim_env.key_buf = -1;  /* no key pressed */
+
   cycle_count = 0;
 
   sim_thread = g_thread_create (sim_thread_func, NULL, TRUE, NULL);
