@@ -1,5 +1,10 @@
 2004-04-09  Eric Smith <eric@brouhaha.com>
 
+	* proc_woodstock.c (op_arith): When printing warning messages
+	about P out of range, call woodstock_print_state().  Don't
+	suppress message about loading an out of range P value, as the
+	HP-45 is not a Woodstock.
+
 	* proc_woodstock.c (woodstock_disassemble): Print opcode in octal
 	rather than decimal.
 

@@ -39,6 +39,9 @@ MA 02111, USA.
 #define SSIZE 16
 #define STACK_SIZE 2
 
+/* If defined, print warnings about stack overflow or underflow. */
+#undef STACK_WARNING
+
 
 struct sim_env_t
 {
@@ -89,8 +92,7 @@ struct sim_env_t
 };
 
 
-/* If defined, print warnings about stack overflow or underflow. */
-#undef STACK_WARNING
+static void woodstock_print_state (sim_t *sim, sim_env_t *env);
 
 
 static void bad_op (sim_t *sim, int opcode)
@@ -149,7 +151,8 @@ static void op_arith (sim_t *sim, int opcode)
       first =  sim->env->p; last =  sim->env->p;
       if (sim->env->p >= WSIZE)
 	{
-	  printf ("Warning! p > WSIZE at %05o\n", sim->env->prev_pc);
+	  printf ("Warning! p >= WSIZE at %05o\n", sim->env->prev_pc);
+	  woodstock_print_state (sim, sim->env);
 	  last = 0;  /* don't do anything */
 	}
       break;
@@ -158,6 +161,7 @@ static void op_arith (sim_t *sim, int opcode)
       if (sim->env->p > 13)
 	{
 	  printf ("Warning! p >= WSIZE at %05o\n", sim->env->prev_pc);
+	  woodstock_print_state (sim, sim->env);
 	  last = 13;
 	}
       break;
@@ -693,10 +697,8 @@ static void op_load_constant (sim_t *sim, int opcode)
 {
   if (sim->env->p >= WSIZE)
     {
-#if 0 /* HP-45 depends on load constant with p > 13 not affecting C */
-      printf ("load constant w/ p >= WSIZE at %05o\n", sim->env->prev_pc)
-      ;
-#endif
+      printf ("load constant w/ p >= WSIZE at %05o\n", sim->env->prev_pc);
+      woodstock_print_state (sim, sim->env);
     }
   else
     sim->env->c [sim->env->p] = opcode >> 6;
