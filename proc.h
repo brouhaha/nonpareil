@@ -28,7 +28,9 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 typedef uint8_t digit_t;
 typedef digit_t reg_t [WSIZE];
 
-#define SSIZE 12
+#define SSIZE 16
+
+#define STACK_SIZE 2
 
 
 typedef uint16_t romword;
@@ -39,30 +41,39 @@ typedef struct
   reg_t a;
   reg_t b;
   reg_t c;
-  reg_t d;
-  reg_t e;
-  reg_t f;
-  reg_t m;
+  reg_t y;
+  reg_t z;
+  reg_t t;
+  reg_t m1;
+  reg_t m2;
+
+  digit_t f;
 
   digit_t p;
 
+  uint8_t arithmetic_base;  /* 10 or 16 */
+
   uint8_t carry, prev_carry;
 
-  uint8_t s [SSIZE];
+  uint8_t s [SSIZE];  /* status bits */
+  uint8_t ext_flag [SSIZE];  /* external flags, cause status bits to get set */
 
   int ram_addr;  /* selected RAM address */
 
   int max_ram;
   reg_t *ram;
 
-  uint8_t pc;
-  uint8_t rom;
-  uint8_t group;
+  uint16_t pc;
 
+  uint8_t del_rom_flag;
   uint8_t del_rom;
-  uint8_t del_grp;
 
-  uint8_t ret_pc;
+  uint8_t if_flag;  /* True if "IF" instruction was executed, in which
+		       case the next instruction word fetched is a 10-bit
+		       branch address. */
+
+  int sp;  /* stack pointer */
+  uint16_t return_stack [STACK_SIZE];
 
   int prev_pc;  /* used to store complete five-digit octal address of instruction */
 
@@ -71,9 +82,6 @@ typedef struct
 
   gboolean key_flag;  /* true if a key is down */
   int key_buf;        /* most recently pressed key */
-
-  uint8_t ext_flag [SSIZE];  /* external flags, e.g., slide switches,
-				magnetic card inserted */
 } sim_env_t;
 
 

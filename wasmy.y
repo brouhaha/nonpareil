@@ -155,13 +155,13 @@ instruction	: jsb_inst
 		| misc_inst
 	        ;
 
-jsb_inst        : JSB expr { emit ((001 << 12) | ($2 << 2) | 00001); 
+jsb_inst        : JSB expr { emit ((001 << 12) | (($2 & 0377) << 2) | 00001); 
 			     target (dsg, dsr, $2);
 			     dsg = group;
 			     dsr = rom; }
                 ;
 
-goto_inst	: goto_form { emit ((013 << 12) | ($1 << 2) | 00003);
+goto_inst	: goto_form { emit ((013 << 12) | (($1 & 0377) << 2) | 00003);
 			      target (dsg, dsr, $1);
 			      dsg = group;
 			      dsr = rom; }
@@ -178,7 +178,7 @@ goto_form       :  GO TO expr { $$ = $3;
 
 then_inst	: THEN GO TO expr { if (last_instruction_type != TEST_INST)
 				      warning ("'then go to' should only follow 'if' instructions\n");
-				    emit ((014 << 12) | ($4 & 01377));
+				    emit ((014 << 12) | ($4 & 01777));
 				  }
 		;
 

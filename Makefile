@@ -71,7 +71,7 @@ ifdef USE_READLINE
   LOADLIBES += -lreadline -lhistory -ltermcap
 endif
 
-CALCS = hp35 hp45 hp55 hp80
+CALCS = hp25
 
 TARGETS = csim casm wasm
 
@@ -113,7 +113,7 @@ CFLAGS += -DCASMSIM_RELEASE=$(RELEASE)
 	$(YACC) $(YFLAGS) $<
 
 %.obj %.lst: %.asm csim
-	./casm $<
+	./wasm $<
 
 hp%: hp%.lst csim
 	rm -f $@

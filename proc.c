@@ -33,9 +33,9 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #include "util.h"
 
 
-#define MAX_GROUP 2
-#define MAX_ROM 8
-#define ROM_SIZE 256
+#define MAX_GROUP   2
+#define MAX_ROM    16
+#define ROM_SIZE  256
 
 
 typedef enum
@@ -88,9 +88,9 @@ static digit_t do_add (sim_t *sim, digit_t x, digit_t y)
   int res;
 
   res = x + y + sim->env.carry;
-  if (res > 9)
+  if (res >= sim->env.arithmetic_base)
     {
-      res -= 10;
+      res -= sim->env.arithmetic_base;
       sim->env.carry = 1;
     }
   else
@@ -106,7 +106,7 @@ static digit_t do_sub (sim_t *sim, digit_t x, digit_t y)
   res = (x - y) - sim->env.carry;
   if (res < 0)
     {
-      res += 10;
+      res += sim->env.arithmetic_base;
       sim->env.carry = 1;
     }
   else
@@ -137,10 +137,7 @@ static void op_arith (sim_t *sim, int opcode)
 	  last = 0;  /* don't do anything */
 	}
       break;
-    case 1:  /* m  */  first =  3; last = 12; break;
-    case 2:  /* x  */  first =  0; last =  2; break;
-    case 3:  /* w  */  first =  0; last = 13; break;
-    case 4:  /* wp */
+    case 1:  /* wp */
       first =  0; last =  sim->env.p;
       if (sim->env.p > 13)
 	{
@@ -148,141 +145,27 @@ static void op_arith (sim_t *sim, int opcode)
 	  last = 13;
 	}
       break;
-    case 5:  /* ms */  first =   3; last = 13; break;
-    case 6:  /* xs */  first =   2; last =  2; break;
-    case 7:  /* s  */  first =  13; last = 13; break;
+    case 2:  /* xs */  first =  2; last =  2; break;
+    case 3:  /* x  */  first =  0; last =  2; break;
+    case 4:  /* s  */  first = 13; last = 13; break;
+    case 5:  /* m  */  first =  3; last = 12; break;
+    case 6:  /* w  */  first =  0; last = 13; break;
+    case 7:  /* ms */  first =  3; last = 13; break;
     }
 
   switch (op)
     {
-    case 0x00:  /* if b[f] = 0 */
+    case 0x00:  /* 0 -> a[f] */
       for (i = first; i <= last; i++)
-	sim->env.carry |= (sim->env.b [i] != 0);
+	sim->env.a [i] = 0;
+      sim->env.carry = 0;
       break;
     case 0x01:  /* 0 -> b[f] */
       for (i = first; i <= last; i++)
 	sim->env.b [i] = 0;
       sim->env.carry = 0;
       break;
-    case 0x02:  /* if a >= c[f] */
-      sim->env.carry = 0;
-      for (i = first; i <= last; i++)
-	t [i] = do_sub (sim, sim->env.a [i], sim->env.c [i]);
-      break;
-    case 0x03:  /* if c[f] >= 1 */
-      sim->env.carry = 1;
-      for (i = first; i <= last; i++)
-	sim->env.carry &= (sim->env.c [i] == 0);
-      break;
-    case 0x04:  /* b -> c[f] */
-      for (i = first; i <= last; i++)
-	sim->env.c [i] = sim->env.b [i];
-      sim->env.carry = 0;
-      break;
-    case 0x05:  /* 0 - c -> c[f] */
-      sim->env.carry = 0;
-      for (i = first; i <= last; i++)
-	sim->env.c [i] = do_sub (sim, 0, sim->env.c [i]);
-      break;
-    case 0x06:  /* 0 -> c[f] */
-      for (i = first; i <= last; i++)
-	sim->env.c [i] = 0;
-      sim->env.carry = 0;
-      break;
-    case 0x07:  /* 0 - c - 1 -> c[f] */
-      sim->env.carry = 1;
-      for (i = first; i <= last; i++)
-	sim->env.c [i] = do_sub (sim, 0, sim->env.c [i]);
-      break;
-    case 0x08:  /* shift left a[f] */
-      for (i = last; i >= first; i--)
-	sim->env.a [i] = (i == first) ? 0 : sim->env.a [i-1];
-      sim->env.carry = 0;
-      break;
-    case 0x09:  /* a -> b[f] */
-      for (i = first; i <= last; i++)
-	sim->env.b [i] = sim->env.a [i];
-      sim->env.carry = 0;
-      break;
-    case 0x0a:  /* a - c -> c[f] */
-      sim->env.carry = 0;
-      for (i = first; i <= last; i++)
-	sim->env.c [i] = do_sub (sim, sim->env.a [i], sim->env.c [i]);
-      break;
-    case 0x0b:  /* c - 1 -> c[f] */
-      sim->env.carry = 1;
-      for (i = first; i <= last; i++)
-	sim->env.c [i] = do_sub (sim, sim->env.c [i], 0);
-      break;
-    case 0x0c:  /* c -> a[f] */
-      for (i = first; i <= last; i++)
-	sim->env.a [i] = sim->env.c [i];
-      sim->env.carry = 0;
-      break;
-    case 0x0d:  /* if c[f] = 0 */
-      for (i = first; i <= last; i++)
-	sim->env.carry |= (sim->env.c [i] != 0);
-      break;
-    case 0x0e:  /* a + c -> c[f] */
-      sim->env.carry = 0;
-      for (i = first; i <= last; i++)
-	sim->env.c [i] = do_add (sim, sim->env.a [i], sim->env.c [i]);
-      break;
-    case 0x0f:  /* c + 1 -> c[f] */
-      sim->env.carry = 1;
-      for (i = first; i <= last; i++)
-	sim->env.c [i] = do_add (sim, sim->env.c [i], 0);
-      break;
-    case 0x10:  /* if a >= b[f] */
-      sim->env.carry = 0;
-      for (i = first; i <= last; i++)
-	t [i] = do_sub (sim, sim->env.a [i], sim->env.b [i]);
-      break;
-    case 0x11:  /* b exchange c[f] */
-      for (i = first; i <= last; i++)
-	{
-	  temp = sim->env.b[i];
-	  sim->env.b [i] = sim->env.c [i];
-	  sim->env.c [i] = temp;
-	}
-      sim->env.carry = 0;
-      break;
-    case 0x12:  /* shift right c[f] */
-      for (i = first; i <= last; i++)
-	sim->env.c [i] = (i == last) ? 0 : sim->env.c [i+1];
-      sim->env.carry = 0;
-      break;
-    case 0x13:  /* if a[f] >= 1 */
-      sim->env.carry = 1;
-      for (i = first; i <= last; i++)
-	sim->env.carry &= (sim->env.a [i] == 0);
-      break;
-    case 0x14:  /* shift right b[f] */
-      for (i = first; i <= last; i++)
-	sim->env.b [i] = (i == last) ? 0 : sim->env.b [i+1];
-      sim->env.carry = 0;
-      break;
-    case 0x15:  /* c + c -> c[f] */
-      sim->env.carry = 0;
-      for (i = first; i <= last; i++)
-	sim->env.c [i] = do_add (sim, sim->env.c [i], sim->env.c [i]);
-      break;
-    case 0x16:  /* shift right a[f] */
-      for (i = first; i <= last; i++)
-	sim->env.a [i] = (i == last) ? 0 : sim->env.a [i+1];
-      sim->env.carry = 0;
-      break;
-    case 0x17:  /* 0 -> a[f] */
-      for (i = first; i <= last; i++)
-	sim->env.a [i] = 0;
-      sim->env.carry = 0;
-      break;
-    case 0x18:  /* a - b -> a[f] */
-      sim->env.carry = 0;
-      for (i = first; i <= last; i++)
-	sim->env.a [i] = do_sub (sim, sim->env.a [i], sim->env.b [i]);
-      break;
-    case 0x19:  /* a exchange b[f] */
+    case 0x02:  /* a exchange b[f] */
       for (i = first; i <= last; i++)
 	{
 	  temp = sim->env.a[i];
@@ -291,22 +174,12 @@ static void op_arith (sim_t *sim, int opcode)
 	}
       sim->env.carry = 0;
       break;
-    case 0x1a:  /* a - c -> a[f] */
+    case 0x03:  /* a -> b[f] */
+      for (i = first; i <= last; i++)
+	sim->env.b [i] = sim->env.a [i];
       sim->env.carry = 0;
-      for (i = first; i <= last; i++)
-        sim->env.a [i] = do_sub (sim, sim->env.a [i], sim->env.c [i]);
       break;
-    case 0x1b:  /* a - 1 -> a[f] */
-      sim->env.carry = 1;
-      for (i = first; i <= last; i++)
-	sim->env.a [i] = do_sub (sim, sim->env.a [i], 0);
-      break;
-    case 0x1c:  /* a + b -> a[f] */
-      sim->env.carry = 0;
-      for (i = first; i <= last; i++)
-	sim->env.a [i] = do_add (sim, sim->env.a [i], sim->env.b [i]);
-      break;
-    case 0x1d:  /* a exchange c[f] */
+    case 0x04:  /* a exchange c[f] */
       for (i = first; i <= last; i++)
 	{
 	  temp = sim->env.a [i];
@@ -315,15 +188,148 @@ static void op_arith (sim_t *sim, int opcode)
 	}
       sim->env.carry = 0;
       break;
-    case 0x1e:  /* a + c -> a[f] */
+    case 0x05:  /* c -> a[f] */
+      for (i = first; i <= last; i++)
+	sim->env.a [i] = sim->env.c [i];
+      sim->env.carry = 0;
+      break;
+    case 0x06:  /* b -> c[f] */
+      for (i = first; i <= last; i++)
+	sim->env.c [i] = sim->env.b [i];
+      sim->env.carry = 0;
+      break;
+    case 0x07:  /* b exchange c[f] */
+      for (i = first; i <= last; i++)
+	{
+	  temp = sim->env.b[i];
+	  sim->env.b [i] = sim->env.c [i];
+	  sim->env.c [i] = temp;
+	}
+      sim->env.carry = 0;
+      break;
+    case 0x08:  /* 0 -> c[f] */
+      for (i = first; i <= last; i++)
+	sim->env.c [i] = 0;
+      sim->env.carry = 0;
+      break;
+    case 0x09:  /* a + b -> a[f] */
+      sim->env.carry = 0;
+      for (i = first; i <= last; i++)
+	sim->env.a [i] = do_add (sim, sim->env.a [i], sim->env.b [i]);
+      break;
+    case 0x0a:  /* a + c -> a[f] */
       sim->env.carry = 0;
       for (i = first; i <= last; i++)
 	sim->env.a [i] = do_add (sim, sim->env.a [i], sim->env.c [i]);
       break;
-    case 0x1f:  /* a + 1 -> a[f] */
+    case 0x0b:  /* c + c -> c[f] */
+      sim->env.carry = 0;
+      for (i = first; i <= last; i++)
+	sim->env.c [i] = do_add (sim, sim->env.c [i], sim->env.c [i]);
+      break;
+    case 0x0c:  /* a + c -> c[f] */
+      sim->env.carry = 0;
+      for (i = first; i <= last; i++)
+	sim->env.c [i] = do_add (sim, sim->env.a [i], sim->env.c [i]);
+      break;
+    case 0x0d:  /* a + 1 -> a[f] */
       sim->env.carry = 1;
       for (i = first; i <= last; i++)
 	sim->env.a [i] = do_add (sim, sim->env.a [i], 0);
+      break;
+    case 0x0e:  /* shift left a[f] */
+      for (i = last; i >= first; i--)
+	sim->env.a [i] = (i == first) ? 0 : sim->env.a [i-1];
+      sim->env.carry = 0;
+      break;
+    case 0x0f:  /* c + 1 -> c[f] */
+      sim->env.carry = 1;
+      for (i = first; i <= last; i++)
+	sim->env.c [i] = do_add (sim, sim->env.c [i], 0);
+      break;
+    case 0x10:  /* a - b -> a[f] */
+      sim->env.carry = 0;
+      for (i = first; i <= last; i++)
+	sim->env.a [i] = do_sub (sim, sim->env.a [i], sim->env.b [i]);
+      break;
+    case 0x11:  /* a - c -> c[f] */
+      sim->env.carry = 0;
+      for (i = first; i <= last; i++)
+	sim->env.c [i] = do_sub (sim, sim->env.a [i], sim->env.c [i]);
+      break;
+    case 0x12:  /* a - 1 -> a[f] */
+      sim->env.carry = 1;
+      for (i = first; i <= last; i++)
+	sim->env.a [i] = do_sub (sim, sim->env.a [i], 0);
+      break;
+    case 0x13:  /* c - 1 -> c[f] */
+      sim->env.carry = 1;
+      for (i = first; i <= last; i++)
+	sim->env.c [i] = do_sub (sim, sim->env.c [i], 0);
+      break;
+    case 0x14:  /* 0 - c -> c[f] */
+      sim->env.carry = 0;
+      for (i = first; i <= last; i++)
+	sim->env.c [i] = do_sub (sim, 0, sim->env.c [i]);
+      break;
+    case 0x15:  /* 0 - c - 1 -> c[f] */
+      sim->env.carry = 1;
+      for (i = first; i <= last; i++)
+	sim->env.c [i] = do_sub (sim, 0, sim->env.c [i]);
+      break;
+    case 0x16:  /* if b[f] = 0 */
+      sim->env.if_flag = 1;
+      for (i = first; i <= last; i++)
+	sim->env.carry |= (sim->env.b [i] != 0);
+      break;
+    case 0x17:  /* if c[f] = 0 */
+      sim->env.if_flag = 1;
+      for (i = first; i <= last; i++)
+	sim->env.carry |= (sim->env.c [i] != 0);
+      break;
+    case 0x18:  /* if a >= c[f] */
+      sim->env.if_flag = 1;
+      sim->env.carry = 0;
+      for (i = first; i <= last; i++)
+	t [i] = do_sub (sim, sim->env.a [i], sim->env.c [i]);
+      break;
+    case 0x19:  /* if a >= b[f] */
+      sim->env.if_flag = 1;
+      sim->env.carry = 0;
+      for (i = first; i <= last; i++)
+	t [i] = do_sub (sim, sim->env.a [i], sim->env.b [i]);
+      break;
+    case 0x1a:  /* if a[f] # 0 */
+      sim->env.if_flag = 1;
+      sim->env.carry = 1;
+      for (i = first; i <= last; i++)
+	sim->env.carry &= (sim->env.a [i] == 0);
+      break;
+    case 0x1b:  /* if c[f] # 0 */
+      sim->env.if_flag = 1;
+      sim->env.carry = 1;
+      for (i = first; i <= last; i++)
+	sim->env.carry &= (sim->env.c [i] == 0);
+      break;
+    case 0x1c:  /* a - c -> a[f] */
+      sim->env.carry = 0;
+      for (i = first; i <= last; i++)
+        sim->env.a [i] = do_sub (sim, sim->env.a [i], sim->env.c [i]);
+      break;
+    case 0x1d:  /* shift right a[f] */
+      for (i = first; i <= last; i++)
+	sim->env.a [i] = (i == last) ? 0 : sim->env.a [i+1];
+      sim->env.carry = 0;
+      break;
+    case 0x1e:  /* shift right b[f] */
+      for (i = first; i <= last; i++)
+	sim->env.b [i] = (i == last) ? 0 : sim->env.b [i+1];
+      sim->env.carry = 0;
+      break;
+    case 0x1f:  /* shift right c[f] */
+      for (i = first; i <= last; i++)
+	sim->env.c [i] = (i == last) ? 0 : sim->env.c [i+1];
+      sim->env.carry = 0;
       break;
     }
 }
@@ -333,30 +339,60 @@ static void op_goto (sim_t *sim, int opcode)
 {
   if (! sim->env.prev_carry)
     {
-      sim->env.pc = opcode >> 2;
-      sim->env.rom = sim->env.del_rom;
-      sim->env.group = sim->env.del_grp;
+      sim->env.pc = (sim->env.pc & ~0377) | (opcode >> 2);
+      if (sim->env.del_rom_flag)
+	{
+	  sim->env.pc = (sim->env.del_rom << 8) + (sim->env.pc & 0377);
+	  sim->env.del_rom_flag = 0;
+	}
     }
 }
 
 
 static void op_jsb (sim_t *sim, int opcode)
 {
-  sim->env.ret_pc = sim->env.pc;
-  sim->env.pc = opcode >> 2;
-  sim->env.rom = sim->env.del_rom;
-  sim->env.group = sim->env.del_grp;
+  sim->env.return_stack [sim->env.sp] = sim->env.pc;
+  sim->env.sp++;
+  if (sim->env.sp >= STACK_SIZE)
+    {
+      printf ("stack overflow\n");
+      sim->env.sp = 0;
+    }
+  sim->env.pc = (sim->env.pc & ~0377) | (opcode >> 2);
+  if (sim->env.del_rom_flag)
+    {
+      sim->env.pc = (sim->env.del_rom << 8) + (sim->env.pc & 0377);
+      sim->env.del_rom_flag = 0;
+    }
 }
 
 
 static void op_return (sim_t *sim, int opcode)
 {
-  sim->env.pc = sim->env.ret_pc;
+  sim->env.sp--;
+  if (sim->env.sp < 0)
+    {
+      printf ("stack underflow\n");
+      sim->env.sp = STACK_SIZE - 1;
+    }
+  sim->env.pc = sim->env.return_stack [sim->env.sp];
 }
 
 
 static void op_nop (sim_t *sim, int opcode)
 {
+}
+
+
+static void op_binary (sim_t *sim, int opcode)
+{
+  sim->env.arithmetic_base = 16;
+}
+
+
+static void op_decimal (sim_t *sim, int opcode)
+{
+  sim->env.arithmetic_base = 10;
 }
 
 
@@ -376,27 +412,64 @@ static void op_clear_s (sim_t *sim, int opcode)
 {
   int i;
   for (i = 0; i < SSIZE; i++)
-    sim->env.s [i] = 0;
+    if ((i != 1) && (i != 2) && (i != 5) && (i != 15))
+      sim->env.s [i] = 0;
 }
 
 
-static void op_c_exch_m (sim_t *sim, int opcode)
+static void op_m1_exch_c (sim_t *sim, int opcode)
 {
   int i, t;
   for (i = 0; i < WSIZE; i++)
     {
       t = sim->env.c [i];
-      sim->env.c [i] = sim->env.m[i];
-      sim->env.m [i] = t;
+      sim->env.c [i] = sim->env.m1 [i];
+      sim->env.m1 [i] = t;
     }
 }
 
 
-static void op_m_to_c (sim_t *sim, int opcode)
+static void op_m1_to_c (sim_t *sim, int opcode)
 {
   int i;
   for (i = 0; i < WSIZE; i++)
-    sim->env.c [i] = sim->env.m [i];
+    sim->env.c [i] = sim->env.m1 [i];
+}
+
+
+static void op_m2_exch_c (sim_t *sim, int opcode)
+{
+  int i, t;
+  for (i = 0; i < WSIZE; i++)
+    {
+      t = sim->env.c [i];
+      sim->env.c [i] = sim->env.m2 [i];
+      sim->env.m2 [i] = t;
+    }
+}
+
+
+static void op_m2_to_c (sim_t *sim, int opcode)
+{
+  int i;
+  for (i = 0; i < WSIZE; i++)
+    sim->env.c [i] = sim->env.m2 [i];
+}
+
+
+static void op_f_to_a (sim_t *sim, int opcode)
+{
+  sim->env.f = sim->env.a [0];
+}
+
+
+static void op_f_exch_a (sim_t *sim, int opcode)
+{
+  int t;
+
+  t = sim->env.a [0];
+  sim->env.a [0] = sim->env.f;
+  sim->env.f = t;
 }
 
 
@@ -439,14 +512,59 @@ static void op_data_to_c (sim_t *sim, int opcode)
 }
 
 
+static void op_c_to_register (sim_t *sim, int opcode)
+{
+  int i;
+
+  sim->env.ram_addr &= ~017;
+  sim->env.ram_addr += (opcode > 6);
+
+  if (sim->env.ram_addr >= sim->env.max_ram)
+    {
+      printf ("c -> register: address %d out of range\n", sim->env.ram_addr);
+      return;
+    }
+  for (i = 0; i < WSIZE; i++)
+    sim->env.ram [sim->env.ram_addr] [i] = sim->env.c [i];
+}
+
+
+static void op_register_to_c (sim_t *sim, int opcode)
+{
+  int i;
+
+  sim->env.ram_addr &= ~017;
+  sim->env.ram_addr += (opcode > 6);
+
+  if (sim->env.ram_addr >= sim->env.max_ram)
+    {
+      printf ("register -> c: address %d out of range, loading 0\n", sim->env.ram_addr);
+      for (i = 0; i < WSIZE; i++)
+	sim->env.c [i] = 0;
+      return;
+    }
+  for (i = 0; i < WSIZE; i++)
+    sim->env.c [i] = sim->env.ram [sim->env.ram_addr] [i];
+}
+
+
+static void op_clear_data_regs (sim_t *sim, int opcode)
+{
+  int i, j;
+  for (i = 0; i < sim->env.max_ram; i++)
+    for (j = 0; j < WSIZE; j++)
+      sim->env.ram [i] [j] = 0;
+}
+
+
 static void op_c_to_stack (sim_t *sim, int opcode)
 {
   int i;
   for (i = 0; i < WSIZE; i++)
     {
-      sim->env.f [i] = sim->env.e [i];
-      sim->env.e [i] = sim->env.d [i];
-      sim->env.d [i] = sim->env.c [i];
+      sim->env.t [i] = sim->env.z [i];
+      sim->env.z [i] = sim->env.y [i];
+      sim->env.y [i] = sim->env.c [i];
     }
 }
 
@@ -456,9 +574,19 @@ static void op_stack_to_a (sim_t *sim, int opcode)
   int i;
   for (i = 0; i < WSIZE; i++)
     {
-      sim->env.a [i] = sim->env.d [i];
-      sim->env.d [i] = sim->env.e [i];
-      sim->env.e [i] = sim->env.f [i];
+      sim->env.a [i] = sim->env.y [i];
+      sim->env.y [i] = sim->env.z [i];
+      sim->env.z [i] = sim->env.t [i];
+    }
+}
+
+
+static void op_y_to_a (sim_t *sim, int opcode)
+{
+  int i;
+  for (i = 0; i < WSIZE; i++)
+    {
+      sim->env.a [i] = sim->env.y [i];
     }
 }
 
@@ -469,10 +597,10 @@ static void op_down_rotate (sim_t *sim, int opcode)
   for (i = 0; i < WSIZE; i++)
     {
       t = sim->env.c [i];
-      sim->env.c [i] = sim->env.d [i];
-      sim->env.d [i] = sim->env.e [i];
-      sim->env.e [i] = sim->env.f [i];
-      sim->env.f [i] = t;
+      sim->env.c [i] = sim->env.y [i];
+      sim->env.y [i] = sim->env.z [i];
+      sim->env.z [i] = sim->env.t [i];
+      sim->env.t [i] = t;
     }
 }
 
@@ -481,8 +609,10 @@ static void op_clear_reg (sim_t *sim, int opcode)
 {
   int i;
   for (i = 0; i < WSIZE; i++)
-    sim->env.a [i] = sim->env.b [i] = sim->env.c [i] = sim->env.d [i] =
-      sim->env.e [i] = sim->env.f [i] = sim->env.m [i] = 0;
+    sim->env.a [i] = sim->env.b [i] = sim->env.c [i] = sim->env.y [i] =
+      sim->env.z [i] = sim->env.t [i];
+  sim->env.f = 0;
+  /* should this clear p? */
 }
 
 
@@ -521,66 +651,71 @@ static void op_clr_s (sim_t *sim, int opcode)
 }
 
 
-static void op_test_s (sim_t *sim, int opcode)
+static void op_test_s_eq_0 (sim_t *sim, int opcode)
 {
-  if ((opcode >> 6) >= SSIZE)
-    printf ("stat >= SSIZE at %05o\n", sim->env.prev_pc);
-  else
-    sim->env.carry = sim->env.s [opcode >> 6];
+  sim->env.if_flag = 1;
+  sim->env.carry = sim->env.s [opcode >> 6];
 }
+
+
+static void op_test_s_eq_1 (sim_t *sim, int opcode)
+{
+  sim->env.if_flag = 1;
+  sim->env.carry = ! sim->env.s [opcode >> 6];
+}
+
+
+static uint8_t p_set_map [16] =
+  { 14,  4,  7,  8, 11,  2, 10, 12,  1,  3, 13,  6,  0,  9,  5, 14 };
+
+static uint8_t p_test_map [16] =
+  {  4,  8, 12,  2,  9,  1,  6,  3,  1, 13,  5,  0, 11, 10,  7,  4 };
 
 
 static void op_set_p (sim_t *sim, int opcode)
 {
-  sim->env.p = opcode >> 6;
+  sim->env.p = p_set_map [opcode >> 6];
+  if (sim->env.p >= 14)
+    printf ("invalid set p, operand encoding is %02o\n", opcode > 6);
 }
 
 
-static void op_test_p (sim_t *sim, int opcode)
+static void op_test_p_eq (sim_t *sim, int opcode)
 {
-  sim->env.carry = (sim->env.p == (opcode >> 6));
+  sim->env.if_flag = 1;
+  sim->env.carry = ! (p_test_map [sim->env.p] == (opcode >> 6));
+}
+
+
+static void op_test_p_ne (sim_t *sim, int opcode)
+{
+  sim->env.if_flag = 1;
+  sim->env.carry = ! (p_test_map [sim->env.p] != (opcode >> 6));
 }
 
 
 static void op_sel_rom (sim_t *sim, int opcode)
 {
-  sim->env.rom = opcode >> 7;
-  sim->env.group = sim->env.del_grp;
-
-  sim->env.del_rom = sim->env.rom;
+  sim->env.pc = ((opcode & 01300) << 2) + (sim->env.pc & 0377);
 }
 
 
 static void op_del_sel_rom (sim_t *sim, int opcode)
 {
-  sim->env.del_rom = opcode >> 7;
-}
-
-
-static void op_del_sel_grp (sim_t *sim, int opcode)
-{
-  sim->env.del_grp = (opcode >> 7) & 1;
+  sim->env.del_rom = opcode >> 6;
+  sim->env.del_rom_flag = 1;
 }
 
 
 static void op_keys_to_rom_addr (sim_t *sim, int opcode)
 {
+  sim->env.pc = sim->env.pc & ~0377;
   if (sim->env.key_buf < 0)
     {
       printf ("keys->rom address with no key pressed\n");
-      sim->env.pc = 0;
       return;
     }
-  sim->env.pc = sim->env.key_buf;
-}
-
-
-static void op_rom_addr_to_buf (sim_t *sim, int opcode)
-{
-  /* I don't know what this instruction is supposed to do! */
-#if 0
-  fprintf (stderr, "rom addr to buf!!!!!!!!!!!!\n");
-#endif
+  sim->env.pc += sim->env.key_buf;
 }
 
 
@@ -605,7 +740,7 @@ static void op_display_toggle (sim_t *sim, int opcode)
 
 static void init_ops (sim_t *sim)
 {
-  int i, j;
+  int i;
 
   for (i = 0; i < 1024; i += 4)
     {
@@ -615,77 +750,82 @@ static void init_ops (sim_t *sim)
       sim->op_fcn [i + 3] = op_goto;   /* type 1: aaaaaaaa11 */
     }
 
-  /* type 3 instructions: nnnnff0100*/
+  sim->op_fcn [00000] = op_nop;
+  sim->op_fcn [00070] = op_data_to_c;
+
   for (i = 0; i <= 15; i ++)
     {
-      sim->op_fcn [0x004 + (i << 6)] = op_set_s;
-      sim->op_fcn [0x014 + (i << 6)] = op_test_s;
-      sim->op_fcn [0x024 + (i << 6)] = op_clr_s;
-      sim->op_fcn [0x034 /* + (i << 6) */ ] = op_clear_s;
+      /* xx00 uassigned */
+      sim->op_fcn [00004 + (i << 6)] = op_set_s;
+      /* xx10 misc */
+      sim->op_fcn [00014 + (i << 6)] = op_clr_s;
+      /* xx20 misc */
+      sim->op_fcn [00024 + (i << 6)] = op_test_s_eq_1;
+      sim->op_fcn [00030 + (i << 6)] = op_load_constant;
+      sim->op_fcn [00034 + (i << 6)] = op_test_s_eq_0;
+      sim->op_fcn [00040 + (i << 6)] = op_sel_rom;
+      sim->op_fcn [00044 + (i << 6)] = op_test_p_eq;
+      sim->op_fcn [00050 + (i << 6)] = op_c_to_register;
+      sim->op_fcn [00054 + (i << 6)] = op_test_p_ne;
+      /* xx60 misc */
+      sim->op_fcn [00064 + (i << 6)] = op_del_sel_rom;
+      sim->op_fcn [00070 + (i << 6)] = op_register_to_c;
+      sim->op_fcn [00074 + (i << 6)] = op_set_p;
     }
 
-  /* New instructions in HP-55 and maybe HP-65, wedged into the unused
-     port of the type 3 instruction space.  On the HP-35 and HP-80 these
-     probably cleared all status like 0x034. */
-  for (i = 0; i <= 7; i ++)
-    {
-      sim->op_fcn [0x074 + (i << 7)] = op_del_sel_rom;
-    }
-  sim->op_fcn [0x234] = op_del_sel_grp;
-  sim->op_fcn [0x2b4] = op_del_sel_grp;
+  sim->op_fcn [00010] = op_clear_reg;
+  sim->op_fcn [00110] = op_clear_s;
+  sim->op_fcn [00210] = op_display_toggle;
+  sim->op_fcn [00310] = op_display_off;
+  sim->op_fcn [00410] = op_m1_exch_c;
+  sim->op_fcn [00510] = op_m1_to_c;
+  sim->op_fcn [00610] = op_m2_exch_c;
+  sim->op_fcn [00710] = op_m2_to_c;
+  sim->op_fcn [01010] = op_stack_to_a;
+  sim->op_fcn [01110] = op_down_rotate;
+  sim->op_fcn [01210] = op_y_to_a;
+  sim->op_fcn [01310] = op_c_to_stack;
+  sim->op_fcn [01410] = op_decimal;
+  /* 1510 unassigned */
+  sim->op_fcn [01610] = op_f_to_a;
+  sim->op_fcn [01710] = op_f_exch_a;
 
-  /* type 4 instructions: ppppff1100 */
-  for (i = 0; i <= 15; i ++)
-    {
-      sim->op_fcn [0x00c + (i << 6)] = op_set_p;
-      sim->op_fcn [0x02c + (i << 6)] = op_test_p;
-      sim->op_fcn [0x01c /* + (i << 6) */ ] = op_dec_p;
-      sim->op_fcn [0x03c /* + (i << 6) */ ] = op_inc_p;
-    }
+  sim->op_fcn [00020] = op_keys_to_rom_addr;
+  /* 0010 unknown */
+  sim->op_fcn [00220] = op_keys_to_rom_addr;
+  /* 0320 unknown */
+  sim->op_fcn [00420] = op_binary;
+  /* 0520 unknown */
+  sim->op_fcn [00620] = op_dec_p;
+  sim->op_fcn [00720] = op_inc_p;
+  sim->op_fcn [01020] = op_return;
+  /* 1120..1720 unknown, probably printer */
 
-  /* type 5 instructions: nnnnff1000 */
-  for (i = 0; i <= 9; i++)
-      sim->op_fcn [0x018 + (i << 6)] = op_load_constant;
-  for (i = 0; i <= 1; i++)
-    {
-      sim->op_fcn [0x028 /* + (i << 4) */ ] = op_display_toggle;
-      sim->op_fcn [0x0a8 /* + (i << 4) */ ] = op_c_exch_m;
-      sim->op_fcn [0x128 /* + (i << 4) */ ] = op_c_to_stack;
-      sim->op_fcn [0x1a8 /* + (i << 4) */ ] = op_stack_to_a;
-      sim->op_fcn [0x228 /* + (i << 4) */ ] = op_display_off;
-      sim->op_fcn [0x2a8 /* + (i << 4) */ ] = op_m_to_c;
-      sim->op_fcn [0x328 /* + (i << 4) */ ] = op_down_rotate;
-      sim->op_fcn [0x3a8 /* + (i << 4) */ ] = op_clear_reg;
-      for (j = 0; j <= 3; j++)
-	{
-#if 0
-	  sim->op_fcn [0x068 + (j << 8) + (i << 4)] = op_is_to_a;
-#endif
-	  sim->op_fcn [0x0e8 + (j << 8) + (i << 4)] = op_data_to_c;
-	  /* BCD->C is nominally 0x2f8 */
-	}
-    }
+  /* 0060 unknown */
+  /* 0160..0760 unassigned/unknown */
+  /* sim->op_fcn [01060] = op_bank_switch; */
+  sim->op_fcn [01160] = op_c_to_addr;
+  sim->op_fcn [01260] = op_clear_data_regs;
+  sim->op_fcn [01360] = op_c_to_data;
+  /* sim->op_fcn [01460] = op_rom_checksum; */
+  /* 1560..1660 unassigned/unknown */
+  sim->op_fcn [01760] = op_nop;  /* "HI I'M WOODSTOCK" */
 
-  /* type 6 instructions: nnnff10000 */
-  for (i = 0; i <= 7; i++)
-    {
-      sim->op_fcn [0x010 + (i << 7)] = op_sel_rom;
-      sim->op_fcn [0x030 /* + (i << 7) */ ] = op_return;
-      if (i & 1)
-	sim->op_fcn [0x050 + 0x080 /* + (i << 7) */ ] = op_keys_to_rom_addr;
-#if 0
-      else
-	sim->op_fcn [0x050 /* + (i << 7) */ ] = op_external_entry;
-#endif
-    }
-  sim->op_fcn [0x270] = op_c_to_addr;  /* also 0x370 */
-  sim->op_fcn [0x2f0] = op_c_to_data;
-
-  /* no type 7 or type 8 instructions: xxxx100000, xxx1000000 */
-
-  /* type 9 and 10 instructions: xxx0000000 */
-  sim->op_fcn [0x200] = op_rom_addr_to_buf;
-  sim->op_fcn [0x000] = op_nop;
+  /*
+   * Instruction codings unknown (probably 0120, 0320, and 0520):
+   *    SHIFT_LEFT_CIRCULAR A
+   *    KEYS -> A
+   *    RESET TWF
+   *
+   * Instruction codings unknown (probably 1160..1760):
+   *    PRINT 0
+   *    PRINT 1
+   *    PRINT 2
+   *    PRINT 3
+   *    PRINT 6
+   *    HOME?
+   *    CR?
+   */
 }
 
 
@@ -724,27 +864,15 @@ void init_source (sim_t *sim)
 }
 
 
-static int parse_address (char *oct, int *g, int *r, int *p)
+static int parse_octal (char *oct, int digits, int *val)
 {
-  return (sscanf (oct, "%1o%1o%3o", g, r, p) == 3);
-}
+  *val = 0;
 
-
-static int parse_opcode (char *bin, int *opcode)
-{
-  int i;
-
-  *opcode = 0;
-  for (i = 0; i < 10; i++)
+  while (digits--)
     {
-      (*opcode) <<= 1;
-      if (*bin == '1')
-	(*opcode) += 1;
-      else if (*bin == '.')
-	(*opcode) += 0;
-      else
+      if (((*oct) < '0') || ((*oct) > '7'))
 	return (0);
-      *bin++;
+      (*val) = ((*val) << 3) + ((*(oct++)) - '0');
     }
   return (1);
 }
@@ -787,7 +915,7 @@ gboolean sim_read_object_file (sim_t *sim, char *fn)
 gboolean sim_read_listing_file (sim_t *sim, char *fn, int keep_src)
 {
   FILE *f;
-  int g, r, p, opcode;
+  int addr, g, r, p, opcode;
   int count = 0;
   char buf [80];
 
@@ -801,10 +929,13 @@ gboolean sim_read_listing_file (sim_t *sim, char *fn, int keep_src)
   while (fgets (buf, sizeof (buf), f))
     {
       trim_trailing_whitespace (buf);
-      if ((strlen (buf) >= 25) && (buf [7] == 'L') && (buf [13] == ':') &&
-	  parse_address (& buf [8], & g, &r, &p) &&
-	  parse_opcode (& buf [16], & opcode))
+      if ((strlen (buf) >= 18) &&
+	  parse_octal (& buf [15], 4, & addr) &&
+	  parse_octal (& buf [ 9], 4, & opcode))
 	{
+	  g = 0;
+	  r = addr >> 8;
+	  p = addr & 0377;
 	  if ((g >= MAX_GROUP) || (r >= MAX_ROM) || (p >= ROM_SIZE))
 	    fprintf (stderr, "bad address\n");
 	  else if (! sim->bpt [g][r][p])
@@ -870,25 +1001,37 @@ void execute_instruction (sim_t *sim)
 {
   int i;
   int opcode;
+  int prev_if_flag;
 
-  sim->env.prev_pc = (sim->env.group << 12) | (sim->env.rom << 9) | sim->env.pc;
-  opcode = sim->ucode [sim->env.group] [sim->env.rom] [sim->env.pc];
+  sim->env.prev_pc = sim->env.pc;
+  prev_if_flag = sim->env.if_flag;
+  sim->env.if_flag = 0;
+
+  opcode = sim->ucode [0] [sim->env.pc >> 8] [sim->env.pc & 0377];
 
 #if 0
-  printf ("%s\n", sim->source [sim->env.group] [sim->env.rom] [sim->env.pc]);
+  printf ("%s\n", sim->source [0] [sim->env.pc >> 8] [sim->env.pc & 0377]);
 #endif
 
   sim->env.prev_carry = sim->env.carry;
   sim->env.carry = 0;
 
   if (sim->env.key_flag)
-    sim->env.s [0] = 1;
+    sim->env.s [15] = 1;
   for (i = 0; i < SSIZE; i++)
     if (sim->env.ext_flag [i])
       sim->env.s [i] = 1;
 
   sim->env.pc++;
-  (* sim->op_fcn [opcode]) (sim, opcode);
+
+  if (prev_if_flag)
+    {
+      if (! sim->env.prev_carry)
+	sim->env.pc = (sim->env.pc & ~01777) | opcode;
+    }
+  else
+    (* sim->op_fcn [opcode]) (sim, opcode);
+
   sim->cycle_count++;
 }
 
@@ -897,11 +1040,14 @@ void reset_processor (sim_t *sim)
 {
   sim->cycle_count = 0;
 
+  sim->env.arithmetic_base = 10;
+
   sim->env.pc = 0;
-  sim->env.rom = 0;
-  sim->env.group = 0;
-  sim->env.del_rom = 0;
-  sim->env.del_grp = 0;
+  sim->env.del_rom_flag = 0;
+
+  sim->env.if_flag = 0;
+
+  sim->env.sp = 0;
 
   op_clear_reg (sim, 0);
   op_clear_s (sim, 0);

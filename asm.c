@@ -194,6 +194,13 @@ void do_pass (int p)
 	pc = (pc + 1) & 0xff;
     }
 
+  if (pass == 2)
+    {
+      fprintf (listfile, "\nGlobal symbols:\n\n");
+      print_symbol_table (global_symtab, listfile);
+      fprintf (listfile, "\n");
+    }
+
   printf ("\n");
 }
 
@@ -289,12 +296,12 @@ void do_label (char *s)
 
   if (pass == 1)
     {
-      if (! create_symbol (table, s, pc, lineno))
+      if (! create_symbol (table, s, (rom << 8) + pc, lineno))
 	error ("multiply defined symbol '%s'\n", s);
     }
   else if (! lookup_symbol (table, s, & prev_val))
     error ("undefined symbol '%s'\n", s);
-  else if (prev_val != pc)
+  else if (prev_val != ((rom << 8) + pc))
     error ("phase error for symbol '%s'\n", s);
 }
 
@@ -304,8 +311,10 @@ static void emit_core (int op, int inst_type)
   objflag = 1;
   last_instruction_type = inst_type;
 
+  /*
   if ((pass == 2) && objfile)
     fprintf (objfile, "%1o%1o%03o:%03x\n", group, rom, pc, op);
+  */
 }
 
 void emit (int op)
