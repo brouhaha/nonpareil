@@ -34,9 +34,18 @@ rb		\]
 
 @{octaldig}+	{ scanf (yytext+1, "%o", &yylval.integer); return INTEGER; }
 
+[sS][1-9]		{ yylval.integer = atoi (yytext+1); return STATBIT; }
+[sS]1[0-2]		{ yylval.integer = atoi (yytext+1); return STATBIT; }
+
 {alpha}{alphanum}*	{
                           if (yylval.integer = keyword (yytext))
                             return yylval.integer;
+/*
+                          if ((yytext [0] == 's') || (yytext [0] == 'S'))
+                            {
+                              if (
+                            }
+*/
                           NEWSTR(yytext, yylval.string);
                           return IDENT;
                         }
@@ -50,13 +59,10 @@ rb		\]
 {lb}[xX][sS]{rb}	{ yylval.integer = 6; return FIELDSPEC; }
 {lb}[sS]{rb}		{ yylval.integer = 7; return FIELDSPEC; }
 
-[sS][1-9]		{ yylval.integer = atoi (yytext+1); return STATBIT; }
-[sS]1[0-2]		{ yylval.integer = atoi (yytext+1); return STATBIT; }
-
 \>=		{ return GE; }
 -\>		{ return ARROW; }
 
-comment		;
+\;.*$		;
 [ \t]+		;
 \n		{ return '\n'; }
 .		{ return yytext [0]; }
@@ -78,6 +84,7 @@ keywords [] =
 
   "address",   ADDRESS,
   "carry",     CARRY,
+  "clear",     CLEAR,
   "constant",  CONSTANT,
   "data",      DATA,
   "delayed",   DELAYED,
@@ -88,12 +95,14 @@ keywords [] =
   "group",     GROUP,
   "if",        IF,
   "jsb",       JSB,
+  "keys",      KEYS,
   "left",      LEFT,
   "load",      LOAD,
   "no",        NO,
   "off",       OFF,
   "operation", OPERATION,
   "registers", REGISTERS,
+  "return",    RETURN,
   "right",     RIGHT,
   "rom",       ROM,
   "rotate",    ROTATE,

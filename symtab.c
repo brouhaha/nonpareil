@@ -30,14 +30,12 @@ int insert_symbol (sym **p, sym *newsym)
 {
   int i;
 
-  printf ("insert %s=%d\n", newsym->name, newsym->value);
   if (! *p)
     {
       (*p) = newsym;
       return (1);
     }
 
-  printf ("comparing %s %s\n", (*p)->name, newsym->name);
   i = stricmp ((*p)->name, newsym->name);
 
   if (i == 0)
@@ -78,8 +76,23 @@ int create_symbol (char *name, int value, int lineno)
 /* returns 1 for success, 0 if not found */
 int lookup_symbol (char *name, int *value)
 {
-  *value = 0;
-  return 0;
+  sym *p = table;
+  int i;
+
+  while (p)
+    {
+      i = stricmp (p->name, name);
+      if (i == 0)
+	{
+	  *value = p->value;
+	  return (1);
+	}
+      if (i < 0)
+	p = p->left;
+      else
+	p = p->right;
+    }
+  return (0);
 }
 
 void print_symbols (FILE *f, sym *p)

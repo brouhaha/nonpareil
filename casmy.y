@@ -43,12 +43,14 @@
 %token GROUP
 %token IF
 %token JSB
+%token KEYS
 %token LEFT
 %token LOAD
 %token NO
 %token OFF
 %token OPERATION
 %token REGISTERS
+%token RETURN
 %token RIGHT
 %token ROM
 %token ROTATE
@@ -239,6 +241,11 @@ misc_inst       : inst_load_const
                 | inst_del_rom
                 | inst_del_grp
                 | inst_noop
+		| inst_c_to_addr
+		| inst_c_to_data
+		| inst_data_to_c
+		| inst_key_to_rom
+		| inst_return
                 ;
 
 inst_load_const : LOAD CONSTANT expr        { range ($3, 0, 9); 
@@ -258,5 +265,10 @@ inst_del_rom    : DELAYED SELECT ROM expr   { range ($4, 0, 7);
 inst_del_grp    : DELAYED SELECT GROUP expr { range ($4, 0, 1); 
                                               emit (($4 << 7) | 0x234); } ;
 inst_noop       : NO OPERATION              { emit (0); } ;
+inst_c_to_addr	: C ARROW DATA ADDRESS      { emit (0x270); } ;
+inst_c_to_data	: C ARROW DATA              { emit (0x2f0); } ;
+inst_data_to_c	: DATA ARROW C              { emit (0x2f8); } ;
+inst_key_to_rom	: KEYS ARROW ROM ADDRESS    { emit (0x0d0); } ;
+inst_return	: RETURN                    { emit (0x030); } ;
 
 %%
