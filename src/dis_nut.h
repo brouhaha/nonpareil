@@ -19,5 +19,5 @@ Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
 MA 02111, USA.
 */
 
-void nut_disassemble_inst (int addr, int op1, int op2,
-			   char *buf, int len);
+int nut_disassemble_inst (int addr, int op1, int op2,
+			  char *buf, int len);

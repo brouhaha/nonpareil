@@ -30,8 +30,8 @@ static uint8_t p_test_map [16] =
   {  4,  8, 12,  2,  9,  1,  6,  3,  1, 13,  5,  0, 11, 10,  7,  4 };
 
 
-static void woodstock_disassemble_branch (char *mnem, int addr, int op1,
-					  char *buf, int len)
+static int woodstock_disassemble_branch (char *mnem, int addr, int op1,
+					 char *buf, int len)
 {
   int l;
   int target;
@@ -41,6 +41,8 @@ static void woodstock_disassemble_branch (char *mnem, int addr, int op1,
   l = snprintf (buf, len, "%s %04o", mnem, target);
   buf += l;
   len -= l;
+
+  return (1);
 }
 
 
@@ -113,11 +115,12 @@ static void woodstock_disassemble_then (int addr, int op2, char *buf, int len)
 }
 
 
-static void woodstock_disassemble_00 (int addr, int op1, int op2,
-				      char *buf, int len)
+static int woodstock_disassemble_00 (int addr, int op1, int op2,
+				     char *buf, int len)
 {
   int arg = op1 >> 6;
   int l;
+  int inst_len = 1;
 
   switch (op1 & 074)
     {
@@ -142,6 +145,7 @@ static void woodstock_disassemble_00 (int addr, int op1, int op2,
       len -= l;
       if (len > 0)
 	woodstock_disassemble_then (addr + 1, op2, buf, len);
+      inst_len = 2;
       break;
     case 030:
       snprintf (buf, len, "load constant %d", arg);
@@ -152,6 +156,7 @@ static void woodstock_disassemble_00 (int addr, int op1, int op2,
       len -= l;
       if (len > 0)
 	woodstock_disassemble_then (addr + 1, op2, buf, len);
+      inst_len = 2;
       break;
     case 040:
       snprintf (buf, len, "select rom %02o", arg);
@@ -162,6 +167,7 @@ static void woodstock_disassemble_00 (int addr, int op1, int op2,
       len -= l;
       if (len > 0)
 	woodstock_disassemble_then (addr + 1, op2, buf, len);
+      inst_len = 2;
       break;
     case 050:
       snprintf (buf, len, "c -> data register %d", arg);
@@ -172,6 +178,7 @@ static void woodstock_disassemble_00 (int addr, int op1, int op2,
       len -= l;
       if (len > 0)
 	woodstock_disassemble_then (addr + 1, op2, buf, len);
+      inst_len = 2;
       break;
     case 060:
       snprintf (buf, len, "%s", woodstock_misc_60_mnem [op1 >> 6]);
@@ -186,6 +193,8 @@ static void woodstock_disassemble_00 (int addr, int op1, int op2,
       snprintf (buf, len, "p = %d", p_set_map [arg]);
       break;
     }
+
+  return (inst_len);
 }
  
 
@@ -229,8 +238,8 @@ static char *woodstock_field_mnem [8] =
   { "p", "wp", "xs", "x", "s", "m", "w", "ms" };
 
 
-static void woodstock_disassemble_arith (int addr, int op1, int op2,
-					 char *buf, int len)
+static int woodstock_disassemble_arith (int addr, int op1, int op2,
+					char *buf, int len)
 {
   int l;
   int op = op1 >> 5;
@@ -242,7 +251,7 @@ static void woodstock_disassemble_arith (int addr, int op1, int op2,
   buf += l;
   len -= l;
   if (len <= 0)
-    return;
+    return (0);
   if (woodstock_arith_mnem [op] [1])
     {
       l = snprintf (buf, len, "%s", woodstock_arith_mnem [op] [1]);
@@ -250,15 +259,16 @@ static void woodstock_disassemble_arith (int addr, int op1, int op2,
       len -= l;
     }
   if (len <= 0)
-    return;
+    return (0);
   if ((op < 0x16) || (op > 0x1b))
-    return;
+    return (1);
   woodstock_disassemble_then (addr + 1, op2, buf, len);
+  return (2);
 }
 
 
-void woodstock_disassemble_inst (int addr, int op1, int op2,
-				 char *buf, int len)
+int woodstock_disassemble_inst (int addr, int op1, int op2,
+				char *buf, int len)
 {
   int l;
 
@@ -267,21 +277,19 @@ void woodstock_disassemble_inst (int addr, int op1, int op2,
   buf += l;
   len -= l;
   if (len <= 0)
-    return;
+    return (0);
 
   switch (op1 & 3)
     {
     case 0:
-      woodstock_disassemble_00 (addr, op1, op2, buf, len);
-      break;
+      return (woodstock_disassemble_00 (addr, op1, op2, buf, len));
     case 1:
-      woodstock_disassemble_branch ("jsb ", addr, op1, buf, len);
-      break;
+      return (woodstock_disassemble_branch ("jsb ", addr, op1, buf, len));
     case 2:
-      woodstock_disassemble_arith (addr, op1, op2, buf, len);
-      break;
+      return (woodstock_disassemble_arith (addr, op1, op2, buf, len));
     case 3:
-      woodstock_disassemble_branch ("if n/c go to ", addr, op1, buf, len);
-      break;
+      return (woodstock_disassemble_branch ("if n/c go to ", addr, op1, buf, len));
     }
+
+  return (0);  // can't happen, but avoid compiler warning
 }

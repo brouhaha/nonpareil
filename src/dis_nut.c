@@ -22,8 +22,8 @@ MA 02111, USA.
 #include <stdio.h>
 
 
-static void nut_disassemble_short_branch (int addr, int op1,
-					  char *buf, int len)
+static int nut_disassemble_short_branch (int addr, int op1,
+					 char *buf, int len)
 {
   int offset, cond, target;
 
@@ -35,11 +35,13 @@ static void nut_disassemble_short_branch (int addr, int op1,
   cond = (op1 >> 2) & 1;
 
   snprintf (buf, len, "?%s goto %05o", cond ? "c " : "nc", target);
+
+  return (1);
 }
 
 
-static void nut_disassemble_long_branch (int op1, int op2,
-					 char *buf, int len)
+static int nut_disassemble_long_branch (int op1, int op2,
+					char *buf, int len)
 {
   int cond, type, target;
 
@@ -51,6 +53,8 @@ static void nut_disassemble_long_branch (int op1, int op2,
 
   snprintf (buf, len, "?%s %s %05o", cond ? "c " : "nc",
 	    type ? "goto" : "call", target);
+
+  return (2);
 }
 
 
@@ -143,9 +147,10 @@ static int tmap [16] =
 { 3, 4, 5, 10, 8, 6, 11, -1, 2, 9, 7, 13, 1, 12, 0, -1 };
 
 
-static void nut_disassemble_00 (int op1, int op2, char *buf, int len)
+static int nut_disassemble_00 (int op1, int op2, char *buf, int len)
 {
   int arg = op1 >> 6;
+  int inst_len = 1;
 
   switch (op1 & 0x03c)
     {
@@ -190,6 +195,7 @@ static void nut_disassemble_00 (int op1, int op2, char *buf, int len)
       break;
     case 0x020:
       snprintf (buf, len, "%s", nut_op20 [op1 >> 6]);
+      inst_len = 2;
       break;
     case 0x024:
       snprintf (buf, len, "selprf %d", arg);
@@ -202,7 +208,10 @@ static void nut_disassemble_00 (int op1, int op2, char *buf, int len)
       break;
     case 0x030:
       if (op1 == 0x130)
-	snprintf (buf, len, "ldi %04o", op2);
+	 {
+	    snprintf (buf, len, "ldi %04o", op2);
+	    inst_len = 2;
+	 }
       else
 	snprintf (buf, len, "%s", nut_op30 [op1 >> 6]);
       break;
@@ -219,6 +228,8 @@ static void nut_disassemble_00 (int op1, int op2, char *buf, int len)
 	snprintf (buf, len, "? rcr %d", tmap [arg]);
       break;
     }
+
+  return (inst_len);
 }
  
 
@@ -238,7 +249,7 @@ static char *nut_field_mnem [8] =
   { "p", "x", "wp", "w", "pq", "xs", "m", "s" };
 
 
-static void nut_disassemble_arith (int op1, char *buf, int len)
+static int nut_disassemble_arith (int op1, char *buf, int len)
 {
   int l;
   int op = op1 >> 5;
@@ -247,11 +258,12 @@ static void nut_disassemble_arith (int op1, char *buf, int len)
   l = snprintf (buf, len, "%-8s%s",
 		nut_arith_mnem [op],
 		nut_field_mnem [field]);
+  return (1);
 }
 
 
-void nut_disassemble_inst (int addr, int op1, int op2,
-				 char *buf, int len)
+int nut_disassemble_inst (int addr, int op1, int op2,
+			  char *buf, int len)
 {
   int l;
 
@@ -259,21 +271,17 @@ void nut_disassemble_inst (int addr, int op1, int op2,
   buf += l;
   len -= l;
   if (len <= 0)
-    return;
+    return (0);
 
   switch (op1 & 3)
     {
     case 0:
-      nut_disassemble_00 (op1, op2, buf, len);
-      break;
+      return (nut_disassemble_00 (op1, op2, buf, len));
     case 1:
-      nut_disassemble_long_branch (op1, op2, buf, len);
-      break;
+      return (nut_disassemble_long_branch (op1, op2, buf, len));
     case 2:
-      nut_disassemble_arith (op1, buf, len);
-      break;
+      return (nut_disassemble_arith (op1, buf, len));
     case 3:
-      nut_disassemble_short_branch (addr, op1, buf, len);
-      break;
+      return (nut_disassemble_short_branch (addr, op1, buf, len));
     }
 }
