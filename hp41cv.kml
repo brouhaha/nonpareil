@@ -24,7 +24,7 @@ global
 	model "41CV"
 	rom "hp41cv.obj"
 #	listing "hp41c.lst"
-	image "hp41.png"
+	image "hp41cv.png"
 	color 0 137 0 6	  # background color, used when transparency is off
 end
 
