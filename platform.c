@@ -20,7 +20,6 @@ MA 02111, USA.
 */
 
 #include <string.h>
-#include <strings.h>
 
 #include "platform.h"
 
