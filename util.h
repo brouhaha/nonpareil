@@ -22,6 +22,11 @@ this program (in the file "COPYING"); if not, write to the Free Software
 Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 */
 
+
+#define QMAKESTR(x) #x
+#define MAKESTR(x) QMAKESTR(x)
+
+
 extern char * progname;
 
 void fatal (int ret, char *format, ...);

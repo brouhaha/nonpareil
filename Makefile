@@ -28,8 +28,6 @@ YFLAGS = -d -v
 
 LEX = flex
 
-CDEFINES =  -Dstricmp=strcasecmp -DENTER_KEY_MOD
-
 LDFLAGS = -g
 
 PACKAGES = gtk+-2.0 gdk-2.0 gdk-pixbuf-2.0 glib-2.0 gthread-2.0
@@ -44,8 +42,8 @@ LOADLIBES = `pkg-config $(PACKAGES) --libs`
 # -----------------------------------------------------------------------------
 
 PACKAGE = casmsim
-VERSION = 0.16
-DISTNAME = $(PACKAGE)-$(VERSION)
+RELEASE = 0.17
+DISTNAME = $(PACKAGE)-$(RELEASE)
 
 CALCS = hp35 hp45 hp55 hp80
 
@@ -75,6 +73,7 @@ ROM_OBJS = $(ROM_SRCS:.asm=.obj)
 
 DIST_FILES = $(MISC) Makefile $(HDRS) $(CSRCS) $(OSRCS) $(ROM_SRCS) $(KML)
 
+CFLAGS += -DCASMSIM_RELEASE=$(RELEASE)
 
 %.tab.c %.tab.h %.output: %.y
 	$(YACC) $(YFLAGS) $<
