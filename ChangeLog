@@ -1,7 +1,7 @@
 2004-01-17  Eric Smith <eric@brouhaha.com>
 
 	* hp80.asm: Corrected typo in "go to" in ROM 1 that caused
-	multiply to fail.  Corrected typo in ROM 3.
+	multiply to fail.  Corrected typos in ROM 3 and ROM 6.
 	
 	* kmll.l: Allow hexadecimal constants (leading "0x").
 	

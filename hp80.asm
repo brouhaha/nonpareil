@@ -1718,7 +1718,7 @@ dm4:	if p # 4
 dm7:	if p # 11
 	     then go to dm8
 	return
-dm8:	a + 1 -> a[m]
+dm8:	a - 1 -> a[m]
 	c + 1 -> c[m]
 	return
 da4:	c - 1 -> c[p]
