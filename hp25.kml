@@ -42,7 +42,7 @@ display
 
 	color 0 35 17 17   # background
 	color 1 35 17 17   # unlit segments
-	color 2 255 34 34  # lit segments
+	color 2 255 17 17  # lit segments
 
 	digits 12
 		size 17 12
