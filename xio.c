@@ -176,7 +176,11 @@ keyinfo keys [] =
   { { 168, 216, 30, 24 }, "RCL",   "D.MS->",  012, BLACK, LT_GREY },
   { { 216, 216, 30, 24 }, "%",     "delta %", 010, WHITE, MED_GREY },
 
+#if ENTER_KEY_MOD
+  { {  24, 264, 78, 24 }, "ENTER^","        DEG", 074, BLACK, LT_GREY },
+#else
   { {  24, 264, 78, 24 }, "ENTER^","        DEG", 075, BLACK, LT_GREY },
+#endif /* ENTER_KEY_MOD */
   { { 120, 264, 30, 24 }, "CHS",   "RAD",     073, BLACK, LT_GREY },
   { { 168, 264, 30, 24 }, "EEX",   "GRD",     072, BLACK, LT_GREY },
   { { 216, 264, 30, 24 }, "CLX",   "CLEAR",   070, BLACK, LT_GREY },
