@@ -279,7 +279,7 @@ r1:	1 -> s1
 xty:	0 -> s9
 	select rom 2
 smul11:	jsb mpy
-	go to 413
+	go to r13
 sqr1:	select rom 2
 xty11:	1 -> s8
 	if s7 # 1

@@ -9,8 +9,6 @@ Bugs:
 
   HP-45: Anomalous stopwatch display (aliasing?)
 
-  HP-80: Multiplication doesn't work
-
 
 Building:
 
@@ -65,6 +63,8 @@ Better model support:
   Model-dependent RAM size.
 
   Scan images.
+
+  Check HP-80 ROM 2-6 object code against patent
 
   Key in partial HP-65 source code from patent.
 
