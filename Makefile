@@ -53,7 +53,7 @@ TARGETS = casm csim
 
 HDRS = casm.h symtab.h util.h proc.h kml.h
 CSRCS = casm.c symtab.c csim.c util.c proc.c kml.c
-OSRCS = casml.l casmy.y kmly.y
+OSRCS = casml.l casmy.y kmll.l kmly.y
 MISC = COPYING README ChangeLog
 
 KML = $(CALCS:=.kml)
