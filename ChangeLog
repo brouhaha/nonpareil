@@ -1,5 +1,8 @@
 2004-04-09  Eric Smith <eric@brouhaha.com>
 
+	* model.c: Set RAM size for Spice models for which it is known,
+	and ifdef'd out the models for which it isn't.
+	
 	* platform.h platform.c (find_platform_by_name): Added
 	find_platform_by_name().
 
