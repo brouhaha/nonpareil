@@ -725,7 +725,7 @@ static void op_test_p_ne (sim_t *sim, int opcode)
 
 static void op_sel_rom (sim_t *sim, int opcode)
 {
-  sim->env.pc = ((opcode & 01300) << 2) + (sim->env.pc & 0377);
+  sim->env.pc = ((opcode & 01700) << 2) + (sim->env.pc & 0377);
 }
 
 
