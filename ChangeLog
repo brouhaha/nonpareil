@@ -1,5 +1,9 @@
 2004-04-09  Eric Smith <eric@brouhaha.com>
 
+	* proc_woodstock.c (woodstock_handle_io): Split display decode
+	into multiple functions dispatched based on platform.  Implemented
+	display decode for Spice platform.
+
 	* csim.c (main) proc.c (sim_init) proc.h proc_int.h: Added
 	platform field to sim_t.
 	

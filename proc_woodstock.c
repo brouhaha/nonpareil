@@ -30,6 +30,7 @@ MA 02111, USA.
 		      struct sim_t in proc_int.h. */
 
 #include "arch.h"
+#include "platform.h"
 #include "util.h"
 #include "proc.h"
 #include "proc_int.h"
@@ -929,35 +930,81 @@ static void woodstock_disassemble (sim_t *sim, int addr, char *buf, int len)
 static char display_char [16] = "0123456789rHoPE ";
   
 
-static void woodstock_handle_io (sim_t *sim)
+static void decode_woodstock_display (sim_t *sim, char *bp)
 {
-  char buf [(WSIZE + 1) * 2 + 1];
-  char *bp;
   int i;
 
-  bp = & buf [0];
-  if (sim->env->display_enable)
+  for (i = WSIZE - 1; i >= 2; i--)  /* 12 digits rather than 14 */
     {
-      for (i = WSIZE - 1; i >= 2; i--)  /* 12 digits rather than 14 */
+      if (sim->env->b [i] & 2)
 	{
-	  if (sim->env->b [i] & 2)
-	    {
-	      if ((sim->env->a [i] <= 1) || ((sim->env->a [i] & 7) == 7))
-		*bp++ = ' ';
-	      else
-		*bp++ = '-';
-	    }
+	  if ((sim->env->a [i] <= 1) || ((sim->env->a [i] & 7) == 7))
+	    *bp++ = ' ';
 	  else
-	    {
-	      *bp++ = display_char [sim->env->a [i]];
-	    }
-	  if (sim->env->b [i] & 1)
-	    *bp++ = '.';
+	    *bp++ = '-';
+	}
+      else
+	{
+	  *bp++ = display_char [sim->env->a [i]];
+	}
+      if (sim->env->b [i] & 1)
+	*bp++ = '.';
+      else
+	*bp++ = ' ';
+    }
+  *bp = '\0';
+}
+
+
+static void decode_spice_display (sim_t *sim, char *bp)
+{
+  int i;
+
+  if (sim->env->b [12] & 4)
+    *bp++ = '-';
+  else
+    *bp++ = ' ';
+  *bp++ = ' ';
+
+  for (i = 12; i >= 3; i--)
+    {
+      if (sim->env->b [i] == 6)
+	{
+	  if (sim->env->a [i] == 9)
+	    *bp++ = '-';
 	  else
 	    *bp++ = ' ';
 	}
+      else
+	*bp++ = display_char [sim->env->a [i]];
+      switch (sim->env->b [i] & 3)
+	{
+	case 0: *bp++ = ' '; break;
+	case 1: *bp++ = '.'; break;
+	case 2: *bp++ = ' '; break;
+	case 3: *bp++ = ','; break;
+	}
     }
-  *bp = '\0';
+}
+
+
+static void woodstock_handle_io (sim_t *sim)
+{
+  char buf [(WSIZE + 1) * 2 + 1];
+
+  if (sim->env->display_enable)
+    {
+      switch (sim->platform)
+	{
+	case PLATFORM_WOODSTOCK: decode_woodstock_display (sim, buf); break;
+	case PLATFORM_SPICE:     decode_spice_display     (sim, buf); break;
+#if 0
+	case PLATFORM_TOPCAT:
+	case PLATFORM_STING:     decode_topcat_display    (sim, buf); break;
+#endif
+	default: fatal (2, "Woodstock arch doesn't know how to handle display for platform %s\n", platform_name [sim->platform]);
+	}
+    }
   if (strcmp (buf, sim->prev_display) != 0)
     {
       sim->display_update (buf);
