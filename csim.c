@@ -573,13 +573,18 @@ void op_rom_addr_to_buf (int opcode)
 void op_display_off (int opcode)
 {
   display_enable = 0;
-  io_count = 0;
+  io_count = 2;
+  /*
+   * Don't immediately turn off display because the very next instruction
+   * might be a display_toggle to turn it on.  This happens in the HP-45
+   * stopwatch.
+   */
 }
 
 void op_display_toggle (int opcode)
 {
   display_enable = ! display_enable;
-  io_count = 0;
+  io_count = 0;  /* force immediate display update */
 }
 
 void (* op_fcn [1024])(int);
