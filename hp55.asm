@@ -1,7 +1,9 @@
-; HP-55 ROM 00 source from United States Patent 4,009,379
+; HP-55 ROM sources from United States Patent 4,009,379
 ; keyed in by Eric Smith on 8-Mar-1995 - any errors are probably mine
 ; five typos corrected on 30-Mar-2003, found by Peter Monta by OCRing
 ;     the listing in the patent
+
+; HP-55 ROM 00
 
 	.rom @00
 
@@ -318,8 +320,7 @@ err0:	delayed select rom 3
 
 	.symtab
 
-; HP-55 ROM 01 source from United States Patent 4,009,379
-; keyed in by Eric Smith on 3/8/95 - any errors are probably mine
+; HP-55 ROM 01
 
 	.rom @01
 
@@ -638,8 +639,7 @@ fix2:	c exchange m
 
 	.symtab
 
-; HP-55 ROM 02 source from United States Patent 4,009,379
-; keyed in by Eric Smith on 3/8/95 - any errors are probably mine
+; HP-55 ROM 02
 
 	.rom @02
 
@@ -956,8 +956,7 @@ con52:	jsb ld40
 
 	.symtab
 
-; HP-55 ROM 03 source from United States Patent 4,009,379
-; keyed in by Eric Smith on 3/8/95 - any errors are probably mine
+; HP-55 ROM 03
 
 	.rom @03
 
@@ -1279,8 +1278,7 @@ sa1:	shift left a[w]
 
 	.symtab
 
-; HP-55 ROM 04 source from United States Patent 4,009,379
-; keyed in by Eric Smith on 3/8/95 - any errors are probably mine
+; HP-55 ROM 04
 
 	.rom @04
 
@@ -1587,8 +1585,7 @@ echk2:	if c[s] = 0
 ; wraps back to top of rom 4
 	.symtab
 
-; HP-55 ROM 05 source from United States Patent 4,009,379
-; keyed in by Eric Smith on 3/8/95 - any errors are probably mine
+; HP-55 ROM 05
 
 	.rom @05
 
@@ -1891,8 +1888,7 @@ slrn3:	jsb rr
 	go to set8
 	.symtab
 
-; HP-55 ROM 06 source from United States Patent 4,009,379
-; keyed in by Eric Smith on 3/8/95 - any errors are probably mine
+; HP-55 ROM 06
 
 	.rom @06
 
@@ -2183,8 +2179,7 @@ tan14:	a exchange c[wp]
 ; wraps back to top of rom 6
 	.symtab
 
-; HP-55 ROM 07 source from United States Patent 4,009,379
-; keyed in by Eric Smith on 3/8/95 - any errors are probably mine
+; HP-55 ROM 07
 
 	.rom @07
 
@@ -2466,8 +2461,7 @@ lncd3:	5 -> p
 
 	.symtab
 
-; HP-55 ROM 10 source from United States Patent 4,009,379
-; keyed in by Eric Smith on 3/8/95 - any errors are probably mine
+; HP-55 ROM 10
 
 	.rom @10
 
@@ -2755,8 +2749,7 @@ dis15:	if s9 # 1
 	jsb dis62
 	.symtab
 
-; HP-55 ROM 11 source from United States Patent 4,009,379
-; keyed in by Eric Smith on 3/8/95 - any errors are probably mine
+; HP-55 ROM 11
 
 	.rom @11
 
@@ -3049,8 +3042,7 @@ skc4:	a exchange c[wp]
 fix:	select rom 2
 	.symtab
 
-; HP-55 ROM 12 source from United States Patent 4,009,379
-; keyed in by Eric Smith on 3/8/95 - any errors are probably mine
+; HP-55 ROM 12
 
 	.rom @12
 
@@ -3343,8 +3335,7 @@ gall:	load constant 3
 
 	.symtab
 
-; HP-55 ROM 13 source from United States Patent 4,009,379
-; keyed in by Eric Smith on 3/8/95 - any errors are probably mine
+; HP-55 ROM 13
 
 	.rom @13
 

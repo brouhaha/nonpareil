@@ -880,15 +880,15 @@ lncd3:	5 -> p
 
 	.rom @03
 
-prfx:	select rom 4		; unsure of label
+prfx:	select rom 4
 
 	no operation
 
 fix1:	go to fix2
 
-exp0:	go to exp1		; unsure of label
+exp0:	go to exp1
 
-lnnn:	go to lnn2z4		; unsure of label
+lnnn:	go to lnn2z4
 
 	no operation
 invx:	go to inv1
@@ -899,7 +899,7 @@ perc:	select rom 4
 
 rnd0:	select rom 6
 
-rcal:	go to rcl0		; unsure of label
+rcal:	go to rcl0
 
 stor:	go to str0
 
@@ -1700,7 +1700,7 @@ am10:	jsb stor
 	no operation
 	no operation
 
-amd0z4:	jsb dcod		; unsure of label
+amd0z4:	jsb dcod
 	if s9 # 1
 	     then go to am10
 fst1:	select rom 3
