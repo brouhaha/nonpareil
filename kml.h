@@ -37,16 +37,50 @@ void kml_include (char *fn);
 int yylex (void);
 int yyparse (void);
 void yyerror (char *fmt, ...);
+
 void range_check (int val, int min, int max);
+void range_check_char (int val, int min, int max);
 
 
 #define KML_MAX_GLOBAL_COLOR 2
 #define KML_MAX_DISPLAY_COLOR 16
+
+/* 
+ * For seven-segment displays, by convention the segments are labelled 'a'
+ * through 'g'.  We designate the '.' and ',' as 'h' and 'i', respectively.
+ *
+ *     aaa
+ *    f   b
+ *    f   b
+ *    f   b
+ *     ggg
+ *    e   c
+ *    e   c
+ *    e   c  hh
+ *     ddd   hh
+ *          ii
+ *         ii
+ *
+ * Not all calculators have the comma.  Some calculators, particularly the
+ * classic series, put the '.' inside the seven segments, and dedicate a
+ * full digit position to the radix mark.
+ */
+
+#define KML_MAX_DIGITS 15
+
+#define KML_FIRST_SEGMENT 'a'
+#define KML_MAX_SEGMENT 9
+
+#define KML_MAX_CHARACTER 256
 #define KML_MAX_ANNUNCIATOR 16
+
 #define KML_MAX_BUTTON 256
+
 #define KML_MAX_SWITCH 4
 #define KML_MAX_SWITCH_POSITION 4
+
 #define KML_MAX_SCANCODE 256
+
 
 
 typedef struct
@@ -139,6 +173,14 @@ typedef struct kml_scancode_t
   kml_command_list_t *commands;
 } kml_scancode_t;
 
+
+typedef struct
+{
+  kml_size_t   size;
+  kml_offset_t offset;
+} kml_segment_t;
+
+
 typedef struct
 {
   char *title;
@@ -158,6 +200,12 @@ typedef struct
   kml_size_t background_size;
 
   int display_digits;
+  kml_size_t digit_size;
+  kml_offset_t digit_offset;
+
+  int character_segment_map [KML_MAX_CHARACTER];
+  kml_segment_t *segment [KML_MAX_SEGMENT];
+
   int display_zoom;
   kml_size_t display_size;
   kml_offset_t display_offset;

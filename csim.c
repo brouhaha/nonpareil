@@ -48,8 +48,7 @@ GtkWidget *main_window;
 GtkWidget *menubar;  /* actually a popup menu in transparency/shape mode */
 
 
-#define DISPLAY_DIGIT_POSITIONS 15
-int display_digit [DISPLAY_DIGIT_POSITIONS];
+char display_digit [KML_MAX_DIGITS];
 
 
 GtkWidget *display;
@@ -65,118 +64,19 @@ void usage (FILE *f)
 }
 
 
-#define DIGIT_RADIX 10
-#define DIGIT_NEG   11
-#define DIGIT_BLANK 12
-
-/*
- *     aaa
- *    f   b
- *    f   b
- *    f   b
- *     ggg
- *    e   c
- *    e hhc
- *    e hhc
- *     ddd
- */
-
-typedef int seven_seg_t [8];
-
-seven_seg_t seven_seg [13] =
-  {
-  /*       a   b  c  d  e  f  g  h */
-  /* 0 */ { 1, 1, 1, 1, 1, 1, 0, 0 },
-  /* 1 */ { 0, 1, 1, 0, 0, 0, 0, 0 },
-  /* 2 */ { 1, 1, 0, 1, 1, 0, 1, 0 },
-  /* 3 */ { 1, 1, 1, 1, 0, 0, 1, 0 },
-  /* 4 */ { 0, 1, 1, 0, 0, 1, 1, 0 },
-  /* 5 */ { 1, 0, 1, 1, 0, 1, 1, 0 },
-  /* 6 */ { 1, 0, 1, 1, 1, 1, 1, 0 },
-  /* 7 */ { 1, 1, 1, 0, 0, 0, 0, 0 },
-  /* 8 */ { 1, 1, 1, 1, 1, 1, 1, 0 },
-  /* 9 */ { 1, 1, 1, 1, 0, 1, 1, 0 },
-  /* . */ { 0, 0, 0, 0, 0, 0, 0, 1 },
-  /* - */ { 0, 0, 0, 0, 0, 0, 1, 0 },
-  /*   */ { 0, 0, 0, 0, 0, 0, 0, 0 }
-  };
-
-
-GdkSegment digit_segment [7] =
-  {
-    { 0,  0, 5,  0 },
-    { 5,  0, 5,  5 },
-    { 5,  5, 5, 10 },
-    { 5, 10, 0, 10 },
-    { 0, 10, 0,  5 },
-    { 0,  5, 0,  0 },
-    { 0,  5, 5,  5 }
-  };
-
-
-GdkPixbuf *digit_pixbuf [13];
-
-
-GdkPixbuf *create_digit (seven_seg_t *segs,
-			 guint32 fg_color,
-			 guint32 bg_color)
-{
-  GdkPixbuf *pixbuf;
-
-  pixbuf = gdk_pixbuf_new (GDK_COLORSPACE_RGB,
-			   FALSE,  /* has_alpha */
-			   8,  /* bits per sample */
-			   5,  /* width */
-			   9);  /* height */
-  gdk_pixbuf_fill (pixbuf, bg_color);
-  return (pixbuf);
-}
-
-
-void create_digits (void)
-{
-  int i;
-  guint32 fg_color = 0xaa111100;
-  guint32 bg_color = 0x00000000;
-
-  for (i = 0; i < 13; i++)
-    digit_pixbuf [i] = create_digit (& seven_seg [i], fg_color, bg_color);
-}
-
-
 void draw_digit (GtkWidget *widget, gint x, gint y, int val)
 {
   int i;
-  int seg_count = 0;
-  GdkSegment segs [8];
-  GdkGC *gc = display->style->fg_gc [GTK_WIDGET_STATE (widget)];
 
-#if 1
-  for (i = 0; i < 7; i++)
-    {
-      if (seven_seg [val] [i])
-	{
-	  segs [seg_count].x1 = digit_segment [i].x1 + x;
-	  segs [seg_count].y1 = digit_segment [i].y1 + y;
-	  segs [seg_count].x2 = digit_segment [i].x2 + x;
-	  segs [seg_count].y2 = digit_segment [i].y2 + y;
-	  seg_count++;
-	}
-      if (seg_count)
-	gdk_draw_segments (widget->window, gc, & segs [0], seg_count);
-    }
-  if (val == DIGIT_RADIX)
-    gdk_draw_rectangle (widget->window, gc, TRUE, x + 2, y + 8, 2, 2);
-#else
-  gdk_draw_pixbuf (widget->window,
-		   NULL, /* gc for clipping */
-		   digit_pixbuf [val],
-		   0, 0, /* src x, y */
-		   x, y, /* dest x, y */
-		   5, 9, /* width, height */
-		   GDK_RGB_DITHER_NORMAL,
-		   0, 0); /* x_dither, y_dither */
-#endif
+  for (i = 0; i < KML_MAX_SEGMENT; i++)
+    if (kml->character_segment_map [val] & (1 << i))
+      gdk_draw_rectangle (widget->window,
+			  display->style->fg_gc [GTK_WIDGET_STATE (widget)],
+			  TRUE,
+			  x + kml->segment [i]->offset.x,
+			  y + kml->segment [i]->offset.y,
+			  kml->segment [i]->size.width,
+			  kml->segment [i]->size.height);
 }
 
 
@@ -185,7 +85,7 @@ gboolean display_expose_event_callback (GtkWidget *widget,
 					gpointer data)
 {
   int i;
-  gdouble x;
+  int x;
 
   /* clear the display */
   gdk_draw_rectangle (widget->window,
@@ -195,12 +95,12 @@ gboolean display_expose_event_callback (GtkWidget *widget,
 		      display->allocation.width,
 		      display->allocation.height);
 
-  x = 0.0;
-  for (i = 0; i < DISPLAY_DIGIT_POSITIONS; i++)
+  x = kml->digit_offset.x;
+  for (i = 0; i < kml->display_digits; i++)
     {
-      draw_digit (widget, (gint) (x + 0.5), 0, display_digit [i]);
+      draw_digit (widget, x, kml->digit_offset.y, display_digit [i]);
 		       
-      x += 13.29;
+      x += kml->digit_size.width;
     }
 
   return (TRUE);
@@ -219,26 +119,26 @@ static void display_update (char *buf)
 
   l = strlen (buf);
 
-  for (i = 0; i < DISPLAY_DIGIT_POSITIONS; i++)
+  for (i = 0; i < kml->display_digits; i++)
     {
       if (i >= l)
 	{
-	  display_digit [i] = DIGIT_BLANK;
+	  display_digit [i] = ' ';
 	  continue;
 	}
       if (isdigit (buf [i]))
-	display_digit [i] = buf [i] - '0';
+	display_digit [i] = buf [i];
       else
 	switch (buf [i])
 	  {
 	  case '-':
-	    display_digit [i] = DIGIT_NEG;
+	    display_digit [i] = '-';
 	    break;
 	  case '.':
-	    display_digit [i] = DIGIT_RADIX;
+	    display_digit [i] = '.';
 	    break;
 	  case ' ':
-	    display_digit [i] = DIGIT_BLANK;
+	    display_digit [i] = ' ';
 	    break;
 	  default:
 	    fatal (2, "illegal display char '%c'\n", buf [i]);
@@ -884,8 +784,6 @@ int main (int argc, char *argv[])
   add_switches (image_pixbuf, fixed);
 
   add_keys (image_pixbuf, fixed);
-
-  create_digits ();
 
   display = gtk_drawing_area_new ();
 

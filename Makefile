@@ -37,7 +37,7 @@ LOADLIBES = `pkg-config $(PACKAGES) --libs`
 # -----------------------------------------------------------------------------
 
 PACKAGE = casmsim
-RELEASE = 0.22
+RELEASE = 0.23
 DISTNAME = $(PACKAGE)-$(RELEASE)
 
 CALCS = hp35 hp45 hp55 hp80
@@ -50,7 +50,7 @@ OSRCS = casml.l casmy.y kmll.l kmly.y
 MISC = COPYING README ChangeLog
 
 KML = $(CALCS:=.kml)
-IMAGES = hp35.jpg hp45.png hp55.jpg hp80.jpg
+IMAGES = $(CALCS:=.png)
 
 AUTO_CSRCS = casml.c casmy.tab.c kmll.c kmly.tab.c
 AUTO_HDRS = casmy.tab.h kmly.tab.h

@@ -65,6 +65,13 @@ void range_check (int val, int min, int max)
 }
 
 
+void range_check_char (int val, int min, int max)
+{
+  if ((val < min) || (val > max))
+    yyerror ("value '%c' out of range ['%c', '%c']", val, min, max);
+}
+
+
 kml_t *read_kml_file (char *fn)
 {
   kml_t *kml;
@@ -121,6 +128,9 @@ void free_kml (kml_t *kml)
 
   for (i = 0; i < KML_MAX_DISPLAY_COLOR; i++)
     free (kml->display_color [i]);
+
+  for (i = 0; i < KML_MAX_SEGMENT; i++)
+    free (kml->segment [KML_MAX_SEGMENT]);
 
   for (i = 0; i < KML_MAX_ANNUNCIATOR; i++)
     free (kml->annunciator [i]);

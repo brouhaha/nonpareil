@@ -1,3 +1,9 @@
+2004-02-19  Eric Smith <eric@brouhaha.com>
+
+	* csim.c (draw_digit, display_expose_event_callback) kml.c
+	(free_kml, range_check_char) kmly.y kmll.l kml.h: Allow KML file
+	much more control over seven segment display.
+
 2004-02-16  Eric Smith <eric@brouhaha.com>
 
 	* util.c (fatal) util.h casm.c (usage) csim.c (usage): Add usage()

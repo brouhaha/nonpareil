@@ -44,17 +44,18 @@ int kml_cur_idx2;
 
 %token <integer> INTEGER
 %token <string> STRING
+%token <integer> CHAR
 
 %token ANNUNCIATOR  AUTHOR       BACKGROUND   BITMAP       BUTTON
-%token CLASS        COLOR        DEBUG        DEFAULT      DIGITS
-%token DISPLAY      DOWN         ELSE         END          FLAG
-%token GLOBAL       HARDWARE     IFFLAG       IFPRESSED    IMAGE
-%token INCLUDE      KEYCODE      LCD          MAP          MENUITEM
-%token MODEL        NOHOLD       OFFSET       ONDOWN       ONUP
-%token OUTIN        PATCH        POSITION     PRESS        PRINT
-%token RELEASE      RESETFLAG    ROM          SCANCODE     SETFLAG
-%token SIZE         SWITCH       TITLE        TRANSPARENCY TYPE
-%token VIRTUAL      ZOOM
+%token CHARACTER    CLASS        COLOR        DEBUG        DEFAULT
+%token DIGITS       DISPLAY      DOWN         ELSE         END
+%token FLAG         GLOBAL       HARDWARE     IFFLAG       IFPRESSED
+%token IMAGE        INCLUDE      KEYCODE      LCD          MAP
+%token MENUITEM     MODEL        NOHOLD       OFFSET       ONDOWN
+%token ONUP         OUTIN        PATCH        POSITION     PRESS
+%token PRINT        RELEASE      RESETFLAG    ROM          SCANCODE
+%token SEGMENT      SETFLAG      SIZE         SWITCH       TITLE
+%token TRANSPARENCY TYPE         VIRTUAL      ZOOM
 
 %type <intpair> offset_stmt size_stmt down_stmt
 
@@ -62,6 +63,8 @@ int kml_cur_idx2;
 %type <cmdlist> map_command press_command release_command setflag_command
 %type <cmdlist> resetflag_command menuitem_command ifflag_command
 %type <cmdlist> ifpressed_command
+
+%type <integer> segment_list
 
 %%
 
@@ -197,11 +200,11 @@ display_stmt		:	zoom_stmt
 			|	offset_stmt { yy_kml->display_offset.x = $1.a;
 					      yy_kml->display_offset.y = $1.b; }
 			|	display_color_stmt
+			|	character_stmt
+			|	segment_stmt
 			;
 
 zoom_stmt		:	ZOOM INTEGER { yy_kml->display_zoom = $2; } ;
-
-digits_stmt		:	DIGITS INTEGER { yy_kml->display_digits = $2; } ;
 
 display_color_stmt	:	COLOR INTEGER INTEGER INTEGER INTEGER
 				{ range_check ($2, 0, KML_MAX_DISPLAY_COLOR);
@@ -209,6 +212,46 @@ display_color_stmt	:	COLOR INTEGER INTEGER INTEGER INTEGER
 				  yy_kml->display_color [$2]->r = $3;
 				  yy_kml->display_color [$2]->g = $4;
 				  yy_kml->display_color [$2]->b = $5; } ;
+
+digits_stmt		:	DIGITS INTEGER digit_param_list END
+				{ range_check ($2, 1, KML_MAX_DIGITS);
+				  yy_kml->display_digits = $2; } ;
+
+digit_param_list	:	digit_param
+			|	digit_param digit_param_list
+			;
+
+digit_param		:	size_stmt { yy_kml->digit_size.width = $1.a;
+					    yy_kml->digit_size.height = $1.b; }
+			|	offset_stmt { yy_kml->digit_offset.x = $1.a;
+					      yy_kml->digit_offset.y = $1.b; }
+			;
+
+character_stmt		:	CHARACTER CHAR SEGMENT segment_list END { yy_kml->character_segment_map [$2] = $4; } ;
+
+segment_list		:	{ $$ = 0; }
+			|	CHAR segment_list { range_check_char ($1, KML_FIRST_SEGMENT, KML_FIRST_SEGMENT + KML_MAX_SEGMENT - 1);
+						    $$ = (1 << ($1 - KML_FIRST_SEGMENT)) + $2; }
+			;
+
+segment_stmt		:	SEGMENT CHAR
+				{
+				  range_check ($2, KML_FIRST_SEGMENT, KML_FIRST_SEGMENT + KML_MAX_SEGMENT - 1);
+				  kml_cur_idx = $2 - KML_FIRST_SEGMENT;
+				  yy_kml->segment [kml_cur_idx] = alloc (sizeof (kml_segment_t)); }
+				segment_param_list END;
+
+segment_param_list	:	segment_param
+			|	segment_param segment_param_list
+			;
+
+segment_param		:	size_stmt
+				{ yy_kml->segment [kml_cur_idx]->size.width = $1.a;
+				  yy_kml->segment [kml_cur_idx]->size.height = $1.b; }
+			|	offset_stmt
+				{ yy_kml->segment [kml_cur_idx]->offset.x = $1.a;
+				  yy_kml->segment [kml_cur_idx]->offset.y = $1.b; }
+			;
 
 /*----------------------------------------------------------------------------
  annunciator section

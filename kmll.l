@@ -56,6 +56,7 @@ alpha		[a-zA-Z]
 0{octaldig}*	{ sscanf (yytext, "%o", &yylval.integer); return INTEGER; }
 @{octaldig}+	{ sscanf (yytext+1, "%o", &yylval.integer); return INTEGER; }
 0x{hexdig}+	{ sscanf (yytext, "%x", &yylval.integer); return INTEGER; }
+'.'		{ yylval.integer = yytext [1]; return CHAR; }
 
 \"[^\"\n]*\"	{ yylval.string = newstrn (yytext + 1, strlen (yytext + 1) - 1);
                   return STRING; }
@@ -74,6 +75,7 @@ author		return (AUTHOR);
 background	return (BACKGROUND);
 bitmap		return (BITMAP);
 button		return (BUTTON);
+character	return (CHARACTER);
 class		return (CLASS);
 color		return (COLOR);
 debug		return (DEBUG);
@@ -108,6 +110,7 @@ release		return (RELEASE);
 resetflag	return (RESETFLAG);
 rom		return (ROM);
 scancode	return (SCANCODE);
+segment		return (SEGMENT);
 setflag		return (SETFLAG);
 size		return (SIZE);
 switch		return (SWITCH);

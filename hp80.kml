@@ -37,12 +37,40 @@ background
 end
 
 display
-	digits 15
-	offset 45 53
-	size 192 11
-	color 0 0 0 0      # background
-	color 1 0 0 0      # unlit segments
+	offset 46 43
+	size 192 35
+
+	color 0 35 17 17   # background
+	color 1 35 17 17   # unlit segments
 	color 2 255 17 17  # lit segments
+
+	digits 15
+		size 12 11
+		offset 8 10
+	end
+
+	character '0' segment 'a' 'b' 'c' 'd' 'e' 'f'         end
+	character '1' segment     'b' 'c'                     end
+        character '2' segment 'a' 'b'     'd' 'e'     'g'     end
+	character '3' segment 'a' 'b' 'c' 'd'         'g'     end
+	character '4' segment     'b' 'c'         'f' 'g'     end
+	character '5' segment 'a'     'c' 'd'     'f' 'g'     end
+	character '6' segment 'a'     'c' 'd' 'e' 'f' 'g'     end
+	character '7' segment 'a' 'b' 'c'                     end
+	character '8' segment 'a' 'b' 'c' 'd' 'e' 'f' 'g'     end
+	character '9' segment 'a' 'b' 'c' 'd'     'f' 'g'     end
+	character '.' segment                             'h' end
+	character '-' segment                         'g'     end
+	character ' ' segment                                 end
+
+	segment 'a' offset  0  0 size 6 1 end
+	segment 'b' offset  5  0 size 1 6 end
+	segment 'c' offset  5  5 size 1 6 end
+	segment 'd' offset  0 10 size 6 1 end
+	segment 'e' offset  0  5 size 1 6 end
+	segment 'f' offset  0  0 size 1 6 end
+	segment 'g' offset  0  5 size 6 1 end
+	segment 'h' offset  2  8 size 2 2 end
 end
 
 button 11  type 0  size 26 20  offset  46 147  down 2 8  keycode 036  end
