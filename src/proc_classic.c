@@ -810,6 +810,14 @@ bool classic_execute_instruction (sim_t *sim)
   opcode = sim->ucode [addr];
 
 #ifdef HAS_DEBUGGER
+  if (sim->debug_flags & (1 << SIM_DEBUG_KEY_TRACE))
+    {
+      if (opcode == 00320)  // keys to rom addr
+	sim->debug_flags |= (1 << SIM_DEBUG_TRACE);
+      else if (opcode == 00024) // if s0 # 1
+	sim->debug_flags &= ~ (1 << SIM_DEBUG_TRACE);
+    }
+
   if (sim->debug_flags & (1 << SIM_DEBUG_TRACE))
     classic_print_state (sim, sim->env);
 #endif /* HAS_DEBUGGER */

@@ -1,5 +1,8 @@
 2004-07-12  Eric Smith <eric@brouhaha.com>
 
+	* proc_classic.c (classic_execute_instruction): Added key trace
+	support.
+
 	* proc_classic.c (classic_execute_instruction,
 	classic_print_state): Moved trace mode disassembly/source printing
 	into classic_print_state(), and print full state when tracing.
