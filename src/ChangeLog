@@ -1,5 +1,10 @@
 2005-02-12  Eric Smith <eric@brouhaha.com>
 
+	* csim.c (main): We have to call gtk_widget_show_all(main_window)
+	before display_init(), or it can't construct GCs for the
+	annunciators, and we have to call it again after display_init()
+	and combining the shape mask.
+	
 	* csim.c display.h display.c display_gtk.h proc.h proc.c
 	proc_int.h proc_classic.c proc_woodstock.c proc_nut.c
 	voyager_lcd.c coconut_lcd.c: Simulator thread now uses async queue

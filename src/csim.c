@@ -747,6 +747,10 @@ int main (int argc, char *argv[])
 
   add_keys (background_pixbuf, fixed);
 
+  // Have to show everything here, or display_init() can't construct the
+  // GCs for the annunciators.
+  gtk_widget_show_all (main_window);
+
   display_init (kml, main_window, event_box, fixed, file_pixbuf);
 
   if (image_mask_bitmap)
@@ -759,6 +763,8 @@ int main (int argc, char *argv[])
       gtk_window_set_decorated (GTK_WINDOW (main_window), FALSE);
     }
 
+  // Have to show everything again, now that we've done display_init()
+  // and combined the shape mask.
   gtk_widget_show_all (main_window);
 
   g_signal_connect (G_OBJECT (main_window),
