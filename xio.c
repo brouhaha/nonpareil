@@ -20,7 +20,7 @@ You should have received a copy of the GNU General Public License along with
 this program (in the file "COPYING"); if not, write to the Free Software
 Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
-$Header: /home/svn/casmsim/xio.c,v 1.7 1995/03/28 01:34:48 eric Exp $
+$Header: /home/svn/casmsim/xio.c,v 1.8 2003/05/30 07:26:34 eric Exp $
 */
 
 #include <stdio.h>
@@ -163,7 +163,9 @@ typedef struct
 } keyinfo;
 
 
-keyinfo keys [] =
+keyinfo (*keys)[35];
+
+keyinfo keys_hp45 [35] =
 {
   { {  24, 120, 30, 24 }, "1/x",   "y^x",     006, WHITE, MED_GREY },
   { {  72, 120, 30, 24 }, "ln",    "log",     004, WHITE, MED_GREY },
@@ -213,6 +215,52 @@ keyinfo keys [] =
   { { 209, 456, 37, 24 }, "SIG+",  "SIG-",    042, BLACK, WHITE },
 };
 
+keyinfo keys_hp55 [35] =
+{
+  { {  24, 120, 30, 24 }, "SIG+",   "SIG-",     006, BLACK, LT_GREY },
+  { {  72, 120, 30, 24 }, "y^x",    "sin -1",     004, BLACK, LT_GREY },
+  { { 120, 120, 30, 24 }, "1/x",   "cos -1",    003, BLACK, LT_GREY },
+  { { 168, 120, 30, 24 }, "%",   "tan -1",     002, BLACK, LT_GREY },
+  { { 216, 120, 30, 24 }, "BST",      "",        000, WHITE,  MED_GREY },
+
+  { {  24, 168, 30, 24 }, "y^",   "L.R.", 056, BLACK, LT_GREY },
+  { {  72, 168, 30, 24 }, "x<>y",   "ln e^x",     054, BLACK, LT_GREY },
+  { { 120, 168, 30, 24 }, "RDN",   "log 10^x",  053, BLACK, LT_GREY },
+  { { 168, 168, 30, 24 }, "FIX",   "SCI",  052, BLACK, LT_GREY },
+  { { 216, 168, 30, 24 }, "SST",   "",  050, WHITE, MED_GREY },
+
+  { {  24, 216, 30, 24 }, "f",  "",      016, BLACK, GOLD },
+  { {  72, 216, 30, 24 }, "g",   "",     014, BLACK, BLUE },
+  { { 120, 216, 30, 24 }, "STO",   "x s",  013, BLACK, LT_GREY },
+  { { 168, 216, 30, 24 }, "RCL",   "LASTx",  012, BLACK, LT_GREY },
+  { { 216, 216, 30, 24 }, "GTO",     "x<=y x=y", 010, WHITE, BLACK },
+
+  { {  24, 264, 78, 24 }, "ENTER^", "H.MS+ -", 075, BLACK, LT_GREY },
+  { { 120, 264, 30, 24 }, "CHS",   "sqrt(x) x^2",     073, BLACK, LT_GREY },
+  { { 168, 264, 30, 24 }, "EEX",   "n!",     072, BLACK, LT_GREY },
+  { { 216, 264, 30, 24 }, "CLX",   "CLR CL.R",   070, BLACK, LT_GREY },
+
+  { {  24, 312, 24, 24 }, "-",     "DEG",        066, BLACK, LT_GREY },
+  { {  73, 312, 37, 24 }, "7",     "in mm",   064, BLACK, WHITE },
+  { { 141, 312, 37, 24 }, "8",     "ft m",   063, BLACK, WHITE },
+  { { 209, 312, 37, 24 }, "9",     "gal l", 062, BLACK, WHITE },
+
+  { {  24, 360, 24, 24 }, "+",     "RAD",        026, BLACK, LT_GREY },
+  { {  73, 360, 37, 24 }, "4",     "lbm kg",        024, BLACK, WHITE },
+  { { 141, 360, 37, 24 }, "5",     "lbf N",        023, BLACK, WHITE },
+  { { 209, 360, 37, 24 }, "6",     "degF degC",        022, BLACK, WHITE },
+
+  { {  24, 408, 24, 24 }, "x",     "GRD",        036, BLACK, LT_GREY },
+  { {  73, 408, 37, 24 }, "1",     "H H.MS",        034, BLACK, WHITE },
+  { { 141, 408, 37, 24 }, "2",     "D R",        033, BLACK, WHITE },
+  { { 209, 408, 37, 24 }, "3",     "Btu J",        032, BLACK, WHITE },
+
+  { {  24, 456, 24, 24 }, "/",     "",        046, BLACK, LT_GREY },
+  { {  73, 456, 37, 24 }, "0",     "R P",   044, BLACK, WHITE },
+  { { 141, 456, 37, 24 }, ".",     "Pi",      043, BLACK, WHITE },
+  { { 209, 456, 37, 24 }, "R/S",  "",    042, WHITE, BLACK },
+};
+
 
 static void draw_string (char *s, XRectangle *rect, int fg, int bg)
 {
@@ -251,12 +299,12 @@ static void draw_calc (void)
   int i;
   XRectangle r;
 
-  for (i = 0; i < (sizeof (keys) / sizeof (keyinfo)); i++)
+  for (i = 0; i < /*(sizeof (*keys) / sizeof (keyinfo))*/35; i++)
     {
-      draw_string (keys [i].label, & keys [i].rect, keys [i].fg, keys [i].bg);
-      r = keys [i].rect;
+      draw_string ((*keys) [i].label, & (*keys) [i].rect, (*keys) [i].fg, (*keys) [i].bg);
+      r = (*keys) [i].rect;
       r.y -= r.height;
-      draw_string (keys [i].flabel, & r, GOLD, DK_GREY);
+      draw_string ((*keys) [i].flabel, & r, GOLD, DK_GREY);
     }
   XSync (mydisplay, 0);
 }
@@ -273,9 +321,9 @@ static int find_key (int x, int y)
 {
   int i;
 
-  for (i = 0; i < (sizeof (keys) / sizeof (keyinfo)); i++)
+  for (i = 0; i < /*(sizeof ((*keys)) / sizeof (keyinfo))*/35; i++)
     {
-      if (pt_in_rect (x, y, & keys [i].rect))
+      if (pt_in_rect (x, y, & (*keys) [i].rect))
 	return (i);
     }
   return (-1);
@@ -386,8 +434,13 @@ static void handle_events (void)
 
 void init_display (int argc, char *argv[])
 {
+  int n;
   disp_buf [0] ='\0';
-  init_graphics (argc, argv, "csim");
+  keys = &keys_hp45;
+  n = strlen(argv[0]);
+  if (strcmp(argv[0]+n-4,"hp55")==0)
+    keys = &keys_hp55;
+  init_graphics (argc, argv, argv[0]+n-4);
   draw_calc ();
 }
 
@@ -407,7 +460,7 @@ int check_keyboard (void)
 {
   handle_events ();
   if (pressed_key >= 0)
-    return (keys [pressed_key].keycode);
+    return ((*keys) [pressed_key].keycode);
   else
     return (-1);
 }
