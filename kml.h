@@ -48,7 +48,7 @@ void range_check_char (int val, int min, int max);
 #define KML_FIRST_SEGMENT 'a'
 #define KML_MAX_SEGMENT 17
 
-#define KML_MAX_CHARACTER 256
+#define KML_MAX_CHARACTER 128
 #define KML_MAX_ANNUNCIATOR 16
 
 #define KML_MAX_BUTTON 256
@@ -151,8 +151,15 @@ typedef struct kml_scancode_t
 } kml_scancode_t;
 
 
+typedef enum
+  {
+    kml_segment_type_line,
+    kml_segment_type_rect
+  } kml_segment_type_t;
+
 typedef struct
 {
+  kml_segment_type_t type;
   kml_size_t   size;
   kml_offset_t offset;
 } kml_segment_t;

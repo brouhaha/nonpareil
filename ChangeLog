@@ -1,3 +1,8 @@
+2004-04-14  Eric Smith <eric@brouhaha.com>
+
+	* kml.h kmll.l kmly.y csim.c (draw_digit): Segment definitions
+	can be "line" or "rect".
+
 2004-04-13  Eric Smith <eric@brouhaha.com>
 
 	* csim.c display.h kml.c kml.h kmll.l kmly.y proc.c proc.h

@@ -66,14 +66,14 @@ display
 	character '-'  segment                         'g'     end
 	character '.'  segment                             'h' end
 
-	segment 'a' offset  0  0 size 6 1 end
-	segment 'b' offset  5  0 size 1 6 end
-	segment 'c' offset  5  5 size 1 6 end
-	segment 'd' offset  0 10 size 6 1 end
-	segment 'e' offset  0  5 size 1 6 end
-	segment 'f' offset  0  0 size 1 6 end
-	segment 'g' offset  0  5 size 6 1 end
-	segment 'h' offset  9 11 size 2 2 end
+	segment 'a' line offset  0  0 size 6 1 end
+	segment 'b' line offset  5  0 size 1 6 end
+	segment 'c' line offset  5  5 size 1 6 end
+	segment 'd' line offset  0 10 size 6 1 end
+	segment 'e' line offset  0  5 size 1 6 end
+	segment 'f' line offset  0  0 size 1 6 end
+	segment 'g' line offset  0  5 size 6 1 end
+	segment 'h' rect offset  9 11 size 2 2 end
 end
 
 switch 0

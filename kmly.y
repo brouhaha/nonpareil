@@ -48,12 +48,14 @@ int kml_cur_idx2;
 %token CHARACTER    CLASS        COLOR        DEBUG        DEFAULT
 %token DIGITS       DISPLAY      DOWN         ELSE         END
 %token FLAG         GLOBAL       HARDWARE     IFFLAG       IFPRESSED
-%token IMAGE        INCLUDE      KEYCODE      LCD          LISTING
-%token MAP          MENUITEM     MODEL        NOHOLD       OFFSET
-%token ONDOWN       ONUP         OUTIN        PATCH        POSITION
-%token PRESS        PRINT        RELEASE      RESETFLAG    ROM
-%token SCANCODE     SEGMENT      SETFLAG      SIZE         SWITCH
-%token TITLE        TRANSPARENCY TYPE         VIRTUAL      ZOOM
+%token IMAGE        INCLUDE      KEYCODE      LCD          LINE
+%token LISTING      MAP          MENUITEM     MODEL        NOHOLD
+%token OFFSET       ONDOWN       ONUP         OUTIN        PATCH
+%token POSITION     PRESS        PRINT        RECT         RELEASE
+%token RESETFLAG    ROM          SCANCODE     SEGMENT      SETFLAG
+%token SIZE         SWITCH       TITLE        TRANSPARENCY TYPE
+%token VIRTUAL      ZOOM
+
 
 %type <intpair> offset_stmt size_stmt down_stmt
 
@@ -143,7 +145,7 @@ transparency_stmt	:	TRANSPARENCY INTEGER
 				  yy_kml->transparency_threshold = $2; } ;
 
 global_color_stmt	:	COLOR INTEGER INTEGER INTEGER INTEGER
-				{ range_check ($2, 0, KML_MAX_GLOBAL_COLOR);
+				{ range_check ($2, 0, KML_MAX_GLOBAL_COLOR - 1);
 				  yy_kml->global_color [$2] = alloc (sizeof (kml_color_t));
 				  yy_kml->global_color [$2]->r = $3;
 				  yy_kml->global_color [$2]->g = $4;
@@ -211,7 +213,7 @@ display_stmt		:	zoom_stmt
 zoom_stmt		:	ZOOM INTEGER { yy_kml->display_zoom = $2; } ;
 
 display_color_stmt	:	COLOR INTEGER INTEGER INTEGER INTEGER
-				{ range_check ($2, 0, KML_MAX_DISPLAY_COLOR);
+				{ range_check ($2, 0, KML_MAX_DISPLAY_COLOR - 1);
 				  yy_kml->display_color [$2] = alloc (sizeof (kml_color_t));
 				  yy_kml->display_color [$2]->r = $3;
 				  yy_kml->display_color [$2]->g = $4;
@@ -231,10 +233,25 @@ digit_param		:	size_stmt { yy_kml->digit_size.width = $1.a;
 					      yy_kml->digit_offset.y = $1.b; }
 			;
 
-character_stmt		:	CHARACTER char_id SEGMENT segment_list END { yy_kml->character_segment_map [$2] = $4; } ;
+character_stmt		:	CHARACTER char_id SEGMENT segment_list END
+				{
+				  if ($2 >= 0)
+				    {
+				      range_check ($2, 0, KML_MAX_CHARACTER - 1);
+				      yy_kml->character_segment_map [$2] = $4;
+				    }
+				  else
+				    {
+				      int i;
+				      for (i = 0; i < KML_MAX_CHARACTER; i++)
+					yy_kml->character_segment_map [i] = $4;
+				    }
+				}
+			;
 
 char_id			:	CHAR { $$ = $1 }
 			|	INTEGER { $$ = $1; }
+			|	DEFAULT { $$ = -1; }
 			;
 
 segment_list		:	{ $$ = 0; }
@@ -246,8 +263,17 @@ segment_stmt		:	SEGMENT CHAR
 				{
 				  range_check ($2, KML_FIRST_SEGMENT, KML_FIRST_SEGMENT + KML_MAX_SEGMENT - 1);
 				  kml_cur_idx = $2 - KML_FIRST_SEGMENT;
-				  yy_kml->segment [kml_cur_idx] = alloc (sizeof (kml_segment_t)); }
-				segment_param_list END;
+				  yy_kml->segment [kml_cur_idx] = alloc (sizeof (kml_segment_t));
+				}
+				segment_type;
+
+segment_type		:	LINE segment_param_list END
+				{ yy_kml->segment [kml_cur_idx]->type =
+				    kml_segment_type_line; }
+			|	RECT segment_param_list END
+				{ yy_kml->segment [kml_cur_idx]->type =
+				    kml_segment_type_rect; }
+			;
 
 segment_param_list	:	segment_param
 			|	segment_param segment_param_list
@@ -266,7 +292,7 @@ segment_param		:	size_stmt
 ----------------------------------------------------------------------------*/
 
 annunciator_section	:	ANNUNCIATOR INTEGER
-				{ range_check ($2, 0, KML_MAX_ANNUNCIATOR);
+				{ range_check ($2, 0, KML_MAX_ANNUNCIATOR - 1);
 				  kml_cur_idx = $2;
 				  yy_kml->annunciator [$2] = alloc (sizeof (kml_annunciator_t)); }
 				annunciator_stmt_list END
@@ -360,7 +386,7 @@ ifpressed_command	:	IFPRESSED INTEGER command_list elsepart END
 ----------------------------------------------------------------------------*/
 
 switch_section		:	SWITCH INTEGER
-				{ range_check ($2, 0, KML_MAX_SWITCH);
+				{ range_check ($2, 0, KML_MAX_SWITCH - 1);
 				  kml_cur_idx = $2;
 				  yy_kml->kswitch [$2] = alloc (sizeof (kml_switch_t)); }
 			        switch_stmt_list END ;
@@ -381,7 +407,7 @@ default_stmt		:	DEFAULT INTEGER { yy_kml->kswitch [kml_cur_idx]->default_positio
 
 
 position_section	:	POSITION INTEGER
-				{ range_check ($2, 0, KML_MAX_SWITCH_POSITION);
+				{ range_check ($2, 0, KML_MAX_SWITCH_POSITION - 1);
 				  kml_cur_idx2 = $2;
 				  yy_kml->kswitch [kml_cur_idx]->position [$2] = alloc (sizeof (kml_switch_position_t)); }
 				position_stmt_list END ;
@@ -404,7 +430,7 @@ flag_stmt		:	FLAG INTEGER { yy_kml->kswitch [kml_cur_idx]->position [kml_cur_idx
 ----------------------------------------------------------------------------*/
 
 button_section		:	BUTTON INTEGER
-				{ range_check ($2, 0, KML_MAX_BUTTON);
+				{ range_check ($2, 0, KML_MAX_BUTTON - 1);
 				  kml_cur_idx = $2;
 				  yy_kml->button [$2] = alloc (sizeof (kml_button_t)); }
 				button_stmt_list END ;

@@ -89,13 +89,28 @@ void draw_digit (GtkWidget *widget, gint x, gint y, segment_bitmap_t segments)
 
   for (i = 0; i < KML_MAX_SEGMENT; i++)
     if (segments & (1 << i))
-      gdk_draw_rectangle (widget->window,
-			  display->style->fg_gc [GTK_WIDGET_STATE (widget)],
-			  TRUE,
-			  x + kml->segment [i]->offset.x,
-			  y + kml->segment [i]->offset.y,
-			  kml->segment [i]->size.width,
-			  kml->segment [i]->size.height);
+      {
+	switch (kml->segment [i]->type)
+	  {
+	  case kml_segment_type_line:
+	    gdk_draw_line (widget->window,
+			   display->style->fg_gc [GTK_WIDGET_STATE (widget)],
+			   x + kml->segment [i]->offset.x,
+			   y + kml->segment [i]->offset.y,
+			   x + kml->segment [i]->offset.x + kml->segment [i]->size.width - 1,
+			   y + kml->segment [i]->offset.y + kml->segment [i]->size.height - 1);
+	    break;
+	  case kml_segment_type_rect:
+	    gdk_draw_rectangle (widget->window,
+				display->style->fg_gc [GTK_WIDGET_STATE (widget)],
+				TRUE,
+				x + kml->segment [i]->offset.x,
+				y + kml->segment [i]->offset.y,
+				kml->segment [i]->size.width,
+				kml->segment [i]->size.height);
+	    break;
+	  }
+      }
 }
 
 

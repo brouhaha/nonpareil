@@ -50,7 +50,7 @@ alpha		[a-zA-Z]
 
 %%
 
-[1-9]{digit}*	{ yylval.integer = atoi (yytext); return INTEGER; }
+\-?[1-9]{digit}*	{ yylval.integer = atoi (yytext); return INTEGER; }
 0{octaldig}*	{ sscanf (yytext, "%o", &yylval.integer); return INTEGER; }
 @{octaldig}+	{ sscanf (yytext+1, "%o", &yylval.integer); return INTEGER; }
 0x{hexdig}+	{ sscanf (yytext, "%x", &yylval.integer); return INTEGER; }
@@ -92,6 +92,7 @@ image		return (IMAGE);
 include		return (INCLUDE);
 keycode		return (KEYCODE);
 lcd		return (LCD);
+line		return (LINE);
 listing		return (LISTING);
 map		return (MAP);
 menuitem	return (MENUITEM);
@@ -105,6 +106,7 @@ patch		return (PATCH);
 position	return (POSITION);
 press		return (PRESS);
 print		return (PRINT);
+rect		return (RECT);
 release		return (RELEASE);
 resetflag	return (RESETFLAG);
 rom		return (ROM);
