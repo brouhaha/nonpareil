@@ -1,5 +1,6 @@
 # Makefile for CASMSIM package
 # Copyright 1995 Eric L. Smith
+# $Header: /home/svn/casmsim/Makefile,v 1.14 1995/03/24 00:06:31 eric Exp $
 #
 # CASMSIM is free software; you can redistribute it and/or modify it under the
 # terms of the GNU General Public License version 2 as published by the Free
@@ -61,7 +62,7 @@ SIM_LIBS = $(X11LIBS)
 
 INTERMEDIATE = lex.yy.c y.tab.c y.tab.h
 
-DISTRIB = $(MISC) Makefile $(HEADERS) $(SOURCES) $(ROMS) $(LISTINGS)
+DISTRIB = $(MISC) Makefile $(HEADERS) $(SOURCES) $(ROMS)
 
 all: $(PROGRAMS) $(MISC_TARGETS)
 
@@ -111,6 +112,10 @@ xio.o:	xio.c xio.h
 
 casmsim.tar.gz:	$(DISTRIB)
 	tar -cvzf $@ $(DISTRIB)
+	ls -l $@
+
+listings.tar.gz: $(LISTINGS)
+	tar -cvzf $@ $(LISTINGS)
 	ls -l $@
 
 clean:
