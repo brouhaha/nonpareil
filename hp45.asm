@@ -1,5 +1,7 @@
 ; HP-45 ROM source code from United States Patent 4,001,569
-; keyed in by Eric Smith on 3/9/95 - any errors are probably mine
+; keyed in by Eric Smith on 9-Mar-1995 - any errors are probably mine
+; typo corrected in "if" instruction in "frac" routine, on 3-Jan-2003,
+;     found by Peter Monta by OCRing the listing in the patent
 
 	.rom @00
 
@@ -96,7 +98,7 @@ frac:	0 -> c[x]
 	0 -> p
 	load constant 5
 	a - c -> a[x]
-	if a[x] >= 1
+	if a[xs] >= 1
 	     then go to frc1
 	go to err2
 
