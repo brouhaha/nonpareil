@@ -1,3 +1,13 @@
+2004-04-09  Eric Smith <eric@brouhaha.com>
+
+	* platform.h platform.c (find_platform_by_name): Added
+	find_platform_by_name().
+
+	* proc_woodstock.c (op_circulate_a_left, init_ops): Implemented
+	0520 as CIRCULATE A LEFT instruction.  This is confirmed to be
+	correct for the HP-33C (Spice), so it probably is for Woodstock as
+	well.
+	
 2004-04-08  Eric Smith <eric@brouhaha.com>
 
 	* proc_woodstock.c (op_clear_data_regs): The CLEAR DATA REGISTERS

@@ -40,3 +40,5 @@ MA 02111, USA.
 #define PLATFORM_MAX       14
 
 extern char *platform_name [PLATFORM_MAX];
+
+int find_platform_by_name (char *s);

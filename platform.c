@@ -19,6 +19,8 @@ Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
 MA 02111, USA.
 */
 
+#include <string.h>
+#include <strings.h>
 
 #include "platform.h"
 
@@ -40,3 +42,12 @@ char *platform_name [PLATFORM_MAX] =
     [PLATFORM_KANGAROO]  = "kangaroo",
     [PLATFORM_TITAN]     = "titan"
   };
+
+int find_platform_by_name (char *s)
+{
+  int i;
+  for (i = 1; i < PLATFORM_MAX; i++)
+    if (strcasecmp (s, platform_name [i]) == 0)
+      return (i);
+  return (PLATFORM_UNKNOWN);
+}
