@@ -1,5 +1,7 @@
 ; HP-55 ROM 00 source from United States Patent 4,009,379
-; keyed in by Eric Smith on 3/8/95 - any errors are probably mine
+; keyed in by Eric Smith on 8-Mar-1995 - any errors are probably mine
+; five typos corrected on 30-Mar-2003, found by Peter Monta by OCRing
+;     the listing in the patent
 
 	.rom @00
 
@@ -64,7 +66,7 @@ sqrt3:	0 -> s2
 hmsa4:	a -> b[w]
 	go to hmsa3
 
-ofl:	delayed select rom 3
+ofl:	delayed select rom 5
 	go to @021
 
 sqrt:	jsb tst9
@@ -1598,7 +1600,7 @@ ent13:	if s7 # 1
 	     then go to ent12
 	p - 1 -> p
 ent12:	shift right c[wp]
-ent14:	c -> a[x]
+ent14:	0 -> a[x]
 	b exchange c[w]
 	go to eop
 
@@ -2009,7 +2011,7 @@ atn17:	jsb pqo13
 	0 - c - 1 -> c[s]
 	jsb add10
 atn19:	jsb atc1
-	c + 1 -> c[w]
+	c + c -> c[w]
 	jsb mpy11
 itout:	delayed select rom 3
 	go to @215
@@ -2022,7 +2024,7 @@ tout:	delayed select rom 0
 	go to @314
 
 lpi11:	jsb atc1
-	c + 1 -> c[w]
+	c + c -> c[w]
 	c + c -> c[w]
 	jsb rtn11
 	c + c -> c[w]
@@ -3112,8 +3114,8 @@ dr:	load constant 1
 	load constant 2
 	load constant 5
 	load constant 2
-out1:	c - 1 -> c[xs]
-out2:	c - 1 -> c[xs]
+out1:	c - 1 -> c[x]
+out2:	c - 1 -> c[x]
 out:	delayed select group 0
 	go to @361
 
