@@ -483,7 +483,12 @@ void op_clear_reg (int opcode)
 void op_load_constant (int opcode)
 {
   if (p >= WSIZE)
-    printf ("load constant w/ p >= WSIZE at %05o\n", prev_pc);
+    {
+#if 0 /* HP-45 depends on load constant with p > 13 not affecting C */
+      printf ("load constant w/ p >= WSIZE at %05o\n", prev_pc)
+      ;
+#endif
+    }
   else if ((opcode >> 6) > 9)
     printf ("load constant > 9\n");
   else
