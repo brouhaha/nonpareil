@@ -88,7 +88,7 @@ rgb color [MAX_COL] =
   { 0x3800, 0x3800, 0x3800 },  
   { 0xffff, 0xd7d7, 0x0000 },  
   { 0x5000, 0x0000, 0x0000 },  
-  { 0xffff, 0x8000, 0x8000 }   
+  { 0xffff, 0x4000, 0x0000 }   
 };
 
 static void init_colors (void)
@@ -376,8 +376,12 @@ static void handle_events (void)
 }
 
 
+char disp_buf [20];
+
+
 void init_display (int argc, char *argv[])
 {
+  disp_buf [0] ='\0';
   init_graphics (argc, argv, "csim");
   draw_calc ();
 }
@@ -385,7 +389,11 @@ void init_display (int argc, char *argv[])
 
 void update_display (char *str)
 {
-  draw_display (str);
+  if (strcmp (disp_buf, str) != 0)
+    {
+      strcpy (disp_buf, str);
+      draw_display (str);
+    }
 }
 
 
