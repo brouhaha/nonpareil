@@ -247,12 +247,12 @@ static void display_update (char *buf)
 }
 
 
-void debug_update (uint32_t rom_accessed_count)
+void debug_update (void)
 {
-  /* uint32_t rom_accessed_count; */
+  uint32_t rom_accessed_count;
   char buf [11];
 
-  /* rom_accessed_count = sim_get_rom_accessed_count (sim); */
+  rom_accessed_count = sim_get_rom_accessed_count (sim);
   sprintf (buf, "%d", rom_accessed_count);
   gtk_entry_set_text (GTK_ENTRY (rom_accessed_entry), buf);
 }

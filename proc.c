@@ -862,8 +862,10 @@ static void handle_io (struct sim_handle_t *sim)
   *bp = '\0';
   if (strcmp (buf, sim->prev_display) != 0)
     {
+      g_mutex_unlock (sim->sim_mutex);
       sim->display_update (buf);
-      debug_update (sim->accessed_count);
+      debug_update ();
+      g_mutex_lock (sim->sim_mutex);
       strncpy (sim->prev_display, buf, sizeof (buf));
     }
 }
@@ -1221,6 +1223,7 @@ uint32_t sim_get_rom_accessed_count (struct sim_handle_t *sim)
   g_mutex_lock (sim->sim_mutex);
   result = sim->accessed_count;
   g_mutex_unlock (sim->sim_mutex);
+  return (result);
 }
 
 
