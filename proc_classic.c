@@ -799,9 +799,17 @@ void classic_execute_instruction (sim_t *sim)
   sim->env->prev_pc = addr;
   opcode = sim->ucode [addr];
 
-#if 0
-  printf ("%s\n", sim->source [addr]);
-#endif
+  if (sim->trace)
+    {
+      if (sim->source [sim->env->pc])
+	printf ("%s\n", sim->source [addr]);
+      else
+	{
+	  char buf [80];
+	  classic_disassemble (sim, sim->env->pc, buf, sizeof (buf));
+	  printf ("%s\n", buf);
+	}
+    }
 
   sim->env->prev_carry = sim->env->carry;
   sim->env->carry = 0;

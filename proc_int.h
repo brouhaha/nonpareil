@@ -104,6 +104,8 @@ struct sim_t
   char       **source;
   bool       *breakpoint;
 
+  bool       trace;
+
   void (* op_fcn [1024])(struct sim_t *sim, int opcode);
 
   char prev_display [(WSIZE + 1) * 2 + 1];

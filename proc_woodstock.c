@@ -101,10 +101,6 @@ struct sim_env_t
 #undef KEYTRACE
 
 
-
-static int trace = 0;
-
-
 static void bad_op (sim_t *sim, int opcode)
 {
   printf ("illegal opcode %04o at %05o\n", opcode, sim->env->prev_pc);
@@ -980,16 +976,23 @@ void woodstock_execute_instruction (sim_t *sim)
 
 #ifdef KEYTRACE
   if (opcode == 00020)
-    trace = 1;
+    sim->trace = 1;
   else if (opcode == 01724)
-    trace = 0;
+    sim->trace = 0;
 #endif
 
-  if (trace)
+  if (sim->trace)
     {
       woodstock_print_state (sim, sim->env);
       /* $$$ need to handle bank switching */
-      printf ("%s\n", sim->source [sim->env->pc]);
+      if (sim->source [sim->env->pc])
+	printf ("%s\n", sim->source [sim->env->pc]);
+      else
+	{
+	  char buf [80];
+	  woodstock_disassemble (sim, sim->env->pc, buf, sizeof (buf));
+	  printf ("%s\n", buf);
+	}
     }
 
   sim->env->prev_carry = sim->env->carry;
