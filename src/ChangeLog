@@ -1,3 +1,11 @@
+2004-07-12  Eric Smith <eric@brouhaha.com>
+
+	* proc_classic.c (classic_execute_instruction,
+	classic_print_state): Moved trace mode disassembly/source printing
+	into classic_print_state(), and print full state when tracing.
+	Changed state PC display from straight octal to split octal to
+	match listing files.
+
 2004-07-09  Eric Smith <eric@brouhaha.com>
 
 	* proc_woodstock.c (woodstock_execute_instruction,

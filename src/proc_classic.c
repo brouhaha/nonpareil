@@ -777,9 +777,9 @@ static void classic_print_state (sim_t *sim, sim_env_t *env)
 {
   int i;
   printf ("pc=%05o  p=%d  stat:",
-	  (env->group << 11) + (env->rom << 8) + (env->pc),
+	  (env->group << 12) + (env->rom << 9) + (env->pc),
 	  env->p);
-  for (i = 0; i < 14; i++)
+  for (i = 0; i < SSIZE; i++)
     if (env->s [i])
       printf (" %d", i);
   printf ("\n");
@@ -787,7 +787,17 @@ static void classic_print_state (sim_t *sim, sim_env_t *env)
   print_reg ("b: ", env->b);
   print_reg ("c: ", env->c);
   print_reg ("m: ", env->m);
+
+  if (sim->source [sim->env->prev_pc])
+    printf ("%s\n", sim->source [sim->env->prev_pc]);
+  else
+    {
+      char buf [80];
+      classic_disassemble (sim, sim->env->prev_pc, buf, sizeof (buf));
+      printf ("%s\n", buf);
+    }
 }
+
 
 bool classic_execute_instruction (sim_t *sim)
 {
@@ -801,16 +811,7 @@ bool classic_execute_instruction (sim_t *sim)
 
 #ifdef HAS_DEBUGGER
   if (sim->debug_flags & (1 << SIM_DEBUG_TRACE))
-    {
-      if (sim->source [sim->env->pc])
-	printf ("%s\n", sim->source [addr]);
-      else
-	{
-	  char buf [80];
-	  classic_disassemble (sim, sim->env->pc, buf, sizeof (buf));
-	  printf ("%s\n", buf);
-	}
-    }
+    classic_print_state (sim, sim->env);
 #endif /* HAS_DEBUGGER */
 
   sim->env->prev_carry = sim->env->carry;
