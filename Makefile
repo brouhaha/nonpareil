@@ -13,22 +13,20 @@ PROGRAMS = casm csim
 MISC_TARGETS = hp45 hp55
 
 HEADERS = casm.h symtab.h xio.h
-SOURCES = casm.c casm.l casm.y symtab.c csim.c xio.c
-MISC = COPYING README
+SOURCES = casm.c casml.l casmy.y symtab.c csim.c xio.c
+MISC = COPYING README CHANGELOG
 ROMS =  hp45.asm hp55.asm
 
-CASM_OBJECTS = casm.o y.tab.o lex.yy.o symtab.o
+CASM_OBJECTS = casm.o symtab.o lex.yy.o y.tab.o
 CSIM_OBJECTS = csim.o xio.o
 
-OBJECT = $(CASM_OBJECTS) $(CSIM_OBJECTS)
+OBJECTS = $(CASM_OBJECTS) $(CSIM_OBJECTS)
 
 SIM_LIBS = -L/usr/X11/lib -lX11
 
-INTERMEDIATE = lex.yy.c lex.yy.o y.tab.h y.tab.c y.tab.o
+INTERMEDIATE = lex.yy.c y.tab.c y.tab.h
 
 DISTRIB = $(MISC) Makefile $(HEADERS) $(SOURCES) $(ROMS)
-
-.SUFFIXES:
 
 all: $(PROGRAMS) $(MISC_TARGETS)
 
@@ -41,13 +39,13 @@ casm.o: casm.c casm.h
 lex.yy.o: lex.yy.c casm.h symtab.h y.tab.h
 	$(CC) -c $(CFLAGS) -o $@ $<
 
-lex.yy.c: casm.l
+lex.yy.c: casml.l
 	$(LEX) $(LFLAGS) $<
 
 y.tab.o: y.tab.c casm.h symtab.h
 	$(CC) -c $(CFLAGS) -o $@ $<
 
-y.tab.c: casm.y
+y.tab.c y.tab.h: casmy.y
 	$(YACC) $(YFLAGS) $<
 
 symtab.o: symtab.c symtab.h
