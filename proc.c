@@ -33,6 +33,10 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #include "util.h"
 
 
+/* If defined, print debug messages for all RAM accesses. */
+#undef RAM_DEBUG
+
+
 /* If defined, print warnings about stack overflow or underflow. */
 #undef STACK_WARNING
 
@@ -490,10 +494,10 @@ static void op_f_exch_a (sim_t *sim, int opcode)
 
 static void op_c_to_addr (sim_t *sim, int opcode)
 {
-  if (sim->env.max_ram > 10)
-    sim->env.ram_addr = sim->env.c [12] * 10 + sim->env.c [11];
-  else
-    sim->env.ram_addr = sim->env.c [12];
+  sim->env.ram_addr = (sim->env.c [1] << 4) + sim->env.c [0];
+#ifdef RAM_DEBUG
+  printf ("RAM select %02x\n", sim->env.ram_addr);
+#endif
   if (sim->env.ram_addr >= sim->env.max_ram)
     printf ("c -> ram addr: address %d out of range\n", sim->env.ram_addr);
 }
@@ -504,9 +508,12 @@ static void op_c_to_data (sim_t *sim, int opcode)
   int i;
   if (sim->env.ram_addr >= sim->env.max_ram)
     {
-      printf ("c -> data: address %d out of range\n", sim->env.ram_addr);
+      printf ("c -> data: address %02x out of range\n", sim->env.ram_addr);
       return;
     }
+#ifdef RAM_DEBUG
+  printf ("C -> DATA, addr %02x\n", sim->env.ram_addr);
+#endif
   for (i = 0; i < WSIZE; i++)
     sim->env.ram [sim->env.ram_addr] [i] = sim->env.c [i];
 }
@@ -522,6 +529,9 @@ static void op_data_to_c (sim_t *sim, int opcode)
 	sim->env.c [i] = 0;
       return;
     }
+#ifdef RAM_DEBUG
+  printf ("DATA -> C, addr %02x\n", sim->env.ram_addr);
+#endif
   for (i = 0; i < WSIZE; i++)
     sim->env.c [i] = sim->env.ram [sim->env.ram_addr] [i];
 }
@@ -532,13 +542,16 @@ static void op_c_to_register (sim_t *sim, int opcode)
   int i;
 
   sim->env.ram_addr &= ~017;
-  sim->env.ram_addr += (opcode > 6);
+  sim->env.ram_addr += (opcode >> 6);
 
   if (sim->env.ram_addr >= sim->env.max_ram)
     {
       printf ("c -> register: address %d out of range\n", sim->env.ram_addr);
       return;
     }
+#ifdef RAM_DEBUG
+  printf ("C -> REGISTER %d, addr %02x\n", opcode >> 6, sim->env.ram_addr);
+#endif
   for (i = 0; i < WSIZE; i++)
     sim->env.ram [sim->env.ram_addr] [i] = sim->env.c [i];
 }
@@ -549,7 +562,7 @@ static void op_register_to_c (sim_t *sim, int opcode)
   int i;
 
   sim->env.ram_addr &= ~017;
-  sim->env.ram_addr += (opcode > 6);
+  sim->env.ram_addr += (opcode >> 6);
 
   if (sim->env.ram_addr >= sim->env.max_ram)
     {
@@ -558,6 +571,9 @@ static void op_register_to_c (sim_t *sim, int opcode)
 	sim->env.c [i] = 0;
       return;
     }
+#ifdef RAM_DEBUG
+  printf ("REGISTER -> C %d, addr %02x\n", opcode >> 6, sim->env.ram_addr);
+#endif
   for (i = 0; i < WSIZE; i++)
     sim->env.c [i] = sim->env.ram [sim->env.ram_addr] [i];
 }
@@ -770,9 +786,6 @@ static void init_ops (sim_t *sim)
       sim->op_fcn [i + 3] = op_goto;   /* type 1: aaaaaaaa11 */
     }
 
-  sim->op_fcn [00000] = op_nop;
-  sim->op_fcn [00070] = op_data_to_c;
-
   for (i = 0; i <= 15; i ++)
     {
       /* xx00 uassigned */
@@ -792,6 +805,9 @@ static void init_ops (sim_t *sim)
       sim->op_fcn [00070 + (i << 6)] = op_register_to_c;
       sim->op_fcn [00074 + (i << 6)] = op_set_p;
     }
+
+  sim->op_fcn [00000] = op_nop;
+  sim->op_fcn [00070] = op_data_to_c;
 
   sim->op_fcn [00010] = op_clear_reg;
   sim->op_fcn [00110] = op_clear_s;
