@@ -33,6 +33,10 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #include "util.h"
 
 
+/* If defined, print warnings about stack overflow or underflow. */
+#undef STACK_WARNING
+
+
 /* KEYTRACE is defined, trace from ROM -> KEYS through next key status
    test */
 #undef KEYTRACE
@@ -362,7 +366,9 @@ static void op_jsb (sim_t *sim, int opcode)
   sim->env.sp++;
   if (sim->env.sp >= STACK_SIZE)
     {
+#ifdef STACK_WARNING
       printf ("stack overflow\n");
+#endif
       sim->env.sp = 0;
     }
   sim->env.pc = (sim->env.pc & ~0377) | (opcode >> 2);
@@ -379,7 +385,9 @@ static void op_return (sim_t *sim, int opcode)
   sim->env.sp--;
   if (sim->env.sp < 0)
     {
+#ifdef STACK_WARNING
       printf ("stack underflow\n");
+#endif
       sim->env.sp = STACK_SIZE - 1;
     }
   sim->env.pc = sim->env.return_stack [sim->env.sp];
