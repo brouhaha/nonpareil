@@ -44,36 +44,23 @@ octaldig	[0-7]
 digit		[0-9]
 alpha		[a-zA-Z]
 
-%x string
-
 %%
-
-	char string_buf [MAX_STR_CONST];
-	char *string_buf_ptr;
 
 [1-9]{digit}*	{ yylval.integer = atoi (yytext); return INTEGER; }
 0{octaldig}*	{ sscanf (yytext+1, "%o", &yylval.integer); return INTEGER; }
 @{octaldig}+	{ sscanf (yytext+1, "%o", &yylval.integer); return INTEGER; }
 
-\"		{ string_buf_ptr = string_buf; BEGIN(string); }
+\"[^\"\n]*\"	{ yylval.string = newstrn (yytext + 1, strlen (yytext + 1) - 1);
+                  return STRING; }
 
-<string>{
-	\"		{
-			  BEGIN(INITIAL);
-			  *string_buf_ptr = '\0';
-			  return STRING;
-			  /* return string */
-			}
-	\\[0-7]{1,3}	*string_buf_ptr++ = octal_escape (yytext + 1);
-	\\n		*string_buf_ptr++ = '\n';
-	\\t		*string_buf_ptr++ = '\t';
-	\\r		*string_buf_ptr++ = '\r';
-	\\b		*string_buf_ptr++ = '\b';
-	\\f		*string_buf_ptr++ = '\f';
-}
+[ \t\n]+	;		/* whitespace */
 
-[ \t\n]+	; /* whitespace */
-#.*		; /* comment */
+\n.*		{ strncpy (kml_linebuf, yytext + 1, sizeof (kml_linebuf));
+		  kml_lineno++;
+		  yyless (1);  /* give back all but the \n to rescan */
+		}
+
+#.*		;		/* comment */
 
 annunciator	return (ANNUNCIATOR);
 author		return (AUTHOR);
@@ -83,6 +70,7 @@ button		return (BUTTON);
 class		return (CLASS);
 color		return (COLOR);
 debug		return (DEBUG);
+digits		return (DIGITS);
 display		return (DISPLAY);
 down		return (DOWN);
 else		return (ELSE);
@@ -90,6 +78,7 @@ end		return (END);
 global		return (GLOBAL);
 hardware	return (HARDWARE);
 ifflag		return (IFFLAG);
+image		return (IMAGE);
 ifpressed	return (IFPRESSED);
 keycode		return (KEYCODE);
 lcd		return (LCD);
@@ -114,6 +103,8 @@ title		return (TITLE);
 type		return (TYPE);
 virtual		return (VIRTUAL);
 zoom		return (ZOOM);
+
+[a-z]+		yyerror ("unknown keyword");
 
 .		yyerror ("invalid character");
 

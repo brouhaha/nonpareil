@@ -44,7 +44,7 @@ LOADLIBES = `pkg-config $(PACKAGES) --libs`
 # -----------------------------------------------------------------------------
 
 PACKAGE = casmsim
-VERSION = 0.15
+VERSION = 0.16
 DISTNAME = $(PACKAGE)-$(VERSION)
 
 CALCS = hp35 hp45 hp55 hp80
@@ -55,6 +55,8 @@ HDRS = casm.h symtab.h util.h proc.h kml.h
 CSRCS = casm.c symtab.c csim.c util.c proc.c kml.c
 OSRCS = casml.l casmy.y kmly.y
 MISC = COPYING README ChangeLog
+
+KML = $(CALCS:=.kml)
 
 AUTO_CSRCS = casml.c casmy.tab.c kmll.c kmly.tab.c
 AUTO_HDRS = casmy.tab.h kmly.tab.h
@@ -71,7 +73,7 @@ ROM_SRCS =  $(CALCS:=.asm)
 ROM_LISTINGS = $(ROM_SRCS:.asm=.lst)
 ROM_OBJS = $(ROM_SRCS:.asm=.obj)
 
-DIST_FILES = $(MISC) Makefile $(HDRS) $(CSRCS) $(OSRCS) $(ROM_SRCS)
+DIST_FILES = $(MISC) Makefile $(HDRS) $(CSRCS) $(OSRCS) $(ROM_SRCS) $(KML)
 
 
 %.tab.c %.tab.h %.output: %.y
@@ -107,8 +109,14 @@ listings.tar.gz: $(LISTINGS)
 	ls -l $@
 
 
+hp35.jpg:
+	wget http://www.hpmuseum.org/35first.jpg -O hp35.jpg
+
 hp45.jpg:
 	wget http://www.hpmuseum.org/45.jpg -O hp45.jpg
+
+hp55.jpg:
+	wget http://www.hpmuseum.org/55.jpg -O hp55.jpg
 
 hp80.jpg:
 	wget http://www.hpmuseum.org/80.jpg -O hp80.jpg

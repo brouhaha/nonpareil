@@ -25,12 +25,12 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
 extern FILE *yyin;
 
-extern int lineno;
-extern int errors;
+extern int kml_lineno;
+extern int kml_tokenpos;
+extern int kml_errors;
 
-#define MAX_LINE 256
-extern char linebuf [MAX_LINE];
-extern char *lineptr;
+#define KML_LINEBUF_SIZE 500
+extern char kml_linebuf [KML_LINEBUF_SIZE];
 
 
 int yylex (void);
@@ -120,14 +120,15 @@ typedef struct
   int  class;
   char *rom;
   char *patch;
-  char *bitmap;
-  char *print;
+  char *image;
   int debug;
 
   kml_offset_t background_offset;
   kml_size_t background_size;
 
+  int display_digits;
   int display_zoom;
+  kml_size_t display_size;
   kml_offset_t display_offset;
   kml_color_t *display_color [KML_MAX_COLOR];
 

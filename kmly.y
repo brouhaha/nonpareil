@@ -45,12 +45,12 @@ int kml_cur_idx;
 %token <string> STRING
 
 %token ANNUNCIATOR AUTHOR      BACKGROUND  BITMAP      BUTTON      CLASS
-%token COLOR       DEBUG       DISPLAY     DOWN        ELSE        END
-%token GLOBAL      HARDWARE    IFFLAG      IFPRESSED   KEYCODE     LCD
-%token MAP         MENUITEM    MODEL       NOHOLD      OFFSET      ONDOWN
-%token ONUP        OUTIN       PATCH       PRESS       PRINT       RELEASE
-%token RESETFLAG   ROM         SCANCODE    SETFLAG     SIZE        TITLE
-%token TYPE        VIRTUAL     ZOOM
+%token COLOR       DEBUG       DIGITS      DISPLAY     DOWN        ELSE
+%token END         GLOBAL      HARDWARE    IFFLAG      IFPRESSED   IMAGE
+%token KEYCODE     LCD         MAP         MENUITEM    MODEL       NOHOLD
+%token OFFSET      ONDOWN      ONUP        OUTIN       PATCH       PRESS
+%token PRINT       RELEASE     RESETFLAG   ROM         SCANCODE    SETFLAG
+%token SIZE        TITLE       TYPE        VIRTUAL     ZOOM
 
 %type <intpair> offset_stmt size_stmt down_stmt
 
@@ -73,7 +73,7 @@ sections		:	section
 
 section			:	global_section
 			|	background_section
-			|	lcd_section
+			|	display_section
 			|	annunciator_section
 			|	button_section
 			|	scancode_section
@@ -96,28 +96,32 @@ global_stmt		:	title_stmt
 			|	class_stmt
 			|	rom_stmt
 			|	patch_stmt
-			|	bitmap_stmt
+			|	image_stmt
 			|	print_stmt
 			|	debug_stmt
 			;
 
-title_stmt		:	TITLE STRING { yy_kml->title = $2; } ;
+title_stmt		:	TITLE STRING { yy_kml->title = newstr ($2); } ;
 
-author_stmt		:	AUTHOR STRING { yy_kml->author = $2; } ;
+author_stmt		:	AUTHOR STRING { yy_kml->author = newstr ($2); } ;
 
-hardware_stmt		:	HARDWARE STRING { yy_kml->hardware = $2; } ;
+hardware_stmt		:	HARDWARE STRING { yy_kml->hardware = newstr ($2); } ;
 
-model_stmt		:	MODEL STRING { yy_kml->model = $2; } ;
+model_stmt		:	MODEL STRING { yy_kml->model = newstr ($2); } ;
 
 class_stmt		:	CLASS INTEGER { yy_kml->class = $2; } ;
 
-rom_stmt		:	ROM STRING { yy_kml->rom = $2; } ;
+rom_stmt		:	ROM STRING { yy_kml->rom = newstr ($2); } ;
 
-patch_stmt		:	PATCH STRING { yy_kml->patch = $2; } ;
+patch_stmt		:	PATCH STRING { yy_kml->patch = newstr ($2); } ;
 
-bitmap_stmt		:	BITMAP STRING { yy_kml->bitmap = $2; } ;
+image_stmt		:	image_stmt_name STRING { yy_kml->image = newstr ($2); } ;
 
-print_stmt		:	PRINT STRING { yy_kml->print = $2; } ;
+image_stmt_name		:	IMAGE
+			|	BITMAP /* backward compatability */
+			;
+
+print_stmt		:	PRINT STRING { printf ("%s\n", $2); } ;
 
 debug_stmt		:	DEBUG INTEGER { yy_kml->debug = $2; } ;
 
@@ -150,22 +154,31 @@ background_stmt		:	offset_stmt
 			;
 
 /*----------------------------------------------------------------------------
- lcd section
+ display section
 ----------------------------------------------------------------------------*/
 
-lcd_section		:	LCD lcd_stmt_list END ;
+display_section		:	display_section_name display_stmt_list END ;
 
-lcd_stmt_list		:	lcd_stmt
-			|	lcd_stmt lcd_stmt_list
+display_section_name	:	DISPLAY
+			|	LCD	/* backward compatability */
 			;
 
-lcd_stmt		:	zoom_stmt
+display_stmt_list		:	display_stmt
+			|	display_stmt display_stmt_list
+			;
+
+display_stmt		:	zoom_stmt
+			|	digits_stmt
+			|	size_stmt { yy_kml->display_size.width = $1.a;
+				            yy_kml->display_size.height = $1.b; }
 			|	offset_stmt { yy_kml->display_offset.x = $1.a;
 					      yy_kml->display_offset.y = $1.b; }
 			|	color_stmt
 			;
 
 zoom_stmt		:	ZOOM INTEGER { yy_kml->display_zoom = $2; } ;
+
+digits_stmt		:	DIGITS INTEGER { yy_kml->display_digits = $2; } ;
 
 color_stmt		:	COLOR INTEGER INTEGER INTEGER INTEGER
 				{ range_check ($2, 0, KML_MAX_COLOR);

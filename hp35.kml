@@ -1,4 +1,4 @@
-# KML script for HP-45
+# KML script for HP-35
 #
 # $Id$
 # Copyright 2004 Eric L. Smith <eric@brouhaha.com>
@@ -21,12 +21,12 @@
 
 
 global
-	title "HP-45 Advanced Scientific Calculator"
+	title "HP-35 Scientific Calculator"
 	author "Eric Smith <eric@brouhaha.com>"
 	hardware "Classic"
-	model "45"
-	rom "hp45.lst"
-	image "hp45.jpg"
+	model "35"
+	rom "hp35.lst"
+	image "hp35.jpg"
 end
 
 background
@@ -46,7 +46,7 @@ end
 button 11
 	type 0
 	size 32 24
-	offset 48 158
+	offset 48 156
 	down 2 8
 	keycode 006
 end
@@ -54,7 +54,7 @@ end
 button 12
 	type 0
 	size 32 24
-	offset 91 158
+	offset 91 156
 	down 2 8
 	keycode 004
 end
@@ -62,7 +62,7 @@ end
 button 13
 	type 0
 	size 32 24
-	offset 134 158
+	offset 134 156
 	down 2 8
 	keycode 003
 end
@@ -70,7 +70,7 @@ end
 button 14
 	type 0
 	size 32 24
-	offset 176 158
+	offset 176 156
 	down 2 8
 	keycode 002
 end
@@ -78,7 +78,7 @@ end
 button 15
 	type 0
 	size 32 24
-	offset 219 158
+	offset 48 201
 	down 2 8
 	keycode 000
 end
@@ -86,7 +86,7 @@ end
 button 21
 	type 0
 	size 32 24
-	offset 48 203
+	offset 48 201
 	down 2 8
 	keycode 056
 end
@@ -94,7 +94,7 @@ end
 button 22
 	type 0
 	size 32 24
-	offset 91 203
+	offset 91 201
 	down 2 8
 	keycode 054
 end
@@ -102,7 +102,7 @@ end
 button 23
 	type 0
 	size 32 24
-	offset 134 203
+	offset 134 201
 	down 2 8
 	keycode 053
 end
@@ -110,7 +110,7 @@ end
 button 24
 	type 0
 	size 32 24
-	offset 176 203
+	offset 176 201
 	down 2 8
 	keycode 052
 end
@@ -118,7 +118,7 @@ end
 button 25
 	type 0
 	size 32 24
-	offset 219 203
+	offset 219 201
 	down 2 8
 	keycode 050
 end
@@ -126,7 +126,7 @@ end
 button 31
 	type 0
 	size 32 24
-	offset 48 248
+	offset 48 246
 	down 2 8
 	keycode 016
 end
@@ -134,7 +134,7 @@ end
 button 32
 	type 0
 	size 32 24
-	offset 91 248
+	offset 91 246
 	down 2 8
 	keycode 014
 end
@@ -142,7 +142,7 @@ end
 button 33
 	type 0
 	size 32 24
-	offset 134 248
+	offset 134 246
 	down 2 8
 	keycode 013
 end
@@ -150,7 +150,7 @@ end
 button 34
 	type 0
 	size 32 24
-	offset 176 248
+	offset 176 246
 	down 2 8
 	keycode 012
 end
@@ -158,7 +158,7 @@ end
 button 35
 	type 0
 	size 32 24
-	offset 219 248
+	offset 219 246
 	down 2 8
 	keycode 010
 end
@@ -166,15 +166,15 @@ end
 button 41
 	type 0
 	size 74 24
-	offset 48 293
+	offset 48 291
 	down 2 8
-	keycode 075    # change to 074 to enable HP-45 timer ("RCL ENTER^")
+	keycode 075
 end
 
 button 42
 	type 0
 	size 32 24
-	offset 134 293
+	offset 134 291
 	down 2 8
 	keycode 073
 end
@@ -182,7 +182,7 @@ end
 button 43
 	type 0
 	size 32 24
-	offset 176 293
+	offset 176 291
 	down 2 8
 	keycode 072
 end
@@ -190,7 +190,7 @@ end
 button 44
 	type 0
 	size 32 24
-	offset 219 293
+	offset 219 291
 	down 2 8
 	keycode 070
 end
@@ -198,7 +198,7 @@ end
 button 51
 	type 0
 	size 24 24
-	offset 48 338
+	offset 48 336
 	down 2 8
 	keycode 066
 end
@@ -206,7 +206,7 @@ end
 button 52
 	type 0
 	size 36 24
-	offset 92 338
+	offset 92 336
 	down 2 8
 	keycode 064
 end
@@ -214,7 +214,7 @@ end
 button 53
 	type 0
 	size 36 24
-	offset 153 338
+	offset 153 336
 	down 2 8
 	keycode 063
 end
@@ -222,7 +222,7 @@ end
 button 54
 	type 0
 	size 36 24
-	offset 214 338
+	offset 214 336
 	down 2 8
 	keycode 062
 end
@@ -230,7 +230,7 @@ end
 button 61
 	type 0
 	size 24 24
-	offset 48 383
+	offset 48 381
 	down 2 8
 	keycode 026
 end
@@ -238,7 +238,7 @@ end
 button 62
 	type 0
 	size 36 24
-	offset 92 383
+	offset 92 381
 	down 2 8
 	keycode 024
 end
@@ -246,7 +246,7 @@ end
 button 63
 	type 0
 	size 36 24
-	offset 153 383
+	offset 153 381
 	down 2 8
 	keycode 023
 end
@@ -254,7 +254,7 @@ end
 button 64
 	type 0
 	size 36 24
-	offset 214 383
+	offset 214 381
 	down 2 8
 	keycode 022
 end
@@ -262,7 +262,7 @@ end
 button 71
 	type 0
 	size 24 24
-	offset 48 427
+	offset 48 425
 	down 2 8
 	keycode 036
 end
@@ -270,7 +270,7 @@ end
 button 72
 	type 0
 	size 36 24
-	offset 92 427
+	offset 92 425
 	down 2 8
 	keycode 034
 end
@@ -278,7 +278,7 @@ end
 button 73
 	type 0
 	size 36 24
-	offset 153 427
+	offset 153 425
 	down 2 8
 	keycode 033
 end
@@ -286,7 +286,7 @@ end
 button 74
 	type 0
 	size 36 24
-	offset 214 427
+	offset 214 425
 	down 2 8
 	keycode 032
 end
@@ -294,32 +294,32 @@ end
 button 81
 	type 0
 	size 24 24
-	offset 48 472
+	offset 48 425
 	down 2 8
-	keycode 046
+	keycode 036
 end
 
 button 82
 	type 0
 	size 36 24
-	offset 92 472
+	offset 92 425
 	down 2 8
-	keycode 044
+	keycode 034
 end
 
 button 83
 	type 0
 	size 36 24
-	offset 153 472
+	offset 153 425
 	down 2 8
-	keycode 043
+	keycode 033
 end
 
 button 84
 	type 0
 	size 36 24
-	offset 214 472
+	offset 214 425
 	down 2 8
-	keycode 042
+	keycode 032
 end
 

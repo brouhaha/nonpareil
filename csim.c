@@ -33,9 +33,12 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
 #include "util.h"
 #include "proc.h"
+#include "kml.h"
 
 
 char *progname;
+
+kml_t *kml;
 
 
 GtkWidget *main_window;
@@ -149,7 +152,7 @@ void draw_digit (GtkWidget *widget, gint x, gint y, int val)
 	gdk_draw_segments (widget->window, gc, & segs [0], seg_count);
     }
   if (val == DIGIT_RADIX)
-    gdk_draw_rectangle (widget->window, gc, TRUE, x + 2, y + 6, 2, 2);
+    gdk_draw_rectangle (widget->window, gc, TRUE, x + 2, y + 8, 2, 2);
 #else
   gdk_draw_pixbuf (widget->window,
 		   NULL, /* gc for clipping */
@@ -240,219 +243,17 @@ static void display_update (char *buf)
 
 typedef struct
 {
-  GdkRectangle rect;
-  int keycode;
-} keyinfo;
-
-
-keyinfo (*keys)[35];
-
-
-keyinfo keys_hp35 [35] =
-{
-  {{  24, 120, 30, 24 }, 006 },
-  {{  72, 120, 30, 24 }, 004 },
-  {{ 120, 120, 30, 24 }, 003 },
-  {{ 168, 120, 30, 24 }, 002 },
-  {{ 216, 120, 30, 24 }, 000 },
-
-  {{  24, 168, 30, 24 }, 056 },
-  {{  72, 168, 30, 24 }, 054 },
-  {{ 120, 168, 30, 24 }, 053 },
-  {{ 168, 168, 30, 24 }, 052 },
-  {{ 216, 168, 30, 24 }, 050 },
-
-  {{  24, 216, 30, 24 }, 016 },
-  {{  72, 216, 30, 24 }, 014 },
-  {{ 120, 216, 30, 24 }, 013 },
-  {{ 168, 216, 30, 24 }, 012 },
-  {{ 216, 216, 30, 24 }, 010 },
-
-  {{  24, 264, 78, 24 }, 076 },
-  {{ 120, 264, 30, 24 }, 073 },
-  {{ 168, 264, 30, 24 }, 072 },
-  {{ 216, 264, 30, 24 }, 070 },
-
-  {{  24, 312, 24, 24 }, 066},
-  {{  73, 312, 37, 24 }, 064 },
-  {{ 141, 312, 37, 24 }, 063 },
-  {{ 209, 312, 37, 24 }, 062 },
-
-  {{  24, 360, 24, 24 }, 026},
-  {{  73, 360, 37, 24 }, 024 },
-  {{ 141, 360, 37, 24 }, 023 },
-  {{ 209, 360, 37, 24 }, 022 },
-
-  {{  24, 408, 24, 24 }, 036 },
-  {{  73, 408, 37, 24 }, 034 },
-  {{ 141, 408, 37, 24 }, 033 },
-  {{ 209, 408, 37, 24 }, 032 },
-
-  {{  24, 456, 24, 24 }, 046 },
-  {{  73, 456, 37, 24 }, 044 },
-  {{ 141, 456, 37, 24 }, 043 },
-  {{ 209, 456, 37, 24 }, 042 },
-};
-
-keyinfo keys_hp45 [35] =
-{
-  {{  48, 156, 32, 24 }, 006 },
-  {{  91, 156, 32, 24 }, 004 },
-  {{ 134, 156, 32, 24 }, 003 },
-  {{ 176, 156, 32, 24 }, 002 },
-  {{ 219, 156, 32, 24 }, 000 },
-
-  {{  48, 201, 32, 24 }, 056 },
-  {{  91, 201, 32, 24 }, 054 },
-  {{ 134, 201, 32, 24 }, 053 },
-  {{ 176, 201, 32, 24 }, 052 },
-  {{ 219, 201, 32, 24 }, 050 },
-
-  {{  48, 246, 32, 24 }, 016 },
-  {{  91, 246, 32, 24 }, 014 },
-  {{ 134, 246, 32, 24 }, 013 },
-  {{ 176, 246, 32, 24 }, 012 },
-  {{ 219, 246, 32, 24 }, 010 },
-
-#if ENTER_KEY_MOD
-  {{  48, 291, 74, 24 }, 074 },
-#else
-  {{  48, 291, 74, 24 }, 075 },
-#endif /* ENTER_KEY_MOD */
-  {{ 134, 291, 32, 24 }, 073 },
-  {{ 176, 291, 32, 24 }, 072 },
-  {{ 219, 291, 32, 24 }, 070 },
-
-  {{  48, 336, 24, 24 }, 066 },
-  {{  92, 336, 36, 24 }, 064 },
-  {{ 153, 336, 36, 24 }, 063 },
-  {{ 214, 336, 36, 24 }, 062 },
-
-  {{  48, 381, 24, 24 }, 026 },
-  {{  92, 381, 36, 24 }, 024 },
-  {{ 153, 381, 36, 24 }, 023 },
-  {{ 214, 381, 36, 24 }, 022 },
-
-  {{  48, 425, 24, 24 }, 036 },
-  {{  92, 425, 36, 24 }, 034 },
-  {{ 153, 425, 36, 24 }, 033 },
-  {{ 214, 425, 36, 24 }, 032 },
-
-  {{  48, 470, 24, 24 }, 046 },
-  {{  92, 470, 36, 24 }, 044 },
-  {{ 153, 470, 36, 24 }, 043 },
-  {{ 214, 470, 36, 24 }, 042 },
-};
-
-keyinfo keys_hp55 [35] =
-{
-  {{  28, 120, 36, 24 }, 006 },
-  {{  85, 120, 36, 24 }, 004 },
-  {{ 142, 120, 36, 24 }, 003 },
-  {{ 199, 120, 36, 24 }, 002 },
-  {{ 256, 120, 36, 24 }, 000 },
-
-  {{  28, 168, 36, 24 }, 056 },
-  {{  85, 168, 36, 24 }, 054 },
-  {{ 142, 168, 36, 24 }, 053 },
-  {{ 199, 168, 36, 24 }, 052 },
-  {{ 256, 168, 36, 24 }, 050 },
-
-  {{  28, 216, 36, 24 }, 016 },
-  {{  85, 216, 36, 24 }, 014 },
-  {{ 142, 216, 36, 24 }, 013 },
-  {{ 199, 216, 36, 24 }, 012 },
-  {{ 256, 216, 36, 24 }, 010 },
-
-  {{  28, 264, 92, 24 }, 075 },
-  {{ 142, 264, 36, 24 }, 073 },
-  {{ 199, 264, 36, 24 }, 072 },
-  {{ 256, 264, 36, 24 }, 070 },
-
-  {{  28, 312, 28, 24 }, 066 },
-  {{  87, 312, 44, 24 }, 064 },
-  {{ 167, 312, 44, 24 }, 063 },
-  {{ 248, 312, 44, 24 }, 062 },
-
-  {{  28, 360, 28, 24 }, 026 },
-  {{  87, 360, 44, 24 }, 024 },
-  {{ 167, 360, 44, 24 }, 023 },
-  {{ 248, 360, 44, 24 }, 022 },
-
-  {{  28, 408, 28, 24 }, 036 },
-  {{  87, 408, 44, 24 }, 034 },
-  {{ 167, 408, 44, 24 }, 033 },
-  {{ 248, 408, 44, 24 }, 032 },
-
-  {{  28, 456, 28, 24 }, 046 },
-  {{  87, 456, 44, 24 }, 044 },
-  {{ 167, 456, 44, 24 }, 043 },
-  {{ 248, 456, 44, 24 }, 042 },
-};
-
-keyinfo keys_hp80 [35] =
-{
-  {{  48, 156, 32, 24 }, 036 },
-  {{  91, 156, 32, 24 }, 034 },
-  {{ 134, 156, 32, 24 }, 033 },
-  {{ 176, 156, 32, 24 }, 032 },
-  {{ 219, 156, 32, 24 }, 030 },
-
-  {{  48, 201, 32, 24 }, 056 },
-  {{  91, 201, 32, 24 }, 054 },
-  {{ 134, 201, 32, 24 }, 053 },
-  {{ 176, 201, 32, 24 }, 052 },
-  {{ 219, 201, 32, 24 }, 050 },
-
-  {{  48, 246, 32, 24 }, 016 },
-  {{  91, 246, 32, 24 }, 014 },
-  {{ 134, 246, 32, 24 }, 013 },
-  {{ 176, 246, 32, 24 }, 012 },
-  {{ 219, 246, 32, 24 }, 010 },
-
-  {{  48, 291, 74, 24 }, 076 },
-  {{ 134, 291, 32, 24 }, 073 },
-  {{ 176, 291, 32, 24 }, 072 },
-  {{ 219, 291, 32, 24 }, 070 },
-
-  {{  48, 336, 24, 24 }, 066 },
-  {{  92, 336, 36, 24 }, 064 },
-  {{ 153, 336, 36, 24 }, 063 },
-  {{ 214, 336, 36, 24 }, 062 },
-
-  {{  48, 381, 24, 24 }, 026 },
-  {{  92, 381, 36, 24 }, 024 },
-  {{ 153, 381, 36, 24 }, 023 },
-  {{ 214, 381, 36, 24 }, 022 },
-
-  {{  48, 425, 24, 24 }, 006 },
-  {{  92, 425, 36, 24 }, 004 },
-  {{ 153, 425, 36, 24 }, 003 },
-  {{ 214, 425, 36, 24 }, 002 },
-
-  {{  48, 470, 24, 24 }, 046 },
-  {{  92, 470, 36, 24 }, 044 },
-  {{ 153, 470, 36, 24 }, 043 },
-  {{ 214, 470, 36, 24 }, 042 },
-};
-
-
-typedef struct
-{
-  GtkWidget *button;
+  GtkWidget *widget;
   GtkWidget *fixed;
-  int keycode;
+  kml_button_t *kml_button;
 } button_info_t;
-
-
-button_info_t button_info [35];
 
 
 void button_pressed (GtkWidget *widget, button_info_t *button)
 {
-  sim_press_key (button->keycode);
+  sim_press_key (button->kml_button->keycode);
 #ifdef KEYBOARD_DEBUG
-  printf ("pressed %d\n", button->keycode);
+  printf ("pressed %d\n", button->kml_button->keycode);
 #endif
 }
 
@@ -461,62 +262,70 @@ void button_released (GtkWidget *widget, button_info_t *button)
 {
   sim_release_key ();
 #ifdef KEYBOARD_DEBUG
-  printf ("released %d\n", button->keycode);
+  printf ("released %d\n", button->kml_button->keycode);
 #endif
 }
 
 
 void add_key (GtkWidget *fixed,
 	      GdkPixbuf *window_pixbuf,
-	      keyinfo *key,
+	      kml_button_t *kml_button,
 	      button_info_t *button_info)
 {
   GdkPixbuf *button_pixbuf;
   GtkWidget *button_image;
 
+  button_info->kml_button = kml_button;
+
   button_pixbuf = gdk_pixbuf_new_subpixbuf (window_pixbuf,
-					    key->rect.x,
-					    key->rect.y,
-					    key->rect.width,
-					    key->rect.height);
+					    kml_button->offset.x,
+					    kml_button->offset.y,
+					    kml_button->size.width,
+					    kml_button->size.height);
 
   button_image = gtk_image_new_from_pixbuf (button_pixbuf);
 
   button_info->fixed = fixed;
-  button_info->keycode = key->keycode;
   
-  button_info->button = gtk_button_new ();
+  button_info->widget = gtk_button_new ();
 
-  gtk_button_set_relief (GTK_BUTTON (button_info->button), GTK_RELIEF_NONE);
+  gtk_button_set_relief (GTK_BUTTON (button_info->widget), GTK_RELIEF_NONE);
 
-  gtk_widget_set_size_request (button_info->button,
-			       key->rect.width,
-			       key->rect.height);
+  gtk_widget_set_size_request (button_info->widget,
+			       kml_button->size.width,
+			       kml_button->size.height);
 
   gtk_fixed_put (GTK_FIXED (fixed),
-		 button_info->button,
-		 key->rect.x,
-		 key->rect.y);
+		 button_info->widget,
+		 kml_button->offset.x,
+		 kml_button->offset.y);
 
-  g_signal_connect (G_OBJECT (button_info->button),
+  g_signal_connect (G_OBJECT (button_info->widget),
 		    "pressed",
 		    G_CALLBACK (& button_pressed),
 		    (gpointer) button_info);
-  g_signal_connect (G_OBJECT (button_info->button),
+  g_signal_connect (G_OBJECT (button_info->widget),
 		    "released",
 		    G_CALLBACK (& button_released),
 		    (gpointer) button_info);
 
-  gtk_container_add (GTK_CONTAINER (button_info->button), button_image);
+  gtk_container_add (GTK_CONTAINER (button_info->widget), button_image);
 }
+
+
+button_info_t *button_info [KML_MAX_BUTTON];
 
 
 void add_keys (GdkPixbuf *window_pixbuf, GtkWidget *fixed)
 {
   int i;
 
-  for (i = 0; i < (sizeof (keys_hp45) / sizeof (keyinfo)); i++)
-    add_key (fixed, window_pixbuf, & keys_hp45 [i], & button_info [i]);
+  for (i = 0; i < KML_MAX_BUTTON; i++)
+    if (kml->button [i])
+      {
+	button_info [i] = alloc (sizeof (button_info_t));
+	add_key (fixed, window_pixbuf, kml->button [i], button_info [i]);
+      }
 }
 
 
@@ -567,7 +376,7 @@ static void help_about (GtkWidget *widget, gpointer data)
 					GTK_RESPONSE_NONE,
 					NULL);
 
-  gtk_dialog_set_has_separator (GTK_DIALOG (dialog), FALSE);
+  gtk_dialog_set_has_separator (GTK_DIALOG (dialog), TRUE);
 
   gtk_container_add (GTK_CONTAINER (GTK_DIALOG (dialog)->vbox),
 		     gtk_label_new ("CASMSIM"));
@@ -575,6 +384,19 @@ static void help_about (GtkWidget *widget, gpointer data)
 		     gtk_label_new ("Microcode-level calculator simulator\n"
 				    "Copyright 1995, 2003, 2004 Eric L. Smith\n"
 				    "http://www.brouhaha.com/~eric/software/casmsim/"));
+  if (kml->title || kml->author)
+    {
+      gtk_container_add (GTK_CONTAINER (GTK_DIALOG (dialog)->vbox),
+			 gtk_hseparator_new ());
+      gtk_container_add (GTK_CONTAINER (GTK_DIALOG (dialog)->vbox),
+			 gtk_label_new ("KML:"));
+      if (kml->title)
+	gtk_container_add (GTK_CONTAINER (GTK_DIALOG (dialog)->vbox),
+			   gtk_label_new (kml->title));
+      if (kml->author)
+	gtk_container_add (GTK_CONTAINER (GTK_DIALOG (dialog)->vbox),
+			   gtk_label_new (kml->author));
+    }
   gtk_widget_show_all (dialog);
   gtk_dialog_run (GTK_DIALOG (dialog));
   gtk_widget_destroy (dialog);
@@ -641,15 +463,9 @@ static GtkWidget *get_menubar_menu (GtkWidget *window)
 #endif
 
 
-#define DISPLAY_X 54
-#define DISPLAY_Y 58
-#define DISPLAY_WIDTH 192
-#define DISPLAY_HEIGHT 11
-
-
 int main (int argc, char *argv[])
 {
-  char *objfn = NULL;
+  char *kml_fn = NULL;
 
   int image_width, image_height;
 
@@ -685,23 +501,41 @@ int main (int argc, char *argv[])
 #endif
 	    fatal (1, "unrecognized option '%s'\n", argv [0]);
 	}
-      else if (objfn)
-	fatal (1, "only one listing file may be specified\n");
+      else if (kml_fn)
+	fatal (1, "only one KML file may be specified\n");
       else
-	objfn = argv [0];
+	kml_fn = argv [0];
     }
 
+  if (! kml_fn)
+    {
+      strncpy (buf, progname, sizeof (buf));
+      strncat (buf, ".kml", sizeof (buf));
+      kml_fn = & buf [0];
+    }
 
-  image_pixbuf = gdk_pixbuf_new_from_file ("hp45.jpg", & error);
+  kml = read_kml_file (kml_fn);
+  if (! kml)
+    fatal (2, "can't read KML file '%s'\n", kml_fn);
+
+  if (! kml->image)
+    fatal (2, "No image file spsecified in KML\n");
+
+  if (! kml->rom)
+    fatal (2, "No ROM file specified in KML\n");
+
+  image_pixbuf = gdk_pixbuf_new_from_file (kml->image, & error);
   if (! image_pixbuf)
-    fatal (2, "can't load image\n");
+    fatal (2, "can't load image '%s'\n", kml->image);
 
   image_width = gdk_pixbuf_get_width (image_pixbuf);
   image_height = gdk_pixbuf_get_height (image_pixbuf);
 
   main_window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
   gtk_window_set_resizable (GTK_WINDOW (main_window), FALSE);
-  gtk_window_set_title (GTK_WINDOW (main_window), "HP-45");
+
+  gtk_window_set_title (GTK_WINDOW (main_window),
+			kml->title ? kml->title : "CASMSIM");
 
   vbox = gtk_vbox_new (FALSE, 1);
   gtk_container_add (GTK_CONTAINER (main_window), vbox);
@@ -735,10 +569,15 @@ int main (int argc, char *argv[])
   if (! gdk_colormap_alloc_color (colormap, & black, FALSE, TRUE))
     fatal (2, "can't alloc color black\n");
 
-  gtk_widget_set_size_request (display, DISPLAY_WIDTH, DISPLAY_HEIGHT);
+  gtk_widget_set_size_request (display,
+			       kml->display_size.width,
+			       kml->display_size.height);
   gtk_widget_modify_fg (display, GTK_STATE_NORMAL, & red);
   gtk_widget_modify_bg (display, GTK_STATE_NORMAL, & black);
-  gtk_fixed_put (GTK_FIXED (fixed), display, DISPLAY_X, DISPLAY_Y);
+  gtk_fixed_put (GTK_FIXED (fixed),
+		 display,
+		 kml->display_offset.x,
+		 kml->display_offset.y);
 
   gtk_widget_show_all (main_window);
 
@@ -754,15 +593,8 @@ int main (int argc, char *argv[])
 
   sim_init (10, & display_update);  /* $$$ 10 regs is enough for HP-45 */
 
-  if (! objfn)
-    {
-      strncpy (buf, progname, sizeof (buf));
-      strncat (buf, ".lst", sizeof (buf));
-      objfn = & buf [0];
-    }
-
-  if (! sim_read_listing_file (objfn, TRUE))
-    fatal (2, "unable to read listing file '%s'\n", objfn);
+  if (! sim_read_listing_file (kml->rom, TRUE))
+    fatal (2, "unable to read listing file '%s'\n", kml->rom);
 
   sim_reset ();
 

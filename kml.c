@@ -33,16 +33,19 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #include "kml.h"
 
 
-int lineno;
-int errors;
+int kml_lineno;
+int kml_tokenpos;
+int kml_errors;
 
-char linebuf [MAX_LINE];
-char *lineptr;
+char kml_linebuf [KML_LINEBUF_SIZE];
 
 
 void yyerror (char *s)
 {
-  fprintf (stderr, "%s\n", s);
+  fprintf (stderr, "%d: %s\n", kml_lineno, s);
+  trim_trailing_whitespace (kml_linebuf);
+  fprintf (stderr, "%s\n", kml_linebuf);
+  fprintf (stderr, "%*s\n", 1 + kml_tokenpos, "^");
 }
 
 
@@ -60,11 +63,13 @@ kml_t *read_kml_file (char *fn)
 
   yyin = fopen (fn, "r");
   if (! yyin)
-    fatal (2, "Can't open KML file\n");
+    return (NULL);
  
   kml = alloc (sizeof (kml_t));
 
   yy_kml = kml;
+
+  kml_lineno = 1;
 
   yyparse ();
   
@@ -99,8 +104,7 @@ void free_kml (kml_t *kml)
   free (kml->model);
   free (kml->rom);
   free (kml->patch);
-  free (kml->bitmap);
-  free (kml->print);
+  free (kml->image);
 
   for (i = 0; i < KML_MAX_COLOR; i++)
     free (kml->display_color [i]);

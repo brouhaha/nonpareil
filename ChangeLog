@@ -1,6 +1,6 @@
 2004-01-16  Eric Smith <eric@brouhaha.com>
 
-	* util.h util.c (alloc): Added alloc().
+	* util.h util.c (alloc, newstrn): New functions.
 	
 	* kmll.l: Added default rule for "." (error).
 	
@@ -12,7 +12,7 @@
 	* kmly.y: Added "kml" start rule, and reordered for clarity.
 	
 	* proc.c (sim_read_listing_file): Fix "duplicate listing line"
-	error message.
+	error message.  Ifdef'd out "read %d words".
 	
 	* proc.c (init_ops): Rearranged to match the instruction type
 	tables given in the patents.
