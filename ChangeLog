@@ -1,3 +1,9 @@
+2004-03-23  Eric Smith <eric@brouhaha.com>
+
+	* csim.c (add_switch, add_key, main) kml.h kmly.y: Use background
+	section of KML to use only a portion of the supplied image as the
+	window background.
+
 2004-02-24  Eric Smith <eric@brouhaha.com>
 
 	* debugger.c: Crude implementation of go, halt, step commands.

@@ -172,10 +172,12 @@ background_stmt_list	:	background_stmt
 			;
 
 background_stmt		:	offset_stmt
-				{ yy_kml->background_offset.x = $1.a;
+				{ yy_kml->has_background_offset = 1;
+				  yy_kml->background_offset.x = $1.a;
 				  yy_kml->background_offset.y = $1.b; }
 			|	size_stmt
-				{ yy_kml->background_size.width = $1.a;
+				{ yy_kml->has_background_size = 1;
+				  yy_kml->background_size.width = $1.a;
 				  yy_kml->background_size.height = $1.b; }
 			;
 

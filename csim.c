@@ -231,8 +231,8 @@ void add_switch (GtkWidget *fixed,
 
 	gtk_fixed_put (GTK_FIXED (fixed),
 		       switch_info->widget [i],
-		       kml_switch->position [i]->offset.x,
-		       kml_switch->position [i]->offset.y);
+		       kml_switch->position [i]->offset.x - kml->background_offset.x,
+		       kml_switch->position [i]->offset.y - kml->background_offset.y);
 
 	if (i == kml_switch->default_position)
 	  gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (switch_info->widget [i]),
@@ -299,8 +299,8 @@ void add_key (GtkWidget *fixed,
   button_info->kml_button = kml_button;
 
   button_pixbuf = gdk_pixbuf_new_subpixbuf (window_pixbuf,
-					    kml_button->offset.x,
-					    kml_button->offset.y,
+					    kml_button->offset.x - kml->background_offset.x,
+					    kml_button->offset.y - kml->background_offset.y,
 					    kml_button->size.width,
 					    kml_button->size.height);
 
@@ -318,8 +318,8 @@ void add_key (GtkWidget *fixed,
 
   gtk_fixed_put (GTK_FIXED (fixed),
 		 button_info->widget,
-		 kml_button->offset.x,
-		 kml_button->offset.y);
+		 kml_button->offset.x - kml->background_offset.x,
+		 kml_button->offset.y - kml->background_offset.y);
 
   g_signal_connect (G_OBJECT (button_info->widget),
 		    "pressed",
@@ -681,14 +681,14 @@ int main (int argc, char *argv[])
 
   model_info_t *model_info;
 
-  int image_width, image_height;
-
   GtkWidget *event_box;
 
   GtkWidget *vbox;
   GtkWidget *fixed;
 
-  GdkPixbuf *image_pixbuf;
+  GdkPixbuf *file_pixbuf;  /* the entire image loaded from the file */
+
+  GdkPixbuf *background_pixbuf;  /* window background (subset of file_pixbuf) */
   GError *error = NULL;
   GtkWidget *image;
 
@@ -764,27 +764,40 @@ int main (int argc, char *argv[])
 
   sim = sim_init (model_info->ram_size, & display_update);
 
-  image_pixbuf = gdk_pixbuf_new_from_file (kml->image, & error);
-  if (! image_pixbuf)
+  file_pixbuf = gdk_pixbuf_new_from_file (kml->image, & error);
+  if (! file_pixbuf)
     fatal (2, "can't load image '%s'\n", kml->image);
 
-  image_width = gdk_pixbuf_get_width (image_pixbuf);
-  image_height = gdk_pixbuf_get_height (image_pixbuf);
+  if (! kml->has_background_size)
+    {
+      kml->background_size.width = gdk_pixbuf_get_width (file_pixbuf) - kml->background_offset.x;
+      kml->background_size.height = gdk_pixbuf_get_height (file_pixbuf) - kml->background_offset.y;
+    }
+
+  background_pixbuf = gdk_pixbuf_new_subpixbuf (file_pixbuf,
+						kml->background_offset.x,
+						kml->background_offset.y,
+						kml->background_size.width,
+						kml->background_size.height);
 
   main_window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
+
+  printf ("image left %d, width %d\n", kml->background_offset.x, kml->background_size.width);
+  printf ("image top %d, height %d\n", kml->background_offset.y, kml->background_size.height);
 
   if (kml->has_transparency && ! no_shape)
     {
       image_mask_bitmap = (GdkBitmap *) gdk_pixmap_new (GTK_WINDOW (main_window)->frame,
-							image_width,
-							image_height,
+							kml->background_size.width,
+							kml->background_size.height,
 							1);
-      gdk_pixbuf_render_threshold_alpha (image_pixbuf,
+      gdk_pixbuf_render_threshold_alpha (file_pixbuf,
 					 image_mask_bitmap,
-					 0, 0,  /* src_x, _y */
+					 kml->background_offset.x,  /* src_x */
+					 kml->background_offset.y,  /* src_y */
 					 0, 0,  /* dest_x, _y */
-					 image_width,
-					 image_height,
+					 kml->background_size.width,
+					 kml->background_size.height,
 					 kml->transparency_threshold);
     }
 
@@ -810,18 +823,20 @@ int main (int argc, char *argv[])
     }
 
   fixed = gtk_fixed_new ();
-  gtk_widget_set_size_request (fixed, image_width, image_height);
+  gtk_widget_set_size_request (fixed,
+			       kml->background_size.width,
+			       kml->background_size.height);
   gtk_box_pack_end (GTK_BOX (vbox), fixed, FALSE, TRUE, 0);
 
-  if (image_pixbuf != NULL)
+  if (background_pixbuf != NULL)
     {
-      image = gtk_image_new_from_pixbuf (image_pixbuf);
+      image = gtk_image_new_from_pixbuf (background_pixbuf);
       gtk_fixed_put (GTK_FIXED (fixed), image, 0, 0);
     }
 
-  add_switches (image_pixbuf, fixed);
+  add_switches (background_pixbuf, fixed);
 
-  add_keys (image_pixbuf, fixed);
+  add_keys (background_pixbuf, fixed);
 
   display = gtk_drawing_area_new ();
 
@@ -844,8 +859,8 @@ int main (int argc, char *argv[])
   gtk_widget_modify_bg (display, GTK_STATE_NORMAL, & display_bg_color);
   gtk_fixed_put (GTK_FIXED (fixed),
 		 display,
-		 kml->display_offset.x,
-		 kml->display_offset.y);
+		 kml->display_offset.x - kml->background_offset.x,
+		 kml->display_offset.y - kml->background_offset.y);
 
   if (image_mask_bitmap)
     {

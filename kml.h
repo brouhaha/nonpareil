@@ -196,7 +196,9 @@ typedef struct
   kml_color_t *global_color [KML_MAX_GLOBAL_COLOR];
   int debug;
 
+  int has_background_offset;
   kml_offset_t background_offset;
+  int has_background_size;
   kml_size_t background_size;
 
   int display_digits;
