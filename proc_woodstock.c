@@ -1121,33 +1121,45 @@ static bool parse_octal (char *oct, int digits, int *val)
 static bool woodstock_parse_object_line (char *buf, int *bank, int *addr,
 					 rom_word_t *opcode)
 {
+  bool has_bank;
+  int b = 0;
   int a, o;
 
   if (buf [0] == '#')  /* comment? */
     return (false);
 
-  if (strlen (buf) != 9)
+  if ((strlen (buf) < 9) || (strlen (buf) > 10))
     return (false);
 
-  if (buf [4] != ':')
+  if (buf [4] == ':')
+    has_bank = false;
+  else if (buf [5] == ':')
+    has_bank = true;
+  else
     {
       fprintf (stderr, "invalid object file format\n");
       return (false);
     }
 
-  if (! parse_octal (& buf [0], 4, & a))
+  if (has_bank && ! parse_octal (& buf [0], 1, & b))
     {
-      fprintf (stderr, "invalid address %o\n", a);
+      fprintf (stderr, "invalid bank in object line '%s'\n", buf);
       return (false);
     }
 
-  if (! parse_octal (& buf [5], 4, & o))
+  if (! parse_octal (& buf [has_bank ? 1 : 0], 4, & a))
     {
-      fprintf (stderr, "invalid opcode %o\n", o);
+      fprintf (stderr, "invalid address in object line '%s'\n", buf);
       return (false);
     }
 
-  *bank = 0;
+  if (! parse_octal (& buf [has_bank ? 6 : 5], 4, & o))
+    {
+      fprintf (stderr, "invalid opcode in object line '%s'\n", buf);
+      return (false);
+    }
+
+  *bank = b;
   *addr = a;
   *opcode = o;
   return (true);

@@ -1,5 +1,9 @@
 2004-04-09  Eric Smith <eric@brouhaha.com>
 
+	* proc_woodstock.c (woodstock_parse_object_line): Handle a
+	five-digit octal address as a single-digit bank and four-digit
+	address.
+
 	* proc_woodstock.c (woodstock_print_state,
 	woodstock_execute_instruction): Move call to
 	woodstock_disassemble() into woodstock_print_state().
