@@ -42,6 +42,11 @@ common_objs = []
 for src in common_srcs:
     common_objs.append (env.Object (src))
 
+common_dis_srcs = Split("""dis_woodstock.c dis_nut.c""")
+common_dis_objs = [];
+for src in common_dis_srcs:
+    common_dis_objs.append (env.Object (src))
+
 release_env = env.Copy (CPPDEFINES = { 'NONPAREIL_RELEASE': env ['RELEASE']})
 common_objs.append (release_env.Object ('release.c'))
 
@@ -68,8 +73,8 @@ nonpareil_env = env.Copy ()
 nonpareil_srcs = Split ("""proc.c kmll.l kmly.y kml.c
                            platform.c model.c
                            proc_classic.c
-                           proc_woodstock.c dis_woodstock.c
-                           proc_nut.c dis_nut.c coconut_lcd.c voyager_lcd.c""")
+                           proc_woodstock.c
+                           proc_nut.c coconut_lcd.c voyager_lcd.c""")
 
 packages = "gtk+-2.0 gdk-2.0 gdk-pixbuf-2.0 glib-2.0 gthread-2.0"
 if env ['has_debugger_cli']:
@@ -113,13 +118,24 @@ for src in nonpareil_srcs:
     nonpareil_objs.append (nonpareil_env.Object (src))
 
 nonpareil = nonpareil_env.Program (target = 'nonpareil',
-                                   source = common_objs + nonpareil_objs)
+                                   source = common_objs + common_dis_objs + nonpareil_objs)
+
+#-----------------------------------------------------------------------------
+# udis
+#-----------------------------------------------------------------------------
+
+udis_env = env.Copy ()
+
+udis_srcs = Split ("""dis.c""")
+
+udis = udis_env.Program (target = 'udis',
+                         source = common_objs + common_dis_objs + udis_srcs)
 
 #-----------------------------------------------------------------------------
 # default targets
 #-----------------------------------------------------------------------------
 
-Default ([uasm, nonpareil])
+Default ([uasm, nonpareil, udis])
 
 #-----------------------------------------------------------------------------
 # install
