@@ -523,19 +523,15 @@ static void help_about (GtkWidget *widget, gpointer data)
 
   gtk_dialog_set_has_separator (GTK_DIALOG (dialog), FALSE);
 
-  g_signal_connect_swapped (GTK_OBJECT (dialog),
-			    "response",
-			    G_CALLBACK (gtk_widget_destroy),
-			    GTK_OBJECT (dialog));
-
   gtk_container_add (GTK_CONTAINER (GTK_DIALOG (dialog)->vbox),
 		     gtk_label_new ("CASMSIM"));
   gtk_container_add (GTK_CONTAINER (GTK_DIALOG (dialog)->vbox),
 		     gtk_label_new ("Microcode-level calculator simulator\n"
-				    "Copyright 1995, 2004 Eric L. Smith\n"
+				    "Copyright 1995, 2003, 2004 Eric L. Smith\n"
 				    "http://www.brouhaha.com/~eric/software/casmsim/"));
   gtk_widget_show_all (dialog);
   gtk_dialog_run (GTK_DIALOG (dialog));
+  gtk_widget_destroy (dialog);
 }
 
 
