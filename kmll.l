@@ -72,8 +72,8 @@ alpha		[a-zA-Z]
 	\\f		*string_buf_ptr++ = '\f';
 }
 
-[ \t]+		;
-\n		;
+[ \t\n]+	; /* whitespace */
+#.*		; /* comment */
 
 annunciator	return (ANNUNCIATOR);
 author		return (AUTHOR);
