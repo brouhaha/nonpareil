@@ -2,6 +2,12 @@ TODO list for CASMSIM
 Copyright 1995, 2003, 2004 Eric L. Smith <eric@brouhaha.com>
 $Id$
 
+
+Bugs:
+
+  Multiplication doesn't work on HP-80.
+
+
 Building:
 
   Create an RPM .spec file.
@@ -51,7 +57,7 @@ Better model support:
 
   Scan images.
 
-  Key in HP-80 source code and partial HP-65 source code from patents.
+  Key in partial HP-65 source code from patent.
 
   Implement HP-65, HP-70, HP-80 keyboard legends.
 
