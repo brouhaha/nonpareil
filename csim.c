@@ -41,7 +41,7 @@ gboolean kml_debug = FALSE;
 
 kml_t *kml;
 
-struct sim_handle_t *sim;
+sim_t *sim;
 
 
 GtkWidget *main_window;

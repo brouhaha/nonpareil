@@ -1,3 +1,8 @@
+2004-02-24  Eric Smith <eric@brouhaha.com>
+
+	* proc.c proc.h csim.c: Replaced "struct sim_handle_t" with
+	typedef'd sim_t.
+
 2004-02-20  Eric Smith <eric@brouhaha.com>
 
 	* csim.c (main): Added "--noshape" option to suppress use of shape

@@ -49,7 +49,7 @@ typedef enum
   } sim_state_t;
 
 
-struct sim_handle_t
+struct sim_t
 {
   GThread *thread;
   GCond *sim_cond;
@@ -71,19 +71,19 @@ struct sim_handle_t
   uint8_t bpt     [MAX_GROUP] [MAX_ROM] [ROM_SIZE];
   char *source  [MAX_GROUP] [MAX_ROM] [ROM_SIZE];
 
-  void (* op_fcn [1024])(struct sim_handle_t *sim, int opcode);
+  void (* op_fcn [1024])(struct sim_t *sim, int opcode);
 
   char prev_display [WSIZE + 2];
 };
 
 
-static void bad_op (struct sim_handle_t *sim, int opcode)
+static void bad_op (sim_t *sim, int opcode)
 {
   printf ("illegal opcode %02x at %05o\n", opcode, sim->env.prev_pc);
 }
 
 
-static digit_t do_add (struct sim_handle_t *sim, digit_t x, digit_t y)
+static digit_t do_add (sim_t *sim, digit_t x, digit_t y)
 {
   int res;
 
@@ -99,7 +99,7 @@ static digit_t do_add (struct sim_handle_t *sim, digit_t x, digit_t y)
 }
 
 
-static digit_t do_sub (struct sim_handle_t *sim, digit_t x, digit_t y)
+static digit_t do_sub (sim_t *sim, digit_t x, digit_t y)
 {
   int res;
 
@@ -115,7 +115,7 @@ static digit_t do_sub (struct sim_handle_t *sim, digit_t x, digit_t y)
 }
 
 
-static void op_arith (struct sim_handle_t *sim, int opcode)
+static void op_arith (sim_t *sim, int opcode)
 {
   uint8_t op, field;
   int first = 0;
@@ -329,7 +329,7 @@ static void op_arith (struct sim_handle_t *sim, int opcode)
 }
 
 
-static void op_goto (struct sim_handle_t *sim, int opcode)
+static void op_goto (sim_t *sim, int opcode)
 {
   if (! sim->env.prev_carry)
     {
@@ -340,7 +340,7 @@ static void op_goto (struct sim_handle_t *sim, int opcode)
 }
 
 
-static void op_jsb (struct sim_handle_t *sim, int opcode)
+static void op_jsb (sim_t *sim, int opcode)
 {
   sim->env.ret_pc = sim->env.pc;
   sim->env.pc = opcode >> 2;
@@ -349,30 +349,30 @@ static void op_jsb (struct sim_handle_t *sim, int opcode)
 }
 
 
-static void op_return (struct sim_handle_t *sim, int opcode)
+static void op_return (sim_t *sim, int opcode)
 {
   sim->env.pc = sim->env.ret_pc;
 }
 
 
-static void op_nop (struct sim_handle_t *sim, int opcode)
+static void op_nop (sim_t *sim, int opcode)
 {
 }
 
 
-static void op_dec_p (struct sim_handle_t *sim, int opcode)
+static void op_dec_p (sim_t *sim, int opcode)
 {
   sim->env.p = (sim->env.p - 1) & 0xf;
 }
 
 
-static void op_inc_p (struct sim_handle_t *sim, int opcode)
+static void op_inc_p (sim_t *sim, int opcode)
 {
   sim->env.p = (sim->env.p + 1) & 0xf;
 }
 
 
-static void op_clear_s (struct sim_handle_t *sim, int opcode)
+static void op_clear_s (sim_t *sim, int opcode)
 {
   int i;
   for (i = 0; i < SSIZE; i++)
@@ -380,7 +380,7 @@ static void op_clear_s (struct sim_handle_t *sim, int opcode)
 }
 
 
-static void op_c_exch_m (struct sim_handle_t *sim, int opcode)
+static void op_c_exch_m (sim_t *sim, int opcode)
 {
   int i, t;
   for (i = 0; i < WSIZE; i++)
@@ -392,7 +392,7 @@ static void op_c_exch_m (struct sim_handle_t *sim, int opcode)
 }
 
 
-static void op_m_to_c (struct sim_handle_t *sim, int opcode)
+static void op_m_to_c (sim_t *sim, int opcode)
 {
   int i;
   for (i = 0; i < WSIZE; i++)
@@ -400,7 +400,7 @@ static void op_m_to_c (struct sim_handle_t *sim, int opcode)
 }
 
 
-static void op_c_to_addr (struct sim_handle_t *sim, int opcode)
+static void op_c_to_addr (sim_t *sim, int opcode)
 {
   if (sim->env.max_ram > 10)
     sim->env.ram_addr = sim->env.c [12] * 10 + sim->env.c [11];
@@ -411,7 +411,7 @@ static void op_c_to_addr (struct sim_handle_t *sim, int opcode)
 }
 
 
-static void op_c_to_data (struct sim_handle_t *sim, int opcode)
+static void op_c_to_data (sim_t *sim, int opcode)
 {
   int i;
   if (sim->env.ram_addr >= sim->env.max_ram)
@@ -424,7 +424,7 @@ static void op_c_to_data (struct sim_handle_t *sim, int opcode)
 }
 
 
-static void op_data_to_c (struct sim_handle_t *sim, int opcode)
+static void op_data_to_c (sim_t *sim, int opcode)
 {
   int i;
   if (sim->env.ram_addr >= sim->env.max_ram)
@@ -439,7 +439,7 @@ static void op_data_to_c (struct sim_handle_t *sim, int opcode)
 }
 
 
-static void op_c_to_stack (struct sim_handle_t *sim, int opcode)
+static void op_c_to_stack (sim_t *sim, int opcode)
 {
   int i;
   for (i = 0; i < WSIZE; i++)
@@ -451,7 +451,7 @@ static void op_c_to_stack (struct sim_handle_t *sim, int opcode)
 }
 
 
-static void op_stack_to_a (struct sim_handle_t *sim, int opcode)
+static void op_stack_to_a (sim_t *sim, int opcode)
 {
   int i;
   for (i = 0; i < WSIZE; i++)
@@ -463,7 +463,7 @@ static void op_stack_to_a (struct sim_handle_t *sim, int opcode)
 }
 
 
-static void op_down_rotate (struct sim_handle_t *sim, int opcode)
+static void op_down_rotate (sim_t *sim, int opcode)
 {
   int i, t;
   for (i = 0; i < WSIZE; i++)
@@ -477,7 +477,7 @@ static void op_down_rotate (struct sim_handle_t *sim, int opcode)
 }
 
 
-static void op_clear_reg (struct sim_handle_t *sim, int opcode)
+static void op_clear_reg (sim_t *sim, int opcode)
 {
   int i;
   for (i = 0; i < WSIZE; i++)
@@ -486,7 +486,7 @@ static void op_clear_reg (struct sim_handle_t *sim, int opcode)
 }
 
 
-static void op_load_constant (struct sim_handle_t *sim, int opcode)
+static void op_load_constant (sim_t *sim, int opcode)
 {
   if (sim->env.p >= WSIZE)
     {
@@ -503,7 +503,7 @@ static void op_load_constant (struct sim_handle_t *sim, int opcode)
 }
 
 
-static void op_set_s (struct sim_handle_t *sim, int opcode)
+static void op_set_s (sim_t *sim, int opcode)
 {
   if ((opcode >> 6) >= SSIZE)
     printf ("stat >= SSIZE at %05o\n", sim->env.prev_pc);
@@ -512,7 +512,7 @@ static void op_set_s (struct sim_handle_t *sim, int opcode)
 }
 
 
-static void op_clr_s (struct sim_handle_t *sim, int opcode)
+static void op_clr_s (sim_t *sim, int opcode)
 {
   if ((opcode >> 6) >= SSIZE)
     printf ("stat >= SSIZE at %05o\n", sim->env.prev_pc);
@@ -521,7 +521,7 @@ static void op_clr_s (struct sim_handle_t *sim, int opcode)
 }
 
 
-static void op_test_s (struct sim_handle_t *sim, int opcode)
+static void op_test_s (sim_t *sim, int opcode)
 {
   if ((opcode >> 6) >= SSIZE)
     printf ("stat >= SSIZE at %05o\n", sim->env.prev_pc);
@@ -530,19 +530,19 @@ static void op_test_s (struct sim_handle_t *sim, int opcode)
 }
 
 
-static void op_set_p (struct sim_handle_t *sim, int opcode)
+static void op_set_p (sim_t *sim, int opcode)
 {
   sim->env.p = opcode >> 6;
 }
 
 
-static void op_test_p (struct sim_handle_t *sim, int opcode)
+static void op_test_p (sim_t *sim, int opcode)
 {
   sim->env.carry = (sim->env.p == (opcode >> 6));
 }
 
 
-static void op_sel_rom (struct sim_handle_t *sim, int opcode)
+static void op_sel_rom (sim_t *sim, int opcode)
 {
   sim->env.rom = opcode >> 7;
   sim->env.group = sim->env.del_grp;
@@ -551,19 +551,19 @@ static void op_sel_rom (struct sim_handle_t *sim, int opcode)
 }
 
 
-static void op_del_sel_rom (struct sim_handle_t *sim, int opcode)
+static void op_del_sel_rom (sim_t *sim, int opcode)
 {
   sim->env.del_rom = opcode >> 7;
 }
 
 
-static void op_del_sel_grp (struct sim_handle_t *sim, int opcode)
+static void op_del_sel_grp (sim_t *sim, int opcode)
 {
   sim->env.del_grp = (opcode >> 7) & 1;
 }
 
 
-static void op_keys_to_rom_addr (struct sim_handle_t *sim, int opcode)
+static void op_keys_to_rom_addr (sim_t *sim, int opcode)
 {
   if (sim->env.key_buf < 0)
     {
@@ -575,7 +575,7 @@ static void op_keys_to_rom_addr (struct sim_handle_t *sim, int opcode)
 }
 
 
-static void op_rom_addr_to_buf (struct sim_handle_t *sim, int opcode)
+static void op_rom_addr_to_buf (sim_t *sim, int opcode)
 {
   /* I don't know what this instruction is supposed to do! */
 #if 0
@@ -584,7 +584,7 @@ static void op_rom_addr_to_buf (struct sim_handle_t *sim, int opcode)
 }
 
 
-static void op_display_off (struct sim_handle_t *sim, int opcode)
+static void op_display_off (sim_t *sim, int opcode)
 {
   sim->env.display_enable = 0;
   sim->env.io_count = 2;
@@ -596,14 +596,14 @@ static void op_display_off (struct sim_handle_t *sim, int opcode)
 }
 
 
-static void op_display_toggle (struct sim_handle_t *sim, int opcode)
+static void op_display_toggle (sim_t *sim, int opcode)
 {
   sim->env.display_enable = ! sim->env.display_enable;
   sim->env.io_count = 0;  /* force immediate display update */
 }
 
 
-static void init_ops (struct sim_handle_t *sim)
+static void init_ops (sim_t *sim)
 {
   int i, j;
 
@@ -689,7 +689,7 @@ static void init_ops (struct sim_handle_t *sim)
 }
 
 
-void disassemble_instruction (struct sim_handle_t *sim, int g, int r, int p, int opcode)
+void disassemble_instruction (sim_t *sim, int g, int r, int p, int opcode)
 {
   int i;
   printf ("L%1o%1o%3o:  ", g, r, p);
@@ -702,7 +702,7 @@ void disassemble_instruction (struct sim_handle_t *sim, int g, int r, int p, int
  * set breakpoints at every location so we know if we hit
  * uninitialized ROM
  */
-void init_breakpoints (struct sim_handle_t *sim)
+void init_breakpoints (sim_t *sim)
 {
   int g, r, p;
 
@@ -713,7 +713,7 @@ void init_breakpoints (struct sim_handle_t *sim)
 }
 
 
-void init_source (struct sim_handle_t *sim)
+void init_source (sim_t *sim)
 {
   int g, r, p;
 
@@ -750,7 +750,7 @@ static int parse_opcode (char *bin, int *opcode)
 }
 
 
-gboolean sim_read_object_file (struct sim_handle_t *sim, char *fn)
+gboolean sim_read_object_file (sim_t *sim, char *fn)
 {
   int i;
   FILE *f;
@@ -784,7 +784,7 @@ gboolean sim_read_object_file (struct sim_handle_t *sim, char *fn)
 }
 
 
-gboolean sim_read_listing_file (struct sim_handle_t *sim, char *fn, int keep_src)
+gboolean sim_read_listing_file (sim_t *sim, char *fn, int keep_src)
 {
   FILE *f;
   int g, r, p, opcode;
@@ -831,7 +831,7 @@ gboolean sim_read_listing_file (struct sim_handle_t *sim, char *fn, int keep_src
 }
 
 
-static void handle_io (struct sim_handle_t *sim)
+static void handle_io (sim_t *sim)
 {
   char buf [WSIZE + 2];
   char *bp;
@@ -866,7 +866,7 @@ static void handle_io (struct sim_handle_t *sim)
 }
 
 
-void execute_instruction (struct sim_handle_t *sim)
+void execute_instruction (sim_t *sim)
 {
   int i;
   int opcode;
@@ -893,7 +893,7 @@ void execute_instruction (struct sim_handle_t *sim)
 }
 
 
-void reset_processor (struct sim_handle_t *sim)
+void reset_processor (sim_t *sim)
 {
   sim->cycle_count = 0;
 
@@ -930,7 +930,7 @@ gpointer sim_thread_func (gpointer data)
   int i;
   long usec;
 
-  struct sim_handle_t *sim = (struct sim_handle_t *) data;
+  sim_t *sim = (sim_t *) data;
 
   for (;;)
     {
@@ -1012,12 +1012,12 @@ gpointer sim_thread_func (gpointer data)
 
 /* The following functions can be called from the main thread: */
 
-struct sim_handle_t *sim_init (int ram_size,
-			       void (*display_update_fn)(char *buf))
+sim_t *sim_init (int ram_size,
+		 void (*display_update_fn)(char *buf))
 {
-  struct sim_handle_t *sim;
+  sim_t *sim;
 
-  sim = alloc (sizeof (struct sim_handle_t));
+  sim = alloc (sizeof (sim_t));
   sim->prev_state = SIM_UNKNOWN;
   sim->state = SIM_IDLE;
 
@@ -1052,7 +1052,7 @@ struct sim_handle_t *sim_init (int ram_size,
 }
 
 
-void sim_quit (struct sim_handle_t *sim)
+void sim_quit (sim_t *sim)
 {
   g_mutex_lock (sim->sim_mutex);
   sim->state = SIM_QUIT;
@@ -1063,7 +1063,7 @@ void sim_quit (struct sim_handle_t *sim)
 }
 
 
-void sim_reset (struct sim_handle_t *sim)
+void sim_reset (sim_t *sim)
 {
   g_mutex_lock (sim->sim_mutex);
   if (sim->state != SIM_IDLE)
@@ -1076,7 +1076,7 @@ void sim_reset (struct sim_handle_t *sim)
 }
 
 
-void sim_step (struct sim_handle_t *sim)
+void sim_step (sim_t *sim)
 {
   g_mutex_lock (sim->sim_mutex);
   if (sim->state != SIM_IDLE)
@@ -1089,7 +1089,7 @@ void sim_step (struct sim_handle_t *sim)
 }
 
 
-void sim_start (struct sim_handle_t *sim)
+void sim_start (sim_t *sim)
 {
   g_mutex_lock (sim->sim_mutex);
   if (sim->state != SIM_IDLE)
@@ -1100,7 +1100,7 @@ void sim_start (struct sim_handle_t *sim)
 }
 
 
-void sim_stop (struct sim_handle_t *sim)
+void sim_stop (sim_t *sim)
 {
   g_mutex_lock (sim->sim_mutex);
   if (sim->state == SIM_IDLE)
@@ -1114,7 +1114,7 @@ done:
 }
 
 
-uint64_t sim_get_cycle_count (struct sim_handle_t *sim)
+uint64_t sim_get_cycle_count (sim_t *sim)
 {
   uint64_t count;
   g_mutex_lock (sim->sim_mutex);
@@ -1124,7 +1124,7 @@ uint64_t sim_get_cycle_count (struct sim_handle_t *sim)
 }
 
 
-void sim_set_cycle_count (struct sim_handle_t *sim, uint64_t count)
+void sim_set_cycle_count (sim_t *sim, uint64_t count)
 {
   g_mutex_lock (sim->sim_mutex);
   sim->cycle_count = count;
@@ -1132,19 +1132,19 @@ void sim_set_cycle_count (struct sim_handle_t *sim, uint64_t count)
 }
 
 
-void sim_set_breakpoint (struct sim_handle_t *sim, int address)
+void sim_set_breakpoint (sim_t *sim, int address)
 {
   /* $$$ not yet implemented */
 }
 
 
-void sim_clear_breakpoint (struct sim_handle_t *sim, int address)
+void sim_clear_breakpoint (sim_t *sim, int address)
 {
   /* $$$ not yet implemented */
 }
 
 
-gboolean sim_running (struct sim_handle_t *sim)
+gboolean sim_running (sim_t *sim)
 {
   gboolean result;
   g_mutex_lock (sim->sim_mutex);
@@ -1154,7 +1154,7 @@ gboolean sim_running (struct sim_handle_t *sim)
 }
 
 
-void sim_get_env (struct sim_handle_t *sim, sim_env_t *env)
+void sim_get_env (sim_t *sim, sim_env_t *env)
 {
   size_t ram_bytes;
   reg_t *ram;
@@ -1180,7 +1180,7 @@ void sim_get_env (struct sim_handle_t *sim, sim_env_t *env)
 }
 
 
-void sim_set_env (struct sim_handle_t *sim, sim_env_t *env)
+void sim_set_env (sim_t *sim, sim_env_t *env)
 {
   reg_t *sim_ram;
 
@@ -1199,7 +1199,7 @@ void sim_set_env (struct sim_handle_t *sim, sim_env_t *env)
 }
 
 
-romword sim_read_rom (struct sim_handle_t *sim, int addr)
+romword sim_read_rom (sim_t *sim, int addr)
 {
   /* The ROM is read-only, so we don't have to grab the mutex. */
   /* $$$ not yet implemented */
@@ -1207,7 +1207,7 @@ romword sim_read_rom (struct sim_handle_t *sim, int addr)
 }
 
 
-void sim_read_ram (struct sim_handle_t *sim, int addr, reg_t *val)
+void sim_read_ram (sim_t *sim, int addr, reg_t *val)
 {
   if (addr > sim->env.max_ram)
     fatal (2, "sim_read_ram: address %d out of range\n", addr);
@@ -1217,7 +1217,7 @@ void sim_read_ram (struct sim_handle_t *sim, int addr, reg_t *val)
 }
 
 
-void sim_write_ram (struct sim_handle_t *sim, int addr, reg_t *val)
+void sim_write_ram (sim_t *sim, int addr, reg_t *val)
 {
   if (addr > sim->env.max_ram)
     fatal (2, "sim_write_ram: address %d out of range\n", addr);
@@ -1227,7 +1227,7 @@ void sim_write_ram (struct sim_handle_t *sim, int addr, reg_t *val)
 }
 
 
-void sim_press_key (struct sim_handle_t *sim, int keycode)
+void sim_press_key (sim_t *sim, int keycode)
 {
   g_mutex_lock (sim->sim_mutex);
   sim->env.key_buf = keycode;
@@ -1236,7 +1236,7 @@ void sim_press_key (struct sim_handle_t *sim, int keycode)
 }
 
 
-void sim_release_key (struct sim_handle_t *sim)
+void sim_release_key (sim_t *sim)
 {
   g_mutex_lock (sim->sim_mutex);
   sim->env.key_flag = FALSE;
@@ -1244,7 +1244,7 @@ void sim_release_key (struct sim_handle_t *sim)
 }
 
 
-void sim_set_ext_flag (struct sim_handle_t *sim, int flag, gboolean state)
+void sim_set_ext_flag (sim_t *sim, int flag, gboolean state)
 {
   g_mutex_lock (sim->sim_mutex);
   sim->env.ext_flag [flag] = state;
