@@ -1,0 +1,44 @@
+# SConscript for Nonpareil
+# $Id$
+# Copyright 2004 Eric L. Smith <eric@brouhaha.com>
+
+# Nonpareil is free software; you can redistribute it and/or modify it
+# under the terms of the GNU General Public License version 2 as
+# published by the Free Software Foundation.  Note that I am not
+# granting permission to redistribute or modify Nonpareil under the
+# terms of any later version of the General Public License.
+
+# Nonpareil is distributed in the hope that they will be useful (or at
+# least amusing), but WITHOUT ANY WARRANTY; without even the implied
+# warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+# See the GNU General Public License for more details.
+
+# You should have received a copy of the GNU General Public License
+# along with this program (in the file "COPYING"); if not, write to
+# the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+# Boston, MA 02111, USA.
+
+Import('env params')
+
+#-----------------------------------------------------------------------------
+# Assemble ROM sources
+#-----------------------------------------------------------------------------
+
+asm_srcs = Split ("hp35.asm hp45.asm hp55.asm hp80.asm")
+uasm = File('#/build/uasm')
+env['ASCOM'] = '$AS $SOURCES -o $TARGET'
+env['AS'] =  str(uasm)
+
+#uasm_bld = env.Builder (action = '$UASMCOM',
+#                        suffix = '.obj',
+#                    src_suffix = '.asm')
+#env.Append(BUILDERS = {'Obj' : uasm_bld})
+
+hp45_obj = env.Object('hp45.asm')
+
+
+#-----------------------------------------------------------------------------
+# Define default targets
+#-----------------------------------------------------------------------------
+
+Default (hp45_obj)

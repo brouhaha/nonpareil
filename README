@@ -130,15 +130,11 @@ button produce the keycode for the right switch.
 
 Uasm microassembler:
 
-Uasm requires a single command line argument to specify the source
-code file.
+Uasm requires a command line argument to specify the source code file
+name, and optional arguments to specify object and listing file names.
 
-Uasm derives names for the object and listing files from the source
-filename by replacing the extension (everything after the last dot,
-typically "asm") with "obj" or "lst".  If the source filename doesn't
-have an extension uasm adds one.  The object file format is one word
-per line with the five digit octal address, a colon and the
-instruction word in hexadecimal.
+The object file format is one word per line with the five digit octal
+address, a colon and the instruction word in hexadecimal.
 
 I personally prefer my assembly source code to be in all lower case,
 so it doesn't look like it is shouting at me.  All the source code I
@@ -178,8 +174,9 @@ Development tools:
 
 I used GNU tools to build nonpareil and uasm.  Originally I used GCC
 2.5.8, Flex 2.4.7, Bison 1.22, and Make 3.71.  Most recently I'm using
-GCC 3.3.2, Flex 2.5.4a, Bison 1.875, and Make 3.79.1.  Flex versions
+GCC 3.3.2, Flex 2.5.4a, Bison 1.875, and SCons 0.95.  Flex versions
 prior to 2.4.2 will not work.
+
 
 -----------------------------------------------------------------------------
 

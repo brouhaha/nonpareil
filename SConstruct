@@ -18,26 +18,58 @@
 # the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
 # Boston, MA 02111, USA.
 
+params = {}
 
-env = Environment ()
-env ['YACCFLAGS'] = [ '-d', '-v' ]
+#-----------------------------------------------------------------------------
+# Conditionals 
+#-----------------------------------------------------------------------------
 
-env.ParseConfig('pkg-config --cflags --libs gtk+-2.0 gdk-2.0 gdk-pixbuf-2.0 glib-2.0 gthread-2.0')
+params['has_debugger'] = 1
+params['has_debugger_cli'] = 1
+params['use_tcl'] = 1
+params['use_readline'] = 1
 
-uasm_srcs = Split ("""asm.c symtab.c util.c
-                      arch.c
-            	      asml.l asmy.y
-                      casml.l casmy.y
-                      wasml.l wasmy.y""")
 
-nonpareil_srcs = Split ("""csim.c util.c proc.c kmll.l kmly.y kml.c
-                           arch.c platform.c model.c
-                           proc_classic.c
-                           proc_woodstock.c dis_woodstock.c
-                           proc_nut.c dis_nut.c coconut_lcd.c voyager_lcd.c""")
+#-----------------------------------------------------------------------------
 
-uasm = env.Program (target='uasm', source=uasm_srcs)
+params['package'] = "nonpareil"
+params['release'] = "0.45"
 
-nonpareil = env.Program (target='nonpareil', source=nonpareil_srcs)
+common_cflags = ['-g', '-Wall']
 
-Default ([uasm, nonpareil])
+n_env = Environment (CFLAGS = common_cflags,
+		     CPPPATH= ['.'])
+
+w_env = Environment (CCFLAGS = common_cflags + ['-mms-bitfields', '-DSHAPE_DEFAULT=false'],
+		     CPPPATH=['.'],
+                     CC = '/usr/local/mingw/bin/i586-mingw32-gcc')
+
+builds = [('linux',   n_env, 'build')]
+# builds += [('windows', w_env, 'wbuild')]
+
+for arch,env,builddir in builds:
+	params['arch'] = arch
+	Export('env params')
+	SConscript('src/SConscript', build_dir=builddir, duplicate=0)
+
+#-----------------------------------------------------------------------------
+# Assemble ROM sources
+#-----------------------------------------------------------------------------
+
+SConscript ('asm/SConscript', build_dir='obj', duplicate=0)
+
+#-----------------------------------------------------------------------------
+# Install
+#-----------------------------------------------------------------------------
+
+prefix = "/usr/local"
+
+n_env.Alias (target = 'install',
+             source = n_env.Install (dir = prefix + "/bin",
+                                     source = "build/uasm"))
+
+n_env.Alias (target = 'install',
+             source = n_env.Install (dir = prefix + "/bin",
+                                     source = "build/nonpareil"))
+
+# $$$ Need to install KML and image files as well.

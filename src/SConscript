@@ -1,0 +1,87 @@
+# SConscript for Nonpareil
+# $Id$
+# Copyright 2004 Eric L. Smith <eric@brouhaha.com>
+
+# Nonpareil is free software; you can redistribute it and/or modify it
+# under the terms of the GNU General Public License version 2 as
+# published by the Free Software Foundation.  Note that I am not
+# granting permission to redistribute or modify Nonpareil under the
+# terms of any later version of the General Public License.
+
+# Nonpareil is distributed in the hope that they will be useful (or at
+# least amusing), but WITHOUT ANY WARRANTY; without even the implied
+# warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+# See the GNU General Public License for more details.
+
+# You should have received a copy of the GNU General Public License
+# along with this program (in the file "COPYING"); if not, write to
+# the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+# Boston, MA 02111, USA.
+
+Import('env params')
+#-----------------------------------------------------------------------------
+# Source code
+#-----------------------------------------------------------------------------
+common_srcs = Split("""util.c arch.c""")
+common_objs = []
+for src in common_srcs:
+    common_objs.append(env.Object(src))
+
+uasm_srcs = Split ("""asm.c symtab.c
+            	      asml.l asmy.y
+                      casml.l casmy.y
+                      wasml.l wasmy.y""")
+nonpareil_srcs = Split ("""csim.c proc.c kmll.l kmly.y kml.c
+                           platform.c model.c
+                           proc_classic.c
+                           proc_woodstock.c dis_woodstock.c
+                           proc_nut.c dis_nut.c coconut_lcd.c voyager_lcd.c""")
+
+
+env ['YACCFLAGS'] = [ '-d', '-v' ]
+
+packages = "gtk+-2.0 gdk-2.0 gdk-pixbuf-2.0 glib-2.0 gthread-2.0"
+
+try:
+    defines = list(env['CPPDEFINES'])
+except KeyError:
+    defines = []
+nplibs = []
+
+if params['arch'] != 'windows':
+    if params['has_debugger_cli']:
+        defines.append('HAS_DEBUGGER_CLI')
+        packages += ' vte'
+        nplibs.append('util')  # for PTY support
+        if params['use_tcl']:
+            defines.append('USE_TCL')
+            nplibs.append('tcl')
+        if params['use_readline']:
+            defines.append('USE_READLINE')
+            nplibs.append('readline')
+    if params['has_debugger']:
+        defines.append('HAS_DEBUGGER')
+        debuggerobj = env.Object('debugger.c', CPPDEFINES=defines)
+        nonpareil_srcs.append(debuggerobj)
+
+if params['arch'] == 'windows':
+    pkg_config_cmd = 'PKG_CONFIG_PATH=/usr/local/gtkwin/lib/pkgconfig '
+else:
+    pkg_config_cmd = ''
+pkg_config_cmd += 'pkg-config --cflags --libs '
+
+env.ParseConfig(pkg_config_cmd + packages)
+
+uasm = env.Program (target = 'uasm',
+                    source = uasm_srcs + common_objs)
+
+nonpareil = env.Program (target='nonpareil',
+                         source = nonpareil_srcs + common_objs, LIBS=env['LIBS'] + nplibs)
+
+
+#-----------------------------------------------------------------------------
+# Define default targets
+#-----------------------------------------------------------------------------
+
+Default ([uasm, nonpareil])
+# Default ([uasm])
