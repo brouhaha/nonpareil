@@ -1,9 +1,10 @@
 CASMSIM - an HP Classic series calculator micro assembler and simulator
 Copyright 1995 Eric L. Smith (eric@telebit.com)
-Last revised March 17, 1995
+Last revised March 23, 1995
 
 CASMSIM consists of the CASM assembler and the CSIM simulator.  It's just a
-quick hack, so don't expect too much.
+quick hack, so don't expect too much.  In particular it really needs an
+Imakefile.
 
 -----------------------------------------------------------------------------
 
@@ -57,15 +58,11 @@ label" instruction is only available in the HP-65.
 The design of the processor and the instruction set are described in detail
 in United States patents 3,863,060 and 4,001,569.
 
-The '569 patent appears to cover the HP-45 calculator.  I have an HP-45 but I
-haven't yet tried to dump the code to compare it to the listings in the patent.
-
-The '379 patent appears to cover the HP-55 calculator.  I don't have an HP-55,
-so I can't verify that the code in the patent matches that in the ROMs of an
-actual HP-55.
-
-There are likely to be errors in my transcriptions of the code from the
-patents, as the listings in the patents are poorly reproduced.  Caveat Emptor!
+I've typed in the source code from the '569 and '379 patents which cover the
+HP-45 and HP-55 respectively.  There are likely to be errors in my typing, as
+the listings in the patents are poorly reproduced.  I plan to eventually dump
+the ROMs from actual calculators to verify my typing.  For that matter, the
+code in the patents might not be identical to that in production units.
 
 Various other United States patents assigned to Hewlett-Packard appear to
 contain source listings of ROMs of other HP calculators:
@@ -78,9 +75,13 @@ contain source listings of ROMs of other HP calculators:
 
 CASM
 
-I used flex and bison to build CASM.  It should be possible to use yacc
-instead of bison, but I don't think lex will work without some changes to the
-input function.
+I used GNU tools to build CASM; specifically GCC 2.5.8, Flex 2.4.7, Bison
+1.22, and Make 3.71.  I don't believe in using ugly preprocessor macros to
+make my code compile on non-ANSI compilers.  Lex won't work because I don't
+know how to make it take input from a string.  Earlier versions of Flex don't
+seem to work either, probably because they handle input differently.  It is
+possible to use Yacc instead of Bison.  I no longer use ".SUFFIXES:" in the
+Makefile, so I expect that other Make programs should work.
 
 CASM requires a single command line argument to specify the source code file.
 
@@ -115,6 +116,11 @@ a separate symbol table for each ROM.
 CASM has a .symtab directive which causes the symbol table to be printed to
 the listing file.  If the source file contains multiple ROMs, each ROM should
 have its own .symtab directive.
+
+The file "hp55.asm" when assembled with CASM will produce one warning, which
+will be printed to standard out twice (once during each pass).  This warning
+can be ignored as it is the result of CASM being pickier than the HP assembler
+about forms of the "go to" instruction.
 
 -----------------------------------------------------------------------------
 
