@@ -69,7 +69,7 @@ XRectangle display_rect = { 0, 0, WINDOW_WIDTH, DISPLAY_HEIGHT };
 #define MAX_COL 8
 
 
-unsigned long pixval [6];
+unsigned long pixval [MAX_COL];
 
 typedef struct
 {
@@ -220,7 +220,7 @@ static void draw_string (char *s, XRectangle *rect, int fg, int bg)
       XSetForeground (mydisplay, mygc, pixval [fg]);
       XSetBackground (mydisplay, mygc, pixval [bg]);
 
-      XDrawString (mydisplay, mywindow, mygc,
+      XDrawImageString (mydisplay, mywindow, mygc,
 		   rect->x + (rect->width - (cs.lbearing + cs.rbearing)) / 2,
 		   rect->y + rect->height - (rect->height - (cs.ascent + cs.descent)) / 2,
 		   s, strlen (s));
@@ -242,10 +242,6 @@ static void draw_calc (void)
 
   for (i = 0; i < (sizeof (keys) / sizeof (keyinfo)); i++)
     {
-#if 0
-      XSetForeground (mydisplay, mygc, pixval [keys [i].bg]);
-      XFillRectangles (mydisplay, mywindow, mygc, & keys [i].rect, 1);
-#endif
       draw_string (keys [i].label, & keys [i].rect, keys [i].fg, keys [i].bg);
       r = keys [i].rect;
       r.y -= r.height;
@@ -316,8 +312,6 @@ static void init_graphics (int argc, char *argv[], char *window_name)
 			  None, argv, argc, &myhint);
 
   mygc = XCreateGC (mydisplay, mywindow, 0, 0);
-  XSetBackground (mydisplay, mygc, white);
-  XSetForeground (mydisplay, mygc, black);
 
   myfont = XLoadQueryFont (mydisplay, "6x13");
   XSetFont (mydisplay, mygc, myfont->fid);
