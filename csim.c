@@ -782,9 +782,6 @@ int main (int argc, char *argv[])
 
   main_window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
 
-  printf ("image left %d, width %d\n", kml->background_offset.x, kml->background_size.width);
-  printf ("image top %d, height %d\n", kml->background_offset.y, kml->background_size.height);
-
   if (kml->has_transparency && ! no_shape)
     {
       image_mask_bitmap = (GdkBitmap *) gdk_pixmap_new (GTK_WINDOW (main_window)->frame,

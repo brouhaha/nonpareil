@@ -1,3 +1,7 @@
+2004-03-24  Eric Smith <eric@brouhaha.com>
+
+	* csim.c (main): Remove printf()s introduced to debug last change.
+
 2004-03-23  Eric Smith <eric@brouhaha.com>
 
 	* csim.c (add_switch, add_key, main) kml.h kmly.y: Use background
