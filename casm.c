@@ -84,7 +84,7 @@ void format_listing (void)
 {
   int i;
 	
-  sprintf (listptr, "%3d   ", lineno);
+  sprintf (listptr, "%4d   ", lineno);
   listptr += strlen (listptr);
 
   if (objflag)
@@ -112,7 +112,7 @@ void format_listing (void)
       listptr += strlen (listptr);
     }
 	  
-  sprintf (listptr, "  %c%c%c%c%c     ", flag_char, flag_char, flag_char,
+  sprintf (listptr, "  %c%c%c%c%c    ", flag_char, flag_char, flag_char,
 	   flag_char, flag_char);
   listptr += strlen (listptr);
   
