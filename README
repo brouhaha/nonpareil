@@ -108,6 +108,10 @@ number.  This is roughly equivalent to the origin directive in a typical
 assembler, except that CASM always start assembling code at location 0 of the
 selected ROM.
 
+Because HP assembled each ROM separately, they were able to use the same
+symbols in multiple ROMs.  CASM therefore has a separate name space and keeps
+a separate symbol table for each ROM.
+
 CASM has a .symtab directive which causes the symbol table to be printed to
 the listing file.  If the source file contains multiple ROMs, each ROM should
 have its own .symtab directive.
