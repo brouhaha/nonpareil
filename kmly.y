@@ -45,14 +45,16 @@ int kml_cur_idx2;
 %token <integer> INTEGER
 %token <string> STRING
 
-%token ANNUNCIATOR AUTHOR      BACKGROUND  BITMAP      BUTTON      CLASS
-%token COLOR       DEBUG       DEFAULT     DIGITS      DISPLAY     DOWN
-%token ELSE        END         FLAG        GLOBAL      HARDWARE    IFFLAG
-%token IFPRESSED   IMAGE       KEYCODE     LCD         MAP         MENUITEM
-%token MODEL       NOHOLD      OFFSET      ONDOWN      ONUP        OUTIN
-%token PATCH       POSITION    PRESS       PRINT       RELEASE     RESETFLAG
-%token ROM         SCANCODE    SETFLAG     SIZE        SWITCH      TITLE
-%token TYPE        VIRTUAL     ZOOM
+%token ANNUNCIATOR  AUTHOR       BACKGROUND   BITMAP       BUTTON
+%token CLASS        COLOR        DEBUG        DEFAULT      DIGITS
+%token DISPLAY      DOWN         ELSE         END          FLAG
+%token GLOBAL       HARDWARE     IFFLAG       IFPRESSED    IMAGE
+%token KEYCODE      LCD          MAP          MENUITEM     MODEL
+%token NOHOLD       OFFSET       ONDOWN       ONUP         OUTIN
+%token PATCH        POSITION     PRESS        PRINT        RELEASE
+%token RESETFLAG    ROM          SCANCODE     SETFLAG      SIZE
+%token SWITCH       TITLE        TRANSPARENCY TYPE         VIRTUAL
+%token ZOOM
 
 %type <intpair> offset_stmt size_stmt down_stmt
 
@@ -100,6 +102,7 @@ global_stmt		:	title_stmt
 			|	rom_stmt
 			|	patch_stmt
 			|	image_stmt
+			|	transparency_stmt
 			|	print_stmt
 			|	debug_stmt
 			;
@@ -123,6 +126,10 @@ image_stmt		:	image_stmt_name STRING { yy_kml->image = newstr ($2); } ;
 image_stmt_name		:	IMAGE
 			|	BITMAP /* backward compatability */
 			;
+
+transparency_stmt	:	TRANSPARENCY INTEGER
+				{ yy_kml->has_transparency = 1;
+				  yy_kml->transparency_threshold = $2; } ;
 
 print_stmt		:	PRINT STRING { printf ("%s\n", $2); } ;
 

@@ -149,7 +149,9 @@ static void print_kml_global (FILE *f, kml_t *kml)
   print_kml_string (f, "hardware", kml->hardware);
   print_kml_string (f, "model",    kml->model);
   print_kml_string (f, "rom",      kml->rom);
-  print_kml_string (f, "image",      kml->image);
+  print_kml_string (f, "image",    kml->image);
+  if (kml->has_transparency)
+    fprintf (f, "\ttransparency %d\n", kml->transparency_threshold);
   fprintf (f, "end\n\n");
 }
 

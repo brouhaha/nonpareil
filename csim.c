@@ -605,11 +605,12 @@ int main (int argc, char *argv[])
   GError *error = NULL;
   GtkWidget *image;
 
+  GdkBitmap *image_mask_bitmap = NULL;
+
   GdkColormap *colormap;
   GdkColor red, black;
 
   char buf [PATH_MAX];
-
  
   progname = newstr (argv [0]);
 
@@ -677,6 +678,22 @@ int main (int argc, char *argv[])
   image_height = gdk_pixbuf_get_height (image_pixbuf);
 
   main_window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
+
+  if (kml->has_transparency)
+    {
+      image_mask_bitmap = (GdkBitmap *) gdk_pixmap_new (GTK_WINDOW (main_window)->frame,
+							image_width,
+							image_height,
+							1);
+      gdk_pixbuf_render_threshold_alpha (image_pixbuf,
+					 image_mask_bitmap,
+					 0, 0,  /* src_x, _y */
+					 0, 0,  /* dest_x, _y */
+					 image_width,
+					 image_height,
+					 kml->transparency_threshold);
+    }
+
   gtk_window_set_resizable (GTK_WINDOW (main_window), FALSE);
 
   gtk_window_set_title (GTK_WINDOW (main_window),
@@ -685,8 +702,11 @@ int main (int argc, char *argv[])
   vbox = gtk_vbox_new (FALSE, 1);
   gtk_container_add (GTK_CONTAINER (main_window), vbox);
 
-  menubar = get_menubar_menu (main_window);
-  gtk_box_pack_start (GTK_BOX (vbox), menubar, FALSE, TRUE, 0);
+  if (! image_mask_bitmap)
+    {
+      menubar = get_menubar_menu (main_window);
+      gtk_box_pack_start (GTK_BOX (vbox), menubar, FALSE, TRUE, 0);
+    }
 
   fixed = gtk_fixed_new ();
   gtk_widget_set_size_request (fixed, image_width, image_height);
@@ -725,6 +745,16 @@ int main (int argc, char *argv[])
 		 display,
 		 kml->display_offset.x,
 		 kml->display_offset.y);
+
+  if (image_mask_bitmap)
+    {
+      gtk_widget_shape_combine_mask (main_window,
+				     image_mask_bitmap,
+				     0,
+				     0);
+
+      gtk_window_set_decorated (GTK_WINDOW (main_window), FALSE);
+    }
 
   gtk_widget_show_all (main_window);
 
