@@ -1231,9 +1231,6 @@ void nut_reset_processor (sim_t *sim)
 
   sim->cycle_count = 0;
 
-  sim->env->pc = 0;
-  sim->env->inst_state = norm;
-
   for (i = 0; i < WSIZE; i++)
     {
       sim->env->a [i] = 0;
@@ -1250,6 +1247,11 @@ void nut_reset_processor (sim_t *sim)
   sim->env->q = 0;
   sim->env->pt = & sim->env->p;
 
+  /* wake from deep sleep */
+  sim->env->awake = 1;
+  sim->env->pc = 0;
+  sim->env->inst_state = norm;
+  sim->env->carry = 1;
   sim->env->display_enable = 0;
   sim->env->display_count = 0;
 
