@@ -20,12 +20,6 @@ MA 02111, USA.
 */
 
 
-#define WSIZE 14
-
-typedef uint8_t digit_t;
-typedef digit_t reg_t [WSIZE];
-
-
 typedef uint32_t addr_t;
 
 typedef uint16_t rom_word_t;
@@ -108,11 +102,11 @@ rom_word_t sim_read_rom (sim_t *sim,
 
 void sim_read_ram (sim_t *sim,
 		   int addr,
-		   reg_t *val);
+		   uint8_t *val);
 
 void sim_write_ram (sim_t *sim,
 		    int addr,
-		    reg_t *val);
+		    uint8_t *val);
 
 
 void sim_press_key (sim_t *sim,

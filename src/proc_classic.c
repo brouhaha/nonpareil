@@ -30,55 +30,7 @@ MA 02111, USA.
 #include "display.h"
 #include "proc.h"
 #include "proc_int.h"
-
-
-#define SSIZE 12
-
-#define MAX_GROUP 2
-#define MAX_ROM 8
-#define ROM_SIZE 256
-
-
-struct sim_env_t
-{
-  reg_t a;
-  reg_t b;
-  reg_t c;
-  reg_t d;
-  reg_t e;
-  reg_t f;
-  reg_t m;
-
-  digit_t p;
-
-  uint8_t carry, prev_carry;
-
-  uint8_t s [SSIZE];
-
-  int ram_addr;  /* selected RAM address */
-
-  uint8_t pc;
-  uint8_t rom;
-  uint8_t group;
-
-  uint8_t del_rom;
-  uint8_t del_grp;
-
-  uint8_t ret_pc;
-
-  int prev_pc;  /* used to store complete five-digit octal address of instruction */
-
-  int display_enable;
-
-  bool key_flag;      /* true if a key is down */
-  int key_buf;        /* most recently pressed key */
-
-  uint8_t ext_flag [SSIZE];  /* external flags, e.g., slide switches,
-				magnetic card inserted */
-
-  int max_ram;
-  reg_t ram [];
-};
+#include "proc_classic.h"
 
 
 static void bad_op (sim_t *sim, int opcode)
@@ -988,7 +940,7 @@ void classic_reset_processor (sim_t *sim)
 }
 
 
-static void classic_read_ram (sim_t *sim, int addr, reg_t *val)
+static void classic_read_ram (sim_t *sim, int addr, uint8_t *val)
 {
   if (addr > sim->env->max_ram)
     fatal (2, "classic_read_ram: address %d out of range\n", addr);
@@ -996,7 +948,7 @@ static void classic_read_ram (sim_t *sim, int addr, reg_t *val)
 }
 
 
-static void classic_write_ram (sim_t *sim, int addr, reg_t *val)
+static void classic_write_ram (sim_t *sim, int addr, uint8_t *val)
 {
   if (addr > sim->env->max_ram)
     fatal (2, "sim_write_ram: address %d out of range\n", addr);

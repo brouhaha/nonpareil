@@ -26,16 +26,11 @@ typedef uint8_t digit_t;
 typedef digit_t reg_t [WSIZE];
 
 
-#define SSIZE 16
-#define STACK_SIZE 2
+#define SSIZE 12
 
-
-typedef enum
-  {
-    norm,
-    branch,
-    selftest
-  } inst_state_t;
+#define MAX_GROUP 2
+#define MAX_ROM 8
+#define ROM_SIZE 256
 
 
 struct sim_env_t
@@ -43,47 +38,40 @@ struct sim_env_t
   reg_t a;
   reg_t b;
   reg_t c;
-  reg_t y;
-  reg_t z;
-  reg_t t;
-  reg_t m1;
-  reg_t m2;
-
-  digit_t f;
+  reg_t d;
+  reg_t e;
+  reg_t f;
+  reg_t m;
 
   digit_t p;
 
-  uint8_t arithmetic_base;  /* 10 or 16 */
-
   uint8_t carry, prev_carry;
 
-  uint8_t s [SSIZE];  /* status bits */
-  uint8_t ext_flag [SSIZE];  /* external flags, cause status bits to get set */
+  uint8_t s [SSIZE];
 
   int ram_addr;  /* selected RAM address */
 
-  int bank;
+  uint8_t pc;
+  uint8_t rom;
+  uint8_t group;
 
-  uint16_t pc;
-
-  bool del_rom_flag;
   uint8_t del_rom;
+  uint8_t del_grp;
 
-  inst_state_t inst_state;
-
-  int sp;  /* stack pointer */
-  uint16_t return_stack [STACK_SIZE];
+  uint8_t ret_pc;
 
   int prev_pc;  /* used to store complete five-digit octal address of instruction */
-
-  int crc;
 
   int display_enable;
 
   bool key_flag;      /* true if a key is down */
   int key_buf;        /* most recently pressed key */
 
+  uint8_t ext_flag [SSIZE];  /* external flags, e.g., slide switches,
+				magnetic card inserted */
+
   int max_ram;
-  reg_t ram [];	      /* dynamically sized */
+  reg_t ram [];
 };
+
 

@@ -1356,7 +1356,7 @@ void nut_reset_processor (sim_t *sim)
 }
 
 
-static void nut_read_ram (sim_t *sim, int addr, reg_t *val)
+static void nut_read_ram (sim_t *sim, int addr, uint8_t *val)
 {
   if (addr > sim->env->max_ram)
     fatal (2, "classic_read_ram: address %d out of range\n", addr);
@@ -1364,7 +1364,7 @@ static void nut_read_ram (sim_t *sim, int addr, reg_t *val)
 }
 
 
-static void nut_write_ram (sim_t *sim, int addr, reg_t *val)
+static void nut_write_ram (sim_t *sim, int addr, uint8_t *val)
 {
   if (addr > sim->env->max_ram)
     fatal (2, "sim_write_ram: address %d out of range\n", addr);

@@ -1216,7 +1216,7 @@ static void woodstock_set_ext_flag (sim_t *sim, int flag, bool state)
 
 
 
-static void woodstock_read_ram (sim_t *sim, int addr, reg_t *val)
+static void woodstock_read_ram (sim_t *sim, int addr, uint8_t *val)
 {
   if (addr > sim->env->max_ram)
     fatal (2, "woodstock_read_ram: address %d out of range\n", addr);
@@ -1224,7 +1224,7 @@ static void woodstock_read_ram (sim_t *sim, int addr, reg_t *val)
 }
 
 
-static void woodstock_write_ram (sim_t *sim, int addr, reg_t *val)
+static void woodstock_write_ram (sim_t *sim, int addr, uint8_t *val)
 {
   if (addr > sim->env->max_ram)
     fatal (2, "sim_write_ram: address %d out of range\n", addr);

@@ -20,6 +20,12 @@ MA 02111, USA.
 */
 
 
+#define WSIZE 14
+
+typedef uint8_t digit_t;
+typedef digit_t reg_t [WSIZE];
+
+
 #define SSIZE 14
 #define STACK_DEPTH 4
 

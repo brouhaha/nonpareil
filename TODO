@@ -81,8 +81,7 @@ Internals:
   Change nut pt (pointer selection) from pointer to boolean.  Replace
   references to *pt to (pt ? q : p).
 
-  Make word size an architecture-specific parameter, rather than fixed
-  in proc.h.
+  Add method to get architecture-specific word size (WSIZE).
 
   Only send display update message to GUI thread if display has changed.
 

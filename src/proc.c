@@ -86,8 +86,8 @@ typedef struct
   bool          b;
   uint64_t      cycle_count;
   addr_t        addr;
-  reg_t         reg_val;
   int           arg;  // keycode, flag number, etc.
+  uint8_t       *data;  // register value, etc.
 } sim_msg_t;
 
 
@@ -274,12 +274,12 @@ static void handle_sim_cmd (sim_t *sim, sim_msg_t *msg)
       break;
     case CMD_READ_RAM:
       // deal with bad addr?
-      sim->proc->read_ram (sim, msg->addr, & msg->reg_val);
+      sim->proc->read_ram (sim, msg->addr, msg->data);
       msg->reply = OK;
       break;
     case CMD_WRITE_RAM:
       // deal with bad addr?
-      sim->proc->write_ram (sim, msg->addr, & msg->reg_val);
+      sim->proc->write_ram (sim, msg->addr, msg->data);
       msg->reply = OK;
       break;
     case CMD_GET_CYCLE_COUNT:

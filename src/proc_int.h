@@ -52,8 +52,9 @@ typedef struct
   void (* set_ext_flag)        (sim_t *sim, int flag, bool state);
 
   /* for debugger: */
-  void (* read_ram)            (sim_t *sim, int addr, reg_t *val);
-  void (* write_ram)           (sim_t *sim, int addr, reg_t *val);
+  void (* read_ram)            (sim_t *sim, int addr, uint8_t *val);
+  void (* write_ram)           (sim_t *sim, int addr, uint8_t *val);
+
   void (* disassemble)         (sim_t *sim, int addr, char *buf, int len);
 
   sim_env_t * (* get_env)      (sim_t *sim); 
