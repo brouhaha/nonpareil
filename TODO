@@ -10,6 +10,9 @@ Build process:
 
 User interface:
 
+  More general proc_xxx to display interface, to support Spice comma (digit
+  grouping), and Nut and Voyager displays.
+
   Transparency/shape: improve support for moving window: add KML
   syntax to specify keyboard rectangle, and use only region outside
   rectangle for dragging.
@@ -38,6 +41,8 @@ User interface:
 
 Internals:
 
+  Merge Nut CPU code from NSIM.
+
   Use io_count to improve display update timing.
 
   Add reflection API for use by debugger (both GUI and command line).
@@ -49,9 +54,6 @@ Internals:
   Change Tcl standard I/O streams to use pty file descriptor.
 
   Split ALU functions into separate source file.
-
-  Create a CPU class, with subclasses for classic, woodstock,
-  cricket, spice/spike, and nut/voyager.
 
   Replace globals in csim.c with structure.  Allow for multiple instances.
 
@@ -68,9 +70,9 @@ Internals:
 
 Better model support:
 
-  Scan images.
+  Scan images at uniform scale and without JPEG compression.
 
-  Dump actual HP-45, HP-55, HP-65, HP-70, HP-80 ROMs.  Dump buggy HP-35 ROMs.
+  Dump actual Classic, Woodstock, Topcat, Sting, HP-67, HP-31E, HP-33E ROMs.
 
   Compare actual HP-45 and HP-55 ROMs to CASM output.
 
