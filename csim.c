@@ -1,29 +1,27 @@
 /*
-CSIM is a simulator for the processor used in the HP "Classic" series
-of calculators, which includes the HP-35, HP-45, HP-55, HP-65, HP-70,
-and HP-80.
-
 $Id$
-Copyright 1995, 2004 Eric L. Smith
+Copyright 1995, 2004 Eric L. Smith <eric@brouhaha.com>
 
-CSIM is free software; you can redistribute it and/or modify it under the
-terms of the GNU General Public License version 2 as published by the Free
-Software Foundation.  Note that I am not granting permission to redistribute
-or modify CSIM under the terms of any later version of the General Public
-License.
+Nonpareil is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.  Note that I am not
+granting permission to redistribute or modify Nonpareil under the
+terms of any later version of the General Public License.
 
-This program is distributed in the hope that it will be useful (or at least
-amusing), but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General
-Public License for more details.
+Nonpareil is distributed in the hope that it will be useful (or at
+least amusing), but WITHOUT ANY WARRANTY; without even the implied
+warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See
+the GNU General Public License for more details.
 
-You should have received a copy of the GNU General Public License along with
-this program (in the file "COPYING"); if not, write to the Free Software
-Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+You should have received a copy of the GNU General Public License
+along with this program (in the file "COPYING"); if not, write to the
+Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
+MA 02111, USA.
 */
 
 #include <ctype.h>
 #include <stdarg.h>
+#include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -34,6 +32,9 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #include "util.h"
 #include "proc.h"
 #include "kml.h"
+#include "arch.h"
+#include "platform.h"
+#include "model.h"
 
 #ifdef HAS_DEBUGGER_CLI
   #include "debugger.h"
@@ -58,6 +59,7 @@ GtkWidget *menubar;  /* actually a popup menu in transparency/shape mode */
 
 
 char display_digit [KML_MAX_DIGITS];
+int display_radix_mark [KML_MAX_DIGITS];
 
 
 GtkWidget *display;
@@ -65,10 +67,10 @@ GtkWidget *display;
 
 void usage (FILE *f)
 {
-  fprintf (f, "CASMSIM release %s:  Microcode-level calculator simulator\n",
-	   MAKESTR(CASMSIM_RELEASE));
+  fprintf (f, "Nonpareil release %s:  Microcode-level calculator simulator\n",
+	   MAKESTR(NONPAREIL_RELEASE));
   fprintf (f, "Copyright 1995, 2003, 2004 Eric L. Smith\n");
-  fprintf (f, "http://www.brouhaha.com/~eric/software/casmsim/\n");
+  fprintf (f, "http://nonpareil.brouhaha.com//\n");
   fprintf (f, "\n");
   fprintf (f, "usage: %s [options...] kmlfile\n", progname);
   fprintf (f, "options:\n");
@@ -114,6 +116,8 @@ gboolean display_expose_event_callback (GtkWidget *widget,
   for (i = 0; i < kml->display_digits; i++)
     {
       draw_digit (widget, x, kml->digit_offset.y, display_digit [i]);
+      if (display_radix_mark [i])
+	draw_digit (widget, x, kml->digit_offset.y, '.');
 		       
       x += kml->digit_size.width;
     }
@@ -136,28 +140,14 @@ static void display_update (char *buf)
 
   for (i = 0; i < kml->display_digits; i++)
     {
-      if (i >= l)
+      if ((2 * i) >= l)
 	{
 	  display_digit [i] = ' ';
+	  display_radix_mark [i] = 0;
 	  continue;
 	}
-      if (isdigit (buf [i]))
-	display_digit [i] = buf [i];
-      else
-	switch (buf [i])
-	  {
-	  case '-':
-	    display_digit [i] = '-';
-	    break;
-	  case '.':
-	    display_digit [i] = '.';
-	    break;
-	  case ' ':
-	    display_digit [i] = ' ';
-	    break;
-	  default:
-	    fatal (2, "illegal display char '%c'\n", buf [i]);
-	  }
+      display_digit [i] = buf [2 * i];
+      display_radix_mark [i] = (buf [2 * i + 1] == '.');
     }
 
   rect.width = display->allocation.width;
@@ -176,7 +166,7 @@ typedef struct
   GtkWidget *image [KML_MAX_SWITCH_POSITION];
   GtkWidget *fixed;
   kml_switch_t *kml_switch;
-  gboolean flag [KML_MAX_SWITCH_POSITION];
+  int flag [KML_MAX_SWITCH_POSITION];
 } switch_info_t;
 
 
@@ -259,6 +249,29 @@ void add_switches (GdkPixbuf *window_pixbuf, GtkWidget *fixed)
 	switch_info [i] = alloc (sizeof (switch_info_t));
 	add_switch (fixed, window_pixbuf, kml->kswitch [i], switch_info [i]);
       }
+}
+
+
+static void init_switch (switch_info_t *sw)
+{
+  int pos;
+  gboolean state;
+
+  for (pos = 0; pos < KML_MAX_SWITCH_POSITION; pos++)
+    if (sw->flag [pos])
+      {
+	state = gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (sw->widget [pos]));
+	sim_set_ext_flag (sim, sw->flag [pos], state);
+      }
+}
+
+static void init_switches (void)
+{
+  int i;
+
+  for (i = 0; i < KML_MAX_SWITCH; i++)
+    if (switch_info [i])
+      init_switch (switch_info [i]);
 }
 
 
@@ -472,7 +485,7 @@ static void help_about (GtkWidget *widget, gpointer data)
   GtkWidget *dialog;
   char buf [200];
 
-  dialog = gtk_dialog_new_with_buttons ("About CASMSIM",
+  dialog = gtk_dialog_new_with_buttons ("About Nonpareil",
 					GTK_WINDOW (main_window),
 					GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
 					GTK_STOCK_OK,
@@ -481,13 +494,13 @@ static void help_about (GtkWidget *widget, gpointer data)
 
   gtk_dialog_set_has_separator (GTK_DIALOG (dialog), TRUE);
 
-  sprintf (buf, "CASMSIM release %s", MAKESTR(CASMSIM_RELEASE));
+  sprintf (buf, "Nonpareil release %s", MAKESTR(NONPAREIL_RELEASE));
   gtk_container_add (GTK_CONTAINER (GTK_DIALOG (dialog)->vbox),
 		     gtk_label_new (buf));
   gtk_container_add (GTK_CONTAINER (GTK_DIALOG (dialog)->vbox),
 		     gtk_label_new ("Microcode-level calculator simulator\n"
 				    "Copyright 1995, 2003, 2004 Eric L. Smith\n"
-				    "http://www.brouhaha.com/~eric/software/casmsim/"));
+				    "http://nonpareil.brouhaha.com/"));
   if (kml->title || kml->author)
     {
       gtk_container_add (GTK_CONTAINER (GTK_DIALOG (dialog)->vbox),
@@ -580,35 +593,6 @@ static GtkWidget *create_menus (GtkWidget *window,
   gtk_item_factory_create_items (item_factory, nmenu_items, menu_items, NULL);
   gtk_window_add_accel_group (GTK_WINDOW (window), accel_group);
   return (gtk_item_factory_get_widget (item_factory, "<main>"));
-}
-
-
-typedef struct
-{
-  char *name;
-  int ram_size;
-} model_info_t;
-
-
-model_info_t model_info [] =
-  {
-    { "35", 0 },
-    { "45", 10 },
-    { "55", 30 },
-    { "80", 0 }
-  };
-
-
-model_info_t *get_model_info (char *model)
-{
-  int i;
-
-  for (i = 0; i < (sizeof (model_info) / sizeof (model_info_t)); i++)
-    {
-      if (strcasecmp (model, model_info [i].name) == 0)
-	return (& model_info [i]);
-    }
-  return (NULL);
 }
 
 
@@ -762,7 +746,9 @@ int main (int argc, char *argv[])
   if (! model_info)
     fatal (2, "Unrecognized model specified in KML\n");
 
-  sim = sim_init (model_info->ram_size, & display_update);
+  sim = sim_init (model_info->cpu_arch,
+		  model_info->ram_size,
+		  & display_update);
 
   file_pixbuf = gdk_pixbuf_new_from_file (kml->image, & error);
   if (! file_pixbuf)
@@ -801,7 +787,7 @@ int main (int argc, char *argv[])
   gtk_window_set_resizable (GTK_WINDOW (main_window), FALSE);
 
   gtk_window_set_title (GTK_WINDOW (main_window),
-			kml->title ? kml->title : "CASMSIM");
+			kml->title ? kml->title : "Nonpareil");
 
   event_box = gtk_event_box_new ();
   gtk_container_add (GTK_CONTAINER (main_window), event_box);
@@ -903,6 +889,8 @@ int main (int argc, char *argv[])
     fatal (2, "unable to read listing file '%s'\n", kml->rom);
 
   sim_reset (sim);
+
+  init_switches ();
 
   sim_start (sim);
 

@@ -10,6 +10,8 @@
 
 ; HP-65 ROM 00
 
+	.arch classic
+
 	.rom @00
 
 dummy:	jsb pwo0

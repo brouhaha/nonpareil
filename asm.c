@@ -1,27 +1,22 @@
 /*
-casm.c
 $Id$
-Copyright 1995 Eric L. Smith
+Copyright 1995, 2004 Eric L. Smith <eric@brouhaha.com>
 
-CASM is an assembler for the processor used in the HP "Classic" series
-of calculators, which includes the HP-35, HP-45, HP-55, HP-65, HP-70,
-and HP-80.
+Nonpareil is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.  Note that I am not
+granting permission to redistribute or modify Nonpareil under the
+terms of any later version of the General Public License.
 
+Nonpareil is distributed in the hope that it will be useful (or at
+least amusing), but WITHOUT ANY WARRANTY; without even the implied
+warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See
+the GNU General Public License for more details.
 
-CASM is free software; you can redistribute it and/or modify it under the
-terms of the GNU General Public License version 2 as published by the Free
-Software Foundation.  Note that I am not granting permission to redistribute
-or modify CASM under the terms of any later version of the General Public
-License.
-
-This program is distributed in the hope that it will be useful (or at least
-amusing), but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General
-Public License for more details.
-
-You should have received a copy of the GNU General Public License along with
-this program (in the file "COPYING"); if not, write to the Free Software
-Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+You should have received a copy of the GNU General Public License
+along with this program (in the file "COPYING"); if not, write to the
+Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
+MA 02111, USA.
 */
 
 #include <stdarg.h>
@@ -32,8 +27,19 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
 #include "symtab.h"
 #include "util.h"
-#include "asm.h"
 #include "arch.h"
+#include "asm.h"
+
+
+int arch;
+
+
+parser_t *parser [ARCH_MAX] =
+{
+  asm_parse,
+  casm_parse,
+  wasm_parse
+};
 
 
 int pass;
@@ -139,6 +145,8 @@ void do_pass (int p)
 {
   int i;
 
+  arch = ARCH_UNKNOWN;
+  
   pass = p;
   lineno = 0;
   errors = 0;
@@ -171,7 +179,7 @@ void do_pass (int p)
       flag_char = ' ';
       symtab_flag = 0;
 
-      yyparse ();
+      parser [arch] ();
 
       if (pass == 2)
 	{
@@ -192,6 +200,13 @@ void do_pass (int p)
 
       if (objflag)
 	pc = (pc + 1) & 0xff;
+    }
+
+  if (pass == 2)
+    {
+      fprintf (listfile, "\nGlobal symbols:\n\n");
+      print_symbol_table (global_symtab, listfile);
+      fprintf (listfile, "\n");
     }
 
   printf ("\n");
@@ -272,11 +287,6 @@ int main (int argc, char *argv[])
   exit (0);
 }
 
-void yyerror (char *s)
-{
-  error ("%s\n", s);
-}
-
 void do_label (char *s)
 {
   int prev_val;
@@ -289,12 +299,12 @@ void do_label (char *s)
 
   if (pass == 1)
     {
-      if (! create_symbol (table, s, pc, lineno))
+      if (! create_symbol (table, s, (rom << 8) + pc, lineno))
 	error ("multiply defined symbol '%s'\n", s);
     }
   else if (! lookup_symbol (table, s, & prev_val))
     error ("undefined symbol '%s'\n", s);
-  else if (prev_val != pc)
+  else if (prev_val != ((rom << 8) + pc))
     error ("phase error for symbol '%s'\n", s);
 }
 
@@ -304,8 +314,10 @@ static void emit_core (int op, int inst_type)
   objflag = 1;
   last_instruction_type = inst_type;
 
+  /*
   if ((pass == 2) && objfile)
     fprintf (objfile, "%1o%1o%03o:%03x\n", group, rom, pc, op);
+  */
 }
 
 void emit (int op)
@@ -401,18 +413,15 @@ int warning (char *format, ...)
 }
 
 
-int keyword (char *string)
+int keyword (char *string, keyword_t *table)
 {
-  struct keyword *ptr;
-
-  for (ptr = keywords; ptr->name; ptr++)
-    if (strcasecmp (string, ptr->name) == 0)
-      return ptr->value;
+  while (table->name)
+    {
+      if (strcasecmp (string, table->name) == 0)
+	return table->value;
+      table++;
+    }
   return 0;
 }
 
 
-int yywrap (void)
-{
-  return (1);
-}

@@ -1,6 +1,6 @@
 /*
 $Id$
-Copyright 1995, 2004 Eric L. Smith <eric@brouhaha.com>
+Copyright 2004 Eric L. Smith <eric@brouhaha.com>
 
 Nonpareil is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License version 2 as
@@ -20,21 +20,23 @@ MA 02111, USA.
 */
 
 
-#define QMAKESTR(x) #x
-#define MAKESTR(x) QMAKESTR(x)
+/* hardware platforms */
 
+#define PLATFORM_UNKNOWN   0
+#define PLATFORM_CLASSIC   1
+#define PLATFORM_WOODSTOCK 2
+#define PLATFORM_TOPCAT    3
+#define PLATFORM_HAWKEYE   4
+#define PLATFORM_STING     5
+#define PLATFORM_CRICKET   6
+#define PLATFORM_SPICE     7
+#define PLATFORM_COCONUT   8
+#define PLATFORM_VOYAGER   9
+#define PLATFORM_CAPRICORN 10
+#define PLATFORM_GEMINI    11
+#define PLATFORM_KANGAROO  12
+#define PLATFORM_TITAN     13
 
-extern char * progname;  /* must be set by main program */
+#define PLATFORM_MAX       14
 
-void usage (FILE *f);    /* must be implemented in main program */
-
-void fatal (int ret, char *format, ...);
-
-void *alloc (size_t size);
-
-char *newstr (char *orig);
-
-char *newstrn (char *orig, int max_len);
-
-void trim_trailing_whitespace (char *s);
-
+extern char *platform_name [PLATFORM_MAX];

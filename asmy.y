@@ -1,6 +1,6 @@
 /*
 $Id$
-Copyright 1995, 2004 Eric L. Smith <eric@brouhaha.com>
+Copyright 1995 Eric L. Smith <eric@brouhaha.com>
 
 Nonpareil is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License version 2 as
@@ -19,22 +19,50 @@ Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
 MA 02111, USA.
 */
 
+%name-prefix="asm_"
 
-#define QMAKESTR(x) #x
-#define MAKESTR(x) QMAKESTR(x)
+%{
+#include <stdio.h>
 
+#include "symtab.h"
+#include "arch.h"
+#include "asm.h"
 
-extern char * progname;  /* must be set by main program */
+void asm_error (char *s);
+%}
 
-void usage (FILE *f);    /* must be implemented in main program */
+%union {
+    int integer;
+    char *string;
+  }
 
-void fatal (int ret, char *format, ...);
+%token <string> IDENT
 
-void *alloc (size_t size);
+%token ARCH
 
-char *newstr (char *orig);
+%%
 
-char *newstrn (char *orig, int max_len);
+line		: pseudo_op
+		|	
+		| error
+		;
 
-void trim_trailing_whitespace (char *s);
+pseudo_op	: ps_arch
+		;
 
+ps_arch		: '.' ARCH IDENT
+		  {
+		    int a = find_arch_by_name ($3);
+		    if (a == ARCH_UNKNOWN)
+		      error ("unrecognized architecture '%s'\n", $3);
+		    else
+		      arch = a;
+		  }
+		;
+
+%%
+
+void asm_error (char *s)
+{
+  error ("%s\n", s);
+}

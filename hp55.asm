@@ -8,6 +8,8 @@
 
 ; HP-55 ROM 00
 
+	.arch classic
+
 	.rom @00
 
 	jsb start

@@ -9,6 +9,8 @@
 ; effectively be unconditional, but there is no general way to
 ; automatically detect this.
 
+	.arch classic
+
 	.rom @00
 
 	jsb l00067

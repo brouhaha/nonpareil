@@ -1,42 +1,37 @@
 /*
-wasm.y: grammar
 $Id$
-Copyright 1995, 2004 Eric L. Smith
+Copyright 1995, 2004 Eric L. Smith <eric@brouhaha.com>
 
-wasm is an assembler for the HP "Woodstock" processor architecture as
-used in the second and third generation HP calculators:
-  Woodstock:  HP-21, HP-22, HP-25, HP-25C, HP-27, HP-29C
-  Topcat: HP-91, HP-92, HP-95C (unreleased), HP-97, HP-97S
-  Hawkeye:  HP-67
-  Sting:  HP-10, HP-19C
-  Spice:  HP-31E, HP-32E, HP-33E, HP-37E, HP-38E, HP-33C, HP-34C, HP-38C
+Nonpareil is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.  Note that I am not
+granting permission to redistribute or modify Nonpareil under the
+terms of any later version of the General Public License.
 
-wasm is free software; you can redistribute it and/or modify it under the
-terms of the GNU General Public License version 2 as published by the Free
-Software Foundation.  Note that I am not granting permission to redistribute
-or modify CASM under the terms of any later version of the General Public
-License.
+Nonpareil is distributed in the hope that it will be useful (or at
+least amusing), but WITHOUT ANY WARRANTY; without even the implied
+warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See
+the GNU General Public License for more details.
 
-This program is distributed in the hope that it will be useful (or at least
-amusing), but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General
-Public License for more details.
-
-You should have received a copy of the GNU General Public License along with
-this program (in the file "COPYING"); if not, write to the Free Software
-Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+You should have received a copy of the GNU General Public License
+along with this program (in the file "COPYING"); if not, write to the
+Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
+MA 02111, USA.
 */
+
+%name-prefix="wasm_"
 
 %{
 #include <stdio.h>
+
 #include "symtab.h"
-#include "asm.h"
 #include "arch.h"
+#include "asm.h"
 
 int ptr_load_map [14];
 int ptr_test_map [14];
 
-int arch = ARCH_WOODSTOCK;
+void wasm_error (char *s);
 %}
 
 %union {
@@ -155,13 +150,13 @@ instruction	: jsb_inst
 		| misc_inst
 	        ;
 
-jsb_inst        : JSB expr { emit ((001 << 12) | ($2 << 2) | 00001); 
+jsb_inst        : JSB expr { emit ((001 << 12) | (($2 & 0377) << 2) | 00001); 
 			     target (dsg, dsr, $2);
 			     dsg = group;
 			     dsr = rom; }
                 ;
 
-goto_inst	: goto_form { emit ((013 << 12) | ($1 << 2) | 00003);
+goto_inst	: goto_form { emit ((013 << 12) | (($1 & 0377) << 2) | 00003);
 			      target (dsg, dsr, $1);
 			      dsg = group;
 			      dsr = rom; }
@@ -178,7 +173,7 @@ goto_form       :  GO TO expr { $$ = $3;
 
 then_inst	: THEN GO TO expr { if (last_instruction_type != TEST_INST)
 				      warning ("'then go to' should only follow 'if' instructions\n");
-				    emit ((014 << 12) | ($4 & 01377));
+				    emit ((014 << 12) | ($4 & 01777));
 				  }
 		;
 
@@ -428,3 +423,8 @@ int ptr_load_map [14] =
 
 int ptr_test_map [14] =
   { 013, 005, 003, 007, 000, 012, 006, 016, 001, 004, 015, 014, 002, 011 };
+
+void wasm_error (char *s)
+{
+  error ("%s\n", s);
+}
