@@ -1,6 +1,13 @@
 ; HP-35 ROM code disassembled from dump by Peter Monta
 ; $Id$
 
+; Much of the code is similar to the HP-45 ROM source code, so labels
+; have been copied from that.
+;
+; Some conditional branch instructions ("if no carry go to") may
+; effectively be unconditional, but there is no general way to
+; automatically detect this.
+
 	.rom @00
 
 	jsb l00067
@@ -26,21 +33,21 @@ l00013:	go to l00060
 	0 -> a[w]
 	a + 1 -> a[p]
 l00020:	0 -> b[w]
-	select rom 1		; -> l01022
+	select rom 1		; -> asn12
 	
-l00022:	a + 1 -> a[x]
-	a + 1 -> a[x]
-	a + 1 -> a[x]
-	go to l00032		; conditional
+dig6:	a + 1 -> a[x]
+dig5:	a + 1 -> a[x]
+dig4:	a + 1 -> a[x]
+	if no carry go to dig3
 	
 	jsb l00232
 l00027:	c exchange m
 	m -> c
 	go to l00077
 
-l00032:	a + 1 -> a[x]
-	a + 1 -> a[x]
-l00034:	a + 1 -> a[x]
+dig3:	a + 1 -> a[x]
+dig2:	a + 1 -> a[x]
+dig1:	a + 1 -> a[x]
 	return
 
 l00036:	3 -> p
@@ -73,17 +80,17 @@ l00056:	0 -> b[w]
 l00060:	down rotate
 	go to l00333
 
-l00062:	a + 1 -> a[x]
-	a + 1 -> a[x]
-	a + 1 -> a[x]
-	go to l00022		; conditional
-	go to l00231
+dig9:	a + 1 -> a[x]
+dig8:	a + 1 -> a[x]
+dig7:	a + 1 -> a[x]
+	if no carry go to dig6	; unconditional?
+	go to sub0
 	
 l00067:	clear registers
-	jsb l00134
-l00071:	go to l00335
+	jsb of12
+l00071:	go to fst2zx
 
-l00072:	go to l00362
+l00072:	go to eex2
 	
 l00073:	shift right a[w]
 	1 -> s3
@@ -92,101 +99,101 @@ l00073:	shift right a[w]
 l00076:	c -> stack
 l00077:	clear status
 	shift right a[w]
-	jsb l00335
+	jsb fst2zx
 l00102:	a -> b[w]
 	0 -> a[xs]
 	shift left a[ms]
 l00105:	a - 1 -> a[x]
-	go to l00340		; conditioinal
+	if no carry go to l00340
 	if c[xs] = 0
 	     then go to l00346
 	a exchange b[ms]
 	13 -> p
 	go to l00346
 	
-l00114:	p - 1 -> p
+eex7:	p - 1 -> p
 	c + 1 -> c[x]
-l00116:	if b[p] = 0
-	     then go to l00114
+eex8:	if b[p] = 0
+	     then go to eex7
 	1 -> s11
 	shift right a[ms]
 	a exchange c[m]
 	if s4 = 0
-	     then go to l00207
-	jsb l00137
-	go to l00335
+	     then go to den1
+	jsb of14
+	go to fst2zx
 	
-l00127:	0 -> c[wp]
+of11:	0 -> c[wp]
 	c - 1 -> c[wp]
 	0 -> c[xs]
 	a + b -> a[x]
-	go to l00135		; conditional???
+	if no carry go to of13
 
-l00134:	0 -> c[w]
-l00135:	clear status
+of12:	0 -> c[w]
+of13:	clear status
 	c -> a[w]
-l00137:	12 -> p
+of14:	12 -> p
 	a -> b[x]
 	c -> a[x]
 	if c[xs] = 0
-	     then go to l00150
+	     then go to of15
 	0 - c -> c[x]
 	c - 1 -> c[xs]
-	go to l00127
+	if no carry go to of11
 	5 -> p
-l00150:	a exchange c[x]
+of15:	a exchange c[x]
 	if s4 = 0
 	     then go to l00102
 	a exchange b[x]
 	0 -> b[x]
-	jsb l00367
+	jsb dsp1
 	shift left a[x]
-l00157:	shift right a[w]
+eex3:	shift right a[w]
 	if p # 12
-	     then go to l00211
+	     then go to den7
 	a exchange c[wp]
-	go to l00172
+	go to eex4
 	
 l00164:	jsb l00264
 	select rom 1		; -> l01166
 	
 l00166:	if s4 = 0
-	     then go to l00366
+	     then go to chs3
 	a exchange c[wp]
 	0 - c - 1 -> c[xs]
-l00172:	c -> a[w]
+eex4:	c -> a[w]
 	if c[xs] = 0
-	     then go to l00177
+	     then go to eex5
 	0 -> c[xs]
 	0 - c -> c[x]
-l00177:	13 -> p
-l00200:	shift left a[ms]
+eex5:	13 -> p
+eex6:	shift left a[ms]
 	c - 1 -> c[x]
 	if a[s] >= 1
-	     then go to l00116
+	     then go to eex8
 	if a[ms] >= 1
-	     then go to l00200
+	     then go to eex6
 	0 -> c[x]
-l00207:	jsb l00367
+den1:	jsb dsp1
 	shift right a[ms]
-l00211:	c -> a[s]
-l00212:	if p # 12
-	     then go to l00223
+den7:	c -> a[s]
+den2:	if p # 12
+	     then go to den4
 	b -> c[w]
 	c + 1 -> c[w]
 	1 -> p
-l00217:	shift left a[wp]
+den3:	shift left a[wp]
 	p + 1 -> p
 	if c[p] = 0
-	     then go to l00217
-l00223:	a exchange c[w]
+	     then go to den3
+den4:	a exchange c[w]
 	if p # 3
-	     then go to l00371
+	     then go to den5
 	0 -> c[x]
 	1 -> s6
-	go to l00172
+	go to eex4
 
-l00231:	0 - c - 1 -> c[s]
+sub0:	0 - c - 1 -> c[s]
 l00232:	stack -> a
 	0 -> b[w]
 	a + 1 -> a[xs]
@@ -194,30 +201,30 @@ l00232:	stack -> a
 	c + 1 -> c[xs]
 	c + 1 -> c[xs]
 	if a >= c[x]
-	     then go to l00243
+	     then go to add4
 	a exchange c[w]
-l00243:	a exchange c[m]
+add4:	a exchange c[m]
 	if c[m] = 0
-	     then go to l00247
+	     then go to add5
 	a exchange c[w]
-l00247:	b exchange c[m]
-l00250:	if a >= c[x]
+add5:	b exchange c[m]
+add6:	if a >= c[x]
 	     then go to l00276
 	shift right b[w]
 	a + 1 -> a[x]
 	if b[w] = 0
 	     then go to l00276
-	go to l00250
+	go to add6
 
-l00257:	0 -> a[ms]
+fst3:	0 -> a[ms]
 	if s3 = 0
 	     then go to l00264
 	a - 1 -> a[s]
 	0 - c - 1 -> c[s]
 l00264:	if s7 = 0
-	     then go to l00267
+	     then go to fst5
 	c -> stack
-l00267:	1 -> s7
+fst5:	1 -> s7
 	0 -> c[w]
 	c - 1 -> c[w]
 	0 - c -> c[s]
@@ -225,44 +232,44 @@ l00267:	1 -> s7
 	b exchange c[w]
 	return
 
-l00276:	select rom 1		; -> l01277
+l00276:	select rom 1		; go to add12
 
-l00277:	jsb l00134
+l00277:	jsb of12
 	1 -> s5
-	go to l00335
+	go to fst2zx
 
 l00302:	shift right a[w]
-l00303:	c -> a[s]
+dsp7:	c -> a[s]
 l00304:	0 -> s8
-	go to l00317
+	go to dsp8
 
-l00306:	c + 1 -> c[xs]
-l00307:	1 -> s8
+dsp2:	c + 1 -> c[xs]
+dsp3:	1 -> s8
 	if s5 = 0
-	     then go to l00315
+	     then go to dsp5
 	c + 1 -> c[x]
-	go to l00306		; conditional
-l00314:	display toggle
-l00315:	if s0 = 0
-	     then go to l00307
-l00317:	0 -> s0
-l00320:	p - 1 -> p
+	if no carry go to dsp2
+dsp4:	display toggle
+dsp5:	if s0 = 0
+	     then go to dsp3
+dsp8:	0 -> s0
+dsp6:	p - 1 -> p
 	if p # 12
-	     then go to l00320
+	     then go to dsp6
 	display off
 	if s8 = 0
-	     then go to l00314
+	     then go to dsp4
 	shift left a[w]
 	0 -> s5
 	keys -> rom address
 
 l00331:	c -> stack
 	a exchange c[w]
-l00333:	jsb l00135
+l00333:	jsb of13
 	1 -> s7
-l00335:	jsb l00367
-	jsb l00257
-	go to l00212
+fst2zx:	jsb dsp1
+	jsb fst3
+	go to den2
 
 l00340:	shift right a[ms]
 	p - 1 -> p
@@ -276,104 +283,105 @@ l00346:	0 -> a[ms]
 	2 -> p
 l00352:	p + 1 -> p
 	a - 1 -> a[p]
-	go to l00357
+	if no carry go to l00357
 	if b[p] = 0
 	     then go to l00352
 l00357:	a + 1 -> a[p]
 	a exchange b[w]
 	return
 
-l00362:	1 -> s4
+eex2:	1 -> s4
 	if s11 = 0
-	     then go to l00034
-	go to l00157
+	     then go to dig1
+	go to eex3
 
-l00366:	0 - c - 1 -> c[s]
-l00367:	0 -> s10
-	go to l00303
+chs3:	0 - c - 1 -> c[s]
+dsp1:	0 -> s10
+	go to dsp7
 
-l00371:	if s6 = 0
-	     then go to l00374
+den5:	if s6 = 0
+	     then go to den6
 	p - 1 -> p
-l00374:	shift right b[wp]
-	jsb l00172
+den6:	shift right b[wp]
+	jsb eex4
 l00376:	m -> c
 	go to l00333
 
 	.rom @01
 
-	go to l01363
+	go to tan13
 
-l01001:	a exchange b[w]
-	jsb l01050
+tan15:	a exchange b[w]
+	jsb tnm11
 	stack -> a
-	jsb l01050
+	jsb tnm11
 	stack -> a
 	if s9 = 0
-	     then go to l01011
+	     then go to tan16
 	a exchange c[w]
-l01011:	if s5 = 0
-	     then go to l01022
+tan16:	if s5 = 0
+	     then go to asn12
 	0 -> c[s]
-	jsb l01246
+	jsb div11
 l01015:	c -> stack
-	jsb l01245
-	jsb l01230
-	jsb l01045
+	jsb mpy11
+	jsb add10
+	jsb sqt11
 	stack -> a
-l01022:	jsb l01246
+asn12:	jsb div11
 	if s10 = 0
-	     then go to l01332
-l01025:	0 -> a[w]
+	     then go to rtn12
+atn11:	0 -> a[w]
 	a + 1 -> a[p]
 	a -> b[m]
 	a exchange c[m]
-l01031:	c - 1 -> c[x]
+atn12:	c - 1 -> c[x]
 	shift right b[wp]
 	if c[xs] = 0
-	     then go to l01031
-l01035:	shift right a[wp]
+	     then go to atn12
+atn13:	shift right a[wp]
 	c + 1 -> c[x]
-	go to l01035
+	if no carry go to atn13
 	shift right a[w]
 	shift right b[w]
 	c -> stack
-l01043:	b exchange c[w]
-	go to l01101
-l01045:	b exchange c[w]
-	4 -> p
-	go to l01336
+atn14:	b exchange c[w]
+	go to atn18
 
-l01050:	c -> stack
+sqt11:	b exchange c[w]
+	4 -> p
+	go to sqt14
+
+tnm11:	c -> stack
 	a exchange c[w]
 	if c[p] = 0
-	     then go to l01055
+	     then go to tnm12
 	0 - c -> c[w]
-l01055:	c -> a[w]
+tnm12:	c -> a[w]
 	b -> c[x]
-	go to l01313
+	go to add15
 
 	c -> a[w]
 	if s1 = 0
-	     then go to l01045
+	     then go to sqt11
 	if s10 = 0
 	     then go to l01155
 	if s5 = 0
-	     then go to l01025
+	     then go to atn11
 	0 - c - 1 -> c[s]
 	a exchange c[s]
 	go to l01015
 
-l01072:	shift right b[wp]
-l01073:	a - 1 -> a[s]
-	go to l01072
+atn15:	shift right b[wp]
+atn16:	a - 1 -> a[s]
+	if no carry go to atn15
 	c + 1 -> c[s]
 	a exchange b[wp]
 	a + c -> c[wp]
 	a exchange b[w]
-l01101:	a -> b[w]
+atn18:	a -> b[w]
 	a - c -> a[wp]
-	go to l01073
+	if no carry go to atn16
 	stack -> a
 	shift right a[w]
 	a exchange c[wp]
@@ -382,148 +390,148 @@ l01101:	a -> b[w]
 	c -> stack
 	a + 1 -> a[s]
 	a + 1 -> a[s]
-	go to l01043
+	if no carry go to atn14
 	0 -> c[w]
 	0 -> b[x]
 	shift right a[ms]
-	jsb l01262
+	jsb div14
 	c - 1 -> c[p]
 	stack -> a
 	a exchange c[w]
 	4 -> p
-	jsb l01244
+	jsb pqo13
 	6 -> p
-	jsb l01233
+	jsb pmu11
 	8 -> p
-	jsb l01233
+	jsb pmu11
 	2 -> p
 	load constant 8
 	10 -> p
-	jsb l01233
-	jsb l01216
-	jsb l01233
-	jsb l01314
+	jsb pmu11
+	jsb atcd1
+	jsb pmu11
+	jsb atc1
 	shift left a[w]
-	jsb l01233
+	jsb pmu11
 	b -> c[w]
-	jsb l01313
-	jsb l01314
+	jsb add15
+	jsb atc1
 	c + c -> c[w]
-	jsb l01246
+	jsb div11
 	if s9 = 0
 	     then go to l01154
 	0 - c - 1 -> c[s]
-	jsb l01230
+	jsb add10
 l01154:	0 -> s1
 l01155:	0 -> c[w]
 	c - 1 -> c[p]
 	c + 1 -> c[x]
 	if s1 = 0
-	     then go to l01245
-	jsb l01246
-	jsb l01314
+	     then go to mpy11
+	jsb div11
+	jsb atc1
 	c + c -> c[w]
-	jsb l01245
-	jsb l01314
+	jsb mpy11
+	jsb atc1
 	c + c -> c[w]
 	c + c -> c[w]
-	jsb l01225
+	jsb rtn11
 	c + c -> c[w]
-	jsb l01353
-	jsb l01314
+	jsb pre11
+	jsb atc1
 	10 -> p
-	jsb l01234
-	jsb l01216
+	jsb pqo11
+	jsb atcd1
 	8 -> p
-	jsb l01235
+	jsb pqo12
 	2 -> p
 	load constant 8
 	6 -> p
-	jsb l01234
+	jsb pqo11
 	4 -> p
-	jsb l01234
-	jsb l01234
+	jsb pqo11
+	jsb pqo11
 	a exchange b[w]
 	shift right c[w]
 	13 -> p
 	load constant 5
-	go to l01373
+	go to tan14
 
-l01216:	6 -> p
+atcd1:	6 -> p
 	load constant 8
 	load constant 6
 	load constant 5
 	load constant 2
 	load constant 4
 	load constant 9
-l01225:	if s1 = 0
-	     then go to l01332
+rtn11:	if s1 = 0
+	     then go to rtn12
 	return
 
-l01230:	0 -> a[w]
+add10:	0 -> a[w]
 	a + 1 -> a[p]
 	select rom 0		; -> l00233
 
-l01233:	select rom 2		; -> l02234
+pmu11:	select rom 2		; -> pmu21
 
-l01234:	shift left a[w]
-l01235:	shift right b[ms]
+pqo11:	shift left a[w]
+pqo12:	shift right b[ms]
 	b exchange c[w]
-	go to l01241
+	go to pqo16
 
-l01240:	c + 1 -> c[s]
-l01241:	a - b -> a[w]
-	go to l01240		; conditional
+pqo15:	c + 1 -> c[s]
+pqo16:	a - b -> a[w]
+	if no carry go to pqo15
 	a + b -> a[w]
-l01244:	select rom 2		; -> l02245
+pqo13:	select rom 2		; -> l02245
 
-l01245:	select rom 2		; -> l02246
+mpy11:	select rom 2		; -> mpy21
 
-l01246:	a - c -> c[x]
+div11:	a - c -> c[x]
 	select rom 2		; -> l02250
 
-l01250:	c + 1 -> c[p]
-l01251:	a - c -> a[w]
-	go to l01250		; conditional
+sqt15:	c + 1 -> c[p]
+sqt16:	a - c -> a[w]
+	if no carry go to sqt15
 	a + c -> a[w]
 	shift left a[w]
 	p - 1 -> p
-l01256:	shift right c[wp]
+sqt17:	shift right c[wp]
 	if p # 0
-	     then go to l01251
-	go to l01055
+	     then go to sqt16
+	go to tnm12
 
-l01262:	c + 1 -> c[p]
-l01263:	a - b -> a[ms]
-	go to l01262		; conditional
+div14:	c + 1 -> c[p]
+div15:	a - b -> a[ms]
+	if no carry go to div14
 	a + b -> a[ms]
 	shift left a[ms]
 	p - 1 -> p
 	if p # 0
-	     then go to l01263
-	go to l01055
+	     then go to div15
+	go to tnm12
 
-l01273:	p - 1 -> p
+sqt12:	p - 1 -> p
 	a + b -> a[ms]
-	go to l01333		; conditional
+	if no carry go to sqt18
 	select rom 0		; -> l00277
 
-	c - 1 -> c[xs]
+add12:	c - 1 -> c[xs]		; (from rom 00276)
 	c - 1 -> c[xs]
 	0 -> a[x]
 	a - c -> a[s]
 	if a[s] >= 1
-	     then go to l01306
+	     then go to add13
 	select rom 2		; -> l02306
 
-l01306:	if a >= b[m]
-	     then go to l01312
+add13:	if a >= b[m]
+	     then go to add14
 	0 - c - 1 -> c[s]
 	a exchange b[w]
-l01312:	a - b -> a[w]
-l01313:	select rom 2		; -> l02314
+add14:	a - b -> a[w]
+add15:	select rom 2		; -> nrm21
 
-l01314:	0 -> c[w]
+atc1:	0 -> c[w]
 	11 -> p
 	load constant 7		; load pi/4
 	load constant 8
@@ -538,43 +546,43 @@ l01314:	0 -> c[w]
 	12 -> p
 	return
 
-l01332:	select rom 0		; -> l00333
+rtn12:	select rom 0		; -> l00333
 
-l01333:	a + b -> a[x]
-	go to l01336		; conditional
+sqt18:	a + b -> a[x]
+	if no carry go to sqt14
 	c - 1 -> c[p]
-l01336:	c + 1 -> c[s]
+sqt14:	c + 1 -> c[s]
 	if p # 0
-	     then go to l01273
+	     then go to sqt12
 	a exchange c[x]
 	0 -> a[x]
 	if c[p] >= 1
-	     then go to l01346
+	     then go to sqt13
 	shift right a[w]
-l01346:	shift right c[w]
+sqt13:	shift right c[w]
 	b exchange c[x]
 	0 -> c[x]
 	12 -> p
-	go to l01256
+	go to sqt17
 
-l01353:	select rom 2		; -> l02354
+pre11:	select rom 2		; -> pre21
 
-l01354:	shift right b[wp]
+tan18:	shift right b[wp]
 	shift right b[wp]
-l01356:	c - 1 -> c[s]
-	go to l01354		; conditional
+tan19:	c - 1 -> c[s]
+	if no carry go to tan18
 	a + c -> c[wp]
 	a - b -> a[wp]
 	b exchange c[wp]
-l01363:	b -> c[w]
+tan13:	b -> c[w]
 	a - 1 -> a[s]
-	go to l01356		; conditional
+	if no carry go to tan19
 	a exchange c[wp]
 	stack -> a
 	if b[s] = 0
-	     then go to l01001
+	     then go to tan15
 	shift left a[w]
-l01373:	a exchange c[wp]
+tan14:	a exchange c[wp]
 	c -> stack
 	shift right b[wp]
 	c - 1 -> c[s]
@@ -582,203 +590,204 @@ l01373:	a exchange c[wp]
 
 	.rom @02
 
-l02000:	select rom 0		; -> l00001
+err21:	select rom 0		; -> l00001
 
-l02001:	a exchange b[s]
+ln24:	a exchange b[s]
 	a + 1 -> a[s]
 	shift right c[ms]
 	shift left a[wp]
-	go to l02022
-l02006:	stack -> a
-	jsb l02246
+	go to ln26
+	
+xty22:	stack -> a
+	jsb mpy21
 	c -> a[w]
 	if s8 = 0
-	     then go to l02102
+	     then go to exp21
 	0 -> a[w]
 	a - c -> a[m]
-	go to l02000		; conditional
+	if no carry go to err21
 	shift right a[w]
 	c - 1 -> c[s]
-	go to l02000		; conditional
-l02021:	c + 1 -> c[s]
-l02022:	a -> b[w]
-	jsb l02226
+	if no carry go to err21
+ln25:	c + 1 -> c[s]
+ln26:	a -> b[w]
+	jsb eca22
 	a - 1 -> a[p]
-	go to l02021		; conditional
+	if no carry go to ln25
 	a exchange b[wp]
 	a + b -> a[s]
-	go to l02001		; conditional
+	if no carry go to ln24
 	7 -> p
-	jsb l02155
+	jsb pqo23
 	8 -> p
-	jsb l02235
+	jsb pmu22
 	9 -> p
-	jsb l02234
-	jsb l02376
+	jsb pmu21
+	jsb lncd3
 	10 -> p
-	jsb l02234
-	jsb l02175
+	jsb pmu21
+	jsb lncd2
 	11 -> p
-	jsb l02234
-	jsb l02337
-	jsb l02234
-	jsb l02271
-	jsb l02234
-	jsb l02366
+	jsb pmu21
+	jsb lncd1
+	jsb pmu21
+	jsb lnc2
+	jsb pmu21
+	jsb lnc10
 	a exchange c[w]
 	a - c -> c[w]
 	if b[xs] = 0
-	     then go to l02057
+	     then go to ln27
 	a - c -> c[w]
-l02057:	a exchange b[w]
-l02060:	p - 1 -> p
+ln27:	a exchange b[w]
+ln28:	p - 1 -> p
 	shift left a[w]
 	if p # 1
-	     then go to l02060
+	     then go to ln28
 	a exchange c[w]
 	if c[s] = 0
-	     then go to l02070
+	     then go to ln29
 	0 - c - 1 -> c[m]
-l02070:	c + 1 -> c[x]
+ln29:	c + 1 -> c[x]
 	11 -> p
-	jsb l02305
+	jsb mpy27
 	if s9 = 0
-	     then go to l02006
+	     then go to xty22
 	if s5 = 0
-	     then go to l02224
-	jsb l02366
-	jsb l02247
-	go to l02224
+	     then go to rtn21
+	jsb lnc10
+	jsb mpy22
+	go to rtn21
 
-l02102:	jsb l02366
-	jsb l02354
-	jsb l02271
+exp21:	jsb lnc10
+	jsb pre21
+	jsb lnc2
 	11 -> p
-	jsb l02233
-	jsb l02337
+	jsb pqo21
+	jsb lncd1
 	10 -> p
-	jsb l02233
-	jsb l02175
+	jsb pqo21
+	jsb lncd2
 	9 -> p
-	jsb l02233
-	jsb l02376
+	jsb pqo21
+	jsb lncd3
 	8 -> p
-	jsb l02233
-	jsb l02233
-	jsb l02233
+	jsb pqo21
+	jsb pqo21
+	jsb pqo21
 	6 -> p
 	0 -> a[wp]
 	13 -> p
 	b exchange c[w]
 	a exchange c[w]
 	load constant 6
-	go to l02216
+	go to exp23
 
-l02131:	if s2 = 0
-	     then go to l02136
+pre23:	if s2 = 0
+	     then go to pre24
 	a + 1 -> a[x]
-l02134:	if a[xs] >= 1
-	     then go to l02302
-l02136:	a - b -> a[ms]
-	go to l02131		; conditional
+pre29:	if a[xs] >= 1
+	     then go to pre27
+pre24:	a - b -> a[ms]
+	if no carry go to pre23
 	a + b -> a[ms]
 	shift left a[w]
 	c - 1 -> c[x]
-	go to l02134		; conditional
-l02144:	shift right a[w]
+	if no carry go to pre29
+pre25:	shift right a[w]
 	0 -> c[wp]
 	a exchange c[x]
-l02147:	if c[s] = 0
-	     then go to l02154
+pre26:	if c[s] = 0
+	     then go to pre28
 	a exchange b[w]
 	a - b -> a[w]
 	0 - c - 1 -> c[w]
-l02154:	shift right a[w]
-l02155:	b exchange c[w]
+pre28:	shift right a[w]
+pqo23:	b exchange c[w]
 	0 -> c[w]
 	c - 1 -> c[m]
 	if s2 = 0
-	     then go to l02166
+	     then go to pqo28
 	load constant 4
 	c + 1 -> c[m]
-	go to l02171		; conditional
-l02165:	load constant 6
-l02166:	if p # 1
-	     then go to l02165
+	if no carry go to pqo24
+pqo27:	load constant 6
+pqo28:	if p # 1
+	     then go to pqo27
 	shift right c[w]
-l02171:	shift right c[w]
-l02172:	if s2 = 0
-	     then go to l02224
+pqo24:	shift right c[w]
+nrm26:	if s2 = 0
+	     then go to rtn21
 	return
 
-l02175:	7 -> p
-l02176:	load constant 3
+lncd2:	7 -> p
+lnc6:	load constant 3
 	load constant 3
 	load constant 0
-l02201:	load constant 8
+lnc7:	load constant 8
 	load constant 5
 	load constant 0
 	load constant 9
-	go to l02352
+	go to lnc9
 
-l02206:	jsb l02226
+exp29:	jsb eca22
 	a + 1 -> a[p]
-l02210:	a -> b[w]
+exp22:	a -> b[w]
 	c - 1 -> c[s]
-	go to l02206		; conditional
+	if no carry go to exp29
 	shift right a[wp]
 	a exchange c[w]
 	shift left a[ms]
-l02216:	a exchange c[w]
+exp23:	a exchange c[w]
 	a - 1 -> a[s]
-	go to l02210		; conditional
+	if no carry go to exp22
 	a exchange b[w]
 	a + 1 -> a[p]
-	jsb l02314
-l02224:	select rom 1		; -> l01225
+	jsb nrm21
+rtn21:	select rom 1		; -> rtn11
 
-l02225:	shift right a[wp]
-l02226:	a - 1 -> a[s]
-	go to l02225		; conditional
+eca21:	shift right a[wp]
+eca22:	a - 1 -> a[s]
+	if no carry go to eca21
 	0 -> a[s]
 	a + b -> a[w]
 	return
 
-l02233:	select rom 1		; -> l01234
+pqo21:	select rom 1		; -> pqo11
 
-l02234:	shift right a[w]
-l02235:	b exchange c[w]
-	go to l02240
+pmu21:	shift right a[w]
+pmu22:	b exchange c[w]
+	go to pmu24
 
-l02237:	a + b -> a[w]
-l02240:	c - 1 -> c[s]
-	go to l02237		; conditional
+pmu23:	a + b -> a[w]
+pmu24:	c - 1 -> c[s]
+	if no carry go to pmu23
 	a exchange c[w]
 	shift left a[ms]
 	a exchange c[w]
-	go to l02155
+	go to pqo23
 
-l02246:	3 -> p
-l02247:	a + c -> c[x]
+mpy21:	3 -> p
+mpy22:	a + c -> c[x]
 	a - c -> c[s]
-	go to l02253		; conditional
+	if no carry go to div22
 	0 - c -> c[s]
-l02253:	a exchange b[m]
+div22:	a exchange b[m]
 	0 -> a[w]
 	if p # 12
-	     then go to l02305
+	     then go to mpy27
 	if c[m] >= 1
-	     then go to l02266
+	     then go to div23
 	if s1 = 0
-	     then go to l02000
+	     then go to err21
 	b -> c[wp]
 	a - 1 -> a[m]
 	c + 1 -> c[xs]
-l02266:	b exchange c[wp]
+div23:	b exchange c[wp]
 	a exchange c[m]
 	select rom 1		; -> l01271
 
-l02271:	0 -> s8
+lnc2:	0 -> s8
 	load constant 6
 	load constant 9
 	load constant 3
@@ -786,71 +795,71 @@ l02271:	0 -> s8
 	load constant 4
 	load constant 7
 	load constant 1
-	go to l02346
+	go to lnc8
 
-l02302:	a + 1 -> a[m]
-	go to l02144		; conditional
-l02304:	a + b -> a[w]
-l02305:	c - 1 -> c[p]
-	go to l02304		; conditional
-l02307:	shift right a[w]
+pre27:	a + 1 -> a[m]
+	if no carry go to pre25
+myp26:	a + b -> a[w]
+mpy27:	c - 1 -> c[p]
+	if no carry go to myp26
+mpy28:	shift right a[w]
 	p + 1 -> p
 	if p # 13
-	     then go to l02305
+	     then go to mpy27
 	c + 1 -> c[x]
-l02314:	0 -> a[s]
+nrm21:	0 -> a[s]
 	12 -> p
 	0 -> b[w]
-l02317:	if a[p] >= 1
-	     then go to l02326
+nrm23:	if a[p] >= 1
+	     then go to nrm24
 	shift left a[w]
 	c - 1 -> c[x]
 	if a[w] >= 1
-	     then go to l02317
+	     then go to nrm23
 	0 -> c[w]
-l02326:	a -> b[x]
+nrm24:	a -> b[x]
 	a + b -> a[w]
 	if a[s] >= 1
-	     then go to l02307
+	     then go to mpy28
 	a exchange c[m]
 	c -> a[w]
 	0 -> b[w]
-l02335:	12 -> p
-	go to l02172
+nrm27:	12 -> p
+	go to nrm26
 
-l02337:	9 -> p
+lncd1:	9 -> p
 	load constant 3
 	load constant 1
 	load constant 0
 	load constant 1
 	load constant 7
 	load constant 9
-l02346:	load constant 8
+lnc8:	load constant 8
 	load constant 0
 	load constant 5
 	load constant 5
-l02352:	load constant 3
-	go to l02335
+lnc9:	load constant 3
+	go to nrm27
 
-l02354:	a exchange c[w]
+pre21:	a exchange c[w]
 	a -> b[w]
 	c -> a[m]
 	c + c -> c[xs]
-	go to l02136		; conditional
+	if no carry go to pre24
 	c + 1 -> c[xs]
-l02362:	shift right a[w]
+pre22:	shift right a[w]
 	c + 1 -> c[x]
-	go to l02362		; conditional
-	go to l02147
+	if no carry go to pre22
+	go to pre26
 
-l02366:	0 -> c[w]
+lnc10:	0 -> c[w]
 	12 -> p
 	load constant 2
 	load constant 3
 	load constant 0
 	load constant 2
 	load constant 5
-	go to l02201
+	go to lnc7
 
-l02376:	5 -> p
-	go to l02176
+lncd3:	5 -> p
+	go to lnc6
