@@ -79,12 +79,12 @@ typedef enum
   } sim_state_t;
 
 
-typedef struct sim_thread_t sim_thread_t;
+typedef struct sim_thread_vars_t sim_thread_vars_t;
 
 
 struct sim_t
 {
-  sim_thread_t *thread;
+  sim_thread_vars_t *thread_vars;
 
   sim_state_t state;
   sim_state_t prev_state;
