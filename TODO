@@ -5,6 +5,8 @@ $Id$
 
 Build process:
 
+  Create a proper SCons builder for uasm.
+
   Create an RPM .spec file.
 
   Create an NSIS instller script for Windows.
@@ -40,6 +42,19 @@ User interface:
 
   Create a fancier About box.  Use GtkAboutDialog, which allows for
   clickable website URLs and email addresses, license window, etc.
+
+  Extract comments from image file and include in About box.  PNG
+  comment keywords to use:
+      Author
+      Title
+      Description
+      Copyright
+      Disclaimer
+      Warning
+      URL (unofficial)
+  Unfortunately getting the comments will require the file to be
+  read twice, once by gdk_pixbuf_new_from_file(), and once by direct
+  calls to libpng, libjpeg, etc.
 
 
 Debugger:
@@ -93,9 +108,20 @@ Better model support:
 
   Scan images at uniform scale and without JPEG compression.
 
-  Dump actual Classic, Woodstock, Topcat, Sting, HP-67, HP-31E, HP-33E ROMs.
+  Dump actual ROMs:
+      Classic:    HP-45, HP-55, HP-65, HP-70, HP-80
+      Classic/printing:  HP-46, HP-81, HP 9805A
+      Woodstock:  HP-22, HP-27, HP-29C, HP-67
+      Topcat:     HP-91, HP-92, HP-95C, HP-97
+      Sting:      HP-10, HP-19C
+      Spice:      HP-31E, HP-33E
+      Cricket:    HP-01
 
   Compare actual HP-45 and HP-55 ROMs to CASM output.
+
+  Add Woodstock microinstructions for card reader
+
+  Add Woodstock microinstructions for printer
 
   Add HP-65 microinstructions for program memory access.
 
