@@ -1,13 +1,17 @@
 2004-04-07  Eric Smith <eric@brouhaha.com>
 
+	* proc_woodstock.c (op_clear_data_regs): The CLEAR DATA REGISTERS
+	instruction only clears the single selected RAM chip (16
+	registers).
+
 	* proc.c proc.h proc_int.h proc_classic.h proc_woodstock.c csim.c:
 	Added debug_flags field to sim_t, and sim_set_debug_flag() and
 	sim_get_debug_flag() to control them.  Added debug menu commands
 	to toggle debug flags.  All conditional on HAS_DEBUGGER.
 
 	* proc_classic.c (classic_execute_instruction) proc_woodstock.c
-	(woodstock_execute_instruction) proc_int.h: Added trace flag to
-	sim_t.  Call disassemble function if source code is not loaded.
+	(woodstock_execute_instruction) proc_int.h: When tracing, call
+	disassemble function if source code is not loaded.
 
 	* proc_classic.c proc_woodstock.c (bad_op): Print opcode of
 	illegal instructions in octal rather than hexadecimal.

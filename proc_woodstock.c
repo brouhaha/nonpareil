@@ -606,12 +606,14 @@ static void op_register_to_c (sim_t *sim, int opcode)
 
 static void op_clear_data_regs (sim_t *sim, int opcode)
 {
+  int base;
   int i, j;
 #ifdef HAS_DEBUGGER
   if (sim->debug_flags & (1 << SIM_DEBUG_RAM_TRACE))
     printf ("clear data regs, addr %02x\n", sim->env->ram_addr);
 #endif /* HAS_DEBUGGER */
-  for (i = 0; i < sim->env->max_ram; i++)
+  base = sim->env->ram_addr & ~ 017;
+  for (i = base; i <= base + 15; i++)
     for (j = 0; j < WSIZE; j++)
       sim->env->ram [i] [j] = 0;
 }
