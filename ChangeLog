@@ -1,5 +1,7 @@
 2004-02-24  Eric Smith <eric@brouhaha.com>
 
+	* proc.c (sim_stop): sim_stop() was completely broken.
+	
 	* debugger.c debugger.h csim.c: Added command-line debugger
 	infrastructure.
 	

@@ -1106,8 +1106,8 @@ void sim_stop (sim_t *sim)
   if (sim->state == SIM_IDLE)
     goto done;
   if (sim->state != SIM_RUN)
-    fatal (2, "can't start when not idle\n");
-  sim->state = SIM_RUN;
+    fatal (2, "can't stop when not running\n");
+  sim->state = SIM_IDLE;
   g_cond_signal (sim->sim_cond);
 done:
   g_mutex_unlock (sim->sim_mutex);
