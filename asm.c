@@ -1,5 +1,5 @@
 /*
-casm.c
+asm.c
 $Id$
 Copyright 1995 Eric L. Smith
 
@@ -25,7 +25,6 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 */
 
 #include <stdarg.h>
-#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -35,6 +34,9 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #include "util.h"
 #include "arch.h"
 #include "asm.h"
+
+
+int arch;
 
 
 parser_t *parser [ARCH_MAX] =

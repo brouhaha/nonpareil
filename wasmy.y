@@ -30,7 +30,6 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 %name-prefix="wasm_"
 
 %{
-#include <stdbool.h>
 #include <stdio.h>
 
 #include "symtab.h"

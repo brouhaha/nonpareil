@@ -39,7 +39,6 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 %option noyywrap
 
 %{
-#include <stdbool.h>
 #include <string.h>
 
 #include "wasmy.tab.h"

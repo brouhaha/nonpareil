@@ -22,7 +22,6 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 %name-prefix="asm_"
 
 %{
-#include <stdbool.h>
 #include <stdio.h>
 
 #include "symtab.h"
@@ -53,8 +52,11 @@ pseudo_op	: ps_arch
 
 ps_arch		: '.' ARCH IDENT
 		  {
-		    if (! select_arch ($3))
+		    int a = find_arch_by_name ($3);
+		    if (a == ARCH_UNKNOWN)
 		      error ("unrecognized architecture '%s'\n", $3);
+		    else
+		      arch = a;
 		  }
 		;
 

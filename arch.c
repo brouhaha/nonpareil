@@ -20,7 +20,6 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 */
 
 
-#include <stdbool.h>
 #include <string.h>
 #include <strings.h>
 
@@ -41,16 +40,12 @@ char *arch_name [ARCH_MAX] =
 
 int arch = ARCH_UNKNOWN;
 
-bool select_arch (char *s)
+
+int find_arch_by_name (char *s)
 {
   int i;
   for (i = 1; i < ARCH_MAX; i++)
-    {
-      if (strcasecmp (s, arch_name [i]) == 0)
-	{
-	  arch = i;
-	  return (true);
-	}
-    }
-  return (false);
+    if (strcasecmp (s, arch_name [i]) == 0)
+      return (i);
+  return (ARCH_UNKNOWN);
 }
