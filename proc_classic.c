@@ -758,6 +758,10 @@ static void classic_display_scan (sim_t *sim)
     {
       while (sim->display_digit_position < MAX_DIGIT_POSITION)
 	sim->display_segments [sim->display_digit_position++] = 0;
+
+      sim->display_update_fn (sim->display_handle, MAX_DIGIT_POSITION,
+			      sim->display_segments);
+
       sim->display_digit_position = 0;
       sim->display_scan_position = sim->left_scan;
     }
@@ -827,9 +831,6 @@ void classic_execute_instruction (sim_t *sim)
   sim->cycle_count++;
 
   sim->display_scan_fn (sim);
-
-  sim->display_update_fn (sim->display_handle, MAX_DIGIT_POSITION,
-			  sim->display_segments);
 }
 
 

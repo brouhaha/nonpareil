@@ -933,6 +933,22 @@ static void woodstock_disassemble (sim_t *sim, int addr, char *buf, int len)
 }
 
 
+static void display_scan_advance (sim_t *sim)
+{
+  if ((--sim->display_scan_position) < sim->right_scan)
+    {
+      while (sim->display_digit_position < MAX_DIGIT_POSITION)
+	sim->display_segments [sim->display_digit_position++] = 0;
+
+      sim->display_update_fn (sim->display_handle, MAX_DIGIT_POSITION,
+			      sim->display_segments);
+
+      sim->display_digit_position = 0;
+      sim->display_scan_position = sim->left_scan;
+    }
+}
+
+
 static void woodstock_display_scan (sim_t *sim)
 {
   int a = sim->env->a [sim->display_scan_position];
@@ -954,15 +970,7 @@ static void woodstock_display_scan (sim_t *sim)
 
   sim->display_segments [sim->display_digit_position++] = segs;
 
-  sim->display_scan_position--;
-
-  if (sim->display_scan_position < sim->right_scan)
-    {
-      while (sim->display_digit_position < MAX_DIGIT_POSITION)
-	sim->display_segments [sim->display_digit_position++] = 0;
-      sim->display_digit_position = 0;
-      sim->display_scan_position = sim->left_scan;
-    }
+  display_scan_advance (sim);
 }
 
 
@@ -992,13 +1000,7 @@ static void spice_display_scan (sim_t *sim)
 
   sim->display_segments [sim->display_digit_position++] = segs;
 
-  if ((--sim->display_scan_position) < sim->right_scan)
-    {
-      while (sim->display_digit_position < MAX_DIGIT_POSITION)
-	sim->display_segments [sim->display_digit_position++] = 0;
-      sim->display_digit_position = 0;
-      sim->display_scan_position = sim->left_scan;
-    }
+  display_scan_advance (sim);
 }
 
 
@@ -1088,9 +1090,6 @@ void woodstock_execute_instruction (sim_t *sim)
   sim->cycle_count++;
 
   sim->display_scan_fn (sim);
-
-  sim->display_update_fn (sim->display_handle, MAX_DIGIT_POSITION,
-			  sim->display_segments);
 }
 
 
