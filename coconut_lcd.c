@@ -48,6 +48,13 @@ static void coconut_op_display_toggle (sim_t *sim, int opcode)
 }
 
 
+static void coconut_op_display_compensation (sim_t *sim, int opcode)
+{
+  /* The real hardware uses this instruction for temperature compensation.
+     For the simulator, don't do anything. */
+}
+
+
 #define A 1
 #define B 2
 #define C 4
@@ -213,6 +220,7 @@ void coconut_display_init_ops (sim_t *sim)
 {
   sim->op_fcn [0x2e0] = coconut_op_display_off;
   sim->op_fcn [0x320] = coconut_op_display_toggle;
+  sim->op_fcn [0x3fc] = coconut_op_display_compensation;
 }
 
 
