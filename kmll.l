@@ -27,8 +27,8 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #include <stdlib.h>
 #include <string.h>
 
-#include "kmly.tab.h"
 #include "kml.h"
+#include "kmly.tab.h"
 
 #include "util.h"
 
@@ -114,6 +114,8 @@ title		return (TITLE);
 type		return (TYPE);
 virtual		return (VIRTUAL);
 zoom		return (ZOOM);
+
+.		yyerror ("invalid character");
 
 %%
 
