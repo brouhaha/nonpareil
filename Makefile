@@ -9,12 +9,19 @@ LEX = flex
 CC = gcc
 CFLAGS = -g -Dstricmp=strcasecmp
 
+PROGRAMS = casm csim
+MISC_TARGETS = hp45 hp55
+
 HEADERS = casm.h symtab.h
-SOURCES = casm.c casm.l casm.y symtab.c
+SOURCES = casm.c casm.l casm.y symtab.c csim.c
 MISC = COPYING README
 ROMS =  hp45.asm hp55.asm
 
-OBJECTS = casm.o y.tab.o lex.yy.o symtab.o
+CASM_OBJECTS = casm.o y.tab.o lex.yy.o symtab.o
+CSIM_OBJECTS = csim.o
+
+OBJECT = $(CASM_OBJECTS) $(CSIM_OBJECTS)
+
 LIBS = -lc
 # LIBS = -ly -ll
 
@@ -24,11 +31,10 @@ DISTRIB = $(MISC) Makefile $(HEADERS) $(SOURCES) $(ROMS)
 
 .SUFFIXES:
 
-all: casm
+all: $(PROGRAMS) $(MISC_TARGETS)
 
-casm:	$(OBJECTS)
-	$(CC) -o $@ $(OBJECTS)
-#	$(LD) -o $@ ${LIBS} $(OBJECTS)
+casm:	$(CASM_OBJECTS)
+	$(CC) -o $@ $(CASM_OBJECTS)
 
 casm.o: casm.c casm.h
 	$(CC) -c $(CFLAGS) -o $@ $<
@@ -48,9 +54,29 @@ y.tab.c: casm.y
 symtab.o: symtab.c symtab.h
 	$(CC) -c $(CFLAGS) -o $@ $<
 
-casm.tar.gz:	$(DISTRIB)
+hp45:	csim hp45.obj
+	rm -f hp45
+	ln -s csim hp45
+
+hp55:	csim hp55.obj
+	rm -f hp55
+	ln -s csim hp55
+
+hp45.obj:	casm hp45.asm
+	./casm hp45.asm
+
+hp55.obj:	casm hp55.asm
+	./casm hp55.asm
+
+csim:	$(CSIM_OBJECTS)
+	$(CC) -o $@ $(CSIM_OBJECTS)
+
+csim.o:	csim.c
+	$(CC) -c $(CFLAGS) -o $@ $<
+
+classic_hp.tar.gz:	$(DISTRIB)
 	tar -cvzf $@ $(DISTRIB)
 	ls -l $@
 
 clean:
-	rm -f casm $(OBJECTS) $(INTERMEDIATE)
+	rm -f $(PROGRAMS) $(MISC_TARGETS) $(OBJECTS) $(INTERMEDIATE)
