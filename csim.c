@@ -34,6 +34,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #include "util.h"
 #include "proc.h"
 #include "kml.h"
+#include "arch.h"
 
 #ifdef HAS_DEBUGGER_CLI
   #include "debugger.h"
@@ -580,35 +581,6 @@ static GtkWidget *create_menus (GtkWidget *window,
   gtk_item_factory_create_items (item_factory, nmenu_items, menu_items, NULL);
   gtk_window_add_accel_group (GTK_WINDOW (window), accel_group);
   return (gtk_item_factory_get_widget (item_factory, "<main>"));
-}
-
-
-typedef struct
-{
-  char *name;
-  int ram_size;
-} model_info_t;
-
-
-model_info_t model_info [] =
-  {
-    { "35", 0 },
-    { "45", 10 },
-    { "55", 30 },
-    { "80", 0 }
-  };
-
-
-model_info_t *get_model_info (char *model)
-{
-  int i;
-
-  for (i = 0; i < (sizeof (model_info) / sizeof (model_info_t)); i++)
-    {
-      if (strcasecmp (model, model_info [i].name) == 0)
-	return (& model_info [i]);
-    }
-  return (NULL);
 }
 
 

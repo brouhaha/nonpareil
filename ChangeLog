@@ -1,7 +1,8 @@
 2004-04-04  Eric Smith <eric@brouhaha.com>
 
-	* asm.h asm.c arch.h arch.c casmy.y wasmy.y: Added architecture
-	definitions.  Use architecture-specific listing file format.
+	* asm.h asm.c arch.h arch.c casmy.y wasmy.y csim.c Makefile: Added
+	architecture and platform definitions.  Move model table from csim
+	into arch.  Use architecture-specific listing file format.
 	
 	* asm.h: Added prototypes for yylex() and yyerror() to eliminate
 	warnings.

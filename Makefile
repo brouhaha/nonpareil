@@ -91,7 +91,7 @@ CASM_OBJECTS = asm.o symtab.o casml.o casmy.tab.o util.o arch.o
 
 WASM_OBJECTS = asm.o symtab.o wasml.o wasmy.tab.o util.o arch.o
 
-CSIM_OBJECTS = csim.o util.o proc.o kmll.o kmly.tab.o kml.o
+CSIM_OBJECTS = csim.o util.o proc.o kmll.o kmly.tab.o kml.o arch.o
 ifdef HAS_DEBUGGER_CLI
   CSIM_OBJECTS += debugger.o
 endif

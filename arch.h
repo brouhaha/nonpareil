@@ -20,6 +20,8 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 */
 
 
+/* CPU architectures: */
+
 #define ARCH_UNKNOWN   0
 #define ARCH_CLASSIC   1
 #define ARCH_WOODSTOCK 2
@@ -31,3 +33,35 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #define ARCH_MAX       7
 
 extern char *arch_name [ARCH_MAX];
+
+
+/* hardware platforms */
+
+#define PLATFORM_UNKNOWN   0
+#define PLATFORM_CLASSIC   1
+#define PLATFORM_WOODSTOCK 2
+#define PLATFORM_TOPCAT    3
+#define PLATFORM_HAWKEYE   4
+#define PLATFORM_STING     5
+#define PLATFORM_SPICE     6
+#define PLATFORM_COCONUT   7
+#define PLATFORM_VOYAGER   8
+#define PLATFORM_CAPRICORN 9
+#define PLATFORM_GEMINI    10
+#define PLATFORM_KANGAROO  11
+#define PLATFORM_TITAN     12
+
+#define PLATFORM_MAX       13
+
+extern char *platform_name [PLATFORM_MAX];
+
+
+typedef struct
+{
+  char *name;
+  int platform;
+  int cpu_arch;
+  int ram_size;
+} model_info_t;
+
+model_info_t *get_model_info (char *model);
