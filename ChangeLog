@@ -1,3 +1,25 @@
+2004-01-16  Eric Smith <eric@brouhaha.com>
+
+	* proc.c: Fix "duplicate listing line" error message.
+	
+	* proc.c: Rearranged init_ops() to match the instruction type
+	tables given in the patents.
+	
+	* Makefile hp80.asm csim.c: Added HP-80.
+
+2004-01-15  Eric Smith <eric@brouhaha.com>
+
+	* csim.c: Added debug menu.
+	
+	* proc.c: Replaced JIFFY definition with UINST_PER_SEC and
+	UINST_PER_JIFFY, and compute JIFFY_PER_SEC and JIFFY_USEC from
+	those.
+	
+	* proc.h proc.c: Added sim_env.key_flag back to avoid overrun
+	problems.
+
+	* kml.h kml.c kmll.l kmly.y: Added KML file parser.
+	
 2004-01-15  Eric Smith <eric@brouhaha.com>
 
 	* Release 0.15.
