@@ -202,7 +202,7 @@ static void op_arith (sim_t *sim, int opcode)
       break;
 
     case 0x02:  /* c=0 */
-      reg_zero (sim->env->b, first, last);
+      reg_zero (sim->env->c, first, last);
       break;
 
     case 0x03:  /* ab ex */
