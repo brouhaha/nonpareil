@@ -1014,7 +1014,7 @@ s12:	0 -> c[w]
 	c + 1 -> c[s]
 	c + c -> c[wp]
 	shift right c[ms]
-	c + 1 -> c[s]
+	c + 1 -> c[x]
 	return
 fv42:	if s10 # 1
 	     then go to fvr4
