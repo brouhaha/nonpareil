@@ -14,9 +14,12 @@ simulated in this release.  To use the simulator, you will need a
 suitable digital image (photograph or scan) of the calculator.  No
 image is provided in the release, however one may be obtained from
 the Museum of HP Calculators:
+
     http://www.hpmuseum.org/45.jpg
 
-The file should be downloaded and renamed to "hp45.jpg".
+The image file should be downloaded and renamed to "hp45.jpg".  The image
+file may be downloaded with the correct filename automatically by
+"make hp45.jpg".
 
 -----------------------------------------------------------------------------
 

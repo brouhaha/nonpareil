@@ -82,6 +82,9 @@ hp%: hp%.lst csim
 	rm -f $@
 	ln -s csim $@
 
+hp45.jpg:
+	wget http://www.hpmuseum.org/45.jpg -O hp45.jpg
+
 
 all: $(TARGETS) $(CALCS) $(ROM_LISTINGS)
 
