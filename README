@@ -20,7 +20,10 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
 -----------------------------------------------------------------------------
 
-CASM is just a quick weekend hack, so don't expect too much.
+CASM is just a quick weekend hack, so don't expect too much.  I used flex and
+yacc to build it; I once used bison in place of yacc so I think that works.
+I don't think lex can be used without rewriting my YY_INPUT macro as an
+input function.
 
 CASM requires a single command line argument to specify the source code file.
 
