@@ -1,5 +1,9 @@
 2004-04-09  Eric Smith <eric@brouhaha.com>
 
+	* proc_woodstock.c (woodstock_print_state,
+	woodstock_execute_instruction): Move call to
+	woodstock_disassemble() into woodstock_print_state().
+
 	* proc_woodstock.c (woodstock_print_state): Use env->prev_pc
 	rather than env->pc, since PC has already been incremented.
 

@@ -1038,6 +1038,16 @@ static void woodstock_print_state (sim_t *sim, sim_env_t *env)
   print_reg ("c:  ", env->c);
   print_reg ("m1: ", env->m1);
   print_reg ("m2: ", env->m2);
+
+  /* $$$ need to handle bank switching */
+  if (sim->source [env->prev_pc])
+    printf ("%s\n", sim->source [env->prev_pc]);
+  else
+    {
+      char buf [80];
+      woodstock_disassemble (sim, env->prev_pc, buf, sizeof (buf));
+      printf ("%s\n", buf);
+    }
 }
 
 
@@ -1066,15 +1076,6 @@ void woodstock_execute_instruction (sim_t *sim)
   if (sim->debug_flags & (1 << SIM_DEBUG_TRACE))
     {
       woodstock_print_state (sim, sim->env);
-      /* $$$ need to handle bank switching */
-      if (sim->source [sim->env->pc])
-	printf ("%s\n", sim->source [sim->env->pc]);
-      else
-	{
-	  char buf [80];
-	  woodstock_disassemble (sim, sim->env->pc, buf, sizeof (buf));
-	  printf ("%s\n", buf);
-	}
     }
 #endif /* HAS_DEBUGGER */
 
