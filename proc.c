@@ -855,6 +855,7 @@ static void handle_io (void)
 
 void execute_instruction (void)
 {
+  int i;
   int opcode;
 
   sim_env.prev_pc = (sim_env.group << 12) | (sim_env.rom << 9) | sim_env.pc;
@@ -869,12 +870,9 @@ void execute_instruction (void)
 
   if (sim_env.key_flag)
     sim_env.s [0] = 1;
-#if HP55
-  if (learn_mode)
-    sim_env.s [3] = 1;
-  if (stopwatch_mode)
-    sim_env.s [11] = 1;
-#endif
+  for (i = 0; i < SSIZE; i++)
+    if (sim_env.ext_flag [i])
+      sim_env.s [i] = 1;
 
   sim_env.pc++;
   (* op_fcn [opcode]) (opcode);
@@ -1154,5 +1152,13 @@ void sim_release_key (void)
 {
   g_mutex_lock (sim_mutex);
   sim_env.key_flag = FALSE;
+  g_mutex_unlock (sim_mutex);
+}
+
+
+void sim_set_ext_flag (int flag, gboolean state)
+{
+  g_mutex_lock (sim_mutex);
+  sim_env.ext_flag [flag] = state;
   g_mutex_unlock (sim_mutex);
 }

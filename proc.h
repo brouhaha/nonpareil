@@ -79,6 +79,9 @@ typedef struct
 
   gboolean key_flag;  /* true if a key is down */
   int key_buf;        /* most recently pressed key */
+
+  uint8_t ext_flag [SSIZE];  /* external flags, e.g., slide switches,
+				magnetic card inserted */
 } sim_env_t;
 
 
@@ -127,3 +130,5 @@ void sim_write_ram (int addr, reg_t *val);
 
 void sim_press_key (int keycode);
 void sim_release_key (void);
+
+void sim_set_ext_flag (int flag, gboolean state);
