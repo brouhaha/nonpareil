@@ -89,12 +89,7 @@ rb		\]
 
 %%
 
-struct keyword
-{
-  char *name;
-  int value;
-}
-keywords [] =
+keyword_t keywords [] =
 {
   { "a",         A },
   { "b",         B },
@@ -147,18 +142,3 @@ keywords [] =
   { "toggle",    TOGGLE },
   { NULL,        0 }
 };
-
-int keyword (char *string)
-{
-  struct keyword *ptr;
-
-  for (ptr = keywords; ptr->name; ptr++)
-    if (strcasecmp (string, ptr->name) == 0)
-      return ptr->value;
-  return 0;
-}
-
-int yywrap (void)
-{
-  return (1);
-}

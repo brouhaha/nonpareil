@@ -23,7 +23,8 @@ this program (in the file "COPYING"); if not, write to the Free Software
 Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 */
 
-extern int pass;
+
+int pass;
 extern int lineno;
 extern int errors;
 
@@ -85,5 +86,14 @@ int error   (char *format, ...);
 int warning (char *format, ...);
 
 
-/* in casml.l: */
+typedef struct keyword
+{
+  char *name;
+  int value;
+} keyword_t;
+
+extern keyword_t keywords [];
+
 int keyword (char *string);
+
+int yywrap (void);

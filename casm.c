@@ -391,3 +391,18 @@ int warning (char *format, ...)
 }
 
 
+int keyword (char *string)
+{
+  struct keyword *ptr;
+
+  for (ptr = keywords; ptr->name; ptr++)
+    if (strcasecmp (string, ptr->name) == 0)
+      return ptr->value;
+  return 0;
+}
+
+
+int yywrap (void)
+{
+  return (1);
+}
