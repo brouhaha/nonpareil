@@ -86,9 +86,9 @@ MISC = COPYING README ChangeLog
 KML = $(CALCS:=.kml)
 IMAGES = $(CALCS:=.png)
 
-AUTO_CSRCS = asml.c asmy.tab.c casml.c casmy.tab.c wasml.c wasmy.tab.c kmll.c kmly.tab.c
-AUTO_HDRS = asmy.tab.h casmy.tab.h wasmy.tab.h kmly.tab.h
-AUTO_MISC = asmy.output casmy.output wasmy.output kmly.output
+AUTO_CSRCS = $(LSRCS:.l=.c) $(YSRCS:.y=.tab.c)
+AUTO_HDRS = $(YSRCS:.y=.tab.h)
+AUTO_MISC = $(YSRCS:.y=.output)
 
 ASM_OBJECTS = asm.o symtab.o asml.o asmy.tab.o casml.o casmy.tab.o wasml.o wasmy.tab.o util.o arch.o
 
