@@ -559,10 +559,8 @@ static void op_keys_to_rom_addr (int opcode)
 
 static void op_rom_addr_to_buf (int opcode)
 {
-/* I don't know what the heck this instruction is supposed to do! */
-#ifdef DEBUG
-  printf ("rom addr to buf!!!!!!!!!!!!\n");
-#endif /* DEBUG */
+  /* I don't know what the heck this instruction is supposed to do! */
+  fprintf (stderr, "rom addr to buf!!!!!!!!!!!!\n");
 }
 
 
@@ -809,7 +807,9 @@ gboolean sim_read_listing_file (char *fn, int keep_src)
 	    }
 	}
     }
+#if 0
   fprintf (stderr, "read %d words from '%s'\n", count, fn);
+#endif
   return (TRUE);
 }
 
