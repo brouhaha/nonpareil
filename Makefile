@@ -47,7 +47,7 @@ PACKAGE = casmsim
 VERSION = 0.15
 DISTNAME = $(PACKAGE)-$(VERSION)
 
-CALCS = hp45 hp55 hp35
+CALCS = hp35 hp45 hp55 hp80
 
 TARGETS = casm csim
 
