@@ -305,6 +305,10 @@ void add_switch (GtkWidget *fixed,
 		       kml_switch->position [i]->offset.x,
 		       kml_switch->position [i]->offset.y);
 
+	if (i == kml_switch->default_position)
+	  gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (switch_info->widget [i]),
+					TRUE);
+
 	g_signal_connect (G_OBJECT (switch_info->widget [i]),
 			  "toggled",
 			  G_CALLBACK (& switch_toggled),
