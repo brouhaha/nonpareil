@@ -65,10 +65,11 @@ XRectangle display_rect = { 0, 0, WINDOW_WIDTH, DISPLAY_HEIGHT };
 #define MED_GREY 3
 #define DK_GREY  4
 #define GOLD     5
-#define DK_RED   6
-#define BR_RED   7
+#define BLUE     6
+#define DK_RED   7
+#define BR_RED   8
 
-#define MAX_COL 8
+#define MAX_COL 9
 
 
 unsigned long pixval [MAX_COL];
@@ -89,6 +90,7 @@ rgb color [MAX_COL] =
   { 0x5800, 0x5800, 0x5800 },  
   { 0x3800, 0x3800, 0x3800 },  
   { 0xffff, 0xd7d7, 0x0000 },  
+  { 0x4000, 0x4000, 0xffff },  
   { 0x5000, 0x0000, 0x0000 },  
   { 0xffff, 0x4000, 0x0000 }   
 };
@@ -123,6 +125,7 @@ char *color_name [MAX_COL] =
   "grey38",
   "grey22",
   "gold",
+  "blue",
   "darkred",  /* alas, not nearly dark enough */
   "red"
 };
