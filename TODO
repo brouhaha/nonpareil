@@ -78,6 +78,14 @@ Debugger:
 
 Internals:
 
+  Save/restore state, using pseudo-reflection API.  Use XML?  Glib has
+  simple XML support (g_markup_xxx functions), or use libxml2.
+
+  Use glib g_get_user_config_dir(), g_get_system_data_dirs(), etc.
+  from glib 2.6 to locate KML (or ZIP) files, user save files, etc.
+
+  Use glib 2.6 commandline option parser (g_option_xxx functions).
+
   Change nut pt (pointer selection) from pointer to boolean.  Replace
   references to *pt to (pt ? q : p).
 
