@@ -59,6 +59,7 @@ GtkWidget *menubar;  /* actually a popup menu in transparency/shape mode */
 
 
 char display_digit [KML_MAX_DIGITS];
+int display_radix_mark [KML_MAX_DIGITS];
 
 
 GtkWidget *display;
@@ -115,6 +116,8 @@ gboolean display_expose_event_callback (GtkWidget *widget,
   for (i = 0; i < kml->display_digits; i++)
     {
       draw_digit (widget, x, kml->digit_offset.y, display_digit [i]);
+      if (display_radix_mark [i])
+	draw_digit (widget, x, kml->digit_offset.y, '.');
 		       
       x += kml->digit_size.width;
     }
@@ -137,28 +140,14 @@ static void display_update (char *buf)
 
   for (i = 0; i < kml->display_digits; i++)
     {
-      if (i >= l)
+      if ((2 * i) >= l)
 	{
 	  display_digit [i] = ' ';
+	  display_radix_mark [i] = 0;
 	  continue;
 	}
-      if (isdigit (buf [i]))
-	display_digit [i] = buf [i];
-      else
-	switch (buf [i])
-	  {
-	  case '-':
-	    display_digit [i] = '-';
-	    break;
-	  case '.':
-	    display_digit [i] = '.';
-	    break;
-	  case ' ':
-	    display_digit [i] = ' ';
-	    break;
-	  default:
-	    fatal (2, "illegal display char '%c'\n", buf [i]);
-	  }
+      display_digit [i] = buf [2 * i];
+      display_radix_mark [i] = (buf [2 * i + 1] == '.');
     }
 
   rect.width = display->allocation.width;
