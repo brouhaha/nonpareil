@@ -94,6 +94,7 @@ rb		\]
 
 \>=		{ return GE; }
 -\>		{ return ARROW; }
+\<-		{ return LARROW; }
 
 \;.*		;
 [ \t]+		;
@@ -111,6 +112,7 @@ keyword_t keywords [] =
   { "m1",        M1 },
   { "m2",        M2 },
   { "p",         P },
+  { "s",         S },
   { "y",         Y },
 
   { "address",   ADDRESS },
@@ -135,6 +137,7 @@ keyword_t keywords [] =
   { "nop",       NOP },
   { "off",       OFF },
   { "register",  REGISTER },
+  { "registers", REGISTERS },
   { "regs",      REGISTERS },
   { "reset",     RESET },
   { "return",    RETURN },

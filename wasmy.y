@@ -47,11 +47,9 @@ int ptr_test_map [14];
 
 %token GE
 %token ARROW
+%token LARROW
 
-%token <integer> STATBIT
-%token <integer> FLAGBIT
-
-%token A B C F M1 M2 P Y
+%token A B C F M1 M2 P S Y
 
 %token ADDRESS
 %token BINARY
@@ -94,6 +92,8 @@ int ptr_test_map [14];
 
 %type <integer> expr
 %type <integer> goto_form
+
+%type <integer> stat_bit
 
 %%
 
@@ -290,13 +290,24 @@ status_inst     : inst_set_stat
                 | inst_tst_stat_e
                 ;
 
-inst_set_stat   : expr ARROW STATBIT { $1 = range ($1, 0, 1);
+stat_bit_name	: IDENT
+		| F ;
+
+stat_bit	: S stat_bit_name expr { $$ = range ($3, 0, 15); } ;
+
+inst_set_stat   : expr ARROW stat_bit { $1 = range ($1, 0, 1);
                                   emit (($3 << 6) | ($1 ? 00014 : 00004)); } ;
 inst_clr_stat   : CLEAR STATUS { emit (00110); } ;
-inst_tst_stat_e : IF STATBIT '=' expr { $4 = range ($4, 0, 1);
-                                        emit_test (($2 << 6) | ($4 ? 00024 : 00034)); } ;
-inst_tst_stat_n : IF STATBIT '#' expr { $4 = range ($4, 0, 1);
-                                        emit_test (($2 << 6) | ($4 ? 00034 : 00024)); } ;
+
+inst_tst_stat_e : IF stat_bit '=' expr { $4 = range ($4, 0, 1);
+                                        emit_test (($2 << 6) | ($4 ? 00024 : 00034)); }
+		| IF expr '=' stat_bit { $2 = range ($2, 0, 1);
+                                        emit_test (($4 << 6) | ($2 ? 00024 : 00034)); } ;
+
+inst_tst_stat_n : IF stat_bit '#' expr { $4 = range ($4, 0, 1);
+                                        emit_test (($2 << 6) | ($4 ? 00034 : 00024)); }
+		| IF expr '#' stat_bit { $2 = range ($2, 0, 1);
+                                        emit_test (($4 << 6) | ($2 ? 00034 : 00024)); } ;
 
 pointer_inst    : inst_load_p
                 | inst_test_eq_p
@@ -306,7 +317,10 @@ pointer_inst    : inst_load_p
                 ;
 
 inst_load_p     : expr ARROW P       { $1 = range ($1, 0, 13);
-                                       emit ((ptr_load_map [$1] << 6) | 00074); } ;
+                                       emit ((ptr_load_map [$1] << 6) | 00074); }
+		| P LARROW expr      { $3 = range ($3, 0, 13);
+                                       emit ((ptr_load_map [$3] << 6) | 00074); } ;
+
 inst_test_eq_p  : IF P '=' expr      { $4 = range ($4, 0, 13);
                                        emit_test ((ptr_test_map [$4] << 6) | 00044); } ;
 inst_test_ne_p  : IF P '#' expr      { $4 = range ($4, 0, 13);
@@ -319,6 +333,7 @@ ram_inst	: inst_c_to_addr
 		| inst_data_to_c
 		| inst_c_to_reg
 		| inst_reg_to_c
+		| inst_clear_data_regs
 		;
 
 inst_c_to_addr	: C ARROW DATA ADDRESS      { emit (01160); } ;
@@ -328,6 +343,7 @@ inst_c_to_reg	: C ARROW REGISTER expr     { $4 = range ($4, 0, 15);
 					      emit (($4 << 6) | 00050); } ;
 inst_reg_to_c	: REGISTER ARROW C expr     { $4 = range ($4, 1, 15);
 					      emit (($4 << 6) | 00070); } ;
+inst_clear_data_regs: CLEAR DATA REGISTERS  { emit (01260); } ;
 
 misc_inst       : inst_load_const
                 | inst_disp_off
@@ -384,9 +400,9 @@ inst_sel_rom    : SELECT ROM expr           { $3 = range ($3, 0, 15);
 					      dsg = group;
 					      flag_char = '*'; } ;
 
-inst_del_rom    : DELAYED SELECT ROM expr   { $4 = range ($4, 0, 15); 
-                                              emit (($4 << 7) | 00064);
-					      dsr = $4;
+inst_del_rom    : DELAYED ROM expr          { $3 = range ($3, 0, 15); 
+                                              emit (($3 << 7) | 00064);
+					      dsr = $3;
 					      flag_char = '$'; } ;
 
 inst_key_to_rom	: KEYS ARROW ROM ADDRESS    { emit (00020); } ;

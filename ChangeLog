@@ -1,5 +1,8 @@
 2004-04-04  Eric Smith <eric@brouhaha.com>
 
+	* wasml.l wasmy.y: Many fixes to Woodstock assembler; now HP-25
+	source code assembles with no reported errors.
+	
 	* asm.h asm.c casmy.y wasmy.y: Added a global symbol table for
 	symbols starting with a '$'.
 	
