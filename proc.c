@@ -1,93 +1,109 @@
-#define WSIZE 14
+/*
+CSIM is a simulator for the processor used in the HP "Classic" series
+of calculators, which includes the HP-35, HP-45, HP-55, HP-65, HP-70,
+and HP-80.
 
-typedef uint8_t digit;
-typedef digit reg [WSIZE];
+$Id$
+Copyright 1995, 2004 Eric L. Smith
 
-reg a, b, c, d, e, f, m;
-digit p;
+CSIM is free software; you can redistribute it and/or modify it under the
+terms of the GNU General Public License version 2 as published by the Free
+Software Foundation.  Note that I am not granting permission to redistribute
+or modify CSIM under the terms of any later version of the General Public
+License.
+
+This program is distributed in the hope that it will be useful (or at least
+amusing), but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General
+Public License for more details.
+
+You should have received a copy of the GNU General Public License along with
+this program (in the file "COPYING"); if not, write to the Free Software
+Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+*/
+
+#include <stdint.h>
+#include <stdio.h>
+#include <string.h>
+
+#include <glib.h>
+
+#include "proc.h"
+#include "util.h"
+
+
+sim_state_t sim_state = SIM_IDLE;
+
+
+sim_env_t sim_env;
+
 
 #define MAX_RAM 100
-int max_ram = MAX_RAM;
-int ram_addr;
-reg ram [MAX_RAM];
-
-#define SSIZE 12
-uint8_t s [SSIZE];
-
-uint8_t carry, prev_carry;
-
-uint8_t pc;
-uint8_t rom;
-uint8_t group;
-
-uint8_t del_rom;
-uint8_t del_grp;
-
-uint8_t ret_pc;
-
-int display_enable;
-int key_flag;
-int key_buf;
-int io_count;
+int max_ram;
+reg_t ram [MAX_RAM];
 
 
-int prev_pc;  /* used to store complete five-digit octal address of instruction */
+void (*display_update)(char *buf);
+
+
+uint64_t cycle_count;
 
 
 #define MAX_GROUP 2
 #define MAX_ROM 8
 #define ROM_SIZE 256
 
-typedef unsigned short romword;
+
 romword ucode [MAX_GROUP] [MAX_ROM] [ROM_SIZE];
 uint8_t bpt     [MAX_GROUP] [MAX_ROM] [ROM_SIZE];
 char *source  [MAX_GROUP] [MAX_ROM] [ROM_SIZE];
 
-int run = 1;
-int step = 0;
-int trace = 0;
-void bad_op (int opcode)
+
+static void bad_op (int opcode)
 {
-  printf ("illegal opcode %02x at %05o\n", opcode, prev_pc);
+  printf ("illegal opcode %02x at %05o\n", opcode, sim_env.prev_pc);
 }
 
-digit do_add (digit x, digit y)
+
+static digit_t do_add (digit_t x, digit_t y)
 {
   int res;
 
-  res = x + y + carry;
+  res = x + y + sim_env.carry;
   if (res > 9)
     {
       res -= 10;
-      carry = 1;
+      sim_env.carry = 1;
     }
   else
-    carry = 0;
+    sim_env.carry = 0;
   return (res);
 }
 
-digit do_sub (digit x, digit y)
+
+static digit_t do_sub (digit_t x, digit_t y)
 {
   int res;
 
-  res = (x - y) - carry;
+  res = (x - y) - sim_env.carry;
   if (res < 0)
     {
       res += 10;
-      carry = 1;
+      sim_env.carry = 1;
     }
   else
-    carry = 0;
+    sim_env.carry = 0;
   return (res);
 }
 
-void op_arith (int opcode)
+
+static void op_arith (int opcode)
 {
   uint8_t op, field;
   int first, last;
   int temp;
   int i;
-  reg t;
+  reg_t t;
 
   op = opcode >> 5;
   field = (opcode >> 2) & 7;
@@ -95,10 +111,10 @@ void op_arith (int opcode)
   switch (field)
     {
     case 0:  /* p  */
-      first =  p; last =  p;
-      if (p >= WSIZE)
+      first =  sim_env.p; last =  sim_env.p;
+      if (sim_env.p >= WSIZE)
 	{
-	  printf ("Warning! p > WSIZE at %05o\n", prev_pc);
+	  printf ("Warning! p > WSIZE at %05o\n", sim_env.prev_pc);
 	  last = 0;  /* don't do anything */
 	}
       break;
@@ -106,10 +122,10 @@ void op_arith (int opcode)
     case 2:  /* x  */  first =  0; last =  2; break;
     case 3:  /* w  */  first =  0; last = 13; break;
     case 4:  /* wp */
-      first =  0; last =  p; break;
-      if (p > 13)
+      first =  0; last =  sim_env.p; break;
+      if (sim_env.p > 13)
 	{
-	  printf ("Warning! p >= WSIZE at %05o\n", prev_pc);
+	  printf ("Warning! p >= WSIZE at %05o\n", sim_env.prev_pc);
 	  last = 13;
 	}
       break;
@@ -122,378 +138,426 @@ void op_arith (int opcode)
     {
     case 0x00:  /* if b[f] = 0 */
       for (i = first; i <= last; i++)
-	carry |= (b [i] != 0);
+	sim_env.carry |= (sim_env.b [i] != 0);
       break;
     case 0x01:  /* 0 -> b[f] */
       for (i = first; i <= last; i++)
-	b [i] = 0;
-      carry = 0;
+	sim_env.b [i] = 0;
+      sim_env.carry = 0;
       break;
     case 0x02:  /* if a >= c[f] */
-      carry = 0;
+      sim_env.carry = 0;
       for (i = first; i <= last; i++)
-	t [i] = do_sub (a [i], c [i]);
+	t [i] = do_sub (sim_env.a [i], sim_env.c [i]);
       break;
     case 0x03:  /* if c[f] >= 1 */
-      carry = 1;
+      sim_env.carry = 1;
       for (i = first; i <= last; i++)
-	carry &= (c [i] == 0);
+	sim_env.carry &= (sim_env.c [i] == 0);
       break;
     case 0x04:  /* b -> c[f] */
       for (i = first; i <= last; i++)
-	c [i] = b [i];
-      carry = 0;
+	sim_env.c [i] = sim_env.b [i];
+      sim_env.carry = 0;
       break;
     case 0x05:  /* 0 - c -> c[f] */
-      carry = 0;
+      sim_env.carry = 0;
       for (i = first; i <= last; i++)
-	c [i] = do_sub (0, c [i]);
+	sim_env.c [i] = do_sub (0, sim_env.c [i]);
       break;
     case 0x06:  /* 0 -> c[f] */
       for (i = first; i <= last; i++)
-	c [i] = 0;
-      carry = 0;
+	sim_env.c [i] = 0;
+      sim_env.carry = 0;
       break;
     case 0x07:  /* 0 - c - 1 -> c[f] */
-      carry = 1;
+      sim_env.carry = 1;
       for (i = first; i <= last; i++)
-	c [i] = do_sub (0, c [i]);
+	sim_env.c [i] = do_sub (0, sim_env.c [i]);
       break;
     case 0x08:  /* shift left a[f] */
       for (i = last; i >= first; i--)
-	a [i] = (i == first) ? 0 : a [i-1];
-      carry = 0;
+	sim_env.a [i] = (i == first) ? 0 : sim_env.a [i-1];
+      sim_env.carry = 0;
       break;
     case 0x09:  /* a -> b[f] */
       for (i = first; i <= last; i++)
-	b [i] = a [i];
-      carry = 0;
+	sim_env.b [i] = sim_env.a [i];
+      sim_env.carry = 0;
       break;
     case 0x0a:  /* a - c -> c[f] */
-      carry = 0;
+      sim_env.carry = 0;
       for (i = first; i <= last; i++)
-	c [i] = do_sub (a [i], c [i]);
+	sim_env.c [i] = do_sub (sim_env.a [i], sim_env.c [i]);
       break;
     case 0x0b:  /* c - 1 -> c[f] */
-      carry = 1;
+      sim_env.carry = 1;
       for (i = first; i <= last; i++)
-	c [i] = do_sub (c [i], 0);
+	sim_env.c [i] = do_sub (sim_env.c [i], 0);
       break;
     case 0x0c:  /* c -> a[f] */
       for (i = first; i <= last; i++)
-	a [i] = c [i];
-      carry = 0;
+	sim_env.a [i] = sim_env.c [i];
+      sim_env.carry = 0;
       break;
     case 0x0d:  /* if c[f] = 0 */
       for (i = first; i <= last; i++)
-	carry |= (c [i] != 0);
+	sim_env.carry |= (sim_env.c [i] != 0);
       break;
     case 0x0e:  /* a + c -> c[f] */
-      carry = 0;
+      sim_env.carry = 0;
       for (i = first; i <= last; i++)
-	c [i] = do_add (a [i], c [i]);
+	sim_env.c [i] = do_add (sim_env.a [i], sim_env.c [i]);
       break;
     case 0x0f:  /* c + 1 -> c[f] */
-      carry = 1;
+      sim_env.carry = 1;
       for (i = first; i <= last; i++)
-	c [i] = do_add (c [i], 0);
+	sim_env.c [i] = do_add (sim_env.c [i], 0);
       break;
     case 0x10:  /* if a >= b[f] */
-      carry = 0;
+      sim_env.carry = 0;
       for (i = first; i <= last; i++)
-	t [i] = do_sub (a [i], b [i]);
+	t [i] = do_sub (sim_env.a [i], sim_env.b [i]);
       break;
     case 0x11:  /* b exchange c[f] */
       for (i = first; i <= last; i++)
-	{ temp = b[i]; b [i] = c [i]; c [i] = temp; }
-      carry = 0;
+	{
+	  temp = sim_env.b[i];
+	  sim_env.b [i] = sim_env.c [i];
+	  sim_env.c [i] = temp;
+	}
+      sim_env.carry = 0;
       break;
     case 0x12:  /* shift right c[f] */
       for (i = first; i <= last; i++)
-	c [i] = (i == last) ? 0 : c [i+1];
-      carry = 0;
+	sim_env.c [i] = (i == last) ? 0 : sim_env.c [i+1];
+      sim_env.carry = 0;
       break;
     case 0x13:  /* if a[f] >= 1 */
-      carry = 1;
+      sim_env.carry = 1;
       for (i = first; i <= last; i++)
-	carry &= (a [i] == 0);
+	sim_env.carry &= (sim_env.a [i] == 0);
       break;
     case 0x14:  /* shift right b[f] */
       for (i = first; i <= last; i++)
-	b [i] = (i == last) ? 0 : b [i+1];
-      carry = 0;
+	sim_env.b [i] = (i == last) ? 0 : sim_env.b [i+1];
+      sim_env.carry = 0;
       break;
     case 0x15:  /* c + c -> c[f] */
-      carry = 0;
+      sim_env.carry = 0;
       for (i = first; i <= last; i++)
-	c [i] = do_add (c [i], c [i]);
+	sim_env.c [i] = do_add (sim_env.c [i], sim_env.c [i]);
       break;
     case 0x16:  /* shift right a[f] */
       for (i = first; i <= last; i++)
-	a [i] = (i == last) ? 0 : a [i+1];
-      carry = 0;
+	sim_env.a [i] = (i == last) ? 0 : sim_env.a [i+1];
+      sim_env.carry = 0;
       break;
     case 0x17:  /* 0 -> a[f] */
       for (i = first; i <= last; i++)
-	a [i] = 0;
-      carry = 0;
+	sim_env.a [i] = 0;
+      sim_env.carry = 0;
       break;
     case 0x18:  /* a - b -> a[f] */
-      carry = 0;
+      sim_env.carry = 0;
       for (i = first; i <= last; i++)
-	a [i] = do_sub (a [i], b [i]);
+	sim_env.a [i] = do_sub (sim_env.a [i], sim_env.b [i]);
       break;
     case 0x19:  /* a exchange b[f] */
       for (i = first; i <= last; i++)
-	{ temp = a[i]; a [i] = b [i]; b [i] = temp; }
-      carry = 0;
+	{
+	  temp = sim_env.a[i];
+	  sim_env.a [i] = sim_env.b [i];
+	  sim_env.b [i] = temp; 
+	}
+      sim_env.carry = 0;
       break;
     case 0x1a:  /* a - c -> a[f] */
-      carry = 0;
+      sim_env.carry = 0;
       for (i = first; i <= last; i++)
-        a [i] = do_sub (a [i], c [i]);
+        sim_env.a [i] = do_sub (sim_env.a [i], sim_env.c [i]);
       break;
     case 0x1b:  /* a - 1 -> a[f] */
-      carry = 1;
+      sim_env.carry = 1;
       for (i = first; i <= last; i++)
-	a [i] = do_sub (a [i], 0);
+	sim_env.a [i] = do_sub (sim_env.a [i], 0);
       break;
     case 0x1c:  /* a + b -> a[f] */
-      carry = 0;
+      sim_env.carry = 0;
       for (i = first; i <= last; i++)
-	a [i] = do_add (a [i], b [i]);
+	sim_env.a [i] = do_add (sim_env.a [i], sim_env.b [i]);
       break;
     case 0x1d:  /* a exchange c[f] */
       for (i = first; i <= last; i++)
-	{ temp = a[i]; a [i] = c [i]; c [i] = temp; }
-      carry = 0;
+	{
+	  temp = sim_env.a [i];
+	  sim_env.a [i] = sim_env.c [i];
+	  sim_env.c [i] = temp;
+	}
+      sim_env.carry = 0;
       break;
     case 0x1e:  /* a + c -> a[f] */
-      carry = 0;
+      sim_env.carry = 0;
       for (i = first; i <= last; i++)
-	a [i] = do_add (a [i], c [i]);
+	sim_env.a [i] = do_add (sim_env.a [i], sim_env.c [i]);
       break;
     case 0x1f:  /* a + 1 -> a[f] */
-      carry = 1;
+      sim_env.carry = 1;
       for (i = first; i <= last; i++)
-	a [i] = do_add (a [i], 0);
+	sim_env.a [i] = do_add (sim_env.a [i], 0);
       break;
     }
 }
 
-void op_goto (int opcode)
+
+static void op_goto (int opcode)
 {
-  if (! prev_carry)
+  if (! sim_env.prev_carry)
     {
-      pc = opcode >> 2;
-      rom = del_rom;
-      group = del_grp;
+      sim_env.pc = opcode >> 2;
+      sim_env.rom = sim_env.del_rom;
+      sim_env.group = sim_env.del_grp;
     }
 }
 
-void op_jsb (int opcode)
+
+static void op_jsb (int opcode)
 {
-  ret_pc = pc;
-  pc = opcode >> 2;
-  rom = del_rom;
-  group = del_grp;
+  sim_env.ret_pc = sim_env.pc;
+  sim_env.pc = opcode >> 2;
+  sim_env.rom = sim_env.del_rom;
+  sim_env.group = sim_env.del_grp;
 }
 
-void op_return (int opcode)
+
+static void op_return (int opcode)
 {
-  pc = ret_pc;
+  sim_env.pc = sim_env.ret_pc;
 }
 
-void op_nop (int opcode)
+
+static void op_nop (int opcode)
 {
 }
 
-void op_dec_p (int opcode)
+
+static void op_dec_p (int opcode)
 {
-  p = (p - 1) & 0xf;
+  sim_env.p = (sim_env.p - 1) & 0xf;
 }
 
-void op_inc_p (int opcode)
+
+static void op_inc_p (int opcode)
 {
-  p = (p + 1) & 0xf;
+  sim_env.p = (sim_env.p + 1) & 0xf;
 }
 
-void op_clear_s (int opcode)
+
+static void op_clear_s (int opcode)
 {
   int i;
   for (i = 0; i < SSIZE; i++)
-    s [i] = 0;
+    sim_env.s [i] = 0;
 }
 
-void op_c_exch_m (int opcode)
+
+static void op_c_exch_m (int opcode)
 {
   int i, t;
   for (i = 0; i < WSIZE; i++)
     {
-      t = c [i]; c [i] = m[i]; m [i] = t;
+      t = sim_env.c [i];
+      sim_env.c [i] = sim_env.m[i];
+      sim_env.m [i] = t;
     }
 }
 
-void op_m_to_c (int opcode)
+
+static void op_m_to_c (int opcode)
 {
   int i;
   for (i = 0; i < WSIZE; i++)
-    c [i] = m [i];
+    sim_env.c [i] = sim_env.m [i];
 }
 
-void op_c_to_addr (int opcode)
+
+static void op_c_to_addr (int opcode)
 {
 #ifdef HP55
-  ram_addr = c [12] * 10 + c[11];
+  sim_env.ram_addr = sim_env.c [12] * 10 + sim_env.c [11];
 #else
-  ram_addr = c [12];
+  sim_env.ram_addr = sim_env.c [12];
 #endif
-  if (ram_addr >= max_ram)
-    printf ("c -> ram addr: address %d out of range\n", ram_addr);
+  if (sim_env.ram_addr >= max_ram)
+    printf ("c -> ram addr: address %d out of range\n", sim_env.ram_addr);
 }
 
-void op_c_to_data (int opcode)
+
+static void op_c_to_data (int opcode)
 {
   int i;
-  if (ram_addr >= max_ram)
+  if (sim_env.ram_addr >= max_ram)
     {
-      printf ("c -> data: address %d out of range\n", ram_addr);
+      printf ("c -> data: address %d out of range\n", sim_env.ram_addr);
       return;
     }
   for (i = 0; i < WSIZE; i++)
-    ram [ram_addr][i] = c [i];
+    ram [sim_env.ram_addr] [i] = sim_env.c [i];
 }
 
-void op_data_to_c (int opcode)
+
+static void op_data_to_c (int opcode)
 {
   int i;
-  if (ram_addr >= max_ram)
+  if (sim_env.ram_addr >= max_ram)
     {
-      printf ("data -> c: address %d out of range, loading 0\n", ram_addr);
+      printf ("data -> c: address %d out of range, loading 0\n", sim_env.ram_addr);
       for (i = 0; i < WSIZE; i++)
-	c [i] = 0;
+	sim_env.c [i] = 0;
       return;
     }
   for (i = 0; i < WSIZE; i++)
-    c [i] = ram [ram_addr][i];
+    sim_env.c [i] = ram [sim_env.ram_addr] [i];
 }
 
-void op_c_to_stack (int opcode)
+
+static void op_c_to_stack (int opcode)
 {
   int i;
   for (i = 0; i < WSIZE; i++)
     {
-      f [i] = e [i];
-      e [i] = d [i];
-      d [i] = c [i];
+      sim_env.f [i] = sim_env.e [i];
+      sim_env.e [i] = sim_env.d [i];
+      sim_env.d [i] = sim_env.c [i];
     }
 }
 
-void op_stack_to_a (int opcode)
+
+static void op_stack_to_a (int opcode)
 {
   int i;
   for (i = 0; i < WSIZE; i++)
     {
-      a [i] = d [i];
-      d [i] = e [i];
-      e [i] = f [i];
+      sim_env.a [i] = sim_env.d [i];
+      sim_env.d [i] = sim_env.e [i];
+      sim_env.e [i] = sim_env.f [i];
     }
 }
 
-void op_down_rotate (int opcode)
+
+static void op_down_rotate (int opcode)
 {
   int i, t;
   for (i = 0; i < WSIZE; i++)
     {
-      t = c [i];
-      c [i] = d [i];
-      d [i] = e [i];
-      e [i] = f [i];
-      f [i] = t;
+      t = sim_env.c [i];
+      sim_env.c [i] = sim_env.d [i];
+      sim_env.d [i] = sim_env.e [i];
+      sim_env.e [i] = sim_env.f [i];
+      sim_env.f [i] = t;
     }
 }
 
-void op_clear_reg (int opcode)
+
+static void op_clear_reg (int opcode)
 {
   int i;
   for (i = 0; i < WSIZE; i++)
-    a [i] = b [i] = c [i] = d [i] = e [i] = f [i] = m [i] = 0;
+    sim_env.a [i] = sim_env.b [i] = sim_env.c [i] = sim_env.d [i] =
+      sim_env.e [i] = sim_env.f [i] = sim_env.m [i] = 0;
 }
 
-void op_load_constant (int opcode)
+
+static void op_load_constant (int opcode)
 {
-  if (p >= WSIZE)
+  if (sim_env.p >= WSIZE)
     {
 #if 0 /* HP-45 depends on load constant with p > 13 not affecting C */
-      printf ("load constant w/ p >= WSIZE at %05o\n", prev_pc)
+      printf ("load constant w/ p >= WSIZE at %05o\n", sim_env.prev_pc)
       ;
 #endif
     }
   else if ((opcode >> 6) > 9)
     printf ("load constant > 9\n");
   else
-    c [p] = opcode >> 6;
-  p = (p - 1) & 0xf;
+    sim_env.c [sim_env.p] = opcode >> 6;
+  sim_env.p = (sim_env.p - 1) & 0xf;
 }
 
-void op_set_s (int opcode)
+
+static void op_set_s (int opcode)
 {
   if ((opcode >> 6) >= SSIZE)
-    printf ("stat >= SSIZE at %05o\n", prev_pc);
+    printf ("stat >= SSIZE at %05o\n", sim_env.prev_pc);
   else
-    s [opcode >> 6] = 1;
+    sim_env.s [opcode >> 6] = 1;
 }
 
-void op_clr_s (int opcode)
+
+static void op_clr_s (int opcode)
 {
   if ((opcode >> 6) >= SSIZE)
-    printf ("stat >= SSIZE at %05o\n", prev_pc);
+    printf ("stat >= SSIZE at %05o\n", sim_env.prev_pc);
   else
-    s [opcode >> 6] = 0;
+    sim_env.s [opcode >> 6] = 0;
 }
 
-void op_test_s (int opcode)
+
+static void op_test_s (int opcode)
 {
   if ((opcode >> 6) >= SSIZE)
-    printf ("stat >= SSIZE at %05o\n", prev_pc);
+    printf ("stat >= SSIZE at %05o\n", sim_env.prev_pc);
   else
-    carry = s [opcode >> 6];
+    sim_env.carry = sim_env.s [opcode >> 6];
 }
 
-void op_set_p (int opcode)
+
+static void op_set_p (int opcode)
 {
-  p = opcode >> 6;
+  sim_env.p = opcode >> 6;
 }
 
-void op_test_p (int opcode)
+
+static void op_test_p (int opcode)
 {
-  carry = (p == (opcode >> 6));
+  sim_env.carry = (sim_env.p == (opcode >> 6));
 }
 
-void op_sel_rom (int opcode)
+
+static void op_sel_rom (int opcode)
 {
-  rom = opcode >> 7;
-  group = del_grp;
+  sim_env.rom = opcode >> 7;
+  sim_env.group = sim_env.del_grp;
 
-  del_rom = rom;
+  sim_env.del_rom = sim_env.rom;
 }
 
-void op_del_sel_rom (int opcode)
+
+static void op_del_sel_rom (int opcode)
 {
-  del_rom = opcode >> 7;
+  sim_env.del_rom = opcode >> 7;
 }
 
-void op_del_sel_grp (int opcode)
+
+static void op_del_sel_grp (int opcode)
 {
-  del_grp = (opcode >> 7) & 1;
+  sim_env.del_grp = (opcode >> 7) & 1;
 }
 
-void op_keys_to_rom_addr (int opcode)
+
+static void op_keys_to_rom_addr (int opcode)
 {
-  pc = key_buf;
+  if (sim_env.key_buf < 0)
+    {
+      printf ("keys->rom address with no key pressed\n");
+      sim_env.pc = 0;
+      return;
+    }
+  sim_env.pc = sim_env.key_buf;
 }
 
-void op_rom_addr_to_buf (int opcode)
+
+static void op_rom_addr_to_buf (int opcode)
 {
 /* I don't know what the heck this instruction is supposed to do! */
 #ifdef DEBUG
@@ -501,10 +565,11 @@ void op_rom_addr_to_buf (int opcode)
 #endif /* DEBUG */
 }
 
-void op_display_off (int opcode)
+
+static void op_display_off (int opcode)
 {
-  display_enable = 0;
-  io_count = 2;
+  sim_env.display_enable = 0;
+  sim_env.io_count = 2;
   /*
    * Don't immediately turn off display because the very next instruction
    * might be a display_toggle to turn it on.  This happens in the HP-45
@@ -512,15 +577,18 @@ void op_display_off (int opcode)
    */
 }
 
-void op_display_toggle (int opcode)
+
+static void op_display_toggle (int opcode)
 {
-  display_enable = ! display_enable;
-  io_count = 0;  /* force immediate display update */
+  sim_env.display_enable = ! sim_env.display_enable;
+  sim_env.io_count = 0;  /* force immediate display update */
 }
 
-void (* op_fcn [1024])(int);
 
-void init_ops (void)
+static void (* op_fcn [1024])(int);
+
+
+static void init_ops (void)
 {
   int i;
   for (i = 0; i < 1024; i += 4)
@@ -569,6 +637,7 @@ void init_ops (void)
     }
 }
 
+
 void disassemble_instruction (int g, int r, int p, int opcode)
 {
   int i;
@@ -576,6 +645,7 @@ void disassemble_instruction (int g, int r, int p, int opcode)
   for (i = 0x200; i; i >>= 1)
     printf ((opcode & i) ? "1" : ".");
 }
+
 
 /*
  * set breakpoints at every location so we know if we hit
@@ -603,38 +673,13 @@ void init_source (void)
 }
 
 
-void read_object_file (char *fn, FILE *f)
-{
-  int i;
-  char buf [80];
-  int g, r, p, opcode;
-  int count = 0;
-
-  while (fgets (buf, sizeof (buf), f))
-    {
-      i = sscanf (buf, "%1o%1o%3o:%3x", & g, & r, & p, & opcode);
-      if (i != 4)
-	fprintf (stderr, "only converted %d items\n", i);
-      else if ((g >= MAX_GROUP) || (r >= MAX_ROM) || (p >= ROM_SIZE))
-	fprintf (stderr, "bad address\n");
-      else
-	{
-	  ucode [g][r][p] = opcode;
-	  bpt   [g][r][p] = 0;
-	  count ++;
-	}
-    }
-  fprintf (stderr, "read %d words from '%s'\n", count, fn);
-}
-
-
-int parse_address (char *oct, int *g, int *r, int *p)
+static int parse_address (char *oct, int *g, int *r, int *p)
 {
   return (sscanf (oct, "%1o%1o%3o", g, r, p) == 3);
 }
 
 
-int parse_opcode (char *bin, int *opcode)
+static int parse_opcode (char *bin, int *opcode)
 {
   int i;
 
@@ -654,15 +699,57 @@ int parse_opcode (char *bin, int *opcode)
 }
 
 
-void read_listing_file (char *fn, FILE *f, int keep_src)
+gboolean sim_read_object_file (char *fn)
 {
   int i;
-  char buf [80];
+  FILE *f;
   int g, r, p, opcode;
   int count = 0;
+  char buf [80];
+
+  f = fopen (fn, "r");
+  if (! f)
+    {
+      fprintf (stderr, "error opening listing file\n");
+      return (FALSE);
+    }
 
   while (fgets (buf, sizeof (buf), f))
     {
+      i = sscanf (buf, "%1o%1o%3o:%3x", & g, & r, & p, & opcode);
+      if (i != 4)
+	fprintf (stderr, "only converted %d items\n", i);
+      else if ((g >= MAX_GROUP) || (r >= MAX_ROM) || (p >= ROM_SIZE))
+	fprintf (stderr, "bad address\n");
+      else
+	{
+	  ucode [g][r][p] = opcode;
+	  bpt   [g][r][p] = 0;
+	  count ++;
+	}
+    }
+  fprintf (stderr, "read %d words from '%s'\n", count, fn);
+  return (TRUE);
+}
+
+
+gboolean sim_read_listing_file (char *fn, int keep_src)
+{
+  FILE *f;
+  int g, r, p, opcode;
+  int count = 0;
+  char buf [80];
+
+  f = fopen (fn, "r");
+  if (! f)
+    {
+      fprintf (stderr, "error opening listing file\n");
+      return (FALSE);
+    }
+
+  while (fgets (buf, sizeof (buf), f))
+    {
+      trim_trailing_whitespace (buf);
       if ((strlen (buf) >= 25) && (buf [7] == 'L') && (buf [13] == ':') &&
 	  parse_address (& buf [8], & g, &r, &p) &&
 	  parse_opcode (& buf [16], & opcode))
@@ -687,132 +774,336 @@ void read_listing_file (char *fn, FILE *f, int keep_src)
 	}
     }
   fprintf (stderr, "read %d words from '%s'\n", count, fn);
+  return (TRUE);
 }
 
 
-void print_reg (reg r)
-{
-  int i;
-  for (i = WSIZE - 1; i >= 0; i--)
-    printf ("%x", r [i]);
-}
+char prev_buf [WSIZE + 2];
 
-
-void print_stat (void)
-{
-  int i;
-  for (i = 0; i < SSIZE; i++)
-    printf (s [i] ? "%x" : ".", i);
-}
-
-
-void handle_io (void)
+static void handle_io (void)
 {
   char buf [WSIZE + 2];
   char *bp;
   int i;
 
   bp = & buf [0];
-  if (display_enable)
+  if (sim_env.display_enable)
     {
       for (i = WSIZE - 1; i >= 0; i--)
 	{
-	  if (b [i] >= 8)
+	  if (sim_env.b [i] >= 8)
 	    *bp++ = ' ';
 	  else if ((i == 2) || (i == 13))
 	    {
-	      if (a [i] >= 8)
+	      if (sim_env.a [i] >= 8)
 		*bp++ = '-';
 	      else
 		*bp++ = ' ';
 	    }
 	  else
-	    *bp++ = '0' + a [i];
-	  if (b [i] == 2)
+	    *bp++ = '0' + sim_env.a [i];
+	  if (sim_env.b [i] == 2)
 	    *bp++ = '.';
 	}
     }
   *bp = '\0';
-  update_display (buf);
-  i = check_keyboard ();
-  if (i >= 0)
+  if (strcmp (buf, prev_buf) != 0)
     {
-      key_flag = 1;
-      key_buf = i;
+      display_update (buf);
+      strncpy (prev_buf, buf, sizeof (buf));
     }
-  else
-    key_flag = 0;
 }
 
 
-void debugger (void)
+void execute_instruction (void)
 {
   int opcode;
-  int cycle;
 
-  cycle = 0;
-  pc = 0;
-  rom = 0;
-  group = 0;
-  del_rom = 0;
-  del_grp = 0;
+  sim_env.prev_pc = (sim_env.group << 12) | (sim_env.rom << 9) | sim_env.pc;
+  opcode = ucode [sim_env.group] [sim_env.rom] [sim_env.pc];
+
+#if 0
+  printf ("%s\n", source [sim_env.group] [sim_env.rom] [sim_env.pc]);
+#endif
+
+  sim_env.prev_carry = sim_env.carry;
+  sim_env.carry = 0;
+
+  if (sim_env.key_buf >= 0)
+    sim_env.s [0] = 1;
+#if HP55
+  if (learn_mode)
+    sim_env.s [3] = 1;
+  if (stopwatch_mode)
+    sim_env.s [11] = 1;
+#endif
+
+  sim_env.pc++;
+  (* op_fcn [opcode]) (opcode);
+  cycle_count++;
+}
+
+
+void reset_processor (void)
+{
+  cycle_count = 0;
+
+  sim_env.pc = 0;
+  sim_env.rom = 0;
+  sim_env.group = 0;
+  sim_env.del_rom = 0;
+  sim_env.del_grp = 0;
 
   op_clear_reg (0);
   op_clear_s (0);
-  p = 0;
+  sim_env.p = 0;
 
-  io_count = 0;
-  display_enable = 0;
-  key_flag = 0;
+  sim_env.display_enable = 0;
+  sim_env.key_buf = -1;
+}
+
+
+GCond *sim_cond;
+GCond *ui_cond;
+GMutex *sim_mutex;
+
+
+#define JIFFY ((G_USEC_PER_SEC)/100)
+#define UINST_PER_JIFFY 35
+
+gpointer sim_thread_func (gpointer data)
+{
+  GTimeVal tv;
+  int i;
 
   for (;;)
     {
-      while (run || step)
+      g_mutex_lock (sim_mutex);
+      switch (sim_state)
 	{
-	  if (trace)
-	    {
-	      if (source [group][rom][pc])
-		printf ("%s", source [group][rom][pc]);
-	      else
-		disassemble_instruction (group, rom, pc, opcode);
-	      printf ("\n");
-	    }
-	  prev_pc = (group << 12) | (rom << 9) | pc;
-	  opcode = ucode [group][rom][pc];
-	  prev_carry = carry;
-	  carry = 0;
-	  if (key_flag)
-	    s [0] = 1;
-#if HP55
-	  if (learn_mode)
-	    s [3] = 1;
-	  if (stopwatch_mode)
-	    s [11] = 1;
-#endif
-	  pc++;
-	  (* op_fcn [opcode]) (opcode);
-	  cycle++;
-	  if (trace)
-	    {
-	      printf ("  p=%x", p);
-	      printf (" stat=");
-	      print_stat ();
-	      printf (" a=");
-	      print_reg (a);
-	      printf (" b=");
-	      print_reg (b);
-	      printf (" c=");
-	      print_reg (c);
-	      printf ("\n");
-	    }
-	  step = 0;
-	  io_count--;
-	  if (io_count <= 0)
-	    {
-	      handle_io ();
-	      io_count = 35;
-	    }
+	case SIM_QUIT:
+	  g_mutex_unlock (sim_mutex);
+	  g_thread_exit (0);
+	case SIM_RESET:
+	  reset_processor ();
+	  sim_state = SIM_IDLE;
+	  g_cond_signal (ui_cond);
+	  g_cond_wait (sim_cond, sim_mutex);
+	  break;
+	case SIM_IDLE:
+	  g_cond_wait (sim_cond, sim_mutex);
+	  break;
+	case SIM_STEP:
+	  execute_instruction ();
+	  handle_io ();
+	  sim_state = SIM_IDLE;
+	  g_cond_signal (ui_cond);
+	  g_cond_wait (sim_cond, sim_mutex);
+	  break;
+	case SIM_RUN:
+	  g_get_current_time (& tv);
+	  for (i = 0; i < UINST_PER_JIFFY; i++)
+	    execute_instruction ();
+	  handle_io ();
+	  g_time_val_add (& tv, JIFFY);
+	  g_cond_timed_wait (sim_cond, sim_mutex, & tv);
+	  break;
 	}
-      /* get a command here */
+      g_mutex_unlock (sim_mutex);
     }
+}
+
+
+
+
+GThread *sim_thread;
+
+
+/* The following functions can be called from the main thread: */
+
+void sim_init (int ram_size,
+	       void (*display_update_fn)(char *buf))
+{
+  g_thread_init (NULL);  /* $$$ has Gtk already done this? */
+
+  sim_cond = g_cond_new ();
+  ui_cond = g_cond_new ();
+  sim_mutex = g_mutex_new ();
+
+  g_mutex_lock (sim_mutex);
+
+  init_ops ();
+  init_breakpoints ();
+  init_source ();
+
+  max_ram = ram_size;
+  display_update = display_update_fn;
+
+  sim_state = SIM_IDLE;
+  memset ((char *) & sim_env, 0, sizeof (sim_env_t));
+  cycle_count = 0;
+
+  sim_thread = g_thread_create (sim_thread_func, NULL, TRUE, NULL);
+
+  g_mutex_unlock (sim_mutex);
+}
+
+
+void sim_quit (void)
+{
+  g_mutex_lock (sim_mutex);
+  sim_state = SIM_QUIT;
+
+  g_thread_join (sim_thread);
+}
+
+
+void sim_reset (void)
+{
+  g_mutex_lock (sim_mutex);
+  if (sim_state != SIM_IDLE)
+    fatal (2, "can't reset when not idle\n");
+  sim_state = SIM_STEP;
+  g_cond_signal (sim_cond);
+  while (sim_state != SIM_IDLE)
+    g_cond_wait (ui_cond, sim_mutex);
+  g_mutex_unlock (sim_mutex);
+}
+
+
+void sim_step (void)
+{
+  g_mutex_lock (sim_mutex);
+  if (sim_state != SIM_IDLE)
+    fatal (2, "can't step when not idle\n");
+  sim_state = SIM_STEP;
+  g_cond_signal (sim_cond);
+  while (sim_state != SIM_IDLE)
+    g_cond_wait (ui_cond, sim_mutex);
+  g_mutex_unlock (sim_mutex);
+}
+
+
+void sim_start (void)
+{
+  g_mutex_lock (sim_mutex);
+  if (sim_state != SIM_IDLE)
+    fatal (2, "can't start when not idle\n");
+  sim_state = SIM_RUN;
+  g_cond_signal (sim_cond);
+  g_mutex_unlock (sim_mutex);
+}
+
+
+void sim_stop (void)
+{
+  g_mutex_lock (sim_mutex);
+  if (sim_state == SIM_IDLE)
+    goto done;
+  if (sim_state != SIM_RUN)
+    fatal (2, "can't start when not idle\n");
+  sim_state = SIM_RUN;
+  g_cond_signal (sim_cond);
+done:
+  g_mutex_unlock (sim_mutex);
+}
+
+
+uint64_t sim_get_cycle_count (void)
+{
+  uint64_t count;
+  g_mutex_lock (sim_mutex);
+  count = cycle_count;
+  g_mutex_unlock (sim_mutex);
+  return (count);
+}
+
+
+void sim_set_cycle_count (uint64_t count)
+{
+  g_mutex_lock (sim_mutex);
+  cycle_count = count;
+  g_mutex_unlock (sim_mutex);
+}
+
+
+void sim_set_breakpoint (int address)
+{
+  /* $$$ not yet implemented */
+}
+
+
+void sim_clear_breakpoint (int address)
+{
+  /* $$$ not yet implemented */
+}
+
+
+gboolean sim_running (void)
+{
+  gboolean result;
+  g_mutex_lock (sim_mutex);
+  result = (sim_state == SIM_RUN);
+  g_mutex_unlock (sim_mutex);
+  return (result);
+}
+
+
+void sim_get_env (sim_env_t *env)
+{
+  g_mutex_lock (sim_mutex);
+  memcpy (env, & sim_env, sizeof (sim_env_t));
+  g_mutex_unlock (sim_mutex);
+}
+
+
+void sim_set_env (sim_env_t *env)
+{
+  g_mutex_lock (sim_mutex);
+  memcpy (& sim_env, env, sizeof (sim_env_t));
+  g_mutex_unlock (sim_mutex);
+}
+
+
+romword sim_read_rom (int addr)
+{
+  /* The ROM is read-only, so we don't have to grab the mutex. */
+  /* $$$ not yet implemented */
+  return (0);
+}
+
+
+void sim_read_ram (int addr, reg_t *val)
+{
+  if (addr > MAX_RAM)
+    fatal (2, "sim_read_ram: address %d out of range\n", addr);
+  g_mutex_lock (sim_mutex);
+  memcpy (val, & ram [addr], sizeof (reg_t));
+  g_mutex_unlock (sim_mutex);
+}
+
+
+void sim_write_ram (int addr, reg_t *val)
+{
+  if (addr > MAX_RAM)
+    fatal (2, "sim_write_ram: address %d out of range\n", addr);
+  g_mutex_lock (sim_mutex);
+  memcpy (& ram [addr], val, sizeof (reg_t));
+  g_mutex_unlock (sim_mutex);
+}
+
+
+void sim_press_key (int keycode)
+{
+  g_mutex_lock (sim_mutex);
+  sim_env.key_buf = keycode;
+  g_mutex_unlock (sim_mutex);
+}
+
+
+void sim_release_key (void)
+{
+  g_mutex_lock (sim_mutex);
+  sim_env.key_buf = -1;
+  g_mutex_unlock (sim_mutex);
 }

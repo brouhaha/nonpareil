@@ -32,8 +32,8 @@ CDEFINES =  -Dstricmp=strcasecmp -DENTER_KEY_MOD
 
 LDFLAGS = -g
 
-CFLAGS = -g -Wall `pkg-config gtk+-2.0 --cflags`
-LOADLIBES = `pkg-config gtk+-2.0 --libs`
+CFLAGS = -g -Wall `pkg-config gtk+-2.0 glib-2.0 --cflags`
+LOADLIBES = `pkg-config gtk+-2.0 glib-2.0 --libs` -lgthread-2.0
 
 
 # -----------------------------------------------------------------------------
@@ -42,15 +42,15 @@ LOADLIBES = `pkg-config gtk+-2.0 --libs`
 # -----------------------------------------------------------------------------
 
 PACKAGE = casmsim
-VERSION = 0.14
+VERSION = 0.15
 DISTNAME = $(PACKAGE)-$(VERSION)
 
 CALCS = hp45 hp55 hp35
 
 TARGETS = casm csim
 
-HDRS = casm.h symtab.h
-CSRCS = casm.c symtab.c csim.c
+HDRS = casm.h symtab.h util.h proc.h
+CSRCS = casm.c symtab.c csim.c util.c proc.c
 OSRCS = casml.l casmy.y 
 MISC = COPYING README ChangeLog
 
@@ -58,8 +58,8 @@ AUTO_CSRCS = casml.c casmy.tab.c
 AUTO_HDRS = casmy.tab.h
 AUTO_MISC = casmy.output
 
-CASM_OBJECTS = casm.o symtab.o casml.o casmy.tab.o
-CSIM_OBJECTS = csim.o
+CASM_OBJECTS = casm.o symtab.o casml.o casmy.tab.o util.o
+CSIM_OBJECTS = csim.o util.o proc.o
 
 OBJECTS = $(CASM_OBJECTS) $(CSIM_OBJECTS)
 

@@ -24,8 +24,12 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 */
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
+
 #include "symtab.h"
+#include "util.h"
+
 
 typedef struct sym
 {
@@ -36,23 +40,6 @@ typedef struct sym
   struct sym *right;
 } sym;
 
-static char *newstr (char *orig)
-{
-  int len;
-  char *r;
-
-  len = strlen (orig);
-  r = (char *) malloc (len + 10);
-  
-  if (! r)
-    {
-      fprintf (stderr, "memory allocation failed\n");
-      exit (2);
-    }
-
-  memcpy (r, orig, len + 1);
-  return (r);
-}
 
 t_symtab alloc_symbol_table (void)
 {
@@ -102,7 +89,6 @@ static int insert_symbol (sym **p, sym *newsym)
 int create_symbol (t_symtab t, char *name, int value, int lineno)
 {
   sym **table = t;
-  sym *p = *table;
   sym *newsym;
 
   newsym = (sym *) calloc (1, sizeof (sym));

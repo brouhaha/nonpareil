@@ -30,39 +30,14 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #include <gdk/gdk.h>
 #include <gtk/gtk.h>
 
-
-char * progn;
-
-
-/* generate fatal error message to stderr, doesn't return */
-void fatal (int ret, char *format, ...)
-{
-  va_list ap;
-
-  fprintf (stderr, "fatal error: ");
-  va_start (ap, format);
-  vfprintf (stderr, format, ap);
-  va_end (ap);
-  if (ret == 1)
-    fprintf (stderr, "usage: %s objectfile\n", progn);
-  exit (ret);
-}
+#include "util.h"
+#include "proc.h"
 
 
-char *newstr (char *orig)
-{
-  int len;
-  char *r;
+char *progname;
 
-  len = strlen (orig);
-  r = (char *) malloc (len + 1);
-  
-  if (! r)
-    fatal (2, "memory allocation failed\n");
 
-  memcpy (r, orig, len + 1);
-  return (r);
-}
+GtkWidget *display;
 
 
 typedef struct
@@ -227,13 +202,19 @@ typedef struct
 
 void button_pressed (GtkWidget *widget, button_info_t *button)
 {
+  sim_press_key (button->keycode);
+#ifdef KEYBOARD_DEBUG
   printf ("pressed %d\n", button->keycode);
+#endif
 }
 
 
 void button_released (GtkWidget *widget, button_info_t *button)
 {
+  sim_release_key ();
+#ifdef KEYBOARD_DEBUG
   printf ("released %d\n", button->keycode);
+#endif
 }
 
 
@@ -293,31 +274,19 @@ void add_keys (GdkPixbuf *window_pixbuf, GtkWidget *fixed)
 }
 
 
-#if 0
-void repaint_display (void *d)
+static void quit (GtkWidget *widget, gpointer data)
 {
-  GtkWidget *drawing_area = (GtkWidget *) d;
-  if (! drawing_area)
-    fatal (2, "where'd the display drawing area go?\n");
-  if (! font)
-    font = gdk_font_load ("fixed");
-
-  gdk_draw_rectangle (pixmap,
-		      drawing_area->style->white_gc,
-		      x,
-		      y,
-		      width,
-		      height);
-  gdk_draw_string (pixmap, font, s);
-
-  update_rect.x = 0;
-  update_rect.y = 0;
-  update_rect.width = drawing_area->allocation.width;
-  update_rect.height = drawing_area->allocation.height;
-
-  gtk_widget_draw (drawing_area, & update_rect);
+  gtk_main_quit ();
 }
+
+
+static void display_update (char *buf)
+{
+  gtk_label_set_text (GTK_LABEL (display), buf);
+#ifdef DISPLAY_DEBUG
+  printf ("%s\n", buf);
 #endif
+}
 
 
 #ifndef PATH_MAX
@@ -327,36 +296,39 @@ void repaint_display (void *d)
 
 int main (int argc, char *argv[])
 {
-#if 0
   char *objfn = NULL;
-  FILE *f;
-  char buf [PATH_MAX];
-#endif
 
   int window_width, window_height;
 
   GtkWidget *window;
   GtkWidget *fixed;
-  GtkWidget *display;
 
   GdkPixbuf *image_pixbuf;
   GError *error = NULL;
   GtkWidget *image;
 
- 
-  progn = newstr (argv [0]);
+  GdkColormap *colormap;
+  GdkColor red;
 
-#if 0
+  char buf [PATH_MAX];
+
+ 
+  progname = newstr (argv [0]);
+
+  gtk_init (& argc, & argv);
+
   while (--argc)
     {
       argv++;
       if (*argv [0] == '-')
 	{
+#if 0
 	  if (strcasecmp (argv [0], "-stop") == 0)
 	    run = 0;
 	  else if (strcasecmp (argv [0], "-trace") == 0)
 	    trace = 1;
 	  else
+#endif
 	    fatal (1, "unrecognized option '%s'\n", argv [0]);
 	}
       else if (objfn)
@@ -365,24 +337,6 @@ int main (int argc, char *argv[])
 	objfn = argv [0];
     }
 
-  if (objfn)
-    {
-      f = fopen (objfn, "r");
-      if (! f)
-	fatal (2, "unable to read listing file '%s'\n", objfn);
-    }
-  else
-    {
-      strcpy (buf, progn);
-      strcat (buf, ".lst");
-      objfn = & buf [0];
-      f = fopen (buf, "r");
-      if (! f)
-	fatal (2, "listing file must be specified\n");
-    }
-#endif
-
-  gtk_init (& argc, & argv);
 
   image_pixbuf = gdk_pixbuf_new_from_file ("hp45.jpg", & error);
   if (! image_pixbuf)
@@ -411,40 +365,38 @@ int main (int argc, char *argv[])
 
   gtk_widget_show (window);
 
-#if 0
+  colormap = gtk_widget_get_colormap (window);
+  if (! gdk_color_parse ("red", & red))
+    fatal (2, "can't parse color red\n");
+  if (! gdk_colormap_alloc_color (colormap, & red, FALSE, TRUE))
+    fatal (2, "can't alloc color red\n");
+
   display = gtk_label_new ("HP-55 Display");
-  gtk_widget_set_size_request (display, WINDOW_WIDTH, DISPLAY_HEIGHT);
-  gtk_widget_modify_fg (display, GTK_STATE_NORMAL, & color [red]);
-  gtk_widget_modify_bg (display, GTK_STATE_NORMAL, & color [dk_red]);
+  gtk_widget_set_size_request (display, window_width, 50);  /* $$$ height? */
+  gtk_widget_modify_fg (display, GTK_STATE_NORMAL, & red);
   gtk_fixed_put (GTK_FIXED (fixed), display, 0, 0);
   gtk_widget_show (display);
-#endif
 
-#if 0
   gtk_signal_connect (GTK_OBJECT (window), "destroy",
 		      GTK_SIGNAL_FUNC (quit), NULL);
-#endif
 
-#if 1
+  sim_init (10, & display_update);  /* $$$ 10 regs is enough for HP-45 */
+
+  if (! objfn)
+    {
+      strncpy (buf, progname, sizeof (buf));
+      strncat (buf, ".lst", sizeof (buf));
+      objfn = & buf [0];
+    }
+
+  if (! sim_read_listing_file (objfn, TRUE))
+    fatal (2, "unable to read listing file '%s'\n", objfn);
+
+  sim_reset ();
+
+  sim_start ();
+
   gtk_main ();
-#else
 
-  display = gtk_drawing_area_new ();
-  gtk_drawing_area_size (GTK_DRAWING_AREA (display),
-			 DISPLAY_WIDTH, DISPLAY_HEIGHT);
-  gtk_box_pack_start (GTK_BOX (vbox), display, TRUE, TRUE, 0);
-
-
-
-
-  init_breakpoints ();
-  init_source ();
-  read_listing_file (objfn, f, trace);
-  fclose (f);
-
-  init_ops ();
-
-  debugger ();
-#endif
   exit (0);
 }
