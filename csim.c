@@ -177,7 +177,7 @@ typedef struct
   GtkWidget *image [KML_MAX_SWITCH_POSITION];
   GtkWidget *fixed;
   kml_switch_t *kml_switch;
-  gboolean flag [KML_MAX_SWITCH_POSITION];
+  int flag [KML_MAX_SWITCH_POSITION];
 } switch_info_t;
 
 
@@ -260,6 +260,29 @@ void add_switches (GdkPixbuf *window_pixbuf, GtkWidget *fixed)
 	switch_info [i] = alloc (sizeof (switch_info_t));
 	add_switch (fixed, window_pixbuf, kml->kswitch [i], switch_info [i]);
       }
+}
+
+
+static void init_switch (switch_info_t *sw)
+{
+  int pos;
+  gboolean state;
+
+  for (pos = 0; pos < KML_MAX_SWITCH_POSITION; pos++)
+    if (sw->flag [pos])
+      {
+	state = gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (sw->widget [pos]));
+	sim_set_ext_flag (sim, sw->flag [pos], state);
+      }
+}
+
+static void init_switches (void)
+{
+  int i;
+
+  for (i = 0; i < KML_MAX_SWITCH; i++)
+    if (switch_info [i])
+      init_switch (switch_info [i]);
 }
 
 
@@ -875,6 +898,8 @@ int main (int argc, char *argv[])
     fatal (2, "unable to read listing file '%s'\n", kml->rom);
 
   sim_reset (sim);
+
+  init_switches ();
 
   sim_start (sim);
 
