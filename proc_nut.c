@@ -36,9 +36,6 @@ MA 02111, USA.
 #include "proc_nut.h"
 
 
-#define SLEEP_DEBUG
-
-
 /* map from high opcode bits to register index */
 static int tmap [16] =
 { 3, 4, 5, 10, 8, 6, 11, -1, 2, 9, 7, 13, 1, 12, 0, -1 };
