@@ -9,8 +9,6 @@ Build process:
 
   Create an RPM .spec file.
 
-  Create an NSIS instller script for Windows.
-
 
 User interface:
 
@@ -129,21 +127,3 @@ Better model support:
 
   Add HP-65 microinstructions for program memory access.
 
-
-Ports:
-
-  Windows
-    Cross-develompent tools:
-      MinGW cross-compiler:  http://www.mingw.org/
-
-    Toolkits:
-      GTK+ for Windows:      http://www.gimp.org/~tml/gimp/win32/
-      GTK+ for Windows runtime installer:  http://members.lycos.co.uk/alexv6/
-
-    Installers:
-      NSIS:        http://nsis.sourceforge.net/
-      MAKEMSI:     http://www.labyrinth.net.au/~dbareis/makemsi.htm
-      WiX:         http://sourceforge.net/projects/wix/
-
-  MacOS X
-    http://www.macgimp.org/index.php?topic=gtk
