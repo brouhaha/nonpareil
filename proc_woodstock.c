@@ -917,7 +917,7 @@ static void woodstock_disassemble (sim_t *sim, int addr, char *buf, int len)
     return;
 
   /* $$$ should use current bank rather than always bank 0 */
-  l = snprintf (buf, len, "%04d", sim->ucode [addr]);
+  l = snprintf (buf, len, "%04o", sim->ucode [addr]);
   buf += l;
   len -= l;
   if (len <= 0)
