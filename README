@@ -1,6 +1,6 @@
 README file for CASM - an HP Classic series calculator micro assembler
 Copyright 1995 Eric L. Smith (eric@telebit.com)
-Last revised March 8, 1995
+Last revised March 9, 1995
 
 -----------------------------------------------------------------------------
 
@@ -48,14 +48,14 @@ label" instruction is only available in the HP-65.
 The design of the processor and the instruction set are described in detail
 in United States patents 3,863,060 and 4,001,569.
 
-CASM is supplied with twelve source code files containing the code from
-United States patent number 4,009,379 titled "Portable Programmable
+CASM is supplied with a file named "hp55.asm" containing the source code from
+from United States patent number 4,009,379 titled "Portable Programmable
 Calculator Displaying Absolute Line Number Addresses and Key Codes and
 Automatically Altering Display Formats", granted February 22, 1977 to Bernard
 E. Musch of Palo Alto, California, and assigned to the Hewlett-Packard
-Company of Palo Alto, California.  These source code files are not part of
-CASM, are not copyrighted by Eric L. Smith, and are not subject to the General
-Public License.
+Company of Palo Alto, California.  This file is not part of CASM, is not
+copyrighted by Eric L. Smith, and is not subject to the General Public
+License.
 
 The '379 patent appears to cover the HP-55 calculator.  I don't have an
 HP-55, so I can't verify that the code in the patent matches that in the ROMs
@@ -90,7 +90,11 @@ code to "go_".
 CASM does a better job of displaying the branch target addresses than the HP
 assembler did.  It will actually show the correct target address based on the
 delayed select instructions, unless the delay instruction is in the last word
-of a page.  I have added a single directive ".rom" to the assembler which can
+of a page.  CASM has a ".rom" directive which can be used to 
 be used to provide the rom number.  This is vaguely similar to the origin
 directive in a typical assembler, except that CASM always start assembling
 code at location 0 of the selected ROM.
+
+CASM has a .symtab directive which causes the symbol table to be printed to
+the listing file.  If the source file contains multiple ROMs, each ROM should
+have its own .symtab directive.
