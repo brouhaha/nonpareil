@@ -16,7 +16,8 @@ User interface:
 
   Improve keyboard support:
       Release key when focus is lost.
-      Keep button widgets from usurping "ENTER" key.
+      Ignore key release and hold key for a fixed (configurable?) number of
+          simulation cycles?
 
   Improve KML file utilization, particularly for display.
 

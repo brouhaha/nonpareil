@@ -1,3 +1,8 @@
+2004-02-14  Eric Smith <eric@brouhaha.com>
+
+	* csim.c (main, on_key_event): Fix keyboard event handling so ENTER
+	key works.
+	
 2004-02-13  Eric Smith <eric@brouhaha.com>
 
 	* csim.c kml.h kml.c kmly.y: Added keyboard support.

@@ -108,7 +108,7 @@ scancode 45 map 45 51 end  # -
 scancode 42 map 42 71 end  # *
 scancode 47 map 47 81 end  # /
 scancode 37 map 37 35 end  # %
-scancode 65293 map 65293 51 end  # ENTER
+scancode 65293 map 65293 41 end  # ENTER
 scancode 99 map 99 42 end  # c - CHS
 scancode 101 map 101 43 end  # e - EEX
 
@@ -128,4 +128,4 @@ scancode 65451 map 65451 61 end  # +
 scancode 65453 map 65453 51 end  # -
 scancode 65450 map 65450 71 end  # *
 scancode 65455 map 65455 81 end  # /
-scancode 65421 map 65421 51 end  # ENTER
+scancode 65421 map 65421 41 end  # ENTER

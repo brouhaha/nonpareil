@@ -38,6 +38,8 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
 char *progname;
 
+gboolean scancode_debug = FALSE;
+
 kml_t *kml;
 
 struct sim_handle_t *sim;
@@ -483,24 +485,25 @@ void process_commands (kml_command_list_t *commands,
 }
 
 
-void on_key_event (GtkWidget *widget, GdkEventKey *event)
+gboolean on_key_event (GtkWidget *widget, GdkEventKey *event)
 {
   kml_scancode_t *scancode;
 
   if ((event->type != GDK_KEY_PRESS) && 
       (event->type != GDK_KEY_RELEASE))
-    return;  /* why are we here? */
+    return (FALSE);  /* why are we here? */
 
   for (scancode = kml->first_scancode; scancode; scancode = scancode->next)
     {
       if (event->keyval == scancode->scancode)
 	{
 	  process_commands (scancode->commands, event->keyval, event->type == GDK_KEY_PRESS);
-	  return;
+	  return (TRUE);
 	}
     }
-  if (1)
+  if (scancode_debug)
     fprintf (stderr, "unrecognized scancode %d\n", event->keyval);
+  return (FALSE);
 }
 
 
@@ -701,7 +704,7 @@ gboolean on_move_window (GtkWidget *widget, GdkEventButton *event)
 int main (int argc, char *argv[])
 {
   char *kml_fn = NULL;
-  int kml_debug = 0;
+  gboolean kml_debug = FALSE;
 
   model_info_t *model_info;
 
@@ -734,6 +737,8 @@ int main (int argc, char *argv[])
 	{
 	  if (strcasecmp (argv [0], "--kmldebug") == 0)
 	    kml_debug = 1;
+	  else if (strcasecmp (argv [0], "--scancodedebug") == 0)
+	    scancode_debug = 1;
 #if 0
 	  else if (strcasecmp (argv [0], "--stop") == 0)
 	    run = 0;
