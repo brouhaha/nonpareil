@@ -48,7 +48,7 @@ alpha		[a-zA-Z]
 %%
 
 [1-9]{digit}*	{ yylval.integer = atoi (yytext); return INTEGER; }
-0{octaldig}*	{ sscanf (yytext+1, "%o", &yylval.integer); return INTEGER; }
+0{octaldig}*	{ sscanf (yytext, "%o", &yylval.integer); return INTEGER; }
 @{octaldig}+	{ sscanf (yytext+1, "%o", &yylval.integer); return INTEGER; }
 0x{hexdig}+	{ sscanf (yytext, "%x", &yylval.integer); return INTEGER; }
 
