@@ -56,6 +56,8 @@ int main (int argc, char *argv[])
       yyparse ();
     }
 
+  print_symbol_table (stdout);
+
   fprintf (stderr, "%d errors\n", errors);
 }
 
@@ -77,19 +79,18 @@ void do_label (char *s)
 
   if (pass == 1)
     {
-      if (! create_symbol (s, pc))
+      if (! create_symbol (s, pc, lineno))
 	{
 	  fprintf (stdout, "multiply defined symbol '%s' on line %d\n", s, lineno);
 	  errors++;
 	}
-      return;
     }
-  if (! lookup_symbol (s, & prev_val))
+  else if (! lookup_symbol (s, & prev_val))
     {
       fprintf (stdout, "undefined symbol '%s' on line %d\n", s, lineno);
       errors++;
     }
-  if (prev_val != pc)
+  else if (prev_val != pc)
     {
       fprintf (stdout, "phase error for symbol '%s' on line %d\n", s, lineno);
       errors++;
@@ -99,10 +100,14 @@ void do_label (char *s)
 void emit (int op)
 {
   int i;
-  printf ("L%05o: ", pc);
-  for (i = 0x200; i; i >>= 1)
-    printf ((op & i) ? "1" : ".");
-  printf ("\n");
+
+  if (pass == 2)
+    {
+      printf ("L%05o: ", pc);
+      for (i = 0x200; i; i >>= 1)
+	printf ((op & i) ? "1" : ".");
+      printf ("\n");
+    }
   pc ++;
 }
 

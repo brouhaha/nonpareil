@@ -107,8 +107,6 @@ keywords [] =
   NULL,        0,
 };
 
-#define stricmp strcasecmp
-
 int keyword (char *string)
 {
   struct keyword *ptr;

@@ -1,4 +1,5 @@
 YFLAGS = -d
+CFLAGS = -Dstricmp=strcasecmp
 
 OBJECTS = casm.o y.tab.o lex.yy.o symtab.o
 LIBS = -lc

@@ -11,7 +11,9 @@
 void init_symbol_table (void);
 
 /* returns 1 for success, 0 if duplicate name */
-int create_symbol (char *name, int value);
+int create_symbol (char *name, int value, int lineno);
 
 /* returns 1 for success, 0 if not found */
 int lookup_symbol (char *name, int *value);
+
+void print_symbol_table (FILE *f);
