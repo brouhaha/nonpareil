@@ -374,12 +374,16 @@ static void op_nop (sim_t *sim, int opcode)
 static void op_dec_p (sim_t *sim, int opcode)
 {
   sim->env->p = (sim->env->p - 1) & 0xf;
+  /* On the ACT (Woodstock) if P=0 before a decrement, it will be
+     13 after.  Apparently the CTC (Classic) does not do this. */
 }
 
 
 static void op_inc_p (sim_t *sim, int opcode)
 {
   sim->env->p = (sim->env->p + 1) & 0xf;
+  /* On the ACT (Woodstock) if P=13 before an increment, it will be
+     0 after.  Apparently the CTC (Classic) does not do this. */
 }
 
 
@@ -511,7 +515,10 @@ static void op_load_constant (sim_t *sim, int opcode)
     printf ("load constant > 9\n");
   else
     sim->env->c [sim->env->p] = opcode >> 6;
+
   sim->env->p = (sim->env->p - 1) & 0xf;
+  /* On the ACT (Woodstock) if P=0 before a load constant, it will be
+     13 after.  Apparently the CTC (Classic) does not do this. */
 }
 
 
