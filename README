@@ -75,6 +75,10 @@ used after instructions that can't set the carry flag.  The "then go to"
 form should only be used after "if" instructions.  The "if no carry go to"
 form should only be used after arithmetic instructions.
 
+CASM considers the keywords which are used to form instructions to be reserved
+words, so they can't be used as labels.  HP's assembler was more flexible in
+this regard; I had to change the label "go" in the HP-55 source code to "go_".
+
 CASM does a better job of displaying the branch target addresses than the
 HP assembler did.  It will actually show the correct target address based on
 the delayed select instructions, unless the delay instruction is in the last
