@@ -2,39 +2,68 @@ TODO list for CASMSIM
 Copyright 1995, 2003, 2004 Eric L. Smith <eric@brouhaha.com>
 $Id$
 
-Add menus:
-    File - Open, Save, Quit
-    Edit - Copy, Paste
-    Help - Contents, About
+Building:
 
-Keyboard events, at least for numeric entry, basic four functions, and enter.
-
-Copy and paste.
-
-Add a debugger.
-
-Calculator model selection at runtime.
-
-Split ALU functions into separate source file.
-
-Create a CPU class, with subclasses for classic, woodstock,
-spice/spike, and nut/voyager.
-
-Port to Windows
-Port to MacOS X
-
-Dump actual HP-45 and HP-55 ROMs and compare to CASM output
-Dump HP-65, HP-70, HP-80 ROMs
-
-Key in partial HP-65 source code from patent
-Key in HP-80 source code from patent
-
-Implement HP-65, HP-70, HP-80 keyboard legends
+  Create an RPM .spec file.
 
 
-Make RAM addressing work correctly for HP-45 and HP-65 (only one digit of
-address)
+User interface:
 
-Clean up memory usage of symbols in CASM
+  Make display area larger.  Same size digits, just set more background around
+  them.
 
-Implement symbol cross-reference in CASM
+  Keyboard events, at least for numeric entry, basic four functions, and enter.
+
+  Implement menu commands:
+      File - Open, Save, save As
+      Edit - Copy, Paste
+
+  Make button hilighting look better.
+
+  Add help.
+
+  Create an icon.
+
+  Calculator model selection at runtime.
+
+  Create a fancier About box.
+
+
+Internals:
+
+  Add a debugger.
+
+  Split ALU functions into separate source file.
+
+  Create a CPU class, with subclasses for classic, woodstock,
+  spice/spike, and nut/voyager.
+
+  Clean up memory usage of symbols in CASM
+
+  Implement symbol cross-reference in CASM
+
+
+Better model support:
+
+  Model-dependent RAM size.
+
+  Scan images.
+
+  Key in HP-80 source code and partial HP-65 source code from patents.
+
+  Implement HP-65, HP-70, HP-80 keyboard legends.
+
+  Dump actual HP-45, HP-55, HP-65, HP-70, HP-80 ROMs.
+
+  Compare actual HP-45 and HP-55 ROMs to CASM output.
+
+  Add HP-65 microinstructions for program memory access.
+
+
+Ports:
+
+  Windows
+
+  MacOS X
+
+

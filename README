@@ -6,9 +6,9 @@ CASMSIM consists of the CASM assembler and the CSIM simulator.
 
 -----------------------------------------------------------------------------
 
-IMPORTANT NOTE
+IMPORTANT NOTES
 
-Release 0.15 of CASMSIM is an interim developmental release.  It is
+Release 0.15 of CASMSIM is an interim development release.  It is
 the first release to use the Gtk+ toolkit.  Only the HP-45 is
 simulated in this release.  To use the simulator, you will need a
 suitable digital image (photograph or scan) of the calculator.  No
@@ -20,6 +20,8 @@ the Museum of HP Calculators:
 The image file should be downloaded and renamed to "hp45.jpg".  The image
 file may be downloaded with the correct filename automatically by
 "make hp45.jpg".
+
+The File and Edit menu commands are not implemented (other than Quit).
 
 -----------------------------------------------------------------------------
 
