@@ -33,6 +33,13 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #include "util.h"
 
 
+/* KEYTRACE is defined, trace from ROM -> KEYS through next key status
+   test */
+#undef KEYTRACE
+
+static int trace = 0;
+
+
 #define MAX_GROUP   2
 #define MAX_ROM    16
 #define ROM_SIZE  256
@@ -1045,11 +1052,18 @@ void execute_instruction (sim_t *sim)
 
   opcode = sim->ucode [0] [sim->env.pc >> 8] [sim->env.pc & 0377];
 
-#undef TRACE
-#ifdef TRACE
-  print_env (& sim->env);
-  printf ("%s\n", sim->source [0] [sim->env.pc >> 8] [sim->env.pc & 0377]);
+#ifdef KEYTRACE
+  if (opcode == 00020)
+    trace = 1;
+  else if (opcode == 01724)
+    trace = 0;
 #endif
+
+  if (trace)
+    {
+      print_env (& sim->env);
+      printf ("%s\n", sim->source [0] [sim->env.pc >> 8] [sim->env.pc & 0377]);
+    }
 
   sim->env.prev_carry = sim->env.carry;
   sim->env.carry = 0;
