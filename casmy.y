@@ -74,18 +74,14 @@
 %token TOGGLE
 
 %type <integer> expr
+%type <integer> goto_form
 
 %%
 
-file		:	/* nothing */
-		|	file line
-		;
-
-line		:	label instruction '\n' { endline (); }
-		|	label '\n' { endline (); }
-		|	instruction '\n' { endline (); }
-		|	'\n' { endline (); }
-		|	error '\n' { yyerrok; endline (); }
+line		:	label instruction '\n'
+		|	label '\n'
+		|	instruction '\n'
+		|	'\n'
 		;
 
 label:		IDENT ':'	{ do_label ($1); }
@@ -110,12 +106,22 @@ instruction	: jsb_inst
 		| misc_inst
 	        ;
 
-jsb_inst        : JSB expr { emit (($2 << 2) | 0x001); }
+jsb_inst        : JSB expr { emit (($2 << 2) | 0x001); 
+			     target (dsg, dsr, $2);
+			     dsg = group;
+			     dsr = rom; }
                 ;
 
-goto_inst       : GO TO expr { emit (($3 << 2) | 0x003); }
-                | THEN GO TO expr { emit (($4 << 2) | 0x003); }
-                | IF NO CARRY GO TO expr { emit (($6 << 2) | 0x003); }
+goto_inst	: goto_form { emit (($1 << 2) | 0x003);
+			      target (dsg, dsr, $1);
+			      dsg = group;
+			      dsr = rom; }
+		;
+
+goto_form       : GO TO expr { $$ = $3; }
+                | THEN GO TO expr { $$ = $4; }
+                | IF NO CARRY GO TO expr { $$ = $6; }
+		;
 
 arith_inst      : inst_test_b_0
                 | inst_0_to_b
@@ -278,11 +284,19 @@ inst_stack_to_a : STACK ARROW A             { emit (0x1a8); } ;
 inst_down_rot   : DOWN ROTATE               { emit (0x328); } ;
 inst_clr_reg    : CLEAR REGISTERS           { emit (0x3a8); } ;
 inst_sel_rom    : SELECT ROM expr           { range ($3, 0, 7);
-                                              emit (($3 << 7) | 0x010); } ;
+                                              emit (($3 << 7) | 0x010);
+					      target (dsg, $3, (pc + 1) & 0xff);
+					      dsr = rom;
+					      dsg = group;
+					      flag_char = '*'; } ;
 inst_del_rom    : DELAYED SELECT ROM expr   { range ($4, 0, 7); 
-                                              emit (($4 << 7) | 0x074); } ;
+                                              emit (($4 << 7) | 0x074);
+					      dsr = $4;
+					      flag_char = '$'; } ;
 inst_del_grp    : DELAYED SELECT GROUP expr { range ($4, 0, 1); 
-                                              emit (($4 << 7) | 0x234); } ;
+                                              emit (($4 << 7) | 0x234);
+					      dsg = $4;
+					      flag_char = '#'; } ;
 inst_noop       : NO OPERATION              { emit (0); } ;
 inst_c_to_addr	: C ARROW DATA ADDRESS      { emit (0x270); } ;
 inst_c_to_data	: C ARROW DATA              { emit (0x2f0); } ;

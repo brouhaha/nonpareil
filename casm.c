@@ -9,12 +9,108 @@
  */
 
 #include <stdio.h>
+#include "casm.h"
 
 char *progname;
 int pass;
 int lineno;
 int errors;
-int pc;
+
+int group;	/* current rom group */
+int rom;	/* current rom */
+int pc;		/* current pc */
+
+int dsr;	/* delayed select rom */
+int dsg;	/* delayed select group */
+
+char flag_char;
+
+int objflag;	/* used to remember args to emit() */
+int objcode;
+
+int targflag;	/* used to remember args to target() */
+int targgroup;
+int targrom;
+int targpc;
+
+char linebuf [MAX_LINE];
+char *lineptr;
+
+#define SRC_TAB 32
+char listbuf [MAX_LINE];
+char *listptr;
+
+void do_pass (int p, FILE *srcf, FILE *listf)
+{
+  pass = p;
+  lineno = 0;
+  errors = 0;
+  pc = 0;
+  dsr = rom;
+  dsg = group;
+
+  fprintf (stderr, "Starting pass %d\n", pass);
+
+  while (fgets (linebuf, MAX_LINE, srcf))
+    {
+      lineno++;
+      lineptr = & linebuf [0];
+
+      listptr = & listbuf [0];
+
+      if (pass == 2)
+	{
+	  sprintf (listptr, "%3d   ", lineno);
+	  listptr += strlen (listptr);
+	}
+
+      objflag = 0;
+      targflag = 0;
+      flag_char = ' ';
+
+      yyparse ();
+
+      if (pass == 2)
+	{
+	  if (objflag)
+	    {
+	      int i;
+	      sprintf (listptr, "L%1o%1o%03o:  ", group, rom, pc);
+	      listptr += strlen (listptr);
+	      for (i = 0x200; i; i >>= 1)
+		*listptr++ = (objcode & i) ? '1' : '.';
+	      *listptr = '\0';
+	    }
+	  else
+	    {
+	      strcat (listptr, "                   ");
+	      listptr += strlen (listptr);
+	    }
+
+	  if (targflag)
+	    {
+	      sprintf (listptr, "  -> L%1o%1o%03o", targgroup, targrom, targpc);
+	      listptr += strlen (listptr);
+	    }
+	  else
+	    {
+	      strcat (listptr, "           ");
+	      listptr += strlen (listptr);
+	    }
+	  
+	  sprintf (listptr, "  %c%c%c%c%c     ", flag_char, flag_char, flag_char,
+		                               flag_char, flag_char);
+	  listptr += strlen (listptr);
+
+	  strcat (listptr, linebuf);
+	  /* listptr += strlen (listpr); */
+	  fprintf (listf, "%s", listbuf);
+	}
+
+      if (objflag)
+	pc = (pc + 1) & 0xff;
+    }
+}
 
 int main (int argc, char *argv[])
 {
@@ -31,31 +127,22 @@ int main (int argc, char *argv[])
 
   infile = argv [1];
 
-  in = freopen (infile, "r", stdin);
+  in = fopen (infile, "r");
+
   if (! in)
     {
       fprintf (stderr, "can't open input file '%s'\n", infile);
       exit (2);
     }
 
-  fprintf (stderr, "Starting pass 1\n");
-  pass = 1;
-  errors = 0;
-  lineno = 1;
-  pc = 0;
-  yyparse ();
+  rom = 0;
+  group = 0;
 
-  if (! errors)
-    {
-      rewind (stdin);
+  do_pass (1, in, stdout);
 
-      fprintf (stderr, "Starting pass 2\n");
-      pass = 2;
-      lineno = 1;
-      pc = 0;
-      yyrestart (stdin);
-      yyparse ();
-    }
+  rewind (in);
+
+  do_pass (2, in, stdout);
 
   print_symbol_table (stdout);
 
@@ -100,21 +187,16 @@ void do_label (char *s)
 
 void emit (int op)
 {
-  int i;
-
-  if (pass == 2)
-    {
-      printf ("L%05o: ", pc);
-      for (i = 0x200; i; i >>= 1)
-	printf ((op & i) ? "1" : ".");
-      printf ("\n");
-    }
-  pc ++;
+  objcode = op;
+  objflag = 1;
 }
 
-void endline (void)
+void target (int g, int r, int p)
 {
-  lineno ++;
+  targflag = 1;
+  targgroup = g;
+  targrom = r;
+  targpc = p;
 }
 
 void range (int val, int min, int max)

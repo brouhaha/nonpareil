@@ -11,11 +11,24 @@
 extern int pass;
 extern int lineno;
 extern int errors;
-extern int pc;
+
+extern int group;	/* current rom group */
+extern int rom;		/* current rom */
+extern int pc;		/* current pc */
+
+extern int dsr;		/* delayed select rom */
+extern int dsg;		/* delayed select group */
+
+extern char flag_char;  /* used to mark jumps across rom banks */
+
+#define MAX_LINE 256
+extern char linebuf [MAX_LINE];
+extern char *lineptr;
 
 void do_label (char *s);
 
 void emit (int op);
+void etarget (int targrom, int targpc);  /* for branch target info */
 
 void endline (void);
 

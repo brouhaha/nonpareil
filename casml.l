@@ -11,6 +11,17 @@
 %{
 #include "y.tab.h"
 #include "casm.h"
+
+#undef YY_INPUT
+#define YY_INPUT(buf,result,max_size) \
+  { \
+    int r = strlen (lineptr); \
+    if (r > max_size) \
+      r = max_size; \
+    memcpy (buf, lineptr, r); \
+    lineptr += r; \
+    result = r; \
+  }
 %}
 
 octaldig	[0-7]
@@ -49,7 +60,7 @@ rb		\]
 
 \;.*$		;
 [ \t]+		;
-\n		{ return '\n'; }
+\n		{ return yytext [0]; }
 .		{ return yytext [0]; }
 
 %%
