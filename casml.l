@@ -30,11 +30,6 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #include "symtab.h"
 #include "casm.h"
 
-#ifdef OLD_FLEX
-#undef yywrap
-/* Only needed for versions of flex prior to 2.4.1. */
-int yywrap (void);
-#endif /* OLD_FLEX */
 
 #undef YY_INPUT
 #define YY_INPUT(buf,result,max_size) \
@@ -165,9 +160,5 @@ int keyword (char *string)
 
 int yywrap (void)
 {
-#ifdef OLD_FLEX
-/* Only needed for versions of flex prior to 2.4.1. */
-  yyrestart (yyin);
-#endif /* OLD_FLEX */
   return (1);
 }

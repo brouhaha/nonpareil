@@ -18,11 +18,6 @@
 # Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
 
-# -----------------------------------------------------------------------------
-# If you are using Flex version 2.4.1 or earlier, you will need to add
-# -DOLD_FLEX to CFLAGS.
-# -----------------------------------------------------------------------------
-
 YACC = bison
 YFLAGS = -d -v
 

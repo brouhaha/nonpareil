@@ -1,5 +1,8 @@
 2004-01-19  Eric Smith <eric@brouhaha.com>
 
+	* casml.l kmll.l: Removed OLD_FLEX conditional; now Flex 2.4.2
+	or later is required.
+	
 	* proc.c (sim_thread_func): Try harder to maintain nominal rate
 	of microinstructions per second.
 	

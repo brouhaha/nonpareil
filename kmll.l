@@ -126,9 +126,5 @@ int octal_escape (char *p)
 
 int yywrap (void)
 {
-#ifdef OLD_FLEX
-/* Only needed for versions of flex prior to 2.4.1. */
-  yyrestart (yyin);
-#endif /* OLD_FLEX */
   return (1);
 }
