@@ -1,6 +1,6 @@
 # Makefile for CASMSIM package
 # Copyright 1995, 2003 Eric L. Smith
-# $Header: /home/svn/casmsim/Makefile,v 1.19 2003/05/30 07:36:38 eric Exp $
+# $Id: Makefile,v 1.20 2003/05/31 00:00:08 eric Exp $
 #
 # CASMSIM is free software; you can redistribute it and/or modify it under the
 # terms of the GNU General Public License version 2 as published by the Free
@@ -46,11 +46,12 @@ X11INCS = -I/usr/X11R6/include
 # -----------------------------------------------------------------------------
 
 PACKAGE = casmsim
-VERSION = 0.12
+VERSION = 0.13
 DISTNAME = $(PACKAGE)-$(VERSION)
 
+CALCS = hp45 hp55 # hp35
+
 TARGETS = casm csim
-MISC_TARGETS = hp45 hp55
 
 HDRS = casm.h symtab.h xio.h
 CSRCS = casm.c symtab.c csim.c xio.c
@@ -68,7 +69,7 @@ OBJECTS = $(CASM_OBJECTS) $(CSIM_OBJECTS)
 
 SIM_LIBS = $(X11LIBS)
 
-ROM_SRCS =  hp45.asm hp55.asm
+ROM_SRCS =  $(CALCS:=.asm)
 ROM_LISTINGS = $(ROM_SRCS:.asm=.lst)
 ROM_OBJS = $(ROM_SRCS:.asm=.obj)
 
@@ -78,28 +79,22 @@ DIST_FILES = $(MISC) Makefile $(HDRS) $(CSRCS) $(OSRCS) $(ROM_SRCS)
 %.tab.c %.tab.h %.output: %.y
 	$(YACC) $(YFLAGS) $<
 
+%.obj %.lst: %.asm csim
+	./casm $<
 
-all: $(TARGETS) $(MISC_TARGETS)
+hp%: hp%.lst csim
+	rm -f $@
+	ln -s csim $@
+
+
+all: $(TARGETS) $(CALCS) $(ROM_LISTINGS)
 
 casm:	$(CASM_OBJECTS)
 	$(CC) -o $@ $(CASM_OBJECTS)
 
-hp45:	csim hp45.lst
-	rm -f hp45
-	ln -s csim hp45
-
-hp55:	csim hp55.lst
-	rm -f hp55
-	ln -s csim hp55
-
-hp45.obj hp45.lst:	casm hp45.asm
-	./casm hp45.asm
-
-hp55.obj hp55.lst:	casm hp55.asm
-	./casm hp55.asm
-
 csim:	$(CSIM_OBJECTS)
 	$(CC) -o $@ $(CSIM_OBJECTS) $(SIM_LIBS) 
+
 
 dist:	$(DIST_FILES)
 	-rm -rf $(DISTNAME) $(DISTNAME).tar.gz
