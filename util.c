@@ -30,6 +30,9 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #include "util.h"
 
 
+char *progname;
+
+
 /* generate fatal error message to stderr, doesn't return */
 
 void fatal (int ret, char *format, ...)
@@ -41,7 +44,7 @@ void fatal (int ret, char *format, ...)
   vfprintf (stderr, format, ap);
   va_end (ap);
   if (ret == 1)
-    fprintf (stderr, "usage: %s objectfile\n", progname);
+    usage (stderr);
   exit (ret);
 }
 

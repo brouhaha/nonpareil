@@ -27,7 +27,9 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #define MAKESTR(x) QMAKESTR(x)
 
 
-extern char * progname;
+extern char * progname;  /* must be set by main program */
+
+void usage (FILE *f);    /* must be implemented in main program */
 
 void fatal (int ret, char *format, ...);
 

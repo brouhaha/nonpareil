@@ -36,8 +36,6 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #include "kml.h"
 
 
-char *progname;
-
 gboolean scancode_debug = FALSE;
 gboolean kml_debug = FALSE;
 
@@ -55,6 +53,16 @@ int display_digit [DISPLAY_DIGIT_POSITIONS];
 
 
 GtkWidget *display;
+
+
+void usage (FILE *f)
+{
+  fprintf (f, "usage: %s [options...] kmlfile\n", progname);
+  fprintf (f, "options:\n");
+  fprintf (f, "   --kmldebug\n");
+  fprintf (f, "   --kmldump\n");
+  fprintf (f, "   --scancodedebug\n");
+}
 
 
 #define DIGIT_RADIX 10

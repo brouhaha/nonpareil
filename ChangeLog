@@ -1,5 +1,9 @@
 2004-02-16  Eric Smith <eric@brouhaha.com>
 
+	* util.c (fatal) util.h casm.c (usage) csim.c (usage): Add usage()
+	functions to main programs, to be called from fatal().  Moved
+	declaration of progname into util.
+	
 	* csim.c (main, setup_color): Use image background, display
 	foreground and background colors from KML file.  Split --kmldump
 	option from --kmldebug.

@@ -34,7 +34,6 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #include "util.h"
 #include "casm.h"
 
-char *progname;
 
 int pass;
 int lineno;
@@ -87,6 +86,13 @@ FILE *objfile  = NULL;
 FILE *listfile = NULL;
 
 t_symtab symtab [MAXGROUP] [MAXROM];  /* separate symbol tables for each ROM */
+
+
+void usage (FILE *f)
+{
+  fprintf (f, "usage: %s objectfile\n", progname);
+}
+
 
 void format_listing (void)
 {
