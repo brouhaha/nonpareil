@@ -3,6 +3,7 @@ CSIM is a simulator for the processor used in the HP "Classic" series
 of calculators, which includes the HP-35, HP-45, HP-55, HP-65, HP-70,
 and HP-80.
 
+$Id: csim.c,v 1.17 2003/05/30 23:38:12 eric Exp $
 Copyright 1995 Eric L. Smith
 
 CSIM is free software; you can redistribute it and/or modify it under the
@@ -19,8 +20,6 @@ Public License for more details.
 You should have received a copy of the GNU General Public License along with
 this program (in the file "COPYING"); if not, write to the Free Software
 Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
-
-$Header: /home/svn/casmsim/csim.c,v 1.16 1995/03/28 01:34:48 eric Exp $
 */
 
 #include <stdarg.h>

@@ -1,6 +1,6 @@
 CASMSIM - an HP Classic series calculator micro assembler and simulator
 Copyright 1995, 2003 Eric L. Smith (eric@brouhaha.com)
-$Header: /home/svn/casmsim/README,v 1.23 2003/05/30 07:36:38 eric Exp $
+$Id: README,v 1.24 2003/05/30 23:38:12 eric Exp $
 
 CASMSIM consists of the CASM assembler and the CSIM simulator.  It's just a
 quick hack, so don't expect too much.  In particular it really needs an

@@ -1,11 +1,11 @@
 /*
 symtab.c: a simple binary tree symbol table
+$Id: symtab.c,v 1.9 2003/05/30 23:38:12 eric Exp $
+Copyright 1995 Eric L. Smith
 
 CASM is an assembler for the processor used in the HP "Classic" series
 of calculators, which includes the HP-35, HP-45, HP-55, HP-65, HP-70,
 and HP-80.
-
-Copyright 1995 Eric L. Smith
 
 CASM is free software; you can redistribute it and/or modify it under the
 terms of the GNU General Public License version 2 as published by the Free
@@ -21,8 +21,6 @@ Public License for more details.
 You should have received a copy of the GNU General Public License along with
 this program (in the file "COPYING"); if not, write to the Free Software
 Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
-
-$Header: /home/svn/casmsim/symtab.c,v 1.8 1995/03/28 01:34:48 eric Exp $
 */
 
 #include <stdio.h>
