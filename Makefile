@@ -72,7 +72,10 @@ ifdef USE_READLINE
   LOADLIBES += -lreadline -lhistory -ltermcap
 endif
 
-CALCS = hp25 hp35 hp45 hp55 hp80
+SRC_CALCS = hp35 hp45 hp55 hp80
+OBJ_CALCS = hp25
+
+ALL_CALCS = $(SRC_CALCS) $(OBJ_CALCS)
 
 TARGETS = nonpareil uasm
 
@@ -106,11 +109,12 @@ OBJECTS = $(UASM_OBJECTS) $(NONPAREIL_OBJECTS)
 
 SIM_LIBS = $(LOADLIBES)
 
-ROM_SRCS =  $(CALCS:=.asm)
+ROM_SRCS =  $(SRC_CALCS:=.asm)
 ROM_LISTINGS = $(ROM_SRCS:.asm=.lst)
-ROM_OBJS = $(ROM_SRCS:.asm=.obj)
+ROM_OBJS = $(ROM_SRCS:.asm=.obj) $(OBJ_CALCS:=.obj)
 
-DIST_FILES = $(MISC) Makefile $(HDRS) $(CSRCS) $(LSRCS) $(YSRCS) $(ROM_SRCS) \
+DIST_FILES = $(MISC) Makefile $(HDRS) $(CSRCS) $(LSRCS) $(YSRCS) \
+	$(ROM_SRCS) $(OBJ_CALCS:=.obj) \
 	$(KML) $(IMAGES)
 
 CFLAGS += -DNONPAREIL_RELEASE=$(RELEASE)
@@ -121,7 +125,7 @@ CFLAGS += -DNONPAREIL_RELEASE=$(RELEASE)
 %.obj %.lst: %.asm uasm
 	./uasm $<
 
-hp%: hp%.lst nonpareil
+hp%: hp%.obj nonpareil
 	rm -f $@
 	ln -s nonpareil $@
 
