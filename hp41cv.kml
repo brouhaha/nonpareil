@@ -66,7 +66,7 @@ display
 	  segment 'a' 'b' 'c' 'd'                 'i' 'j'                 end
 
 	character 0x05  # E
-	  segment 'a' 'b' 'c' 'd' 'e' 'f' 'g' 'h'                         end
+	  segment 'a'         'd' 'e' 'f' 'g' 'h'                         end
 
 	character 0x06  # F
 	  segment 'a'             'e' 'f' 'g' 'h'                         end
