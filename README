@@ -6,7 +6,7 @@ $Id$
 
 News:
 
-Release 0.44 of Nonpareil is an interim development release.
+Release 0.45 of Nonpareil is an interim development release.
 
 In this release, the HP-25, HP-31E, HP-33C, HP-35, HP-37E, HP-41CV, HP-45,
 HP-55, and HP-80 are simulated.
@@ -17,8 +17,6 @@ There are a few known bugs in the simulations:
 
 * The HP-55 simulation does not correctly support user registers
   .0 through .9.
-
-* The HP-25 logarithmic and exponential functions do not work correctly.
 
 -----------------------------------------------------------------------------
 
@@ -96,8 +94,7 @@ simulating the following calculators:
   Spice series:      HP-31E, HP-32E, HP-33E, HP-33C, HP-37E
   Coconut:           HP-41C, HP-41CV
 
-Nonpareil uses the Gtk+ 2.2 toolkit and Glib 2.2.  It should be
-portable to Windows and MacOS X, but has only been tested on Linux.
+Nonpareil uses the Gtk+ 2.2 toolkit and Glib 2.2.
 
 Nonpareil uses a single command line argument to specify the KML file.
 If no argument is found, nonpareil will try to find a file using the
@@ -174,7 +171,7 @@ Development tools:
 
 I used GNU tools to build nonpareil and uasm.  Originally I used GCC
 2.5.8, Flex 2.4.7, Bison 1.22, and Make 3.71.  Most recently I'm using
-GCC 3.3.2, Flex 2.5.4a, Bison 1.875, and SCons 0.95.  Flex versions
+GCC 3.4.2, Flex 2.5.4a, Bison 1.875c, and SCons 0.96.1.  Flex versions
 prior to 2.4.2 will not work.
 
 
