@@ -36,7 +36,7 @@ static void woodstock_disassemble_branch (char *mnem, int addr, int op1,
   int l;
   int target;
 
-  target = (addr & 07000) + (op1 >> 2);
+  target = (addr & 07400) + (op1 >> 2);
 
   l = snprintf (buf, len, "%s %04o", mnem, target);
   buf += l;
