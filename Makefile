@@ -74,7 +74,7 @@ csim:	$(CSIM_OBJECTS)
 csim.o:	csim.c
 	$(CC) -c $(CFLAGS) -o $@ $<
 
-classic_hp.tar.gz:	$(DISTRIB)
+casmsim.tar.gz:	$(DISTRIB)
 	tar -cvzf $@ $(DISTRIB)
 	ls -l $@
 
