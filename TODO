@@ -1,11 +1,17 @@
 TODO list for CASMSIM
 Eric L. Smith
-3/21/95
-
-Dump actual HP-45 and HP-55 ROMs and compare to CASM output
-Dump HP-35 ROMs
+3/24/95
 
 Implement HP-55 keyboard legends
+
+Dump actual HP-45 and HP-55 ROMs and compare to CASM output
+
+Dump HP-35 ROMs
+Implement HP-35 keyboard legends
+
+Key in partial HP-65 source code from patent
+Dump HP-65 ROMs
+Implement HP-65 keyboard legends
 
 Key in HP-80 source code from patent
 Implement HP-80 keyboard legends
@@ -14,6 +20,8 @@ Make RAM addressing work correctly for HP-45 and HP-65 (only one digit of
 address)
 
 Clean up memory usage of symbols in CASM
+
+Implement symbol cross-reference in CASM
 
 Implement keyboard control
 
@@ -31,15 +39,11 @@ Write Imakefile
 Pretty up the display
 	Implement seven-segment LED font
 	make display font selection a command-line option
+	come up with bitmaps or font for key legends
 
-Use X resources
+Use X resources and create file "csim.ad"
 
 Port to Windows and/or Macintosh
 
-Key in partial HP-65 source code from patent
-
-Dump HP-65 ROMs
-
-Implement HP-65 keyboard legends
 Implement HP-70 keyboard legends
 
