@@ -30,6 +30,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
 model_info_t model_info [] =
   {
+    { "01",   PLATFORM_CRICKET,   ARCH_CRICKET,     0 },
     { "10",   PLATFORM_STING,     ARCH_WOODSTOCK,   0 },
     { "10C",  PLATFORM_VOYAGER,   ARCH_NUT,        43 },
     { "11C",  PLATFORM_VOYAGER,   ARCH_NUT,        43 },
