@@ -492,6 +492,16 @@ static void op_f_exch_a (sim_t *sim, int opcode)
 }
 
 
+static void op_circulate_a_left (sim_t *sim, int opcode)
+{
+  int i, t;
+  t = sim->env->a [WSIZE - 1];
+  for (i = WSIZE - 1; i >= 1; i--)
+    sim->env->a [i] = sim->env->a [i - 1];
+  sim->env->a [0] = t;
+}
+
+
 static void op_c_to_addr (sim_t *sim, int opcode)
 {
   sim->env->ram_addr = (sim->env->c [1] << 4) + sim->env->c [0];
@@ -862,7 +872,7 @@ static void init_ops (sim_t *sim)
   sim->op_fcn [00220] = op_a_to_rom_addr;
   /* 0320 unknown */
   sim->op_fcn [00420] = op_binary;
-  /* 0520 unknown */
+  sim->op_fcn [00520] = op_circulate_a_left;
   sim->op_fcn [00620] = op_dec_p;
   sim->op_fcn [00720] = op_inc_p;
   sim->op_fcn [01020] = op_return;
@@ -879,8 +889,7 @@ static void init_ops (sim_t *sim)
   sim->op_fcn [01760] = op_nop;  /* "HI I'M WOODSTOCK" */
 
   /*
-   * Instruction codings unknown (probably 0120, 0320, and 0520):
-   *    SHIFT_LEFT_CIRCULAR A
+   * Instruction codings unknown (probably 0120 and 0320):
    *    KEYS -> A
    *    RESET TWF
    *
