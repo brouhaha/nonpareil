@@ -881,3 +881,332 @@ lncd3:	5 -> p
 	go to lnc6
 
 	.symtab
+
+; HP-45 ROM 03 source from United States Patent 4,001,569
+; keyed in by Eric Smith on 3/9/95 - any errors are probably mine
+
+	.rom @03
+
+prfx:	select rom 4		; unsure of label
+
+	no operation
+
+fix1:	go to fix2
+
+exp0:	go to exp1		; unsure of label
+
+lnnn:	go to lnn2z4		; unsure of label
+
+	no operation
+invx:	go to inv1
+
+lexx:	select rom 2
+
+perc:	select rom 4
+
+rnd0:	select rom 6
+
+rcal:	go to rcl0		; unsure of label
+
+stor:	go to str0
+
+rold:	down rotate
+	go to fst1zx
+
+exc1:	stack -> a
+	c -> stack
+	go to fstxzj
+
+fst2z5:	go to ent2
+
+dig6:	a + 1 -> a[w]
+dig5:	a + 1 -> a[w]
+dig4:	a + 1 -> a[w]
+	if no carry go to dig3
+
+addd:	select rom 4
+
+fix3:	jsb dsp0z4
+	shift left a[w]
+	go to fmt1
+
+dig3:	a + 1 -> a[w]
+dig2:	a + 1 -> a[w]
+dig1:	a + 1 -> a[w]
+	return
+
+mult:	select rom 4
+
+tkra:	keys -> rom address
+
+sig1:	0 -> s8
+	select rom 4
+
+sigp:	go to sig1
+
+dcpt:	3 -> p
+dig0:	return
+
+dvid:	select rom 4
+
+divd:	go to dvid
+
+tan2:	1 -> s5
+tang:	jsb sav9
+	go to sqt1z4
+
+coss:	go to cos2
+
+sinn:	go to tan2
+
+tpol:	select rom 4
+
+	no operation
+
+sqar:	jsb save
+	go to mul0
+
+	no operation
+
+sqt2:	select rom 0
+
+dig9:	a + 1 -> a[w]
+dig8:	a + 1 -> a[w]
+dig7:	a + 1 -> a[w]
+	if no carry go to dig6
+
+subt:	select rom 4
+
+	no operation
+
+clrx:	jsb ofl2
+	go to fst2zx
+
+eexx:	go to eex2
+
+chs1:	go to chs2
+
+clok:	0 -> b[w]
+	select rom 7
+
+ent1:	c -> stack
+ent2:	jsb ofl3
+	go to fst2zx
+
+sqt0:	jsb save
+sqt1z4:	0 -> s9
+sqt1:	go to sqt2
+
+inv1:	jsb save
+	0 -> a[w]
+	a + 1 -> a[p]
+	if no carry go to div0
+mul0:	select rom 4
+
+div0:	select rom 4
+
+fix2:	0 -> s9
+	go to fix3
+
+cos2:	jsb sav9
+cos2z4:	1 -> s9
+trecz4:	1 -> s5
+	go to sqt2
+
+frmt:	shift left a[w]
+	a + 1 -> a[w]
+fmt1:	shift left a[w]
+	c exchange m
+	a exchange c[x]
+	c exchange m
+fstpz4:	go to fstp
+
+	no operation
+	no operation
+
+exp1:	0 -> s8
+lnn2z4:	1 -> s9
+	jsb save
+nty1z4:	1 -> s2
+	go to lexx
+
+sci2z4:	jsb dsp0z4
+	go to frmt
+
+sav1:	1 -> s3
+save:	0 -> s10
+	select rom 6
+
+sav2:	select rom 6
+
+sav9:	1 -> s1
+	go to save
+
+rcl0:	1 -> s9
+	go to str1
+
+str0:	0 -> s9
+str1:	1 -> s2
+	jsb dsp0z4
+	jsb chk0
+	jsb sav2
+	if s9 # 1
+	     then go to str2
+	jsb fst4
+	go to fstxzj
+
+str2:	c -> data
+fstp:	if s7 # 1
+	     then go to ent2
+	go to fst1zx
+
+chk0:	0 -> p
+	if a[p] >= 1
+	     then go to retnzx
+fstpz5:	go to fstp
+
+asmdz4:	jsb dsp0z4
+	jsb chk0
+	select rom 4
+
+	no operation
+	no operation
+
+fstxzj:	a exchange c[w]
+fst1zx:	jsb ofl3
+fst1zj:	1 -> s7
+fst2zx:	jsb dsp1
+	jsb fst3
+	go to den2
+
+chs3:	0 - c - 1 -> c[s]
+dsp1:	0 -> s10
+	go to dsp7
+dsp0z4:	shift right a[w]
+dsp7:	c -> a[s]
+	0 -> s8
+	go to dsp8
+dsp2:	c + 1 -> c[xs]
+dsp3:	1 -> s8
+	if s5 # 1
+	     then go to dsp5
+	c + 1 -> c[x]
+	if no carry go to dsp2
+dsp4:	display toggle
+dsp5:	if s0 # 1
+	     then go to dsp3
+dsp8:	0 -> s0
+dsp6:	p - 1 -> p
+	if p # 12
+	     then go to dsp6
+	display off
+	if s8 # 1
+	     then go to dsp4
+	shift left a[w]
+	0 -> s5
+	if s10 # 1
+	     then go to tkra
+	select rom 4
+
+	no operation
+
+ofl1:	0 -> c[wp]
+	c - 1 -> c[wp]
+	0 -> c[xs]
+	a + b -> a[x]
+	if no carry go to ofl3
+ofl2:	0 -> c[w]
+ofl3:	clear status
+	c -> a[w]
+ofl4:	12 -> p
+	a -> b[x]
+	c -> a[x]
+	if c[xs] = 0
+	     then go to ofl5
+	0 - c -> c[x]
+	c - 1 -> c[xs]
+	if no carry go to ofl1
+ofl5:	a exchange c[x]
+	if s4 # 1
+	     then go to rnd0
+	a exchange b[x]
+	0 -> b[x]
+	jsb dsp1
+	if p # 12
+	     then go to dsp0z4
+	shift left a[x]
+	go to eex3
+eex2:	1 -> s4
+	if s11 # 1
+	     then go to dig1
+eex3:	shift right a[w]
+	a exchange c[wp]
+	go to eex4
+
+chs2:	shift right a[w]
+	if s4 # 1
+	     then go to chs3
+	a exchange c[wp]
+	0 - c - 1 -> c[xs]
+eex4:	c -> a[w]
+	if c[xs] = 0
+	     then go to eex5
+	0 -> c[xs]
+	0 - c -> c[x]
+eex5:	13 -> p
+eex6:	shift left a[ms]
+	c - 1 -> c[x]
+	if a[s] >= 1
+	     then go to eex8
+	if a[ms] >= 1
+	     then go to eex6
+	0 -> c[x]
+den1:	jsb dsp1
+	shift right a[ms]
+den7:	c -> a[s]
+den2:	if p # 12
+	     then go to den4
+	b -> c[w]
+	c + 1 -> c[w]
+	1 -> p
+den3:	shift left a[wp]
+	p + 1 -> p
+	if c[p] = 0
+	     then go to den3
+den4:	a exchange c[w]
+	if p # 3
+	     then go to den5
+	0 -> c[x]
+	1 -> s6
+	go to eex4
+
+den5:	if s6 # 1
+	     then go to den6
+	p - 1 -> p
+den6:	shift right b[wp]
+	jsb eex4
+eex7:	p - 1 -> p
+	c + 1 -> c[x]
+eex8:	if b[p] = 0
+	     then go to eex7
+	1 -> s11
+	shift right a[ms]
+	a exchange c[m]
+	if s4 # 1
+	     then go to den1
+eex9:	jsb ofl4
+	go to fst2zx
+
+fst3:	0 -> a[ms]
+fst4:	if s7 # 1
+	     then go to fst5
+	c -> stack
+fst5:	1 -> s7
+	0 -> c[w]
+	c - 1 -> c[w]
+	0 - c -> c[s]
+	c + 1 -> c[s]
+	b exchange c[w]
+retnzx:	return
+
+	.symtab
