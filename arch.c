@@ -27,15 +27,15 @@ MA 02111, USA.
 #include "arch.h"
 
 
-char *arch_name [ARCH_MAX] =
+static arch_info_t arch_info [ARCH_MAX] =
   {
-    [ARCH_UNKNOWN]   = "unknown",
-    [ARCH_CLASSIC]   = "classic",
-    [ARCH_WOODSTOCK] = "woodstock",
-    [ARCH_CRICKET]   = "cricket",
-    [ARCH_NUT]       = "nut",
-    [ARCH_CAPRICORN] = "capricorn",
-    [ARCH_SATURN]    = "saturn"
+    [ARCH_UNKNOWN]   = { "unknown",    0 },
+    [ARCH_CLASSIC]   = { "classic",   56 },
+    [ARCH_WOODSTOCK] = { "woodstock", 56 },
+    [ARCH_CRICKET]   = { "cricket",   48 },
+    [ARCH_NUT]       = { "nut",       56 },
+    [ARCH_CAPRICORN] = { "capricorn",  8 },
+    [ARCH_SATURN]    = { "saturn",    64 },  /* or 4, hard to tell! */
   };
 
 
@@ -43,7 +43,13 @@ int find_arch_by_name (char *s)
 {
   int i;
   for (i = 1; i < ARCH_MAX; i++)
-    if (strcasecmp (s, arch_name [i]) == 0)
+    if (strcasecmp (s, arch_info [i].name) == 0)
       return (i);
   return (ARCH_UNKNOWN);
+}
+
+
+arch_info_t *get_arch_info (int arch)
+{
+  return (& arch_info [arch]);
 }

@@ -32,6 +32,14 @@ MA 02111, USA.
 
 #define ARCH_MAX       7
 
-extern char *arch_name [ARCH_MAX];
+
+typedef struct
+{
+  char *name;
+  int word_length;
+} arch_info_t;
+
 
 int find_arch_by_name (char *s);
+
+arch_info_t *get_arch_info (int arch);
