@@ -659,9 +659,11 @@ int main (int argc, char *argv[])
     fatal (2, "No ROM file specified in KML\n");
 
   if (! kml->model)
-    fatal (2, "No hardware model specified in KML\n");
+    fatal (2, "No model specified in KML\n");
 
   model_info = get_model_info (kml->model);
+  if (! model_info)
+    fatal (2, "Unrecognized model specified in KML\n");
 
   image_pixbuf = gdk_pixbuf_new_from_file (kml->image, & error);
   if (! image_pixbuf)

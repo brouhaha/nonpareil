@@ -1,5 +1,7 @@
 2004-01-19  Eric Smith <eric@brouhaha.com>
 
+	* csim.c (main): Don't segfault on unrecognized model.
+
 	* casml.l casmy.y: Added set flag instruction, used in HP-65.
 	
 2004-01-18  Eric Smith <eric@brouhaha.com>
