@@ -41,8 +41,9 @@ MA 02111, USA.
 #define PLATFORM_SACAJAWEA 16  // Pioneer character 14B 22S 32S 32SII
 #define PLATFORM_BERT      17  // Pioneer 7-segment, 10B 20S 21S
 #define PLATFORM_CLARKE    18  // 38G 39G 40G 48S 48SX 48G 48GX 49G
+#define PLATFORM_APPLE     19  // 39G+ 48GII 49G+
 
-#define PLATFORM_MAX       19
+#define PLATFORM_MAX       20
 
 extern char *platform_name [PLATFORM_MAX];
 

@@ -44,7 +44,8 @@ char *platform_name [PLATFORM_MAX] =
     [PLATFORM_LEWIS]      = "lewis",
     [PLATFORM_SACAJAWEA]  = "sacajawea",
     [PLATFORM_BERT]       = "bert",
-    [PLATFORM_CLARKE]     = "clarke"
+    [PLATFORM_CLARKE]     = "clarke",
+    [PLATFORM_APPLE]      = "apple"
   };
 
 int find_platform_by_name (char *s)
