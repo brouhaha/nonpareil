@@ -66,7 +66,8 @@ int prev_pc;  /* used to store complete five-digit octal address of instruction 
 
 typedef unsigned short romword;
 romword ucode [MAX_GROUP] [MAX_ROM] [ROM_SIZE];
-uchar bpt [MAX_GROUP] [MAX_ROM] [ROM_SIZE];
+uchar bpt     [MAX_GROUP] [MAX_ROM] [ROM_SIZE];
+char *source  [MAX_GROUP] [MAX_ROM] [ROM_SIZE];
 
 int run = 1;
 int step = 0;
@@ -85,6 +86,22 @@ void fatal (int ret, char *format, ...)
   if (ret == 1)
     fprintf (stderr, "usage: %s objectfile\n", progn);
   exit (ret);
+}
+
+
+char *newstr (char *orig)
+{
+  int len;
+  char *r;
+
+  len = strlen (orig);
+  r = (char *) malloc (len + 1);
+  
+  if (! r)
+    fatal (2, "memory allocation failed\n");
+
+  memcpy (r, orig, len + 1);
+  return (r);
 }
 
 
@@ -120,6 +137,7 @@ digit do_sub (digit x, digit y)
     }
   else
     carry = 0;
+  return (res);
 }
 
 void op_arith (int opcode)
@@ -201,8 +219,8 @@ void op_arith (int opcode)
 	c [i] = do_sub (0, c [i]);
       break;
     case 0x08:  /* shift left a[f] */
-      for (i = first; i <= last; i++)
-	a [i] = (i == first) ? 0 : a [i+1];
+      for (i = last; i >= first; i--)
+	a [i] = (i == first) ? 0 : a [i-1];
       carry = 0;
       break;
     case 0x09:  /* a -> b[f] */
@@ -251,7 +269,7 @@ void op_arith (int opcode)
       break;
     case 0x12:  /* shift right c[f] */
       for (i = first; i <= last; i++)
-	c [i] = (i == last) ? 0 : c [i-1];
+	c [i] = (i == last) ? 0 : c [i+1];
       carry = 0;
       break;
     case 0x13:  /* if a[f] >= 1 */
@@ -261,7 +279,7 @@ void op_arith (int opcode)
       break;
     case 0x14:  /* shift right b[f] */
       for (i = first; i <= last; i++)
-	b [i] = (i == last) ? 0 : b [i-1];
+	b [i] = (i == last) ? 0 : b [i+1];
       carry = 0;
       break;
     case 0x15:  /* c + c -> c[f] */
@@ -271,7 +289,7 @@ void op_arith (int opcode)
       break;
     case 0x16:  /* shift right a[f] */
       for (i = first; i <= last; i++)
-	a [i] = (i == last) ? 0 : a [i-1];
+	a [i] = (i == last) ? 0 : a [i+1];
       carry = 0;
       break;
     case 0x17:  /* 0 -> a[f] */
@@ -594,10 +612,10 @@ void init_ops (void)
     }
 }
 
-void disassemble_instruction (int addr, int opcode)
+void disassemble_instruction (int g, int r, int p, int opcode)
 {
   int i;
-  printf ("L%05o:  ", addr);
+  printf ("L%1o%1o%3o:  ", g, r, p);
   for (i = 0x200; i; i >>= 1)
     printf ((opcode & i) ? "1" : ".");
 }
@@ -615,6 +633,18 @@ void init_breakpoints (void)
       for (p = 0; p < ROM_SIZE; p++)
 	bpt [g] [r] [p] = 1;
 }
+
+
+void init_source (void)
+{
+  int g, r, p;
+
+  for (g = 0; g < MAX_GROUP; g++)
+    for (r = 0; r < MAX_ROM; r++)
+      for (p = 0; p < ROM_SIZE; p++)
+	source [g] [r] [p] = NULL;
+}
+
 
 void read_object_file (char *fn, FILE *f)
 {
@@ -635,6 +665,60 @@ void read_object_file (char *fn, FILE *f)
 	  ucode [g][r][p] = opcode;
 	  bpt   [g][r][p] = 1;
 	  count ++;
+	}
+    }
+  fprintf (stderr, "read %d words from '%s'\n", count, fn);
+}
+
+
+int parse_address (char *oct, int *g, int *r, int *p)
+{
+  return (sscanf (oct, "%1o%1o%3o", g, r, p) == 3);
+}
+
+
+int parse_opcode (char *bin, int *opcode)
+{
+  int i;
+
+  *opcode = 0;
+  for (i = 0; i < 10; i++)
+    {
+      (*opcode) <<= 1;
+      if (*bin == '1')
+	(*opcode) += 1;
+      else if (*bin == '.')
+	(*opcode) += 0;
+      else
+	return (0);
+      *bin++;
+    }
+  return (1);
+}
+
+
+void read_listing_file (char *fn, FILE *f)
+{
+  int i;
+  char buf [80];
+  int g, r, p, opcode;
+  int count = 0;
+
+  while (fgets (buf, sizeof (buf), f))
+    {
+      if ((buf [7] == 'L') && (buf [13] == ':') &&
+	  parse_address (& buf [8], & g, &r, &p) &&
+	  parse_opcode (& buf [16], & opcode))
+	{
+	  if ((g >= MAX_GROUP) || (r >= MAX_ROM) || (p >= ROM_SIZE))
+	    fprintf (stderr, "bad address\n");
+	  else
+	    {
+	      ucode  [g][r][p] = opcode;
+	      bpt    [g][r][p] = 1;
+	      source [g][r][p] = newstr (& buf [0]);
+	      count ++;
+	    }
 	}
     }
   fprintf (stderr, "read %d words from '%s'\n", count, fn);
@@ -676,12 +760,16 @@ void debugger (void)
     {
       while (run || step)
 	{
+	  if (source [group][rom][pc])
+	    printf ("%s", source [group][rom][pc]);
+	  else
+	    disassemble_instruction (group, rom, pc, opcode);
+	  printf ("\n");
 	  prev_pc = (group << 12) | (rom << 9) | pc;
 	  opcode = ucode [group][rom][pc];
 	  prev_carry = carry;
 	  carry = 0;
 	  pc++;
-	  disassemble_instruction (prev_pc, opcode);
 	  (* op_fcn [opcode]) (opcode);
 	  printf ("  p=%x", p);
 	  printf (" stat=");
@@ -723,29 +811,30 @@ int main (int argc, char *argv[])
 	    fatal (1, "unrecognized option '%s'\n", argv [0]);
 	}
       else if (objfn)
-	fatal (1, "only one object file may be specified\n");
+	fatal (1, "only one listing file may be specified\n");
       else
 	objfn = argv [0];
     }
 
   if (objfn)
     {
-      f = fopen (buf, "r");
+      f = fopen (objfn, "r");
       if (! f)
-	fatal (2, "unable to read object file '%s'\n", objfn);
+	fatal (2, "unable to read listing file '%s'\n", objfn);
     }
   else
     {
       strcpy (buf, progn);
-      strcat (buf, ".obj");
+      strcat (buf, ".lst");
       objfn = & buf [0];
       f = fopen (buf, "r");
       if (! f)
-	fatal (2, "object file must be specified\n");
+	fatal (2, "listing file must be specified\n");
     }
 
   init_breakpoints ();
-  read_object_file (objfn, f);
+  init_source ();
+  read_listing_file (objfn, f);
   fclose (f);
 
   init_ops ();
