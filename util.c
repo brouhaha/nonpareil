@@ -63,8 +63,22 @@ char *newstr (char *orig)
   char *r;
 
   len = strlen (orig);
-  r = (char *) alloc (len + 10);
+  r = (char *) alloc (len + 1);
   memcpy (r, orig, len + 1);
+  return (r);
+}
+
+
+char *newstrn (char *orig, int max_len)
+{
+  int len;
+  char *r;
+
+  len = strlen (orig);
+  if (len > max_len)
+    len = max_len;
+  r = (char *) alloc (len + 1);
+  memcpy (r, orig, len);
   return (r);
 }
 

@@ -30,5 +30,7 @@ void *alloc (size_t size);
 
 char *newstr (char *orig);
 
+char *newstrn (char *orig, int max_len);
+
 void trim_trailing_whitespace (char *s);
 
