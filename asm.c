@@ -34,12 +34,17 @@ MA 02111, USA.
 int arch;
 
 
-parser_t *parser [ARCH_MAX] =
-{
-  asm_parse,
-  casm_parse,
-  wasm_parse
-};
+static parser_t *parser [ARCH_MAX] =
+  {
+    [ARCH_UNKNOWN]   = asm_parse,
+    [ARCH_CLASSIC]   = casm_parse,
+    [ARCH_WOODSTOCK] = wasm_parse
+  };
+
+
+typedef void (write_obj_t)(FILE *f, int opcode);
+
+static write_obj_t *write_obj [ARCH_MAX];
 
 
 int pass;
@@ -308,17 +313,36 @@ void do_label (char *s)
     error ("phase error for symbol '%s'\n", s);
 }
 
+
+static void write_obj_classic (FILE *f, int opcode)
+{
+    fprintf (f, "%04o:%04o\n", (group << 11) | (rom << 8) | pc, opcode &01777);
+}
+
+
+static void write_obj_woodstock (FILE *f, int opcode)
+{
+    fprintf (f, "%04o:%04o\n", (rom << 8) | pc, opcode &01777);
+}
+
+
+static write_obj_t *write_obj [ARCH_MAX] =
+  {
+    [ARCH_CLASSIC]   = write_obj_classic,
+    [ARCH_WOODSTOCK] = write_obj_woodstock
+  };
+
+
 static void emit_core (int op, int inst_type)
 {
   objcode = op;
   objflag = 1;
   last_instruction_type = inst_type;
 
-  /*
   if ((pass == 2) && objfile)
-    fprintf (objfile, "%1o%1o%03o:%03x\n", group, rom, pc, op);
-  */
+    write_obj [arch] (objfile, op);
 }
+
 
 void emit (int op)
 {
