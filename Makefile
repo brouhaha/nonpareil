@@ -32,8 +32,10 @@ CDEFINES =  -Dstricmp=strcasecmp -DENTER_KEY_MOD
 
 LDFLAGS = -g
 
-CFLAGS = -g -Wall `pkg-config gtk+-2.0 glib-2.0 --cflags`
-LOADLIBES = `pkg-config gtk+-2.0 glib-2.0 --libs` -lgthread-2.0
+PACKAGES = gtk+-2.0 gdk-2.0 gdk-pixbuf-2.0 glib-2.0 gthread-2.0
+
+CFLAGS = -g -Wall `pkg-config $(PACKAGES) --cflags`
+LOADLIBES = `pkg-config $(PACKAGES) --libs`
 
 
 # -----------------------------------------------------------------------------
@@ -82,11 +84,9 @@ hp%: hp%.lst csim
 	rm -f $@
 	ln -s csim $@
 
-hp45.jpg:
-	wget http://www.hpmuseum.org/45.jpg -O hp45.jpg
-
 
 all: $(TARGETS) $(CALCS) $(ROM_LISTINGS)
+
 
 casm:	$(CASM_OBJECTS)
 	$(CC) -o $@ $(CASM_OBJECTS)
@@ -105,6 +105,11 @@ dist:	$(DIST_FILES)
 listings.tar.gz: $(LISTINGS)
 	tar -cvzf $@ $(LISTINGS)
 	ls -l $@
+
+
+hp45.jpg:
+	wget http://www.hpmuseum.org/45.jpg -O hp45.jpg
+
 
 clean:
 	rm -f $(TARGETS) $(MISC_TARGETS) $(OBJECTS) \
