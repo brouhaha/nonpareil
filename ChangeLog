@@ -1,5 +1,7 @@
 2004-04-02  Eric Smith <eric@brouhaha.com>
 
+	* asm.h asm.c: Renamed from casm.h and casm.c.
+	
 	* casml.l casm.h casm.c: Moved keyword() and yywrap() into casm.c.
 
 2004-03-24  Eric Smith <eric@brouhaha.com>

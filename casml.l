@@ -28,7 +28,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #include "casmy.tab.h"
 #include "util.h"
 #include "symtab.h"
-#include "casm.h"
+#include "asm.h"
 
 
 #undef YY_INPUT

@@ -75,8 +75,8 @@ CALCS = hp35 hp45 hp55 hp80
 
 TARGETS = casm csim
 
-HDRS = casm.h symtab.h util.h proc.h kml.h debugger.h
-CSRCS = casm.c symtab.c csim.c util.c proc.c kml.c debugger.c
+HDRS = asm.h symtab.h util.h proc.h kml.h debugger.h
+CSRCS = asm.c symtab.c csim.c util.c proc.c kml.c debugger.c
 OSRCS = casml.l casmy.y kmll.l kmly.y
 MISC = COPYING README ChangeLog
 
@@ -87,7 +87,7 @@ AUTO_CSRCS = casml.c casmy.tab.c kmll.c kmly.tab.c
 AUTO_HDRS = casmy.tab.h kmly.tab.h
 AUTO_MISC = casmy.output kmly.output
 
-CASM_OBJECTS = casm.o symtab.o casml.o casmy.tab.o util.o
+CASM_OBJECTS = asm.o symtab.o casml.o casmy.tab.o util.o
 
 CSIM_OBJECTS = csim.o util.o proc.o kmll.o kmly.tab.o kml.o
 ifdef HAS_DEBUGGER_CLI
