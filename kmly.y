@@ -378,7 +378,7 @@ outin_stmt		:	OUTIN INTEGER INTEGER { yyerror ("OUTIN not supported"); } ;
 
 keycode_stmt		:	KEYCODE INTEGER { yy_kml->button [kml_cur_idx]->keycode = $2; } ;
 
-virtual_stmt		:	VIRTUAL { yy_kml->button [kml_cur_idx]->nohold = 1; } ;
+virtual_stmt		:	VIRTUAL { yy_kml->button [kml_cur_idx]->virtual = 1; } ;
 
 nohold_stmt		:	NOHOLD { yy_kml->button [kml_cur_idx]->nohold = 1; } ;
 
