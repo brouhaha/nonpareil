@@ -478,7 +478,7 @@ static void op_m2_to_c (sim_t *sim, int opcode)
 
 static void op_f_to_a (sim_t *sim, int opcode)
 {
-  sim->env.f = sim->env.a [0];
+  sim->env.a [0] = sim->env.f;
 }
 
 
