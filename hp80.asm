@@ -1244,6 +1244,11 @@ inter1:	m -> c
 	c exchange m
 	jsb one
 	jsb sub
+	m -> c
+	jsb mpy
+	c exchange m
+	jsb one
+	jsb sub
 	down rotate
 	0 - c - 1 -> c[s]
 	c -> stack
@@ -1818,11 +1823,6 @@ da2:	if c[x] >= 1
 	0 -> c[wp]
 	load constant 2
 	load constant 1
-	8 -> p
-	if a >= c[wp]
-	     then go to err71
-	load constant 1
-	load constant 9
 	8 -> p
 	if a >= c[wp]
 	     then go to err71
