@@ -799,7 +799,8 @@ void classic_execute_instruction (sim_t *sim)
   sim->env->prev_pc = addr;
   opcode = sim->ucode [addr];
 
-  if (sim->trace)
+#ifdef HAS_DEBUGGER
+  if (sim->debug_flags & (1 << SIM_DEBUG_TRACE))
     {
       if (sim->source [sim->env->pc])
 	printf ("%s\n", sim->source [addr]);
@@ -810,6 +811,7 @@ void classic_execute_instruction (sim_t *sim)
 	  printf ("%s\n", buf);
 	}
     }
+#endif /* HAS_DEBUGGER */
 
   sim->env->prev_carry = sim->env->carry;
   sim->env->carry = 0;

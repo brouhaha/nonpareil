@@ -457,6 +457,24 @@ void sim_set_ext_flag (sim_t *sim, int flag, bool state)
 }
 
 
+#ifdef HAS_DEBUGGER
+
+void sim_set_debug_flag (sim_t *sim, int debug_flag, bool val)
+{
+  if (val)
+    sim->debug_flags |= (1 << debug_flag);
+  else
+    sim->debug_flags &= ~ (1 << debug_flag);
+}
+
+bool sim_get_debug_flag (sim_t *sim, int debug_flag)
+{
+  return ((sim->debug_flags & (1 << debug_flag)) != 0);
+}
+
+#endif /* HAS_DEBUGGER */
+
+
 extern processor_dispatch_t classic_processor;
 extern processor_dispatch_t woodstock_processor;
 

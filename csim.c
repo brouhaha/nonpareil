@@ -78,6 +78,9 @@ void usage (FILE *f)
   fprintf (f, "   --kmldebug\n");
   fprintf (f, "   --kmldump\n");
   fprintf (f, "   --scancodedebug\n");
+#ifdef HAS_DEBUGGER
+  fprintf (f, "   --stop\n");
+#endif
 }
 
 
@@ -529,13 +532,34 @@ void debug_show_reg (GtkWidget *widget, gpointer data)
 
 void debug_run (GtkWidget *widget, gpointer data)
 {
-  /* $$$ not yet implemented */
+  sim_start (sim);
 }
 
 
 void debug_step (GtkWidget *widget, gpointer data)
 {
-  /* $$$ not yet implemented */
+  sim_step (sim);
+}
+
+
+void debug_trace (GtkWidget *widget, gpointer data)
+{
+  sim_set_debug_flag (sim, SIM_DEBUG_TRACE,
+		      ! sim_get_debug_flag (sim, SIM_DEBUG_TRACE));
+}
+
+
+void debug_key_trace (GtkWidget *widget, gpointer data)
+{
+  sim_set_debug_flag (sim, SIM_DEBUG_KEY_TRACE,
+		      ! sim_get_debug_flag (sim, SIM_DEBUG_KEY_TRACE));
+}
+
+
+void debug_ram_trace (GtkWidget *widget, gpointer data)
+{
+  sim_set_debug_flag (sim, SIM_DEBUG_RAM_TRACE,
+		      ! sim_get_debug_flag (sim, SIM_DEBUG_RAM_TRACE));
 }
 
 
@@ -569,6 +593,9 @@ static GtkItemFactoryEntry menu_items [] =
     { "/Debug/Show Reg", NULL,        debug_show_reg, 0, "<Item>" },
     { "/Debug/Run",     NULL,         debug_run,     0, "<Item>" },
     { "/Debug/Step",    NULL,         debug_step,    0, "<Item>" },
+    { "/Debug/Trace",   NULL,         debug_trace,   0, "<ToggleItem>" },
+    { "/Debug/Key Trace", NULL,     debug_key_trace, 0, "<ToggleItem>" },
+    { "/Debug/RAM Trace", NULL,     debug_ram_trace, 0, "<ToggleItem>" },
 #ifdef HAS_DEBUGGER_CLI
     { "/Debug/Command Window", NULL,     debug_cmd_win, 0, "<ToggleItem>" },
 #endif
@@ -662,6 +689,7 @@ int main (int argc, char *argv[])
 
   gboolean no_shape = FALSE;
   gboolean kml_dump = FALSE;
+  gboolean run = TRUE;
 
   model_info_t *model_info;
 
@@ -701,11 +729,9 @@ int main (int argc, char *argv[])
 	    kml_dump = 1;
 	  else if (strcasecmp (argv [0], "--scancodedebug") == 0)
 	    scancode_debug = 1;
-#if 0
+#ifdef HAS_DEBUGGER
 	  else if (strcasecmp (argv [0], "--stop") == 0)
-	    run = 0;
-	  else if (strcasecmp (argv [0], "--trace") == 0)
-	    trace = 1;
+	    run = FALSE;
 #endif
 	  else
 	    fatal (1, "unrecognized option '%s'\n", argv [0]);
@@ -888,15 +914,18 @@ int main (int argc, char *argv[])
   if (! sim_read_object_file (sim, kml->rom))
     fatal (2, "unable to read object file '%s'\n", kml->rom);
 
+#ifdef HAS_DEBUGGER
   if (kml->rom_listing)
     if (! sim_read_listing_file (sim, kml->rom_listing))
       fatal (2, "unable to read listing file '%s'\n", kml->rom_listing);
+#endif
 
   sim_reset (sim);
 
   init_switches ();
 
-  sim_start (sim);
+  if (run)
+    sim_start (sim);
 
   gtk_main ();
 

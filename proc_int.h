@@ -101,10 +101,12 @@ struct sim_t
   void (*display_update)(char *buf);
 
   rom_word_t *ucode;
-  char       **source;
   bool       *breakpoint;
+  char       **source;
 
-  bool       trace;
+#ifdef HAS_DEBUGGER
+  int debug_flags;  /* SIM_DEBUG_TRACE etc. */
+#endif
 
   void (* op_fcn [1024])(struct sim_t *sim, int opcode);
 

@@ -88,17 +88,8 @@ struct sim_env_t
 };
 
 
-/* If defined, print debug messages for all RAM accesses. */
-#undef RAM_DEBUG
-
-
 /* If defined, print warnings about stack overflow or underflow. */
 #undef STACK_WARNING
-
-
-/* KEYTRACE is defined, trace from ROM -> KEYS through next key status
-   test */
-#undef KEYTRACE
 
 
 static void bad_op (sim_t *sim, int opcode)
@@ -504,8 +495,9 @@ static void op_f_exch_a (sim_t *sim, int opcode)
 static void op_c_to_addr (sim_t *sim, int opcode)
 {
   sim->env->ram_addr = (sim->env->c [1] << 4) + sim->env->c [0];
-#ifdef RAM_DEBUG
-  printf ("RAM select %02x\n", sim->env->ram_addr);
+#ifdef HAS_DEBUGGER
+  if (sim->debug_flags & (1 << SIM_DEBUG_RAM_TRACE))
+    printf ("RAM select %02x\n", sim->env->ram_addr);
 #endif
   if (sim->env->ram_addr >= sim->env->max_ram)
     printf ("c -> ram addr: address %d out of range\n", sim->env->ram_addr);
@@ -520,8 +512,14 @@ static void op_c_to_data (sim_t *sim, int opcode)
       printf ("c -> data: address %02x out of range\n", sim->env->ram_addr);
       return;
     }
-#ifdef RAM_DEBUG
-  printf ("C -> DATA, addr %02x\n", sim->env->ram_addr);
+#ifdef HAS_DEBUGGER
+  if (sim->debug_flags & (1 << SIM_DEBUG_RAM_TRACE))
+    {
+      printf ("C -> DATA, addr %02x  data ", sim->env->ram_addr);
+      for (i = 0; i < WSIZE; i++)
+	printf ("%x", sim->env->c [i]);
+      printf ("\n");
+    }
 #endif
   for (i = 0; i < WSIZE; i++)
     sim->env->ram [sim->env->ram_addr] [i] = sim->env->c [i];
@@ -538,9 +536,15 @@ static void op_data_to_c (sim_t *sim, int opcode)
 	sim->env->c [i] = 0;
       return;
     }
-#ifdef RAM_DEBUG
-  printf ("DATA -> C, addr %02x\n", sim->env->ram_addr);
-#endif
+#ifdef HAS_DEBUGGER
+  if (sim->debug_flags & (1 << SIM_DEBUG_RAM_TRACE))
+    {
+      printf ("DATA -> C, addr %02x  data ", sim->env->ram_addr);
+      for (i = 0; i < WSIZE; i++)
+	printf ("%x", sim->env->ram [sim->env->ram_addr] [i]);
+      printf ("\n");
+    }
+#endif /* HAS_DEBUGGER */
   for (i = 0; i < WSIZE; i++)
     sim->env->c [i] = sim->env->ram [sim->env->ram_addr] [i];
 }
@@ -558,9 +562,15 @@ static void op_c_to_register (sim_t *sim, int opcode)
       printf ("c -> register: address %d out of range\n", sim->env->ram_addr);
       return;
     }
-#ifdef RAM_DEBUG
-  printf ("C -> REGISTER %d, addr %02x\n", opcode >> 6, sim->env->ram_addr);
-#endif
+#ifdef HAS_DEBUGGER
+  if (sim->debug_flags & (1 << SIM_DEBUG_RAM_TRACE))
+    {
+      printf ("C -> REGISTER %d, addr %02x  data ", opcode >> 6, sim->env->ram_addr);
+      for (i = 0; i < WSIZE; i++)
+	printf ("%x", sim->env->c [i]);
+      printf ("\n");
+    }
+#endif /* HAS_DEBUGGER */
   for (i = 0; i < WSIZE; i++)
     sim->env->ram [sim->env->ram_addr] [i] = sim->env->c [i];
 }
@@ -580,9 +590,15 @@ static void op_register_to_c (sim_t *sim, int opcode)
 	sim->env->c [i] = 0;
       return;
     }
-#ifdef RAM_DEBUG
-  printf ("REGISTER -> C %d, addr %02x\n", opcode >> 6, sim->env->ram_addr);
-#endif
+#ifdef HAS_DEBUGGER
+  if (sim->debug_flags & (1 << SIM_DEBUG_RAM_TRACE))
+    {
+      printf ("REGISTER -> C %d, addr %02x  data ", opcode >> 6, sim->env->ram_addr);
+      for (i = 0; i < WSIZE; i++)
+	printf ("%x", sim->env->ram [sim->env->ram_addr] [i]);
+      printf ("\n");
+    }
+#endif /* HAS_DEBUGGER */
   for (i = 0; i < WSIZE; i++)
     sim->env->c [i] = sim->env->ram [sim->env->ram_addr] [i];
 }
@@ -591,6 +607,10 @@ static void op_register_to_c (sim_t *sim, int opcode)
 static void op_clear_data_regs (sim_t *sim, int opcode)
 {
   int i, j;
+#ifdef HAS_DEBUGGER
+  if (sim->debug_flags & (1 << SIM_DEBUG_RAM_TRACE))
+    printf ("clear data regs, addr %02x\n", sim->env->ram_addr);
+#endif /* HAS_DEBUGGER */
   for (i = 0; i < sim->env->max_ram; i++)
     for (j = 0; j < WSIZE; j++)
       sim->env->ram [i] [j] = 0;
@@ -974,14 +994,16 @@ void woodstock_execute_instruction (sim_t *sim)
   /* $$$ need to handle bank switching */
   opcode = sim->ucode [sim->env->pc];
 
-#ifdef KEYTRACE
-  if (opcode == 00020)
-    sim->trace = 1;
-  else if (opcode == 01724)
-    sim->trace = 0;
-#endif
+#ifdef HAS_DEBUGGER
+  if (sim->debug_flags & (1 << SIM_DEBUG_KEY_TRACE))
+    {
+      if (opcode == 00020)
+	sim->debug_flags |= (1 << SIM_DEBUG_TRACE);
+      else if (opcode == 01724)
+	sim->debug_flags &= ~ (1 << SIM_DEBUG_TRACE);
+    }
 
-  if (sim->trace)
+  if (sim->debug_flags & (1 << SIM_DEBUG_TRACE))
     {
       woodstock_print_state (sim, sim->env);
       /* $$$ need to handle bank switching */
@@ -994,6 +1016,7 @@ void woodstock_execute_instruction (sim_t *sim)
 	  printf ("%s\n", buf);
 	}
     }
+#endif /* HAS_DEBUGGER */
 
   sim->env->prev_carry = sim->env->carry;
   sim->env->carry = 0;

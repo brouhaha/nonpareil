@@ -109,3 +109,14 @@ void sim_set_ext_flag (sim_t *sim,
 		       bool state);
 
 
+#ifdef HAS_DEBUGGER
+
+#define SIM_DEBUG_TRACE     0
+#define SIM_DEBUG_RAM_TRACE 1
+#define SIM_DEBUG_KEY_TRACE 2
+
+void sim_set_debug_flag (sim_t *sim, int debug_flag, bool val);
+
+bool sim_get_debug_flag (sim_t *sim, int debug_flag);
+
+#endif /* HAS_DEBUGGER */
