@@ -695,8 +695,9 @@ static void op_clear_reg (sim_t *sim, int opcode)
   for (i = 0; i < WSIZE; i++)
     sim->env->a [i] = sim->env->b [i] = sim->env->c [i] = sim->env->y [i] =
       sim->env->z [i] = sim->env->t [i] = 0;
-  sim->env->f = 0;
-  /* should this clear p? */
+  // Apparently we're not supposed to clear F, or the HP-21 CLR function
+  // resets the display format.
+  // Should this clear P?  Probably not.
 }
 
 
