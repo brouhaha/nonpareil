@@ -19,10 +19,7 @@ Building:
 
 User interface:
 
-  Use KML file.
-
-  Make display area larger.  Same size digits, just set more background around
-  them.
+  Improve KML file utilization, particularly for display.
 
   Keyboard events, at least for numeric entry, basic four functions, and enter.
 
