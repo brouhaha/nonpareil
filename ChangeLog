@@ -1,5 +1,8 @@
 2004-04-09  Eric Smith <eric@brouhaha.com>
 
+	* csim.c (main) proc.c (sim_init) proc.h proc_int.h: Added
+	platform field to sim_t.
+	
 	* model.c: Set RAM size for Spice models for which it is known,
 	and ifdef'd out the models for which it isn't.
 	

@@ -241,7 +241,8 @@ gpointer sim_thread_func (gpointer data)
 
 /* The following functions can be called from the main thread: */
 
-sim_t *sim_init (int arch,
+sim_t *sim_init (int platform,
+		 int arch,
 		 int ram_size,
 		 void (*display_update_fn)(char *buf))
 {
@@ -251,6 +252,8 @@ sim_t *sim_init (int arch,
 
   sim->arch = arch;
   sim->proc = processor_dispatch [arch];
+
+  sim->platform = platform;
 
   sim->prev_state = SIM_UNKNOWN;
   sim->state = SIM_IDLE;

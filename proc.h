@@ -46,7 +46,8 @@ typedef struct sim_env_t sim_env_t;
  * contents change.  Note that it is called in the simulator thread
  * context, so it will probably have to deal with mutexes.
  */
-sim_t *sim_init  (int arch,
+sim_t *sim_init  (int platform,
+		  int arch,
 		  int ram_size,
 		  void (*display_update_fn)(char *buf));
 

@@ -95,6 +95,8 @@ struct sim_t
   int arch;
   processor_dispatch_t *proc;
 
+  int platform;
+
   sim_env_t *env;		/* architecture-unique */
   uint64_t cycle_count;
 

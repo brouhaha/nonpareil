@@ -772,7 +772,8 @@ int main (int argc, char *argv[])
   if (! model_info)
     fatal (2, "Unrecognized model specified in KML\n");
 
-  sim = sim_init (model_info->cpu_arch,
+  sim = sim_init (model_info->platform,
+		  model_info->cpu_arch,
 		  model_info->ram_size,
 		  & display_update);
 
