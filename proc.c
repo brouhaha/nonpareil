@@ -40,6 +40,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
 typedef enum
   {
+    SIM_UNKNOWN,
     SIM_IDLE,
     SIM_RESET,
     SIM_STEP,
@@ -55,7 +56,12 @@ struct sim_handle_t
   GCond *ui_cond;
   GMutex *sim_mutex;
 
+  GTimeVal tv;
+  GTimeVal prev_tv;
+
   sim_state_t state;
+  sim_state_t prev_state;
+
   sim_env_t env;
   uint64_t cycle_count;
 
@@ -905,38 +911,52 @@ void reset_processor (struct sim_handle_t *sim)
 }
 
 
+/* The real hardware executes a fixed number of microinstructions per
+   second.  The HP-55 uses a crystal, but the other models use an LC
+   oscillator that is not adjusted.  We try to run at nominally the
+   same rate. */
 #define UINST_PER_SEC 3500
 
-#define UINST_PER_JIFFY 35
+/* we try to schedule execution in "jiffies": */
+#define JIFFY_PER_SEC 30
 
-#define JIFFY_PER_SEC (UINST_PER_SEC/UINST_PER_JIFFY)
-#define JIFFY_USEC ((G_USEC_PER_SEC)/JIFFY_PER_SEC)
+#define UINST_USEC (1.0e6 / UINST_PER_SEC)
+#define JIFFY_USEC (1.0e6 / JIFFY_PER_SEC)
 
 
 gpointer sim_thread_func (gpointer data)
 {
-  GTimeVal tv;
   int i;
+  long usec;
 
   struct sim_handle_t *sim = (struct sim_handle_t *) data;
 
   for (;;)
     {
       g_mutex_lock (sim->sim_mutex);
+      if (sim->state != sim->prev_state)
+	{
+	  if (sim->state == SIM_RUN)
+	    g_get_current_time (& sim->prev_tv);
+	}
+      sim->prev_state = sim->state;
       switch (sim->state)
 	{
 	case SIM_QUIT:
 	  g_mutex_unlock (sim->sim_mutex);
 	  g_thread_exit (0);
+
 	case SIM_RESET:
 	  reset_processor (sim);
 	  sim->state = SIM_IDLE;
 	  g_cond_signal (sim->ui_cond);
 	  g_cond_wait (sim->sim_cond, sim->sim_mutex);
 	  break;
+
 	case SIM_IDLE:
 	  g_cond_wait (sim->sim_cond, sim->sim_mutex);
 	  break;
+
 	case SIM_STEP:
 	  execute_instruction (sim);
 	  handle_io (sim);
@@ -944,16 +964,43 @@ gpointer sim_thread_func (gpointer data)
 	  g_cond_signal (sim->ui_cond);
 	  g_cond_wait (sim->sim_cond, sim->sim_mutex);
 	  break;
+
 	case SIM_RUN:
-	  g_get_current_time (& tv);
-	  for (i = 0; i < UINST_PER_JIFFY; i++)
+	  /* find out how much time has elapsed, saturated at one second */
+	  g_get_current_time (& sim->tv);
+
+	  /* compute how many microinstructions we want to execute */
+	  usec = sim->tv.tv_usec - sim->prev_tv.tv_usec;
+	  switch (sim->tv.tv_sec - sim->prev_tv.tv_sec)
+	    {
+	    case 0: break;
+	    case 1: usec += 1000000; break;
+	    default: usec = 1000000;
+	    }
+	  i = usec / UINST_USEC;
+#if 0
+	  printf ("tv %d.%06d, usec %d, i %d\n", sim->tv.tv_sec, sim->tv.tv_usec, usec, i);
+#endif
+
+	  /* execute the microinstructions */
+	  while (i--)
 	    {
 	      execute_instruction (sim);
-	      handle_io (sim);
 	    }
-	  g_time_val_add (& tv, JIFFY_USEC);
-	  g_cond_timed_wait (sim->sim_cond, sim->sim_mutex, & tv);
+
+	  /* update the display */
+	  handle_io (sim);
+
+	  /* remember when we ran */
+	  memcpy (& sim->prev_tv, & sim->tv, sizeof (GTimeVal));
+
+	  /* sleep a while */
+	  g_time_val_add (& sim->tv, JIFFY_USEC);
+	  g_cond_timed_wait (sim->sim_cond, sim->sim_mutex, & sim->tv);
 	  break;
+
+	default:
+	  fatal (2, "bad simulator state\n");
 	}
       g_mutex_unlock (sim->sim_mutex);
     }
@@ -967,7 +1014,12 @@ struct sim_handle_t *sim_init (int ram_size,
 {
   struct sim_handle_t *sim;
 
+  printf ("UINST_PER_SEC: %d\n", UINST_PER_SEC);
+  printf ("JIFFY_PER_SEC: %d\n", JIFFY_PER_SEC);
+  printf ("UINST_USEC: %f\n", UINST_USEC);
+
   sim = alloc (sizeof (struct sim_handle_t));
+  sim->prev_state = SIM_UNKNOWN;
   sim->state = SIM_IDLE;
 
   g_thread_init (NULL);  /* $$$ has Gtk already done this? */
