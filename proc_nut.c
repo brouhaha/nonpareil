@@ -1114,19 +1114,21 @@ void nut_execute_instruction (sim_t *sim)
   if (sim->env->key_flag)
     sim->env->s [0] = 1;
 
-  sim->env->pc++;
   switch (sim->env->inst_state)
     {
     case norm:
+      sim->env->pc++;
       (* sim->op_fcn [opcode]) (sim, opcode);
       break;
     case long_branch:
+      sim->env->pc++;
       op_long_branch_word_2 (sim, opcode);
       break;
     case cxisa:
       op_rom_to_c_cycle_2 (sim, opcode);
       break;
     case ldi:
+      sim->env->pc++;
       op_ldi_cycle_2 (sim, opcode);
       break;
     }
