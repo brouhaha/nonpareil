@@ -23,6 +23,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
 #include <stdarg.h>
 #include <stdio.h>
+#include "xio.h"
 
 char * progn;
 
@@ -56,6 +57,7 @@ uchar del_grp;
 uchar ret_pc;
 
 int display_enable;
+int keybuf;
 
 int prev_pc;  /* used to store complete five-digit octal address of instruction */
 
@@ -157,7 +159,7 @@ void op_arith (int opcode)
       first =  p; last =  p;
       if (p >= WSIZE)
 	{
-	  printf ("Warning! p > WSIZE at %05x\n", prev_pc);
+	  printf ("Warning! p > WSIZE at %05o\n", prev_pc);
 	  last = 0;  /* don't do anything */
 	}
       break;
@@ -168,7 +170,7 @@ void op_arith (int opcode)
       first =  0; last =  p; break;
       if (p > 13)
 	{
-	  printf ("Warning! p >= WSIZE at %05x\n", prev_pc);
+	  printf ("Warning! p >= WSIZE at %05o\n", prev_pc);
 	  last = 13;
 	}
       break;
@@ -300,7 +302,7 @@ void op_arith (int opcode)
     case 0x18:  /* a - b -> a[f] */
       carry = 0;
       for (i = first; i <= last; i++)
-	f [i] = do_sub (a [i], b [i]);
+	a [i] = do_sub (a [i], b [i]);
       break;
     case 0x19:  /* a exchange b[f] */
       for (i = first; i <= last; i++)
@@ -478,7 +480,7 @@ void op_clear_reg (int opcode)
 void op_load_constant (int opcode)
 {
   if (p >= WSIZE)
-    printf ("load constant w/ p >= WSIZE at %05x\n", prev_pc);
+    printf ("load constant w/ p >= WSIZE at %05o\n", prev_pc);
   else if ((opcode >> 6) > 9)
     printf ("load constant > 9\n");
   else
@@ -489,7 +491,7 @@ void op_load_constant (int opcode)
 void op_set_s (int opcode)
 {
   if ((opcode >> 6) >= SSIZE)
-    printf ("stat >= SSIZE at %05x\n", prev_pc);
+    printf ("stat >= SSIZE at %05o\n", prev_pc);
   else
     s [opcode >> 6] = 1;
 }
@@ -497,7 +499,7 @@ void op_set_s (int opcode)
 void op_clr_s (int opcode)
 {
   if ((opcode >> 6) >= SSIZE)
-    printf ("stat >= SSIZE at %05x\n", prev_pc);
+    printf ("stat >= SSIZE at %05o\n", prev_pc);
   else
     s [opcode >> 6] = 0;
 }
@@ -505,7 +507,7 @@ void op_clr_s (int opcode)
 void op_test_s (int opcode)
 {
   if ((opcode >> 6) >= SSIZE)
-    printf ("stat >= SSIZE at %05x\n", prev_pc);
+    printf ("stat >= SSIZE at %05o\n", prev_pc);
   else
     carry = s [opcode >> 6];
 }
@@ -540,7 +542,7 @@ void op_del_sel_grp (int opcode)
 
 void op_keys_to_rom_addr (int opcode)
 {
-  pc = 0x02;
+  pc = keybuf;
   printf ("read keys!!!!!!!!!!!!\n");
 }
 
@@ -706,12 +708,19 @@ void read_listing_file (char *fn, FILE *f)
 
   while (fgets (buf, sizeof (buf), f))
     {
-      if ((buf [7] == 'L') && (buf [13] == ':') &&
+      if ((strlen (buf) >= 25) && (buf [7] == 'L') && (buf [13] == ':') &&
 	  parse_address (& buf [8], & g, &r, &p) &&
 	  parse_opcode (& buf [16], & opcode))
 	{
 	  if ((g >= MAX_GROUP) || (r >= MAX_ROM) || (p >= ROM_SIZE))
 	    fprintf (stderr, "bad address\n");
+	  else if (source [g][r][p])
+	    {
+	      fprintf (stderr, "duplicate listing line for address %1o%1o%03o\n",
+		       g, r, p);
+	      fprintf (stderr, "orig: %s\n", source [g][r][p]);
+	      fprintf (stderr, "dup:  %s\n", source [g][r][p]);
+	    }
 	  else
 	    {
 	      ucode  [g][r][p] = opcode;
@@ -741,9 +750,47 @@ void print_stat (void)
 }
 
 
+void handle_io (void)
+{
+  char buf [WSIZE + 2];
+  char *bp;
+  int i;
+
+  bp = & buf [0];
+  if (display_enable)
+    {
+      for (i = WSIZE - 1; i >= 0; i--)
+	{
+	  if (b [i] >= 8)
+	    *bp++ = ' ';
+	  else if ((i == 2) || (i == 13))
+	    {
+	      if (a [i] >= 8)
+		*bp++ = '-';
+	      else
+		*bp++ = ' ';
+	    }
+	  else
+	    *bp++ = '0' + a [i];
+	  if (b [i] == 2)
+	    *bp++ = '.';
+	}
+    }
+  *bp = '\0';
+  update_display (buf);
+  i = check_keyboard ();
+  if (i >= 0)
+    {
+      keybuf = i;
+      s [0] = 1;
+    }
+}
+
+
 void debugger (void)
 {
   int opcode;
+  int cycle = 0;
 
   pc = 0;
   rom = 0;
@@ -760,28 +807,36 @@ void debugger (void)
     {
       while (run || step)
 	{
-	  if (source [group][rom][pc])
-	    printf ("%s", source [group][rom][pc]);
-	  else
-	    disassemble_instruction (group, rom, pc, opcode);
-	  printf ("\n");
+	  if (trace)
+	    {
+	      if (source [group][rom][pc])
+		printf ("%s", source [group][rom][pc]);
+	      else
+		disassemble_instruction (group, rom, pc, opcode);
+	      printf ("\n");
+	    }
 	  prev_pc = (group << 12) | (rom << 9) | pc;
 	  opcode = ucode [group][rom][pc];
 	  prev_carry = carry;
 	  carry = 0;
 	  pc++;
 	  (* op_fcn [opcode]) (opcode);
-	  printf ("  p=%x", p);
-	  printf (" stat=");
-	  print_stat ();
-	  printf (" a=");
-	  print_reg (a);
-	  printf (" b=");
-	  print_reg (b);
-	  printf (" c=");
-	  print_reg (c);
-	  printf ("\n");
+	  cycle++;
+	  if (trace)
+	    {
+	      printf ("  p=%x", p);
+	      printf (" stat=");
+	      print_stat ();
+	      printf (" a=");
+	      print_reg (a);
+	      printf (" b=");
+	      print_reg (b);
+	      printf (" c=");
+	      print_reg (c);
+	      printf ("\n");
+	    }
 	  step = 0;
+	  handle_io ();
 	}
       /* get a command here */
     }
@@ -798,15 +853,19 @@ int main (int argc, char *argv[])
   FILE *f;
   char buf [PATH_MAX];
  
-  progn = argv [0];
+  init_display (argc, argv);
+
+  progn = newstr ("foo" /* argv [0] */);
 
   while (--argc)
     {
       argv++;
       if (*argv [0] == '-')
 	{
-	  if (stricmp (argv [0], "-stop"))
+	  if (stricmp (argv [0], "-stop") == 0)
 	    run = 0;
+	  else if (stricmp (argv [0], "-trace") == 0)
+	    trace = 1;
 	  else
 	    fatal (1, "unrecognized option '%s'\n", argv [0]);
 	}

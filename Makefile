@@ -12,18 +12,17 @@ CFLAGS = -g -Dstricmp=strcasecmp
 PROGRAMS = casm csim
 MISC_TARGETS = hp45 hp55
 
-HEADERS = casm.h symtab.h
-SOURCES = casm.c casm.l casm.y symtab.c csim.c
+HEADERS = casm.h symtab.h xio.h
+SOURCES = casm.c casm.l casm.y symtab.c csim.c xio.c
 MISC = COPYING README
 ROMS =  hp45.asm hp55.asm
 
 CASM_OBJECTS = casm.o y.tab.o lex.yy.o symtab.o
-CSIM_OBJECTS = csim.o
+CSIM_OBJECTS = csim.o xio.o
 
 OBJECT = $(CASM_OBJECTS) $(CSIM_OBJECTS)
 
-LIBS = -lc
-# LIBS = -ly -ll
+SIM_LIBS = -L/usr/X11/lib -lX11
 
 INTERMEDIATE = lex.yy.c lex.yy.o y.tab.h y.tab.c y.tab.o
 
@@ -69,9 +68,12 @@ hp55.obj:	casm hp55.asm
 	./casm hp55.asm
 
 csim:	$(CSIM_OBJECTS)
-	$(CC) -o $@ $(CSIM_OBJECTS)
+	$(CC) -o $@ $(CSIM_OBJECTS) $(SIM_LIBS) 
 
-csim.o:	csim.c
+csim.o:	csim.c xio.h
+	$(CC) -c $(CFLAGS) -o $@ $<
+
+xio.o:	xio.c xio.h
 	$(CC) -c $(CFLAGS) -o $@ $<
 
 casmsim.tar.gz:	$(DISTRIB)
