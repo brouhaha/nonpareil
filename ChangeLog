@@ -1,5 +1,8 @@
 2004-04-30  Eric Smith <eric@brouhaha.com>
 
+	* proc_woodstock.c dis_woodstock.h dis_woodstock.c: Added
+	disassembler for Woodstock processor.
+	
 	* proc_woodstock.c (woodstock_reset_processor): Only set external
 	flag 5 (battery OK) on Woodstock series.
 

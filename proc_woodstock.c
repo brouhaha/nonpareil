@@ -31,6 +31,7 @@ MA 02111, USA.
 #include "display.h"
 #include "proc.h"
 #include "proc_int.h"
+#include "dis_woodstock.h"
 
 
 #define SSIZE 16
@@ -926,23 +927,22 @@ static void init_ops (sim_t *sim)
 
 static void woodstock_disassemble (sim_t *sim, int addr, char *buf, int len)
 {
-  int l;
-  int mapped_addr;
+  int ma1, ma2;
+  int op1, op2;
 
-  mapped_addr = woodstock_map_rom_address (sim, addr);
+  if (sim->env->if_flag)  /* second word of two-word instruction */
+    {
+      snprintf (buf, len, "...");
+      return;
+    }
 
-  l = snprintf (buf, len, "[%o]%04o: ",
-		mapped_addr >> 12, mapped_addr & 07777);
-  buf += l;
-  len -= l;
-  if (len <= 0)
-    return;
+  ma1 = woodstock_map_rom_address (sim, addr);
+  op1 = sim->ucode [ma1];
 
-  l = snprintf (buf, len, "%04o", sim->ucode [mapped_addr]);
-  buf += l;
-  len -= l;
-  if (len <= 0)
-    return;
+  ma2 = woodstock_map_rom_address (sim, addr + 1);
+  op2 = sim->ucode [ma2];
+
+  woodstock_disassemble_inst (ma1, op1, op2, buf, len);
 
   return;
 }
@@ -1065,9 +1065,6 @@ bool woodstock_execute_instruction (sim_t *sim)
   int prev_if_flag;
 
   sim->env->prev_pc = sim->env->pc;
-  prev_if_flag = sim->env->if_flag;
-  sim->env->if_flag = 0;
-
   opcode = sim->ucode [woodstock_map_rom_address (sim, sim->env->pc)];
 
 #ifdef HAS_DEBUGGER
@@ -1084,6 +1081,9 @@ bool woodstock_execute_instruction (sim_t *sim)
       woodstock_print_state (sim, sim->env);
     }
 #endif /* HAS_DEBUGGER */
+
+  prev_if_flag = sim->env->if_flag;
+  sim->env->if_flag = 0;
 
   sim->env->prev_carry = sim->env->carry;
   sim->env->carry = 0;

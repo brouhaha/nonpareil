@@ -18,7 +18,7 @@
 # Boston, MA 02111, USA.
 
 
-#HAS_DEBUGGER=1
+HAS_DEBUGGER=1
 ifdef HAS_DEBUGGER
 #HAS_DEBUGGER_CLI=1
 ifdef HAS_DEBUGGER_CLI
@@ -80,10 +80,12 @@ TARGETS = nonpareil uasm
 
 HDRS = asm.h symtab.h util.h proc.h proc_int.h kml.h debugger.h display.h \
 	arch.h platform.h model.h \
+	dis_woodstock.h \
 	proc_nut.h coconut_lcd.h voyager_lcd.h
 CSRCS = asm.c symtab.c csim.c util.c proc.c kml.c debugger.c \
 	arch.c platform.c model.c \
-	proc_classic.c proc_woodstock.c \
+	proc_classic.c \
+	proc_woodstock.c dis_woodstock.c \
 	proc_nut.c coconut_lcd.c voyager_lcd.c
 LSRCS = asml.l casml.l wasml.l kmll.l
 YSRCS = asmy.y casmy.y wasmy.y kmly.y
@@ -101,7 +103,8 @@ UASM_OBJECTS = asm.o symtab.o util.o arch.o \
 
 NONPAREIL_OBJECTS = csim.o util.o proc.o kmll.o kmly.tab.o kml.o \
 	arch.o platform.o model.o \
-	proc_classic.o proc_woodstock.o \
+	proc_classic.o \
+	proc_woodstock.o dis_woodstock.o \
 	proc_nut.o coconut_lcd.o voyager_lcd.o
 ifdef HAS_DEBUGGER_CLI
   NONPAREIL_OBJECTS += debugger.o
