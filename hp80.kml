@@ -26,7 +26,9 @@ global
 	hardware "Classic"
 	model "80"
 	rom "hp80.lst"
-	image "hp80.jpg"
+	image "hp80.png"
+	color 0 67 33 119	  # background color, used when transparency is off
+	transparency 128
 end
 
 background

@@ -26,7 +26,9 @@ global
 	hardware "Classic"
 	model "55"
 	rom "hp55.lst"
-	image "hp55.jpg"
+	image "hp55.png"
+	color 0 81 21 109	  # background color, used when transparency is off
+	transparency 128
 end
 
 background
