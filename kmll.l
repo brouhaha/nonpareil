@@ -24,12 +24,17 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 */
 
 %{
+#include <stdlib.h>
 #include <string.h>
 
 #include "kmly.tab.h"
 #include "kml.h"
 
 #include "util.h"
+
+int octal_escape (char *p);
+
+#define MAX_STR_CONST 300
 
 #undef YY_INPUT
 #define YY_INPUT(buf,result,max_size) \
@@ -43,85 +48,89 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
   }
 %}
 
+%option case-insensitive
+
 octaldig	[0-7]
 digit		[0-9]
 alpha		[a-zA-Z]
+
+%x string
+
 %%
 
-[1-9]{digit}+	{ yylval.integer = atoi (yytext); return INTEGER; }
-0{octaldig}+	{ sscanf (yytext+1, "%o", &yylval.integer); return INTEGER; }
+	char string_buf [MAX_STR_CONST];
+	char *string_buf_ptr;
+
+[1-9]{digit}*	{ yylval.integer = atoi (yytext); return INTEGER; }
+0{octaldig}*	{ sscanf (yytext+1, "%o", &yylval.integer); return INTEGER; }
 @{octaldig}+	{ sscanf (yytext+1, "%o", &yylval.integer); return INTEGER; }
 
-{alpha}*	{
-                          if ((yylval.integer = keyword (yytext)))
-                            return yylval.integer;
-			/* $$$ identifiers not allowed! */
-                        }
+\"		{ string_buf_ptr = string_buf; BEGIN(string); }
 
-".*"		{
-			return STRING;
-		}
+<string>{
+	\"		{
+			  BEGIN(INITIAL);
+			  *string_buf_ptr = '\0';
+			  return STRING;
+			  /* return string */
+			}
+	\\[0-7]{1,3}	*string_buf_ptr++ = octal_escape (yytext + 1);
+	\\n		*string_buf_ptr++ = '\n';
+	\\t		*string_buf_ptr++ = '\t';
+	\\r		*string_buf_ptr++ = '\r';
+	\\b		*string_buf_ptr++ = '\b';
+	\\f		*string_buf_ptr++ = '\f';
+}
 
 [ \t]+		;
 \n		;
 
+annunciator	return (ANNUNCIATOR);
+author		return (AUTHOR);
+background	return (BACKGROUND);
+bitmap		return (BITMAP);
+button		return (BUTTON);
+class		return (CLASS);
+color		return (COLOR);
+debug		return (DEBUG);
+down		return (DOWN);
+else		return (ELSE);
+end		return (END);
+global		return (GLOBAL);
+hardware	return (HARDWARE);
+ifflag		return (IFFLAG);
+ifpressed	return (IFPRESSED);
+lcd		return (LCD);
+map		return (MAP);
+menuitem	return (MENUITEM);
+model		return (MODEL);
+nohold		return (NOHOLD);
+offset		return (OFFSET);
+ondown		return (ONDOWN);
+onup		return (ONUP);
+outin		return (OUTIN);
+patch		return (PATCH);
+press		return (PRESS);
+print		return (PRINT);
+release		return (RELEASE);
+resetflag	return (RESETFLAG);
+rom		return (ROM);
+scancode	return (SCANCODE);
+setflag		return (SETFLAG);
+size		return (SIZE);
+title		return (TITLE);
+type		return (TYPE);
+virtual		return (VIRTUAL);
+zoom		return (ZOOM);
+
 %%
 
-struct keyword
+int octal_escape (char *p)
 {
-  char *name;
-  int value;
-}
-keywords [] =
-{
-  { "annunciator", ANNUNCIATOR },
-  { "author",      AUTHOR },
-  { "background",  BACKGROUND },
-  { "bitmap",      BITMAP },
-  { "button",      BUTTON },
-  { "class",       CLASS },
-  { "color",       COLOR },
-  { "debug",       DEBUG },
-  { "down",        DOWN },
-  { "else",        ELSE },
-  { "end",         END },
-  { "global",      GLOBAL },
-  { "hardware",    HARDWARE },
-  { "ifflag",      IFFLAG },
-  { "ifpressed",   IFPRESSED },
-  { "lcd",         LCD },
-  { "map",         MAP },
-  { "menuitem",    MENUITEM },
-  { "model",       MODEL },
-  { "nohold",      NOHOLD },
-  { "offset",      OFFSET },
-  { "ondown",      ONDOWN },
-  { "onup",        ONUP },
-  { "outin",       OUTIN },
-  { "patch",       PATCH },
-  { "press",       PRESS },
-  { "print",       PRINT },
-  { "release",     RELEASE },
-  { "resetflag",   RESETFLAG },
-  { "rom",         ROM },
-  { "scancode",    SCANCODE },
-  { "setflag",     SETFLAG },
-  { "size",        SIZE },
-  { "title",       TITLE },
-  { "type",        TYPE },
-  { "virtual",     VIRTUAL },
-  { "zoom",        ZOOM },
-  { NULL,          0 }
-};
-
-int keyword (char *string)
-{
-  struct keyword *ptr;
-
-  for (ptr = keywords; ptr->name; ptr++)
-    if (strcasecmp (string, ptr->name) == 0)
-      return ptr->value;
-  return 0;
+  char buf [4];
+  strncpy (buf, p, 3);
+  buf [3] = '\0';
+  return (strtoul (buf, NULL, 8));
 }
 
 int yywrap (void)

@@ -29,6 +29,3 @@ extern int errors;
 #define MAX_LINE 256
 extern char linebuf [MAX_LINE];
 extern char *lineptr;
-
-/* in casml.l: */
-int keyword (char *string);
