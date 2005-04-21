@@ -27,7 +27,10 @@ MA 02111, USA.
 
 #include <glib.h>
 #include <gtk/gtk.h>
+
+#ifdef HAS_DEBUGGER_CLI
 #include <vte/vte.h>
+#endif
 
 #ifdef USE_READLINE
 #include <readline/readline.h>
