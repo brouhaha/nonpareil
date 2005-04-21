@@ -1050,6 +1050,14 @@ bool woodstock_execute_instruction (sim_t *sim)
 
   sim->env->prev_pc = sim->env->pc;
   opcode = sim->ucode [woodstock_map_rom_address (sim, sim->env->pc)];
+  if ((sim->platform != PLATFORM_SPICE) &&
+      (sim->env->pc < 02000) &&
+      (sim->env->bank == 1))
+     {
+	printf ("implicit bank switch at %04o, will select bank 0\n",
+		sim->env->pc);
+	sim->env->bank = 0;
+     }
 
 #ifdef HAS_DEBUGGER
   if ((sim->debug_flags & (1 << SIM_DEBUG_KEY_TRACE)) &&
