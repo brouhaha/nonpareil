@@ -6,7 +6,7 @@ $Id$
 
 News:
 
-Release 0.45 of Nonpareil is an interim development release.
+Release 0.xx of Nonpareil is an interim development release.
 
 In this release, the HP-21, HP-25, HP-31E, HP-33C, HP-35, HP-37E, HP-41CV,
 HP-45, HP-55, and HP-80 are simulated.
@@ -189,15 +189,22 @@ Steven Ellis helped with the SConstruct file, used to build the Nonpareil
 using SCons rather than make.
 
 The HP-41C image (hp41cv.png) is a stylized illustration rendered by
-my older NSIM simulator with improvements by Maciej Bartosiak.
+my older NSIM simulator with improvements by Maciej Bartosiak and
+Thomas Olesen.
+
+Thomas Olesen improved the HP-41CV KML file for a more realistic display
+"font" and alpha keyboard mapping.
 
 Images of the HP-21, HP-25, HP-32E, HP-33C, HP-35, HP-37E, HP-45, HP-55,
 and HP-80 are copyrighted by David G. Hicks of the Museum of HP
 Calculators and have been included in this package by his permission:
         http://www.hpmuseum.org/
 
-Bernhard Engl, Richard Ottosen, and Jim Philips provided assisted with
+Bernhard Engl, Richard Ottosen, and Jim Philips provided assistance with
 circuit designs for PMOS interfacing.
+
+Bernhard Engl reverse-engineered the bank-switching feature of the
+HP-67 ROM/RAM chips.
 
 -----------------------------------------------------------------------------
 
