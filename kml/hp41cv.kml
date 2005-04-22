@@ -37,8 +37,9 @@ display
 	offset 8 8
 	size 254 48
 
-	color 0 142 125 109   # background
-	color 1 142 125 109   # unlit segments
+	#color 0 142 125 109   # background
+	color 0 182 165 149   # background
+	color 1 182 165 149   # unlit segments
 	color 2   0   0   0   # lit segments
 
 	annunciator  0  size 17 7  offset  28 45  end   # BAT
@@ -54,8 +55,12 @@ display
 	annunciator 10  size 23 7  offset 184 45  end   # PRGM
 	annunciator 11  size 29 7  offset 214 45  end   # ALPHA
 
+#	digits 12
+#		size 13 11
+#		offset 8 10
+#	end
 	digits 12
-		size 13 11
+		size 19 18
 		offset 8 10
 	end
 
@@ -450,24 +455,26 @@ display
 	character 0x7f  # APP lazy T (duplicate of 0x40)
 	  segment                 'e' 'f' 'g' 'h'                         end
 
-	segment 'a' line offset  0  0 size  6  1 end
-	segment 'b' line offset  5  0 size  1  6 end
-	segment 'c' line offset  5  5 size  1  6 end
-	segment 'd' line offset  0 10 size  6  1 end
-	segment 'e' line offset  0  5 size  1  6 end
-	segment 'f' line offset  0  0 size  1  6 end
-	segment 'g' line offset  0  5 size  3  1 end
-	segment 'h' line offset  3  5 size  3  1 end
-	segment 'i' line offset  3  0 size  1  6 end
-        segment 'j' line offset  3  5 size  1  6 end
-        segment 'k' line offset  3  5 size  3 -4 end
-        segment 'l' line offset  3  5 size -2 -4 end
-        segment 'm' line offset  3  5 size  3  6 end
-        segment 'n' line offset  3  5 size -3  6 end
+#
 
-	segment 'o' rect offset  9 11 size 2 2 end  # period
-	segment 'p' rect offset  8 13 size 2 2 end  # comma
-	segment 'q' rect offset  9  5 size 2 2 end  # upper dot of colon
+	segment 'a' line offset  2  0 size 10  1 end
+	segment 'b' line offset 12  1 size  1  7 end
+	segment 'c' line offset 12  9 size  1  7 end
+	segment 'd' line offset  2 16 size 10  1 end
+	segment 'e' line offset  1  9 size  1  7 end
+	segment 'f' line offset  1  1 size  1  7 end
+	segment 'g' line offset  2  8 size  4  1 end
+	segment 'h' line offset  7  8 size  4  1 end
+	segment 'i' line offset  6  1 size  1  7 end
+        segment 'j' line offset  6  9 size  1  7 end
+        segment 'k' line offset  8  7 size  4 -5 end
+        segment 'l' line offset  5  7 size -3 -5 end
+        segment 'm' line offset  8  9 size  4  7 end
+        segment 'n' line offset  5  9 size -3  7 end
+
+	segment 'o' rect offset 16 14 size 2 2 end  # period
+	segment 'p' rect offset 15 16 size 2 2 end  # comma
+	segment 'q' rect offset 16  3 size 2 2 end  # upper dot of colon
 end
 
 button 01  type 0  size 37 18  offset  21  65  down 2 8  keycode 0x18  end
@@ -534,9 +541,41 @@ scancode 43 map 43 61 end  # +
 scancode 45 map 45 51 end  # -
 scancode 42 map 42 71 end  # *
 scancode 47 map 47 81 end  # /
+
+#all letter access the key it is printed on
+scancode 97 map 97 11 end # a
+scancode 98 map 98 12 end # b
+scancode 99 map 99 13 end # c
+scancode 100 map 100 14 end # d
+scancode 101 map 101 15 end # e
+scancode 102 map 102 21 end # f
+scancode 103 map 103 22 end # g
+scancode 104 map 104 23 end # h
+scancode 105 map 105 24 end # i
+scancode 106 map 106 25 end # j
+scancode 107 map 107 32 end # k
+scancode 108 map 108 33 end # l
+scancode 109 map 109 34 end # m
+scancode 110 map 110 41 end # n
+scancode 111 map 111 42 end # o
+scancode 112 map 112 43 end # p
+scancode 113 map 113 51 end # q
+scancode 114 map 114 52 end # r
+scancode 115 map 115 53 end # s
+scancode 116 map 116 54 end # t
+scancode 117 map 117 61 end # u
+scancode 118 map 118 62 end # v
+scancode 119 map 119 63 end # w
+scancode 120 map 120 64 end # x
+scancode 121 map 121 71 end # y
+scancode 122 map 122 72 end # z
+scancode 61 map 61 73 end # =
+scancode 63 map 63 74 end # ?
+
+
 scancode 65293 map 65293 41 end  # ENTER
-scancode 99 map 99 42 end  # c - CHS
-scancode 101 map 101 43 end  # e - EEX
+#scancode 99 map 99 42 end  # c - CHS
+#scancode 101 map 101 43 end  # e - EEX
 
 # keypad:
 scancode 65456 map 65456 82 end  # 0
