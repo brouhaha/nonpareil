@@ -28,12 +28,13 @@ endif
 endif
 
 
+#STATIC_LINK=1
+
+
 YACC = bison
 YFLAGS = -d -v
 
 LEX = flex
-
-LDFLAGS = -g
 
 
 # -----------------------------------------------------------------------------
@@ -42,7 +43,7 @@ LDFLAGS = -g
 # -----------------------------------------------------------------------------
 
 PACKAGE = nonpareil
-RELEASE = 0.45
+RELEASE = 0.46
 DISTNAME = $(PACKAGE)-$(RELEASE)
 
 PACKAGES = gtk+-2.0 gdk-2.0 gdk-pixbuf-2.0 glib-2.0 gthread-2.0
@@ -50,8 +51,13 @@ ifdef HAS_DEBUGGER_CLI
 PACKAGES += vte
 endif
 
+ifdef STATIC_LINK
+  LOADLIBES += -static
+#  LOADLIBES += -Wl,-static
+endif
+
 CFLAGS = -g -Wall `pkg-config $(PACKAGES) --cflags`
-LOADLIBES = `pkg-config $(PACKAGES) --libs` -lutil
+LOADLIBES += `pkg-config $(PACKAGES) --libs` -lutil
 
 ifdef HAS_DEBUGGER
   CFLAGS += -DHAS_DEBUGGER
