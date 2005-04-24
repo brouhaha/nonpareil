@@ -47,7 +47,7 @@ void usage (FILE *f)
 }
 
 
-static parser_t *parser [ARCH_MAX] =
+parser_t *parser [ARCH_MAX] =
   {
     [ARCH_UNKNOWN]   = asm_parse,
     [ARCH_CLASSIC]   = casm_parse,
