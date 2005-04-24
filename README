@@ -6,7 +6,7 @@ $Id$
 
 News:
 
-Release 0.44 of Nonpareil is an interim development release.
+Release 0.46 of Nonpareil is an interim development release.
 
 In this release, the HP-25, HP-31E, HP-33C, HP-35, HP-37E, HP-41CV, HP-45,
 HP-55, and HP-80 are simulated.
@@ -17,8 +17,6 @@ There are a few known bugs in the simulations:
 
 * The HP-55 simulation does not correctly support user registers
   .0 through .9.
-
-* The HP-25 logarithmic and exponential functions do not work correctly.
 
 -----------------------------------------------------------------------------
 
@@ -196,8 +194,9 @@ HP-80 are copyrighted by David G. Hicks of the Museum of HP
 Calculators and have been included in this package by his permission:
         http://www.hpmuseum.org/
 
-The HP-41C image (hp41cv.png) is a stylized illustration rendered by
-my older NSIM simulator with improvements by Maciej Bartosiak.
+The HP-41C image (hp41cv.png) was developed by Maciej Barosiak.  Thomas
+Olesen made improvements to hp41cv.kml for a much better looking display
+and alpha keyboard mapping.
 
 David G. Hicks translated the earlier csim HP-45 simulator to Java:
         http://www.hpmuseum.org/simulate/sim45.htm
