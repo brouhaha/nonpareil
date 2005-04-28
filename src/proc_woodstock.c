@@ -19,6 +19,7 @@ Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
 MA 02111, USA.
 */
 
+#include <inttypes.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -1035,7 +1036,7 @@ static void woodstock_print_state (sim_t *sim, sim_env_t *env)
   else
     {
       char buf [80];
-      printf ("%lld: ", sim->cycle_count);
+      printf ("%" PRId64 ": ", sim->cycle_count);
       woodstock_disassemble (sim, env->prev_pc, buf, sizeof (buf));
       printf ("%s\n", buf);
     }
