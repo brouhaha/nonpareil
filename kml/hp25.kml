@@ -57,7 +57,7 @@ display
 	character 0x08 segment 'a' 'b' 'c' 'd' 'e' 'f' 'g'     end
 	character 0x09 segment 'a' 'b' 'c' 'd'     'f' 'g'     end
 	character 0x0a segment                 'e'     'g'     end # r
-	character 0x0b segment     'b' 'c'     'e' 'f' 'g'     end # H
+	character 0x0b segment 'a'             'e' 'f' 'g'     end # F
 	character 0x0c segment         'c' 'd' 'e'     'g'     end # o
 	character 0x0d segment 'a' 'b'         'e' 'f' 'g'     end # p
 	character 0x0e segment 'a'         'd' 'e' 'f' 'g'     end # e
