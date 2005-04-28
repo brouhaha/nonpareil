@@ -1,6 +1,6 @@
 /*
 $Id$
-Copyright 1995, 2004 Eric L. Smith <eric@brouhaha.com>
+Copyright 1995, 2004, 2005 Eric L. Smith <eric@brouhaha.com>
 
 Nonpareil is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License version 2 as
@@ -35,6 +35,10 @@ extern char *nonpareil_release;   /* defined in release.c */
 
 void usage (FILE *f);    /* must be implemented in main program */
 
+// generate warning message to stderr
+void warning (char *format, ...);
+
+// generate fatal error message to stderr, doesn't return
 void fatal (int ret, char *format, ...) __attribute__ ((noreturn));
 
 void *alloc (size_t size);

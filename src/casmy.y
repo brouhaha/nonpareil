@@ -165,15 +165,15 @@ goto_inst	: goto_form { emit (($1 << 2) | 0x003);
 
 goto_form       : GO TO expr      { $$ = $3; 
 				    if (last_instruction_type == ARITH_INST)
-				      warning ("unconditional goto shouldn't follow  arithmetic instruction\n"); 
+				      asm_warning ("unconditional goto shouldn't follow  arithmetic instruction\n"); 
 				    else if (last_instruction_type == TEST_INST)
-				      warning ("unconditional goto shouldn't follow test instruction\n"); }
+				      asm_warning ("unconditional goto shouldn't follow test instruction\n"); }
                 | THEN GO TO expr { $$ = $4; 
 				    if (last_instruction_type != TEST_INST)
-				      warning ("'then go to' should only follow 'if' instructions\n"); }
+				      asm_warning ("'then go to' should only follow 'if' instructions\n"); }
                 | IF NO CARRY GO TO expr { $$ = $6; 
 				    if (last_instruction_type != ARITH_INST)
-				      warning ("'if no carry go to' should only follow arithmetic instructions\n"); }
+				      asm_warning ("'if no carry go to' should only follow arithmetic instructions\n"); }
 		;
 
 arith_inst      : inst_test_b_0

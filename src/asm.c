@@ -447,7 +447,7 @@ int error   (char *format, ...)
   return (res);
 }
 
-int warning (char *format, ...)
+int asm_warning (char *format, ...)
 {
   int res;
   va_list ap;

@@ -1,6 +1,6 @@
 /*
 $Id$
-Copyright 1995, 2004 Eric L. Smith <eric@brouhaha.com>
+Copyright 1995, 2004, 2005 Eric L. Smith <eric@brouhaha.com>
 
 Nonpareil is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License version 2 as
@@ -30,16 +30,30 @@ MA 02111, USA.
 char *progname;
 
 
-/* generate fatal error message to stderr, doesn't return */
+// generate warning message to stderr
+void warning (char *format, ...)
+{
+  va_list ap;
 
+  fprintf (stderr, "warning: ");
+  va_start (ap, format);
+  vfprintf (stderr, format, ap);
+  va_end (ap);
+}
+
+
+// generate fatal error message to stderr, doesn't return
 void fatal (int ret, char *format, ...)
 {
   va_list ap;
 
-  fprintf (stderr, "fatal error: ");
-  va_start (ap, format);
-  vfprintf (stderr, format, ap);
-  va_end (ap);
+  if (format)
+    {
+      fprintf (stderr, "fatal error: ");
+      va_start (ap, format);
+      vfprintf (stderr, format, ap);
+      va_end (ap);
+    }
   if (ret == 1)
     usage (stderr);
   exit (ret);

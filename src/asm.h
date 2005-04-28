@@ -83,8 +83,8 @@ int range (int val, int min, int max);
 int err_printf (char *format, ...);
 
 /* generate error or warning messages and increment appropriate counter */
-int error   (char *format, ...);
-int warning (char *format, ...);
+int error       (char *format, ...);
+int asm_warning (char *format, ...);
 
 
 /* lexers: */
