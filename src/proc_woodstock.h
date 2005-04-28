@@ -79,6 +79,7 @@ struct sim_env_t
   int crc;
 
   int display_enable;
+  bool fourteen_digit_display;
 
   bool key_flag;      /* true if a key is down */
   int key_buf;        /* most recently pressed key */

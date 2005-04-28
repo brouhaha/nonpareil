@@ -823,6 +823,13 @@ static void op_display_toggle (sim_t *sim, int opcode)
 }
 
 
+static void op_display_reset_twf (sim_t *sim, int opcode)
+{
+  sim->env->fourteen_digit_display = true;
+  sim->right_scan = 0;
+}
+
+
 static void init_ops (sim_t *sim)
 {
   int i;
@@ -878,7 +885,7 @@ static void init_ops (sim_t *sim)
   sim->op_fcn [00020] = op_keys_to_rom_addr;
   /* 0010 unknown */
   sim->op_fcn [00220] = op_a_to_rom_addr;
-  /* 0320 unknown */
+  sim->op_fcn [00320] = op_display_reset_twf;
   sim->op_fcn [00420] = op_binary;
   sim->op_fcn [00520] = op_circulate_a_left;
   sim->op_fcn [00620] = op_dec_p;
@@ -954,6 +961,12 @@ static void woodstock_display_scan (sim_t *sim)
   int a = sim->env->a [sim->display_scan_position];
   int b = sim->env->b [sim->display_scan_position];
   segment_bitmap_t segs = 0;
+
+  if ((sim->env->fourteen_digit_display) && (! sim->display_digit_position))
+    {
+      sim->display_segments [sim->display_digit_position++] = 0;
+      /* make room for sign */
+    }
 
   if (sim->env->display_enable)
     {
@@ -1303,12 +1316,16 @@ static void woodstock_new_processor (sim_t *sim, int ram_size)
   switch (sim->platform)
     {
     case PLATFORM_WOODSTOCK:
+    case PLATFORM_TOPCAT:
+      // default to twelve digits, but RESET TWF instruction switches to
+      // fourteen digits plus special case for sign
       sim->display_digits = MAX_DIGIT_POSITION;
       sim->display_scan_fn = woodstock_display_scan;
       sim->left_scan = WSIZE - 1;
       sim->right_scan = 2;
       break;
     case PLATFORM_SPICE:
+      // ten digits plus special-case for sign
       sim->display_digits = MAX_DIGIT_POSITION;
       sim->display_scan_fn = spice_display_scan;
       sim->left_scan = WSIZE - 2;
