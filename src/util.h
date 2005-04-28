@@ -35,7 +35,7 @@ extern char *nonpareil_release;   /* defined in release.c */
 
 void usage (FILE *f);    /* must be implemented in main program */
 
-void fatal (int ret, char *format, ...);
+void fatal (int ret, char *format, ...) __attribute__ ((noreturn));
 
 void *alloc (size_t size);
 
