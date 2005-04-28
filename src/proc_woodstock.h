@@ -29,6 +29,8 @@ typedef digit_t reg_t [WSIZE];
 #define SSIZE 16
 #define STACK_SIZE 2
 
+#define EXT_FLAG_SIZE 16
+
 
 typedef enum
   {
@@ -57,8 +59,9 @@ struct sim_env_t
 
   uint8_t carry, prev_carry;
 
-  uint8_t s [SSIZE];  /* status bits */
-  uint8_t ext_flag [SSIZE];  /* external flags, cause status bits to get set */
+  uint8_t s [SSIZE];                 // ACT flags (status bits)
+  uint8_t ext_flag [EXT_FLAG_SIZE];  // external flags, cause status or CRC
+                                     // bits to get set
 
   int ram_addr;  /* selected RAM address */
 
@@ -79,7 +82,7 @@ struct sim_env_t
   int crc;
 
   int display_enable;
-  bool fourteen_digit_display;
+  bool fourteen_digit_display;  // true after RESET TWF instruction
 
   bool key_flag;      /* true if a key is down */
   int key_buf;        /* most recently pressed key */

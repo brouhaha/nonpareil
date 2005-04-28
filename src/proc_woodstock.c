@@ -830,6 +830,21 @@ static void op_display_reset_twf (sim_t *sim, int opcode)
 }
 
 
+static void op_crc_clear_f1 (sim_t *sim, int opcode)
+{
+  // don't do anything, as CRC F1 is controlled by hardware
+  // (in our case, ext_flag [0])
+  ;  
+}
+
+
+static void op_crc_test_f1 (sim_t *sim, int opcode)
+{
+  if (sim->env->ext_flag [0])
+    sim->env->s [3] = 1;
+}
+
+
 static void init_ops (sim_t *sim)
 {
   int i;
@@ -902,6 +917,11 @@ static void init_ops (sim_t *sim)
   sim->op_fcn [01460] = op_rom_selftest;  /* Only on Spice series */
   /* 1560..1660 unassigned/unknown */
   sim->op_fcn [01760] = op_nop;  /* "HI I'M WOODSTOCK" */
+
+  /* CRC chip in 67/97 */
+  // sim->op_fcn [00560] = ???;
+  sim->op_fcn [00300] = op_crc_test_f1;
+  sim->op_fcn [01500] = op_crc_clear_f1;
 
   /*
    * Instruction codings unknown (probably 0120 and 0320):
@@ -1058,7 +1078,6 @@ static void woodstock_print_state (sim_t *sim, sim_env_t *env)
 
 bool woodstock_execute_instruction (sim_t *sim)
 {
-  int i;
   int opcode;
   inst_state_t prev_inst_state;
 
@@ -1099,9 +1118,11 @@ bool woodstock_execute_instruction (sim_t *sim)
 
   if (sim->env->key_flag)
     sim->env->s [15] = 1;
-  for (i = 0; i < SSIZE; i++)
-    if (sim->env->ext_flag [i])
-      sim->env->s [i] = 1;
+
+  if (sim->env->ext_flag [3])
+    sim->env->s [3] = 1;
+  if (sim->env->ext_flag [5])
+    sim->env->s [5] = 1;
 
   sim->env->pc++;
 
@@ -1300,11 +1321,11 @@ static void woodstock_reset_processor (sim_t *sim)
   sim->display_digit_position = 0;
   sim->display_scan_position = WSIZE - 1;
 
-  sim->env->key_buf = -1;  /* no key has been pressed */
+  sim->env->key_buf = -1;  // no key has been pressed
   sim->env->key_flag = 0;
 
-  if (sim->platform == PLATFORM_WOODSTOCK)
-    sim->env->ext_flag [5] = 1;  /* force battery ok */
+  if (sim->platform == PLATFORM_WOODSTOCK)  // but not PLATFORM_TOPCAT
+    sim->env->ext_flag [5] = 1;  // force battery ok
 }
 
 
