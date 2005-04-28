@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+
+<!ELEMENT state (registers, memory+, periph*)>
+<!ATTLIST state 
+          version  CDATA #REQUIRED
+          arch     CDATA #REQUIRED
+          platform CDATA #REQUIRED
+          model    CDATA #REQUIRED>
+
+<!ELEMENT registers (reg*)>
+
+<!ELEMENT reg EMPTY>
+<!ATTLIST reg
+          name CDATA #REQUIRED
+          data CDATA #REQUIRED
+          index CDATA #IMPLIED>
+
+<!ELEMENT memory (loc*)>
+<!ATTLIST memory as CDATA #REQUIRED>
+
+<!ELEMENT loc EMPTY>
+<!ATTLIST loc
+          addr CDATA #REQUIRED
+          data CDATA #REQUIRED>
+
+<!ELEMENT periph (reg*)>
+<!ATTLIST periph addr CDATA #REQUIRED>
