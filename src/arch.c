@@ -33,6 +33,7 @@ static arch_info_t arch_info [ARCH_MAX] =
     [ARCH_NUT]       = { "nut",       56 },
     [ARCH_CAPRICORN] = { "capricorn",  8 },
     [ARCH_SATURN]    = { "saturn",     4 },  // 56-bit word
+    [ARCH_68K]       = { "68k",        8 },
     [ARCH_SUNPLUS]   = { "sunplus",    8 },
     [ARCH_ARM]       = { "arm",        8 }   // 32-bit word
   };

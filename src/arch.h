@@ -29,10 +29,11 @@ MA 02111, USA.
 #define ARCH_NUT       4
 #define ARCH_CAPRICORN 5
 #define ARCH_SATURN    6
-#define ARCH_SUNPLUS   7
-#define ARCH_ARM       8
+#define ARCH_68K       7
+#define ARCH_SUNPLUS   8
+#define ARCH_ARM       9
 
-#define ARCH_MAX       9
+#define ARCH_MAX       10
 
 
 typedef struct
