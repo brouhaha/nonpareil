@@ -1297,31 +1297,6 @@ static void woodstock_write_ram (sim_t *sim, int addr, uint8_t *val)
 }
 
 
-static sim_env_t *woodstock_get_env (sim_t *sim)
-{
-  sim_env_t *env;
-  size_t size;
-
-  size = sizeof (sim_env_t) + sim->env->max_ram * sizeof (reg_t);
-  env = alloc (size);
-  memcpy (env, sim->env, size);
-  return (env);
-}
-
-static void woodstock_set_env (sim_t *sim, sim_env_t *env)
-{
-  size_t size;
-
-  size = sizeof (sim_env_t) + sim->env->max_ram * sizeof (reg_t);
-  memcpy (sim->env, env, size);
-}
-
-static void woodstock_free_env (sim_t *sim, sim_env_t *env)
-{
-  free (env);
-}
-
-
 static void woodstock_reset_processor (sim_t *sim)
 {
   sim->cycle_count = 0;
@@ -1419,10 +1394,7 @@ processor_dispatch_t woodstock_processor =
 
     woodstock_read_ram,
     woodstock_write_ram,
-    woodstock_disassemble,
 
-    woodstock_get_env,
-    woodstock_set_env,
-    woodstock_free_env,
+    woodstock_disassemble,
     woodstock_print_state
   };

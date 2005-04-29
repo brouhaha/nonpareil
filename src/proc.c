@@ -620,36 +620,6 @@ bool sim_get_debug_flag (sim_t *sim, int debug_flag)
 #endif // HAS_DEBUGGER
 
 
-#if 0
-sim_env_t *sim_get_env (sim_t *sim)
-{
-  sim_env_t *env;
-
-  g_mutex_lock (sim->thread_vars->sim_mutex);
-  env = sim->proc->get_env (sim);
-  g_mutex_unlock (sim->thread_vars->sim_mutex);
-  return (env);
-}
-
-
-void sim_set_env (sim_t *sim, sim_env_t *env)
-{
-  g_mutex_lock (sim->thread_vars->sim_mutex);
-  sim->proc->set_env (sim, env);
-  g_mutex_unlock (sim->thread_vars->sim_mutex);
-}
-
-
-void sim_free_env (sim_t *sim, sim_env_t *env)
-{
-  g_mutex_lock (sim->thread_vars->sim_mutex);
-  sim->proc->free_env (sim, env);
-  g_mutex_unlock (sim->thread_vars->sim_mutex);
-}
-#endif
-
-
-
 void gui_display_update (sim_t *sim)
 {
   gui_msg_t *msg;

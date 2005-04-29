@@ -78,9 +78,6 @@ typedef struct
 
   void (* disassemble)         (sim_t *sim, int addr, char *buf, int len);
 
-  sim_env_t * (* get_env)      (sim_t *sim); 
-  void (* set_env)             (sim_t *sim, sim_env_t *env); 
-  void (* free_env)            (sim_t *sim, sim_env_t *env);
   void (* print_state)         (sim_t *sim, sim_env_t *env);
 } processor_dispatch_t;
 

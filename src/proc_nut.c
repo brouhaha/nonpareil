@@ -1445,31 +1445,6 @@ static void nut_write_ram (sim_t *sim, int addr, uint8_t *val)
 }
 
 
-static sim_env_t *nut_get_env (sim_t *sim)
-{
-  sim_env_t *env;
-  size_t size;
-
-  size = sizeof (sim_env_t) + sim->env->max_ram * sizeof (reg_t);
-  env = alloc (size);
-  memcpy (env, sim->env, size);
-  return (env);
-}
-
-static void nut_set_env (sim_t *sim, sim_env_t *env)
-{
-  size_t size;
-
-  size = sizeof (sim_env_t) + sim->env->max_ram * sizeof (reg_t);
-  memcpy (sim->env, env, size);
-}
-
-static void nut_free_env (sim_t *sim, sim_env_t *env)
-{
-  free (env);
-}
-
-
 static void nut_new_processor (sim_t *sim, int ram_size)
 {
   int i;
@@ -1530,10 +1505,7 @@ processor_dispatch_t nut_processor =
 
     nut_read_ram,
     nut_write_ram,
-    nut_disassemble,
 
-    nut_get_env,
-    nut_set_env,
-    nut_free_env,
+    nut_disassemble,
     nut_print_state
   };

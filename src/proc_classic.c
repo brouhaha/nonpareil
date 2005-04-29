@@ -966,31 +966,6 @@ static void classic_write_ram (sim_t *sim, int addr, uint8_t *val)
 }
 
 
-static sim_env_t *classic_get_env (sim_t *sim)
-{
-  sim_env_t *env;
-  size_t size;
-
-  size = sizeof (sim_env_t) + sim->env->max_ram * sizeof (reg_t);
-  env = alloc (size);
-  memcpy (env, sim->env, size);
-  return (env);
-}
-
-static void classic_set_env (sim_t *sim, sim_env_t *env)
-{
-  size_t size;
-
-  size = sizeof (sim_env_t) + sim->env->max_ram * sizeof (reg_t);
-  memcpy (sim->env, env, size);
-}
-
-static void classic_free_env (sim_t *sim, sim_env_t *env)
-{
-  free (env);
-}
-
-
 static void classic_new_processor (sim_t *sim, int ram_size)
 {
   sim->env = alloc (sizeof (sim_env_t) + ram_size * sizeof (reg_t));
@@ -1039,10 +1014,7 @@ processor_dispatch_t classic_processor =
 
     classic_read_ram,
     classic_write_ram,
-    classic_disassemble,
 
-    classic_get_env,
-    classic_set_env,
-    classic_free_env,
+    classic_disassemble,
     classic_print_state
   };
