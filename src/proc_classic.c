@@ -33,6 +33,16 @@ MA 02111, USA.
 #include "proc_classic.h"
 
 
+static reg_detail_t classic_reg_detail [] =
+{
+  {{ "a",        56,  1, 16 }, OFFSET_OF (sim_env_t, a),  get_14_dig, set_14_dig },
+  {{ "b",        56,  1, 16 }, OFFSET_OF (sim_env_t, b),  get_14_dig, set_14_dig },
+  {{ "c",        56,  1, 16 }, OFFSET_OF (sim_env_t, c),  get_14_dig, set_14_dig },
+  // more registers go here
+  {{ NULL,        0,  0,  0 }, 0, NULL, NULL }
+};
+
+
 static void bad_op (sim_t *sim, int opcode)
 {
   printf ("illegal opcode %04o at %02o%03o\n", opcode,
@@ -1009,6 +1019,8 @@ processor_dispatch_t classic_processor =
   {
     4096,
     1,
+
+    classic_reg_detail,
 
     classic_new_processor,
     classic_free_processor,

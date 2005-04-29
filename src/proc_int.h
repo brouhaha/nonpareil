@@ -49,6 +49,8 @@ typedef struct
   int max_rom;
   int max_bank;
 
+  reg_detail_t *reg_detail;
+
   void (* new_processor)       (sim_t *sim, int ram_size);
   void (* free_processor)      (sim_t *sim);
 

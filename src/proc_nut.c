@@ -40,7 +40,7 @@ MA 02111, USA.
 static reg_accessor_t get_s, set_s;
 
 
-reg_detail_t nut_reg_detail [] =
+static reg_detail_t nut_reg_detail [] =
 {
   {{ "a",        56,  1, 16 }, OFFSET_OF (sim_env_t, a),  get_14_dig, set_14_dig },
   {{ "b",        56,  1, 16 }, OFFSET_OF (sim_env_t, b),  get_14_dig, set_14_dig },
@@ -1510,6 +1510,8 @@ processor_dispatch_t nut_processor =
   {
     65536,
     1,
+
+    nut_reg_detail,
 
     nut_new_processor,
     nut_free_processor,

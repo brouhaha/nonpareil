@@ -41,6 +41,16 @@ MA 02111, USA.
 #undef STACK_WARNING
 
 
+static reg_detail_t woodstock_reg_detail [] =
+{
+  {{ "a",        56,  1, 16 }, OFFSET_OF (sim_env_t, a),  get_14_dig, set_14_dig },
+  {{ "b",        56,  1, 16 }, OFFSET_OF (sim_env_t, b),  get_14_dig, set_14_dig },
+  {{ "c",        56,  1, 16 }, OFFSET_OF (sim_env_t, c),  get_14_dig, set_14_dig },
+  // more registers go here
+  {{ NULL,        0,  0,  0 }, 0, NULL, NULL }
+};
+
+
 static void woodstock_print_state (sim_t *sim, sim_env_t *env);
 
 
@@ -1389,6 +1399,8 @@ processor_dispatch_t woodstock_processor =
   {
     4096,
     2, 
+
+    woodstock_reg_detail,
 
     woodstock_new_processor,
     woodstock_free_processor,
