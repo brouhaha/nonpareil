@@ -59,6 +59,9 @@ typedef struct
 
   void (* reset_processor)     (sim_t *sim);
 
+  /* returns false if asleep (can't execute cycles) */
+  bool (* execute_cycle)       (sim_t *sim);
+
   /* returns false if asleep (can't execute instructions) */
   bool (* execute_instruction) (sim_t *sim);
 
@@ -93,7 +96,8 @@ struct sim_t
   bool quit_flag;
 
   bool run_flag;
-  bool step_flag;
+  bool single_cycle_flag;
+  bool single_inst_flag;
 
   sim_thread_vars_t *thread_vars;
 

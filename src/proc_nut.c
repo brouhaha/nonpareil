@@ -1219,7 +1219,7 @@ static void nut_print_state (sim_t *sim, sim_env_t *env)
     }
 }
 
-bool nut_execute_instruction (sim_t *sim)
+static bool nut_execute_cycle (sim_t *sim)
 {
   int opcode;
 
@@ -1281,6 +1281,18 @@ bool nut_execute_instruction (sim_t *sim)
     sim->env->display_count --;
 
   return (true);
+}
+
+
+static bool nut_execute_instruction (sim_t *sim)
+{
+  do
+    {
+      if (! nut_execute_cycle (sim))
+	return false;
+    }
+  while (sim->env->inst_state != norm);
+  return true;
 }
 
 
@@ -1506,6 +1518,8 @@ processor_dispatch_t nut_processor =
     nut_parse_listing_line,
 
     nut_reset_processor,
+
+    nut_execute_cycle,
     nut_execute_instruction,
 
     nut_press_key,

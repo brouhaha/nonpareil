@@ -1017,6 +1017,8 @@ processor_dispatch_t classic_processor =
     classic_parse_listing_line,
 
     classic_reset_processor,
+
+    classic_execute_instruction,  // cycle is same as instruction
     classic_execute_instruction,
 
     classic_press_key,

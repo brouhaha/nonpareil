@@ -64,7 +64,8 @@ typedef enum
   CMD_GET_RUN_FLAG,
   CMD_SET_DEBUG_FLAG,
   CMD_GET_DEBUG_FLAG,
-  CMD_STEP,
+  CMD_SINGLE_CYCLE,
+  CMD_SINGLE_INST,
   CMD_SET_BREAKPOINT,
   CMD_PRESS_KEY,
   CMD_RELEASE_KEY,
@@ -314,9 +315,14 @@ static void handle_sim_cmd (sim_t *sim, sim_msg_t *msg)
       msg->reply = OK;
       break;
 #endif // HAS_DEBUGGER
-    case CMD_STEP:
+    case CMD_SINGLE_CYCLE:
       // $$$ Allow step while runflag is true?
-      sim->step_flag = true;
+      sim->single_cycle_flag = true;
+      msg->reply = OK;
+      break;
+    case CMD_SINGLE_INST:
+      // $$$ Allow step while runflag is true?
+      sim->single_inst_flag = true;
       msg->reply = OK;
       break;
     case CMD_SET_BREAKPOINT:
@@ -406,10 +412,15 @@ gpointer sim_thread_func (gpointer data)
 	  continue;
 	}
 
-      if (sim->step_flag)
+      if (sim->single_cycle_flag)
+	{
+	  sim->proc->execute_cycle (sim);
+	  sim->single_cycle_flag = false;
+	}
+      else if (sim->single_inst_flag)
 	{
 	  sim->proc->execute_instruction (sim);
-	  sim->step_flag = false;
+	  sim->single_inst_flag = false;
 	}
       else if (sim->run_flag)
 	sim_run (sim);
@@ -509,11 +520,20 @@ void sim_reset (sim_t *sim)
 }
 
 
-void sim_step (sim_t *sim)
+void sim_single_cycle (sim_t *sim)
 {
   sim_msg_t msg;
   memset (& msg, 0, sizeof (sim_msg_t));
-  msg.cmd = CMD_STEP;
+  msg.cmd = CMD_SINGLE_CYCLE;
+  send_cmd_to_sim_thread (sim, (gpointer) & msg);
+}
+
+
+void sim_single_inst (sim_t *sim)
+{
+  sim_msg_t msg;
+  memset (& msg, 0, sizeof (sim_msg_t));
+  msg.cmd = CMD_SINGLE_INST;
   send_cmd_to_sim_thread (sim, (gpointer) & msg);
 }
 

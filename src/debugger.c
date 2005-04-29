@@ -124,7 +124,7 @@ static int step_cmd (CMD_ARGS)
       fprintf (dbg->err, "already running\n");
       return (2);
     }
-  sim_step (dbg->sim);
+  sim_single_inst (dbg->sim);
   return (0);
 }
 

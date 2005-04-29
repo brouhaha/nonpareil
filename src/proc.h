@@ -67,14 +67,15 @@ bool sim_read_listing_file (struct sim_t *sim,
  * the simulator thread, and wait for a reply.
  */
 
-void sim_quit  (sim_t *sim);  /* kill the sim thread */
+void sim_quit         (sim_t *sim);  // kill the sim thread
 
-void sim_reset (sim_t *sim);  /* resets simulated processor */
-void sim_step  (sim_t *sim);  /* executes one instruction */
-void sim_start (sim_t *sim);  /* starts simulation */
-void sim_stop  (sim_t *sim);  /* stops simulation */
+void sim_reset        (sim_t *sim);  // resets simulated processor
+void sim_single_cycle (sim_t *sim);  // executes one "cycle"
+void sim_single_inst  (sim_t *sim);  // executes one instruction
+void sim_start        (sim_t *sim);  // starts executing instructions
+void sim_stop         (sim_t *sim);  // stops executing instructions
 
-bool sim_running (sim_t *sim);  /* is the simulation running? */
+bool sim_running (sim_t *sim);  // is the simulation running?
 
 
 uint64_t sim_get_cycle_count (sim_t *siim);

@@ -1076,7 +1076,7 @@ static void woodstock_print_state (sim_t *sim, sim_env_t *env)
 }
 
 
-bool woodstock_execute_instruction (sim_t *sim)
+static bool woodstock_execute_cycle (sim_t *sim)
 {
   int opcode;
   inst_state_t prev_inst_state;
@@ -1149,6 +1149,18 @@ bool woodstock_execute_instruction (sim_t *sim)
   sim->display_scan_fn (sim);
 
   return (true);  /* never sleeps */
+}
+
+
+static bool woodstock_execute_instruction (sim_t *sim)
+{
+  do
+    {
+      if (! woodstock_execute_cycle (sim))
+	return false;
+    }
+  while (sim->env->inst_state != norm);
+  return true;
 }
 
 
@@ -1385,6 +1397,8 @@ processor_dispatch_t woodstock_processor =
     woodstock_parse_listing_line,
 
     woodstock_reset_processor,
+
+    woodstock_execute_cycle,
     woodstock_execute_instruction,
 
     woodstock_press_key,
