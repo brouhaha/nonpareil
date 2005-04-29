@@ -63,6 +63,12 @@ dbg_t *dbg;
 
 
 static GtkWidget *main_window;
+
+#ifdef HAS_DEBUGGER
+static GtkWidget *reg_window;
+static gboolean reg_visible;
+#endif
+
 static GtkWidget *menubar;  /* actually a popup menu in transparency/shape mode */
 
 
@@ -453,9 +459,55 @@ static void help_about (GtkWidget *widget, gpointer data)
 
 
 #ifdef HAS_DEBUGGER
+
+static bool debug_window_add_register (GtkWidget *table, int reg_num)
+{
+  reg_info_t *reg_info;
+
+  reg_info = sim_get_register_info (sim, reg_num);
+  if (! reg_info)
+    return false;
+
+  gtk_table_attach_defaults (GTK_TABLE (table),
+			     gtk_label_new (reg_info->name),
+			     0,
+			     1,
+			     reg_num,
+			     reg_num + 1);
+
+  gtk_table_attach_defaults (GTK_TABLE (table),
+			     gtk_entry_new_with_max_length (14),
+			     1,
+			     2,
+			     reg_num,
+			     reg_num + 1);
+
+  return true;
+}
+
+
 void debug_show_reg (GtkWidget *widget, gpointer data)
 {
-  /* $$$ not yet implemented */
+  GtkWidget *table;
+  int reg_num = 0;
+  
+  if (! reg_window)
+    {
+      reg_visible = false;
+      reg_window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
+      gtk_window_set_title (GTK_WINDOW (reg_window), "registers");
+      table = gtk_table_new (1, 2, FALSE);
+      gtk_container_add (GTK_CONTAINER (reg_window), table);
+      while (debug_window_add_register (table, reg_num))
+	reg_num++;
+    }
+
+  reg_visible = ! reg_visible;
+
+  if (reg_visible)
+    gtk_widget_show_all (reg_window);
+  else
+    gtk_widget_hide (reg_window);
 }
 
 
@@ -467,7 +519,7 @@ void debug_run (GtkWidget *widget, gpointer data)
 
 void debug_step (GtkWidget *widget, gpointer data)
 {
-  sim_step (sim);
+  sim_single_inst (sim);
 }
 
 
