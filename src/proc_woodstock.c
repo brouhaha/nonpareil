@@ -1328,8 +1328,9 @@ static void woodstock_reset_processor (sim_t *sim)
 
 static void woodstock_new_processor (sim_t *sim, int ram_size)
 {
-  sim->env = alloc (sizeof (sim_env_t) + ram_size * sizeof (reg_t));
+  sim->env = alloc (sizeof (sim_env_t));
   sim->env->max_ram = ram_size;
+  sim->env->ram = alloc (ram_size * sizeof (reg_t));
 
   switch (sim->platform)
     {

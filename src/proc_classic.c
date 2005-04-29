@@ -968,8 +968,9 @@ static void classic_write_ram (sim_t *sim, int addr, uint8_t *val)
 
 static void classic_new_processor (sim_t *sim, int ram_size)
 {
-  sim->env = alloc (sizeof (sim_env_t) + ram_size * sizeof (reg_t));
+  sim->env = alloc (sizeof (sim_env_t));
   sim->env->max_ram = ram_size;
+  sim->env->ram = alloc (ram_size * sizeof (reg_t));
 
   sim->display_digits = MAX_DIGIT_POSITION;
   sim->display_scan_fn = classic_display_scan;

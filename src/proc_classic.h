@@ -70,8 +70,9 @@ struct sim_env_t
   uint8_t ext_flag [SSIZE];  /* external flags, e.g., slide switches,
 				magnetic card inserted */
 
+  // RAM
   int max_ram;
-  reg_t ram [];
+  reg_t *ram;
 };
 
 

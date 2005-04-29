@@ -1445,26 +1445,46 @@ static void nut_write_ram (sim_t *sim, int addr, uint8_t *val)
 }
 
 
-static void nut_new_processor (sim_t *sim, int ram_size)
+static void nut_new_ram_addr_space (sim_t *sim, int max_ram)
+{
+  sim->env->max_ram = max_ram;
+  sim->env->ram = alloc (max_ram * sizeof (reg_t));
+}
+
+
+static void nut_new_ram (sim_t *sim, int base_addr, int count)
 {
   int i;
 
-  sim->env = alloc (sizeof (sim_env_t) + 1024 * sizeof (reg_t));
-  sim->env->max_ram = 1024;
-
-  for (i = 0x000; i <= 0x00f; i++)
+  for (i = base_addr; i < (base_addr + count); i++)
     sim->ram_exists [i] = true;
+}
 
-  for (i = 0x0c0; i <= 0x1ff; i++)
-    sim->ram_exists [i] = true;
+
+static void nut_new_processor (sim_t *sim, int ram_size)
+{
+  sim->env = alloc (sizeof (sim_env_t));
 
   nut_init_ops (sim);
+
   switch (sim->platform)
     {
     case PLATFORM_COCONUT:
+      nut_new_ram_addr_space (sim, 1024);
+      nut_new_ram (sim, 0x000, 0x010);
+      nut_new_ram (sim, 0x0c0, ram_size);
+
       coconut_display_init_ops (sim);
       break;
+
     case PLATFORM_VOYAGER:
+      nut_new_ram_addr_space (sim, 256);
+      if (ram_size >= 64)
+	nut_new_ram (sim, 0x000, 0x020);
+      else
+	nut_new_ram (sim, 0x000, 0x010);
+      nut_new_ram (sim, 0x100 - ram_size, ram_size);
+
       voyager_display_init_ops (sim);
       break;
     }

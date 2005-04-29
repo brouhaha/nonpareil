@@ -97,13 +97,13 @@ struct sim_env_t
   digit_t lcd_c [COCONUT_DISPLAY_DIGITS];
   uint16_t lcd_ann;
 
-  uint8_t pf_addr;  /* selected peripheral address */
+  uint8_t pf_addr;  // selected peripheral address
 
-  /* RAM */
+  // RAM
   uint16_t max_ram;
-  uint16_t ram_addr;  /* selected RAM address */
+  uint16_t ram_addr;  // selected RAM address
 
-  reg_t ram [];
+  reg_t *ram;
 };
 
 

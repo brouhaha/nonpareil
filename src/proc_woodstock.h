@@ -87,7 +87,8 @@ struct sim_env_t
   bool key_flag;      /* true if a key is down */
   int key_buf;        /* most recently pressed key */
 
+  // RAM
   int max_ram;
-  reg_t ram [];	      /* dynamically sized */
+  reg_t *ram;
 };
 
