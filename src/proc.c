@@ -20,6 +20,7 @@ MA 02111, USA.
 */
 
 #include <stdbool.h>
+#include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -659,3 +660,63 @@ processor_dispatch_t *processor_dispatch [ARCH_MAX] =
     [ARCH_CAPRICORN] = NULL,
     [ARCH_SATURN]    = NULL
   };
+
+
+void get_14_dig (sim_env_t *env, size_t offset, uint8_t *p)
+{
+  uint64_t val;
+  uint8_t *d;
+  int i;
+
+  d = ((uint8_t *) env) + offset;
+  val = 0;
+  for (i = 0; i < 14; i++)
+    val = (val << 4) + *(d++);
+
+  memcpy (p, & val, sizeof (val));
+}
+
+void set_14_dig (sim_env_t *env, size_t offset, uint8_t *p)
+{
+  uint64_t val;
+  uint8_t *d;
+  int i;
+
+  memcpy (& val, p, sizeof (val));
+  d = ((uint8_t *) env) + offset;
+  for (i = 0; i < 14; i++)
+    {
+      *(d++) = val & 0x0f;
+      val >>= 4;
+    }
+}
+
+void get_2_dig (sim_env_t *env, size_t offset, uint8_t *p)
+{
+  uint64_t val;
+  uint8_t *d;
+  int i;
+
+  d = ((uint8_t *) env) + offset;
+  val = 0;
+  for (i = 0; i < 2; i++)
+    val = (val << 4) + *(d++);
+
+  memcpy (p, & val, sizeof (val));
+}
+
+void set_2_dig (sim_env_t *env, size_t offset, uint8_t *p)
+{
+  uint64_t val;
+  uint8_t *d;
+  int i;
+
+  memcpy (& val, p, sizeof (val));
+  d = ((uint8_t *) env) + offset;
+  for (i = 0; i < 2; i++)
+    {
+      *(d++) = val & 0x0f;
+      val >>= 4;
+    }
+}
+

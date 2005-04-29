@@ -32,15 +32,15 @@ typedef struct sim_t sim_t;
 typedef struct sim_env_t sim_env_t;
 
 
-// field_info_t is used to get information on the available architecturally
+// ref_info_t is used to get information on the available architecturally
 // visible state of a simulator.
 typedef struct
 {
-  char   *name;
-  int    element_bits;
-  int    array_element_count;
-  size_t offset;
-} field_info_t;
+  char *name;
+  int  element_bits;
+  int  array_element_count;
+  int  display_radix;
+} reg_info_t;
 
 
 /*
@@ -82,32 +82,34 @@ uint64_t sim_get_cycle_count (sim_t *siim);
 void sim_set_cycle_count (sim_t *sim,
 			  uint64_t count);
 
-void sim_set_breakpoint (sim_t *sim,
-			 int address);
-
-void sim_clear_breakpoint (sim_t *sim,
-			   int address);
-
-
-/* get a copy of the processor state */
-sim_env_t *sim_get_env (sim_t *sim);
-
-/* copy a sim_env_t into the simulator state */
-void sim_set_env (sim_t *sim,
-		  sim_env_t *env);
-
+void sim_write_rom (sim_t      *sim,
+		    addr_t     addr,
+		    rom_word_t val);
 
 rom_word_t sim_read_rom (sim_t *sim,
-			 int addr);
+			 addr_t addr);
 
 void sim_read_ram (sim_t *sim,
-		   int addr,
+		   addr_t addr,
 		   uint8_t *val);
 
 void sim_write_ram (sim_t *sim,
 		    int addr,
 		    uint8_t *val);
 
+bool sim_get_register_info (sim_t *sim,
+			    int   index,   // 0 and up
+			    char  **name,
+			    int   *bits_per_element,
+			    int   *element_count);
+
+bool sim_get_register (sim_t   *sim,
+		       int     index,
+		       uint8_t *val);
+
+bool sim_set_register (sim_t   *sim,
+		       int     index,
+		       uint8_t *val);
 
 void sim_press_key (sim_t *sim,
 		    int keycode);
@@ -129,6 +131,12 @@ void sim_get_display_update (sim_t *sim);
 void sim_set_debug_flag (sim_t *sim, int debug_flag, bool val);
 
 bool sim_get_debug_flag (sim_t *sim, int debug_flag);
+
+void sim_set_breakpoint (sim_t  *sim,
+			 addr_t address);
+
+void sim_clear_breakpoint (sim_t  *sim,
+			   addr_t address);
 
 #endif /* HAS_DEBUGGER */
 

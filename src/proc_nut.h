@@ -57,11 +57,11 @@ struct sim_env_t
 
   digit_t p;
   digit_t q;
-  digit_t *pt;
+  bool q_sel;  // true if q is the selected pointer, false for p
 
   uint8_t fo;  /* flag output regiters, 8 bits, used to drive bender */
 
-  uint8_t arithmetic_base;  /* 10 or 16 */
+  bool decimal;  // true for arithmetic radix 10, false for 16
 
   bool carry, prev_carry;
 
@@ -97,12 +97,11 @@ struct sim_env_t
   digit_t lcd_c [COCONUT_DISPLAY_DIGITS];
   uint16_t lcd_ann;
 
-  int pf_addr;  /* selected peripheral address */
+  uint8_t pf_addr;  /* selected peripheral address */
 
   /* RAM */
-  int max_ram;
-
-  int ram_addr;  /* selected RAM address */
+  uint16_t max_ram;
+  uint16_t ram_addr;  /* selected RAM address */
 
   reg_t ram [];
 };

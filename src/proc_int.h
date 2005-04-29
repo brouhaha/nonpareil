@@ -26,6 +26,22 @@ MA 02111, USA.
  */
 
 
+typedef void reg_accessor_t (sim_env_t *env, size_t offset, uint8_t *p);
+
+
+typedef struct
+{
+  reg_info_t info;     // publicly visible info: name, bit count, etc.
+  size_t     offset;   // offset into sim_env_t
+  // accessor functions - if NULL, use default
+  reg_accessor_t *get;
+  reg_accessor_t *set;
+} reg_detail_t;
+
+reg_accessor_t get_14_dig, set_14_dig;
+reg_accessor_t get_2_dig, set_2_dig;
+
+
 /* dispatch table for processor-specific functions: */
 
 typedef struct

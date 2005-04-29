@@ -37,26 +37,45 @@ MA 02111, USA.
 #include "dis_nut.h"
 
 
-field_info_t field_info [] =
+static reg_accessor_t get_s, set_s;
+
+
+reg_detail_t nut_reg_detail [] =
 {
-  { "a",      4, WSIZE, OFFSET_OF (sim_env_t, a) },
-  { "b",      4, WSIZE, OFFSET_OF (sim_env_t, b) },
-  { "c",      4, WSIZE, OFFSET_OF (sim_env_t, c) },
-  { "m",      4, WSIZE, OFFSET_OF (sim_env_t, m) },
-  { "n",      4, WSIZE, OFFSET_OF (sim_env_t, n) },
-  { "g",      4,     2, OFFSET_OF (sim_env_t, g) },
-  { "p",      4,     1, OFFSET_OF (sim_env_t, p) },
-  { "q",      4,     1, OFFSET_OF (sim_env_t, q) },
+  {{ "a",        56,  1, 16 }, OFFSET_OF (sim_env_t, a),  get_14_dig, set_14_dig },
+  {{ "b",        56,  1, 16 }, OFFSET_OF (sim_env_t, b),  get_14_dig, set_14_dig },
+  {{ "c",        56,  1, 16 }, OFFSET_OF (sim_env_t, c),  get_14_dig, set_14_dig },
+  {{ "m",        56,  1, 16 }, OFFSET_OF (sim_env_t, m),  get_14_dig, set_14_dig },
+  {{ "n",        56,  1, 16 }, OFFSET_OF (sim_env_t, n),  get_14_dig, set_14_dig },
+  {{ "g",         8,  1, 16 }, OFFSET_OF (sim_env_t, g),  get_2_dig,  set_2_dig },
+  {{ "p",         4,  1, 16 }, OFFSET_OF (sim_env_t, p),     NULL,     NULL },
+  {{ "q",         4,  1, 16 }, OFFSET_OF (sim_env_t, q),     NULL,     NULL },
+  {{ "q_sel",     1,  1,  2 }, OFFSET_OF (sim_env_t, q_sel), NULL,     NULL },
   // pt
-  { "fo",     8,     1, OFFSET_OF (sim_env_t, fo) },
-  { "base",   4,     1, OFFSET_OF (sim_env_t, arithmetic_base) },
-  { "carry",  1,     1, OFFSET_OF (sim_env_t, carry) },
-  // prev_carry
-  { "s",      1, SSIZE, OFFSET_OF (sim_env_t, s) },
-  { "pc",    16,     1, OFFSET_OF (sim_env_t, pc) },
+  {{ "fo",        8,  1, 16 }, OFFSET_OF (sim_env_t, fo), get_2_dig,  set_2_dig },
+  {{ "s",     SSIZE,  1,  2 }, OFFSET_OF (sim_env_t, s),  get_s,    set_s },
+  {{ "pc",       16,  1, 16 }, OFFSET_OF (sim_env_t, pc), NULL, NULL },
   // prev_pc
-  { "stack", 16, STACK_DEPTH, OFFSET_OF (sim_env_t, stack) },
-  { NULL, 0 }
+  {{ "stack", 16, STACK_DEPTH, 16 }, OFFSET_OF (sim_env_t, stack), NULL, NULL },
+  {{ "decimal",   1,  1,  2 }, OFFSET_OF (sim_env_t, decimal), NULL, NULL },
+  {{ "carry",     1,  1,  2 }, OFFSET_OF (sim_env_t, carry),   NULL, NULL },
+  {{ "awake",     1,  1,  2 }, OFFSET_OF (sim_env_t, awake),   NULL, NULL },
+
+  // display_enable
+  // display_blink
+
+  // inst_state
+  // first_word
+  // cxisa_addr
+  // long_branch_carry
+  // prev_carry
+  // key_down
+  // key_flag
+  // key_buf
+  {{ "pf_addr",   8,  1,  4 }, OFFSET_OF (sim_env_t, pf_addr),  NULL, NULL },
+  {{ "ram_addr", 10,  1,  4 }, OFFSET_OF (sim_env_t, ram_addr), NULL, NULL },
+  {{ "max_ram",  10,  1,  4 }, OFFSET_OF (sim_env_t, max_ram),  NULL, NULL },
+  {{ NULL,        0,  0,  0 }, 0, NULL, NULL }
 };
 
 
@@ -67,6 +86,48 @@ static int tmap [16] =
 /* map from register index to high opcode bits */
 static int itmap [WSIZE] =
 { 0xe, 0xc, 0x8, 0x0, 0x1, 0x2, 0x5, 0xa, 0x4, 0x9, 0x3, 0x6, 0xd, 0xb };
+
+
+static void get_s (sim_env_t *env, size_t offset, uint8_t *p)
+{
+  uint16_t val;
+  uint8_t *d;
+  int i;
+
+  d = ((uint8_t *) env) + offset;
+  val = 0;
+  for (i = 0; i < SSIZE; i++)
+    val = (val < 1) + *(d++);
+
+  memcpy (p, & val, sizeof (val));
+}
+
+static void set_s (sim_env_t *env, size_t offset, uint8_t *p)
+{
+  uint16_t val;
+  uint8_t *d;
+  int i;
+
+  memcpy (& val, p, sizeof (val));
+  d = ((uint8_t *) env) + offset;
+  for (i = 0; i < SSIZE; i++)
+    {
+      *(d++) = val & 0x01;
+      val >>= 1;
+    }
+}
+
+
+static inline uint8_t arithmetic_base (sim_env_t *env)
+{
+  return env->decimal ? 10 : 16;
+}
+
+
+static inline uint8_t *pt (sim_env_t *env)
+{
+  return env->q_sel ? & env->q : & env->p;
+}
 
 
 static void nut_print_state (sim_t *sim, sim_env_t *env);
@@ -111,9 +172,9 @@ static digit_t do_add (sim_t *sim, digit_t x, digit_t y)
   int res;
 
   res = x + y + sim->env->carry;
-  if (res >= sim->env->arithmetic_base)
+  if (res >= arithmetic_base (sim->env))
     {
-      res -= sim->env->arithmetic_base;
+      res -= arithmetic_base (sim->env);
       sim->env->carry = 1;
     }
   else
@@ -129,7 +190,7 @@ static digit_t do_sub (sim_t *sim, digit_t x, digit_t y)
   res = (x - y) - sim->env->carry;
   if (res < 0)
     {
-      res += sim->env->arithmetic_base;
+      res += arithmetic_base (sim->env);
       sim->env->carry = 1;
     }
   else
@@ -207,9 +268,9 @@ static void op_arith (sim_t *sim, int opcode)
 
   switch (field)
     {
-    case 0:  /* p  */  first = *(sim->env->pt); last = *(sim->env->pt);  break;
+    case 0:  /* p  */  first = *pt (sim->env);  last = *pt (sim->env);   break;
     case 1:  /* x  */  first = 0;               last = 2;                break;
-    case 2:  /* wp */  first = 0;               last = *(sim->env->pt);  break;
+    case 2:  /* wp */  first = 0;               last = *pt (sim->env);   break;
     case 3:  /* w  */  first = 0;               last = WSIZE - 1;        break;
     case 4:  /* pq */  first = sim->env->p;     last = sim->env->q;
       if (first > last)
@@ -746,36 +807,36 @@ static void op_f_exch_sb (sim_t *sim, int opcode)
 
 static void op_dec_pt (sim_t *sim, int opcode)
 {
-  (*sim->env->pt)--;
-  if ((*sim->env->pt) >= WSIZE)  /* can't be negative because it is unsigned */
-    (*sim->env->pt) = WSIZE - 1;
+  (*pt (sim->env))--;
+  if ((*pt (sim->env)) >= WSIZE)  // can't be negative because it is unsigned
+    (*pt (sim->env)) = WSIZE - 1;
 }
 
 static void op_inc_pt (sim_t *sim, int opcode)
 {
-  (*sim->env->pt)++;
-  if ((*sim->env->pt) >= WSIZE)
-    (*sim->env->pt) = 0;
+  (*pt (sim->env))++;
+  if ((*pt (sim->env)) >= WSIZE)
+    (*pt (sim->env)) = 0;
 }
 
 static void op_set_pt (sim_t *sim, int opcode)
 {
-  (*sim->env->pt) = tmap [opcode >> 6];
+  (*pt (sim->env)) = tmap [opcode >> 6];
 }
 
 static void op_test_pt (sim_t *sim, int opcode)
 {
-  sim->env->carry = ((*sim->env->pt) == tmap [opcode >> 6]);
+  sim->env->carry = ((*pt (sim->env)) == tmap [opcode >> 6]);
 }
 
 static void op_sel_p (sim_t *sim, int opcode)
 {
-  sim->env->pt = & sim->env->p;
+  sim->env->q_sel = false;
 }
 
 static void op_sel_q (sim_t *sim, int opcode)
 {
-  sim->env->pt = & sim->env->q;
+  sim->env->q_sel = true;
 }
 
 static void op_test_pq (sim_t *sim, int opcode)
@@ -786,15 +847,15 @@ static void op_test_pq (sim_t *sim, int opcode)
 
 static void op_lc (sim_t *sim, int opcode)
 {
-  sim->env->c [(*sim->env->pt)--] = opcode >> 6;
-  if ((*sim->env->pt) >= WSIZE)  /* unsigned, can't be negative */
-    (*sim->env->pt) = WSIZE - 1;
+  sim->env->c [(*pt (sim->env))--] = opcode >> 6;
+  if ((*pt (sim->env)) >= WSIZE)  /* unsigned, can't be negative */
+    *pt (sim->env) = WSIZE - 1;
 }
 
 static void op_c_to_g (sim_t *sim, int opcode)
 {
-  sim->env->g [0] = sim->env->c [*sim->env->pt];
-  if ((*sim->env->pt) == (WSIZE - 1))
+  sim->env->g [0] = sim->env->c [*pt (sim->env)];
+  if ((*pt (sim->env)) == (WSIZE - 1))
     {
       sim->env->g [1] = 0;
 #ifdef WARNING_G
@@ -802,13 +863,13 @@ static void op_c_to_g (sim_t *sim, int opcode)
 #endif
     }
   else
-    sim->env->g [1] = sim->env->c [(*sim->env->pt) + 1];
+    sim->env->g [1] = sim->env->c [(*pt (sim->env)) + 1];
 }
 
 static void op_g_to_c (sim_t *sim, int opcode)
 {
-  sim->env->c [*sim->env->pt] = sim->env->g [0];
-  if ((*sim->env->pt) == (WSIZE - 1))
+  sim->env->c [(*pt (sim->env))] = sim->env->g [0];
+  if ((*pt (sim->env)) == (WSIZE - 1))
     {
       ;
 #ifdef WARNING_G
@@ -817,7 +878,7 @@ static void op_g_to_c (sim_t *sim, int opcode)
     }
   else
     {
-      sim->env->c [(*sim->env->pt) + 1] = sim->env->g [1];
+      sim->env->c [(*pt (sim->env)) + 1] = sim->env->g [1];
     }
     
 }
@@ -826,9 +887,9 @@ static void op_c_exch_g (sim_t *sim, int opcode)
 {
   int t;
   t = sim->env->g [0];
-  sim->env->g [0] = sim->env->c [*sim->env->pt];
-  sim->env->c [*sim->env->pt] = t;
-  if ((*sim->env->pt) == (WSIZE - 1))
+  sim->env->g [0] = sim->env->c [*pt (sim->env)];
+  sim->env->c [*pt (sim->env)] = t;
+  if ((*pt (sim->env)) == (WSIZE - 1))
     {
       sim->env->g [1] = 0;
 #ifdef WARNING_G
@@ -838,8 +899,8 @@ static void op_c_exch_g (sim_t *sim, int opcode)
   else
     {
       t = sim->env->g [1];
-      sim->env->g [1] = sim->env->c [(*sim->env->pt) + 1];
-      sim->env->c [(*sim->env->pt) + 1] = t;
+      sim->env->g [1] = sim->env->c [(*pt (sim->env)) + 1];
+      sim->env->c [(*pt (sim->env)) + 1] = t;
     }
 }
 
@@ -895,12 +956,12 @@ static void op_nop (sim_t *sim, int opcode)
 
 static void op_set_hex (sim_t *sim, int opcode)
 {
-  sim->env->arithmetic_base = 16;
+  sim->env->decimal = false;
 }
 
 static void op_set_dec (sim_t *sim, int opcode)
 {
-  sim->env->arithmetic_base = 10;
+  sim->env->decimal = true;
 }
 
 static void op_rom_to_c (sim_t *sim, int opcode)
@@ -1134,8 +1195,8 @@ static void print_stat (sim_t *sim)
 static void nut_print_state (sim_t *sim, sim_env_t *env)
 {
   printf ("cycle %5lld  ", sim->cycle_count);
-  printf ("%c=%x ", (sim->env->pt == & sim->env->p) ? 'P' : 'p', sim->env->p);
-  printf ("%c=%x ", (sim->env->pt == & sim->env->q) ? 'Q' : 'q', sim->env->q);
+  printf ("%c=%x ", (sim->env->q_sel) ? 'p' : 'P', sim->env->p);
+  printf ("%c=%x ", (sim->env->q_sel) ? 'Q' : 'q', sim->env->q);
   printf ("carry=%d ", sim->env->carry);
   printf (" stat=");
   print_stat (sim);
@@ -1334,7 +1395,7 @@ void nut_reset_processor (sim_t *sim)
 
   sim->env->p = 0;
   sim->env->q = 0;
-  sim->env->pt = & sim->env->p;
+  sim->env->q_sel = false;
 
   /* wake from deep sleep */
   sim->env->awake = true;
