@@ -26,7 +26,9 @@ MA 02111, USA.
  */
 
 
-typedef void reg_accessor_t (sim_env_t *env, size_t offset, uint8_t *p);
+typedef bool reg_accessor_t (sim_env_t *env,
+			     size_t offset,
+			     uint8_t *p);
 
 
 typedef struct
@@ -49,6 +51,7 @@ typedef struct
   int max_rom;
   int max_bank;
 
+  int reg_count;
   reg_detail_t *reg_detail;
 
   void (* new_processor)       (sim_t *sim, int ram_size);

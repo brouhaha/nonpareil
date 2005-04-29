@@ -74,8 +74,7 @@ static reg_detail_t nut_reg_detail [] =
   // key_buf
   {{ "pf_addr",   8,  1,  4 }, OFFSET_OF (sim_env_t, pf_addr),  NULL, NULL },
   {{ "ram_addr", 10,  1,  4 }, OFFSET_OF (sim_env_t, ram_addr), NULL, NULL },
-  {{ "max_ram",  10,  1,  4 }, OFFSET_OF (sim_env_t, max_ram),  NULL, NULL },
-  {{ NULL,        0,  0,  0 }, 0, NULL, NULL }
+  {{ "max_ram",  10,  1,  4 }, OFFSET_OF (sim_env_t, max_ram),  NULL, NULL }
 };
 
 
@@ -88,7 +87,7 @@ static int itmap [WSIZE] =
 { 0xe, 0xc, 0x8, 0x0, 0x1, 0x2, 0x5, 0xa, 0x4, 0x9, 0x3, 0x6, 0xd, 0xb };
 
 
-static void get_s (sim_env_t *env, size_t offset, uint8_t *p)
+static bool get_s (sim_env_t *env, size_t offset, uint8_t *p)
 {
   uint16_t val;
   uint8_t *d;
@@ -100,9 +99,11 @@ static void get_s (sim_env_t *env, size_t offset, uint8_t *p)
     val = (val < 1) + *(d++);
 
   memcpy (p, & val, sizeof (val));
+
+  return true;
 }
 
-static void set_s (sim_env_t *env, size_t offset, uint8_t *p)
+static bool set_s (sim_env_t *env, size_t offset, uint8_t *p)
 {
   uint16_t val;
   uint8_t *d;
@@ -115,6 +116,8 @@ static void set_s (sim_env_t *env, size_t offset, uint8_t *p)
       *(d++) = val & 0x01;
       val >>= 1;
     }
+
+  return true;
 }
 
 
@@ -1506,6 +1509,7 @@ processor_dispatch_t nut_processor =
     65536,
     1,
 
+    sizeof (nut_reg_detail) / sizeof (reg_detail_t),
     nut_reg_detail,
 
     nut_new_processor,

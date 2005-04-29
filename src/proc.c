@@ -54,6 +54,8 @@ typedef enum
 {
   CMD_QUIT,
   CMD_RESET,
+  CMD_WRITE_REGISTER,
+  CMD_READ_REGISTER,
   CMD_WRITE_ROM,
   CMD_READ_ROM,
   CMD_WRITE_RAM,
@@ -77,7 +79,8 @@ typedef enum
 {
   OK,
   UNIMPLEMENTED,
-  BAD_CMD
+  BAD_CMD,
+  ARG_RANGE_ERROR
 } sim_reply_t;
 
 
@@ -88,7 +91,8 @@ typedef struct
   bool          b;
   uint64_t      cycle_count;
   addr_t        addr;
-  int           arg;  // keycode, flag number, etc.
+  int           arg;   // keycode, flag number, reg_num, etc.
+  int           arg2;  // index (in read/write register)
   uint8_t       *data;  // register value, etc.
 } sim_msg_t;
 
@@ -132,6 +136,23 @@ struct sim_thread_vars_t
 
   GTimeVal tv;
   GTimeVal prev_tv;
+};
+
+
+// Storage size in bytes for register values of a particular
+// number of bits
+// Each entry is (log2(n) + 1) / 8
+static int storage_size [65] =
+{
+  0, 1, 1, 1, 1, 1, 1, 1,
+  1, 2, 2, 2, 2, 2, 2, 2,
+  2, 4, 4, 4, 4, 4, 4, 4,
+  4, 4, 4, 4, 4, 4, 4, 4,
+  4, 8, 8, 8, 8, 8, 8, 8,
+  8, 8, 8, 8, 8, 8, 8, 8,
+  8, 8, 8, 8, 8, 8, 8, 8,
+  8, 8, 8, 8, 8, 8, 8, 8,
+  8
 };
 
 
@@ -257,6 +278,67 @@ static void send_cmd_to_sim_thread (sim_t *sim, gpointer msg)
 }
 
 
+static void cmd_read_register (sim_t *sim, sim_msg_t *msg)
+{
+  reg_detail_t *detail;
+  size_t size;
+  uint8_t *addr;
+
+  msg->reply = ARG_RANGE_ERROR;
+  if (msg->arg >= sim->proc->reg_count)
+    return;
+  detail = & sim->proc->reg_detail [msg->arg];
+  if (msg->arg2 >= detail->info.array_element_count)
+    return;
+
+  size = storage_size [detail->info.element_bits];
+  addr = ((uint8_t *) sim->env) + detail->offset + msg->arg2 * size;
+
+  if (detail->get)
+    {
+      if (detail->get (sim->env,
+		       detail->offset,
+		       msg->data))
+	msg->reply = OK;
+    }
+  else
+    {
+      memcpy (msg->data, addr, size);
+      msg->reply = OK;
+    }
+}
+
+
+static void cmd_write_register (sim_t *sim, sim_msg_t *msg)
+{
+  reg_detail_t *detail;
+  size_t size;
+  uint8_t *addr;
+
+  if (msg->arg >= sim->proc->reg_count)
+    return;
+  detail = & sim->proc->reg_detail [msg->arg];
+  if (msg->arg2 >= detail->info.array_element_count)
+    return;
+
+  size = storage_size [detail->info.element_bits];
+  addr = ((uint8_t *) sim->env) + detail->offset + msg->arg2 * size;
+
+  if (detail->set)
+    {
+      if (detail->set (sim->env,
+		       detail->offset,
+		       msg->data))
+	msg->reply = OK;
+    }
+  else
+    {
+      memcpy (addr, msg->data, size);
+      msg->reply = OK;
+    }
+}
+
+
 static void handle_sim_cmd (sim_t *sim, sim_msg_t *msg)
 {
   msg->reply = UNIMPLEMENTED;
@@ -269,6 +351,12 @@ static void handle_sim_cmd (sim_t *sim, sim_msg_t *msg)
     case CMD_RESET:
       // $$$ what to do
       // $$$ Allow reset while runflag is true?
+      break;
+    case CMD_READ_REGISTER:
+      cmd_read_register (sim, msg);
+      break;
+    case CMD_WRITE_REGISTER:
+      cmd_write_register (sim, msg);
       break;
     case CMD_READ_ROM:
       break;
@@ -558,6 +646,48 @@ void sim_stop (sim_t *sim)
 }
 
 
+reg_info_t *sim_get_register_info (sim_t *sim,
+				   int   reg_num)  // 0 and up
+{
+  if (reg_num >= sim->proc->reg_count)
+    return NULL;
+
+  return & sim->proc->reg_detail [reg_num].info;
+}
+
+
+bool sim_read_register (sim_t   *sim,
+			int     reg_num,
+			int     index,
+			uint8_t *val)
+{
+  sim_msg_t msg;
+  memset (& msg, 0, sizeof (sim_msg_t));
+  msg.arg = reg_num;
+  msg.arg2 = index;
+  msg.data = val;
+  msg.cmd = CMD_READ_REGISTER;
+  send_cmd_to_sim_thread (sim, (gpointer) & msg);
+  return (msg.reply == OK);
+}
+
+
+bool sim_write_register (sim_t   *sim,
+			 int     reg_num,
+			 int     index,
+			 uint8_t *val)
+{
+  sim_msg_t msg;
+  memset (& msg, 0, sizeof (sim_msg_t));
+  msg.arg = reg_num;
+  msg.arg2 = index;
+  msg.data = val;
+  msg.cmd = CMD_WRITE_REGISTER;
+  send_cmd_to_sim_thread (sim, (gpointer) & msg);
+  return (msg.reply == OK);
+}
+
+
 void sim_press_key (sim_t *sim, int keycode)
 {
   sim_msg_t msg;
@@ -652,7 +782,11 @@ processor_dispatch_t *processor_dispatch [ARCH_MAX] =
   };
 
 
-void get_14_dig (sim_env_t *env, size_t offset, uint8_t *p)
+// Common non-standard acccessor functions used for fields that
+// are internally stored as an array of digits, one digit per byte.
+// The external representation is packed into a single uint of an
+// appropriate size.
+bool get_14_dig (sim_env_t *env, size_t offset, uint8_t *p)
 {
   uint64_t val;
   uint8_t *d;
@@ -664,9 +798,12 @@ void get_14_dig (sim_env_t *env, size_t offset, uint8_t *p)
     val = (val << 4) + *(d++);
 
   memcpy (p, & val, sizeof (val));
+
+  return true;
 }
 
-void set_14_dig (sim_env_t *env, size_t offset, uint8_t *p)
+
+bool set_14_dig (sim_env_t *env, size_t offset, uint8_t *p)
 {
   uint64_t val;
   uint8_t *d;
@@ -679,11 +816,14 @@ void set_14_dig (sim_env_t *env, size_t offset, uint8_t *p)
       *(d++) = val & 0x0f;
       val >>= 4;
     }
+
+  return true;
 }
 
-void get_2_dig (sim_env_t *env, size_t offset, uint8_t *p)
+
+bool get_2_dig (sim_env_t *env, size_t offset, uint8_t *p)
 {
-  uint64_t val;
+  uint8_t val;
   uint8_t *d;
   int i;
 
@@ -693,11 +833,14 @@ void get_2_dig (sim_env_t *env, size_t offset, uint8_t *p)
     val = (val << 4) + *(d++);
 
   memcpy (p, & val, sizeof (val));
+
+  return true;
 }
 
-void set_2_dig (sim_env_t *env, size_t offset, uint8_t *p)
+
+bool set_2_dig (sim_env_t *env, size_t offset, uint8_t *p)
 {
-  uint64_t val;
+  uint8_t val;
   uint8_t *d;
   int i;
 
@@ -708,5 +851,8 @@ void set_2_dig (sim_env_t *env, size_t offset, uint8_t *p)
       *(d++) = val & 0x0f;
       val >>= 4;
     }
+
+  return true;
 }
+
 

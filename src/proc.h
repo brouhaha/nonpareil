@@ -98,19 +98,21 @@ void sim_write_ram (sim_t *sim,
 		    int addr,
 		    uint8_t *val);
 
-bool sim_get_register_info (sim_t *sim,
-			    int   index,   // 0 and up
-			    char  **name,
-			    int   *bits_per_element,
-			    int   *element_count);
+// returns NULL if reg_num out of range
+reg_info_t *sim_get_register_info (sim_t *sim,
+				   int   reg_num);  // 0 and up
 
-bool sim_get_register (sim_t   *sim,
-		       int     index,
-		       uint8_t *val);
+// returns false if reg_num or index out of range
+bool sim_read_register (sim_t   *sim,
+			int     reg_num,
+			int     index,
+			uint8_t *val);
 
-bool sim_set_register (sim_t   *sim,
-		       int     index,
-		       uint8_t *val);
+// returns false if reg_num or index out of range
+bool sim_write_register (sim_t   *sim,
+			 int     reg_num,
+			 int     index,
+			 uint8_t *val);
 
 void sim_press_key (sim_t *sim,
 		    int keycode);

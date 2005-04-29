@@ -39,7 +39,6 @@ static reg_detail_t classic_reg_detail [] =
   {{ "b",        56,  1, 16 }, OFFSET_OF (sim_env_t, b),  get_14_dig, set_14_dig },
   {{ "c",        56,  1, 16 }, OFFSET_OF (sim_env_t, c),  get_14_dig, set_14_dig },
   // more registers go here
-  {{ NULL,        0,  0,  0 }, 0, NULL, NULL }
 };
 
 
@@ -996,6 +995,7 @@ processor_dispatch_t classic_processor =
     4096,
     1,
 
+    sizeof (classic_reg_detail) / sizeof (reg_detail_t),
     classic_reg_detail,
 
     classic_new_processor,
