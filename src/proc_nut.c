@@ -51,7 +51,6 @@ static reg_detail_t nut_reg_detail [] =
   {{ "p",         4,  1, 16 }, OFFSET_OF (sim_env_t, p),     NULL,     NULL },
   {{ "q",         4,  1, 16 }, OFFSET_OF (sim_env_t, q),     NULL,     NULL },
   {{ "q_sel",     1,  1,  2 }, OFFSET_OF (sim_env_t, q_sel), NULL,     NULL },
-  // pt
   {{ "fo",        8,  1, 16 }, OFFSET_OF (sim_env_t, fo), get_2_dig,  set_2_dig },
   {{ "s",     SSIZE,  1,  2 }, OFFSET_OF (sim_env_t, s),  get_s,    set_s },
   {{ "pc",       16,  1, 16 }, OFFSET_OF (sim_env_t, pc), NULL, NULL },
@@ -72,9 +71,8 @@ static reg_detail_t nut_reg_detail [] =
   // key_down
   // key_flag
   // key_buf
-  {{ "pf_addr",   8,  1,  4 }, OFFSET_OF (sim_env_t, pf_addr),  NULL, NULL },
-  {{ "ram_addr", 10,  1,  4 }, OFFSET_OF (sim_env_t, ram_addr), NULL, NULL },
-  {{ "max_ram",  10,  1,  4 }, OFFSET_OF (sim_env_t, max_ram),  NULL, NULL }
+  {{ "pf_addr",   8,  1, 16 }, OFFSET_OF (sim_env_t, pf_addr),  NULL, NULL },
+  {{ "ram_addr", 10,  1, 16 }, OFFSET_OF (sim_env_t, ram_addr), NULL, NULL },
 };
 
 
