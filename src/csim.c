@@ -20,6 +20,7 @@ MA 02111, USA.
 */
 
 #include <ctype.h>
+#include <inttypes.h>
 #include <stdarg.h>
 #include <stdbool.h>
 #include <stdint.h>
@@ -67,6 +68,11 @@ static GtkWidget *main_window;
 #ifdef HAS_DEBUGGER
 static GtkWidget *reg_window;
 static gboolean reg_visible;
+static int max_reg;
+#define MAX_REG 200
+static int reg_width [MAX_REG]
+static GtkWidget *reg_entry_widget [MAX_REG];
+static reg_info_t *reg_info [MAX_REG];
 #endif
 
 static GtkWidget *menubar;  /* actually a popup menu in transparency/shape mode */
@@ -460,23 +466,62 @@ static void help_about (GtkWidget *widget, gpointer data)
 
 #ifdef HAS_DEBUGGER
 
+
+static void binary_to_string (char *buf, int bits, uint64_t val)
+{
+  int i;
+
+  for (i = bits - 1; i >= 0; i--)
+    *(buf++) = (val & (1ull << i)) ? '1' : '0';
+  *(buf++) = '\0';
+}
+
+
+static void update_register_window (void)
+{
+  int reg_num;
+  char buf [80];
+  uint64_t val;
+
+  for (reg_num = 0; reg_num < max_reg; reg_num++)
+    {
+      if (sim_read_register (sim, reg_num, 0, & val))
+	{
+	  if (reg_info [reg_num]->display_radix == 16)
+	    snprintf (buf, sizeof (buf), "%0*" PRIx64, reg_width [reg_num], val);
+	  else if (reg_info [reg_num]->display_radix == 10)
+	    snprintf (buf, sizeof (buf), "%0*" PRIu64, reg_width [reg_num], val);
+	  else if (reg_info [reg_num]->display_radix == 8)
+	    snprintf (buf, sizeof (buf), "%0*" PRIo64, reg_width [reg_num], val);
+	  else // binary
+	    binary_to_string (buf, reg_info [reg_num]->element_bits, val);
+	}
+      else
+	snprintf (buf, sizeof (buf), "err");
+      gtk_entry_set_text (GTK_ENTRY (reg_entry_widget [reg_num]), buf);
+    }
+}
+
+
 static bool debug_window_add_register (GtkWidget *table, int reg_num)
 {
-  reg_info_t *reg_info;
-
-  reg_info = sim_get_register_info (sim, reg_num);
-  if (! reg_info)
+  reg_info [reg_num] = sim_get_register_info (sim, reg_num);
+  if (! reg_info [reg_num])
     return false;
 
   gtk_table_attach_defaults (GTK_TABLE (table),
-			     gtk_label_new (reg_info->name),
+			     gtk_label_new (reg_info [reg_num]->name),
 			     0,
 			     1,
 			     reg_num,
 			     reg_num + 1);
 
+  reg_width [reg_num] = (reg_info [reg_num]->element_bits +
+			 reg_info [reg_num]->display_radix - 1) / reg_info [reg_num]->display_radix;
+  reg_entry_widget [reg_num] = gtk_entry_new_with_max_length (reg_width [reg_num]);
+
   gtk_table_attach_defaults (GTK_TABLE (table),
-			     gtk_entry_new_with_max_length (14),
+			     reg_entry_widget [reg_num],
 			     1,
 			     2,
 			     reg_num,
@@ -502,10 +547,15 @@ void debug_show_reg (GtkWidget *widget, gpointer data)
 	reg_num++;
     }
 
+  max_reg = reg_num;
+
   reg_visible = ! reg_visible;
 
   if (reg_visible)
-    gtk_widget_show_all (reg_window);
+    {
+      update_register_window ();
+      gtk_widget_show_all (reg_window);
+    }
   else
     gtk_widget_hide (reg_window);
 }
