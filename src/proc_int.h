@@ -28,7 +28,7 @@ MA 02111, USA.
 
 typedef bool reg_accessor_t (sim_env_t *env,
 			     size_t offset,
-			     uint8_t *p);
+			     uint64_t *p);
 
 
 typedef struct

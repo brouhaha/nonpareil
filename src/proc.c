@@ -283,6 +283,7 @@ static void cmd_read_register (sim_t *sim, sim_msg_t *msg)
   reg_detail_t *detail;
   size_t size;
   uint8_t *addr;
+  uint64_t *result_val;
 
   msg->reply = ARG_RANGE_ERROR;
   if (msg->arg >= sim->proc->reg_count)
@@ -293,17 +294,26 @@ static void cmd_read_register (sim_t *sim, sim_msg_t *msg)
 
   size = storage_size [detail->info.element_bits];
   addr = ((uint8_t *) sim->env) + detail->offset + msg->arg2 * size;
+  result_val = (uint64_t *) msg->data;
 
   if (detail->get)
     {
       if (detail->get (sim->env,
 		       detail->offset,
-		       msg->data))
+		       result_val))
 	msg->reply = OK;
     }
   else
     {
-      memcpy (msg->data, addr, size);
+      switch (size)
+	{
+	case 1: *result_val = *((uint8_t  *) addr); break;
+	case 2: *result_val = *((uint16_t *) addr); break;
+	case 4: *result_val = *((uint32_t *) addr); break;
+	case 8: *result_val = *((uint64_t *) addr); break;
+	default:
+	  fatal (3, "bad storage size\n");
+	}
       msg->reply = OK;
     }
 }
@@ -314,6 +324,7 @@ static void cmd_write_register (sim_t *sim, sim_msg_t *msg)
   reg_detail_t *detail;
   size_t size;
   uint8_t *addr;
+  uint64_t *source_val;
 
   if (msg->arg >= sim->proc->reg_count)
     return;
@@ -323,17 +334,26 @@ static void cmd_write_register (sim_t *sim, sim_msg_t *msg)
 
   size = storage_size [detail->info.element_bits];
   addr = ((uint8_t *) sim->env) + detail->offset + msg->arg2 * size;
+  source_val = (uint64_t *) msg->data;
 
   if (detail->set)
     {
       if (detail->set (sim->env,
 		       detail->offset,
-		       msg->data))
+		       source_val))
 	msg->reply = OK;
     }
   else
     {
-      memcpy (addr, msg->data, size);
+      switch (size)
+	{
+	case 1: *((uint8_t  *) addr) = *source_val; break;
+	case 2: *((uint16_t *) addr) = *source_val; break;
+	case 4: *((uint32_t *) addr) = *source_val; break;
+	case 8: *((uint64_t *) addr) = *source_val; break;
+	default:
+	  fatal (3, "bad storage size\n");
+	}
       msg->reply = OK;
     }
 }
@@ -659,13 +679,13 @@ reg_info_t *sim_get_register_info (sim_t *sim,
 bool sim_read_register (sim_t   *sim,
 			int     reg_num,
 			int     index,
-			uint8_t *val)
+			uint64_t *val)
 {
   sim_msg_t msg;
   memset (& msg, 0, sizeof (sim_msg_t));
   msg.arg = reg_num;
   msg.arg2 = index;
-  msg.data = val;
+  msg.data = (uint8_t *) val;
   msg.cmd = CMD_READ_REGISTER;
   send_cmd_to_sim_thread (sim, (gpointer) & msg);
   return (msg.reply == OK);
@@ -675,13 +695,13 @@ bool sim_read_register (sim_t   *sim,
 bool sim_write_register (sim_t   *sim,
 			 int     reg_num,
 			 int     index,
-			 uint8_t *val)
+			 uint64_t *val)
 {
   sim_msg_t msg;
   memset (& msg, 0, sizeof (sim_msg_t));
   msg.arg = reg_num;
   msg.arg2 = index;
-  msg.data = val;
+  msg.data = (uint8_t *) val;
   msg.cmd = CMD_WRITE_REGISTER;
   send_cmd_to_sim_thread (sim, (gpointer) & msg);
   return (msg.reply == OK);
@@ -786,7 +806,7 @@ processor_dispatch_t *processor_dispatch [ARCH_MAX] =
 // are internally stored as an array of digits, one digit per byte.
 // The external representation is packed into a single uint of an
 // appropriate size.
-bool get_14_dig (sim_env_t *env, size_t offset, uint8_t *p)
+bool get_14_dig (sim_env_t *env, size_t offset, uint64_t *p)
 {
   uint64_t val;
   uint8_t *d;
@@ -797,15 +817,15 @@ bool get_14_dig (sim_env_t *env, size_t offset, uint8_t *p)
   for (i = 0; i < 14; i++)
     val = (val << 4) + *(d++);
 
-  memcpy (p, & val, sizeof (val));
+  *p = val;
 
   return true;
 }
 
 
-bool set_14_dig (sim_env_t *env, size_t offset, uint8_t *p)
+bool set_14_dig (sim_env_t *env, size_t offset, uint64_t *p)
 {
-  uint64_t val;
+  uint64_t val = *p;
   uint8_t *d;
   int i;
 
@@ -821,7 +841,7 @@ bool set_14_dig (sim_env_t *env, size_t offset, uint8_t *p)
 }
 
 
-bool get_2_dig (sim_env_t *env, size_t offset, uint8_t *p)
+bool get_2_dig (sim_env_t *env, size_t offset, uint64_t *p)
 {
   uint8_t val;
   uint8_t *d;
@@ -832,15 +852,15 @@ bool get_2_dig (sim_env_t *env, size_t offset, uint8_t *p)
   for (i = 0; i < 2; i++)
     val = (val << 4) + *(d++);
 
-  memcpy (p, & val, sizeof (val));
+  *p = val;
 
   return true;
 }
 
 
-bool set_2_dig (sim_env_t *env, size_t offset, uint8_t *p)
+bool set_2_dig (sim_env_t *env, size_t offset, uint64_t *p)
 {
-  uint8_t val;
+  uint8_t val = *p;
   uint8_t *d;
   int i;
 

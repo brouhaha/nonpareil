@@ -87,7 +87,7 @@ static int itmap [WSIZE] =
 { 0xe, 0xc, 0x8, 0x0, 0x1, 0x2, 0x5, 0xa, 0x4, 0x9, 0x3, 0x6, 0xd, 0xb };
 
 
-static bool get_s (sim_env_t *env, size_t offset, uint8_t *p)
+static bool get_s (sim_env_t *env, size_t offset, uint64_t *p)
 {
   uint16_t val;
   uint8_t *d;
@@ -98,18 +98,18 @@ static bool get_s (sim_env_t *env, size_t offset, uint8_t *p)
   for (i = 0; i < SSIZE; i++)
     val = (val < 1) + *(d++);
 
-  memcpy (p, & val, sizeof (val));
+  *p = val;
 
   return true;
 }
 
-static bool set_s (sim_env_t *env, size_t offset, uint8_t *p)
+static bool set_s (sim_env_t *env, size_t offset, uint64_t *p)
 {
   uint16_t val;
   uint8_t *d;
   int i;
 
-  memcpy (& val, p, sizeof (val));
+  val = *p;
   d = ((uint8_t *) env) + offset;
   for (i = 0; i < SSIZE; i++)
     {
