@@ -541,6 +541,14 @@ static bool debug_window_add_register (GtkWidget *table, int reg_num)
 }
 
 
+gboolean on_destroy_reg_window_event (GtkWidget *widget, GdkEventAny *event)
+{
+  reg_visible = false;
+  reg_window = NULL;
+  return (FALSE);
+}
+
+
 void debug_show_reg (GtkWidget *widget, gpointer data)
 {
   GtkWidget *table;
@@ -551,6 +559,12 @@ void debug_show_reg (GtkWidget *widget, gpointer data)
       reg_visible = false;
       reg_window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
       gtk_window_set_title (GTK_WINDOW (reg_window), "registers");
+
+      g_signal_connect (G_OBJECT (reg_window),
+			"destroy",
+			GTK_SIGNAL_FUNC (on_destroy_reg_window_event),
+			NULL);
+
       table = gtk_table_new (1, 2, FALSE);
       gtk_container_add (GTK_CONTAINER (reg_window), table);
       while (debug_window_add_register (table, reg_num))
