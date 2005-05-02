@@ -55,17 +55,15 @@ struct sim_env_t
 
   digit_t p;
 
-  uint8_t arithmetic_base;  /* 10 or 16 */
+  bool decimal;
 
-  uint8_t carry, prev_carry;
+  bool carry, prev_carry;
 
-  uint8_t s [SSIZE];                 // ACT flags (status bits)
-  uint8_t ext_flag [EXT_FLAG_SIZE];  // external flags, cause status or CRC
+  bool s [SSIZE];                 // ACT flags (status bits)
+  bool ext_flag [EXT_FLAG_SIZE];  // external flags, cause status or CRC
                                      // bits to get set
 
-  int ram_addr;  /* selected RAM address */
-
-  int bank;
+  bool bank;
 
   uint16_t pc;
 
@@ -81,13 +79,15 @@ struct sim_env_t
 
   int crc;
 
-  int display_enable;
-  bool fourteen_digit_display;  // true after RESET TWF instruction
+  bool display_enable;
+  bool display_14_digit;  // true after RESET TWF instruction
 
   bool key_flag;      /* true if a key is down */
   int key_buf;        /* most recently pressed key */
 
   // RAM
+  int ram_addr;  /* selected RAM address */
+
   int max_ram;
   reg_t *ram;
 };

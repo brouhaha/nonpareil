@@ -41,13 +41,79 @@ MA 02111, USA.
 #undef STACK_WARNING
 
 
+static reg_accessor_t get_s, set_s;
+
+
 static reg_detail_t woodstock_reg_detail [] =
 {
   {{ "a",        56,  1, 16 }, OFFSET_OF (sim_env_t, a),  get_14_dig, set_14_dig },
   {{ "b",        56,  1, 16 }, OFFSET_OF (sim_env_t, b),  get_14_dig, set_14_dig },
   {{ "c",        56,  1, 16 }, OFFSET_OF (sim_env_t, c),  get_14_dig, set_14_dig },
-  // more registers go here
+  {{ "y",        56,  1, 16 }, OFFSET_OF (sim_env_t, y),  get_14_dig, set_14_dig },
+  {{ "z",        56,  1, 16 }, OFFSET_OF (sim_env_t, z),  get_14_dig, set_14_dig },
+  {{ "t",        56,  1, 16 }, OFFSET_OF (sim_env_t, t),  get_14_dig, set_14_dig },
+  {{ "m1",       56,  1, 16 }, OFFSET_OF (sim_env_t, m1),  get_14_dig, set_14_dig },
+  {{ "m2",       56,  1, 16 }, OFFSET_OF (sim_env_t, m2),  get_14_dig, set_14_dig },
+  {{ "p",         4,  1, 16 }, OFFSET_OF (sim_env_t, p),     NULL,     NULL },
+  {{ "f",         4,  1, 16 }, OFFSET_OF (sim_env_t, f),     NULL,     NULL },
+  {{ "decimal",   1,  1,  2 }, OFFSET_OF (sim_env_t, decimal), NULL, NULL },
+  {{ "carry",     1,  1,  2 }, OFFSET_OF (sim_env_t, carry),   NULL, NULL },
+  // prev_carry
+  {{ "s",     SSIZE,  1,  2 }, OFFSET_OF (sim_env_t, s),  get_s,    set_s },
+  {{ "ext_flag", EXT_FLAG_SIZE,  1,  2 }, OFFSET_OF (sim_env_t, ext_flag),  get_s,    set_s },
+  {{ "bank",      1,  1,  2 }, OFFSET_OF (sim_env_t, bank), NULL, NULL },
+  {{ "pc",       12,  1,  8 }, OFFSET_OF (sim_env_t, pc), NULL, NULL },
+  // prev_pc
+  {{ "stack", 12, STACK_SIZE, 8 }, OFFSET_OF (sim_env_t, return_stack), NULL, NULL },
+  {{ "del_rom_flag", 1,  1,  2 }, OFFSET_OF (sim_env_t, del_rom_flag), NULL, NULL },
+  {{ "del_rom",   4,  1,  8 }, OFFSET_OF (sim_env_t, del_rom), NULL, NULL },
+
+  {{ "display_enable", 1,  1,  2 }, OFFSET_OF (sim_env_t, display_enable),   NULL, NULL },
+  {{ "display_14_digit",  1,  1,  2 }, OFFSET_OF (sim_env_t, display_14_digit),   NULL, NULL },
+  // key_flag
+  // key_buf
+  {{ "ram_addr",  8,  1, 16 }, OFFSET_OF (sim_env_t, ram_addr), NULL, NULL },
 };
+
+
+static bool get_s (sim_env_t *env, size_t offset, uint64_t *p)
+{
+  uint16_t val;
+  uint8_t *d;
+  int i;
+
+  d = ((uint8_t *) env) + offset;
+  val = 0;
+  for (i = 0; i < SSIZE; i++)
+    val = (val < 1) + *(d++);
+
+  *p = val;
+
+  return true;
+}
+
+static bool set_s (sim_env_t *env, size_t offset, uint64_t *p)
+{
+  uint16_t val;
+  uint8_t *d;
+  int i;
+
+  val = *p;
+  d = ((uint8_t *) env) + offset;
+  for (i = 0; i < SSIZE; i++)
+    {
+      *(d++) = val & 0x01;
+      val >>= 1;
+    }
+
+  return true;
+}
+
+
+static inline uint8_t arithmetic_base (sim_env_t *env)
+{
+  return env->decimal ? 10 : 16;
+}
 
 
 static void woodstock_print_state (sim_t *sim, sim_env_t *env);
@@ -70,9 +136,9 @@ static digit_t do_add (sim_t *sim, digit_t x, digit_t y)
   int res;
 
   res = x + y + sim->env->carry;
-  if (res >= sim->env->arithmetic_base)
+  if (res >= arithmetic_base (sim->env))
     {
-      res -= sim->env->arithmetic_base;
+      res -= arithmetic_base (sim->env);
       sim->env->carry = 1;
     }
   else
@@ -88,7 +154,7 @@ static digit_t do_sub (sim_t *sim, digit_t x, digit_t y)
   res = (x - y) - sim->env->carry;
   if (res < 0)
     {
-      res += sim->env->arithmetic_base;
+      res += arithmetic_base (sim->env);
       sim->env->carry = 1;
     }
   else
@@ -374,13 +440,13 @@ static void op_nop (sim_t *sim, int opcode)
 
 static void op_binary (sim_t *sim, int opcode)
 {
-  sim->env->arithmetic_base = 16;
+  sim->env->decimal = false;
 }
 
 
 static void op_decimal (sim_t *sim, int opcode)
 {
-  sim->env->arithmetic_base = 10;
+  sim->env->decimal = true;
 }
 
 
@@ -834,7 +900,7 @@ static void op_display_toggle (sim_t *sim, int opcode)
 
 static void op_display_reset_twf (sim_t *sim, int opcode)
 {
-  sim->env->fourteen_digit_display = true;
+  sim->env->display_14_digit = true;
   sim->right_scan = 0;
 }
 
@@ -991,7 +1057,7 @@ static void woodstock_display_scan (sim_t *sim)
   int b = sim->env->b [sim->display_scan_position];
   segment_bitmap_t segs = 0;
 
-  if ((sim->env->fourteen_digit_display) && (! sim->display_digit_position))
+  if ((sim->env->display_14_digit) && (! sim->display_digit_position))
     {
       sim->display_segments [sim->display_digit_position++] = 0;
       /* make room for sign */
@@ -1061,7 +1127,7 @@ static void woodstock_print_state (sim_t *sim, sim_env_t *env)
   int mapped_addr;
 
   printf ("pc=%04o  radix=%d  p=%d  f=%x  stat:",
-	  env->prev_pc, env->arithmetic_base, env->p, env->f);
+	  env->prev_pc, arithmetic_base (env), env->p, env->f);
   for (i = 0; i < 16; i++)
     if (env->s [i])
       printf (" %d", i);
@@ -1300,7 +1366,7 @@ static void woodstock_reset_processor (sim_t *sim)
 {
   sim->cycle_count = 0;
 
-  sim->env->arithmetic_base = 10;
+  sim->env->decimal = true;
 
   sim->env->pc = 0;
   sim->env->del_rom_flag = 0;

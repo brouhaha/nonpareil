@@ -27,6 +27,7 @@ typedef digit_t reg_t [WSIZE];
 
 
 #define SSIZE 12
+#define EXT_FLAG_SIZE 12
 
 #define MAX_GROUP 2
 #define MAX_ROM 8
@@ -49,8 +50,6 @@ struct sim_env_t
 
   uint8_t s [SSIZE];
 
-  int ram_addr;  /* selected RAM address */
-
   uint8_t pc;
   uint8_t rom;
   uint8_t group;
@@ -71,6 +70,8 @@ struct sim_env_t
 				magnetic card inserted */
 
   // RAM
+  int ram_addr;  /* selected RAM address */
+
   int max_ram;
   reg_t *ram;
 };

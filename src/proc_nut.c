@@ -60,8 +60,8 @@ static reg_detail_t nut_reg_detail [] =
   {{ "carry",     1,  1,  2 }, OFFSET_OF (sim_env_t, carry),   NULL, NULL },
   {{ "awake",     1,  1,  2 }, OFFSET_OF (sim_env_t, awake),   NULL, NULL },
 
-  // display_enable
-  // display_blink
+  {{ "display_enable", 1,  1,  2 }, OFFSET_OF (sim_env_t, display_enable),   NULL, NULL },
+  {{ "display_blink",  1,  1,  2 }, OFFSET_OF (sim_env_t, display_blink),   NULL, NULL },
 
   // inst_state
   // first_word

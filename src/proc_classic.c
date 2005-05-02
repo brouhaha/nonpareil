@@ -33,13 +33,66 @@ MA 02111, USA.
 #include "proc_classic.h"
 
 
+static reg_accessor_t get_s, set_s;
+
+
 static reg_detail_t classic_reg_detail [] =
 {
   {{ "a",        56,  1, 16 }, OFFSET_OF (sim_env_t, a),  get_14_dig, set_14_dig },
   {{ "b",        56,  1, 16 }, OFFSET_OF (sim_env_t, b),  get_14_dig, set_14_dig },
   {{ "c",        56,  1, 16 }, OFFSET_OF (sim_env_t, c),  get_14_dig, set_14_dig },
-  // more registers go here
+  {{ "d",        56,  1, 16 }, OFFSET_OF (sim_env_t, d),  get_14_dig, set_14_dig },
+  {{ "e",        56,  1, 16 }, OFFSET_OF (sim_env_t, e),  get_14_dig, set_14_dig },
+  {{ "f",        56,  1, 16 }, OFFSET_OF (sim_env_t, f),  get_14_dig, set_14_dig },
+  {{ "m",        56,  1, 16 }, OFFSET_OF (sim_env_t, m),  get_14_dig, set_14_dig },
+  {{ "p",         4,  1, 16 }, OFFSET_OF (sim_env_t, p),     NULL,     NULL },
+  {{ "carry",     1,  1,  2 }, OFFSET_OF (sim_env_t, carry),   NULL, NULL },
+  // prev_carry
+  {{ "s",     SSIZE,  1,  2 }, OFFSET_OF (sim_env_t, s),      get_s,    set_s },
+  {{ "ext_flag", EXT_FLAG_SIZE,  1,  2 }, OFFSET_OF (sim_env_t, ext_flag),  get_s,    set_s },
+  {{ "group",     8,  1,  3 }, OFFSET_OF (sim_env_t, group),  NULL,     NULL },
+  {{ "rom",       8,  1,  3 }, OFFSET_OF (sim_env_t, rom),    NULL,     NULL },
+  {{ "pc",        8,  1,  3 }, OFFSET_OF (sim_env_t, pc),     NULL,     NULL },
+  {{ "ret_pc",    8,  1,  3 }, OFFSET_OF (sim_env_t, ret_pc), NULL,     NULL },
+  // prev_pc
+  {{ "display_enable", 1,  1,  2 }, OFFSET_OF (sim_env_t, display_enable),   NULL, NULL },
+  // key_flag
+  // key_buf
 };
+
+
+static bool get_s (sim_env_t *env, size_t offset, uint64_t *p)
+{
+  uint16_t val;
+  uint8_t *d;
+  int i;
+
+  d = ((uint8_t *) env) + offset;
+  val = 0;
+  for (i = 0; i < SSIZE; i++)
+    val = (val < 1) + *(d++);
+
+  *p = val;
+
+  return true;
+}
+
+static bool set_s (sim_env_t *env, size_t offset, uint64_t *p)
+{
+  uint16_t val;
+  uint8_t *d;
+  int i;
+
+  val = *p;
+  d = ((uint8_t *) env) + offset;
+  for (i = 0; i < SSIZE; i++)
+    {
+      *(d++) = val & 0x01;
+      val >>= 1;
+    }
+
+  return true;
+}
 
 
 static void bad_op (sim_t *sim, int opcode)
