@@ -8,10 +8,10 @@ published by the Free Software Foundation.  Note that I am not
 granting permission to redistribute or modify Nonpareil under the
 terms of any later version of the General Public License.
 
-Nonpareil is distributed in the hope that it will be useful (or at
-least amusing), but WITHOUT ANY WARRANTY; without even the implied
-warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See
-the GNU General Public License for more details.
+Nonpareil is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with this program (in the file "COPYING"); if not, write to the
@@ -82,7 +82,7 @@ void usage (FILE *f)
 {
   fprintf (f, "%s:  Microcode-level calculator simulator\n",
 	   nonpareil_release);
-  fprintf (f, "Copyright 1995, 2003, 2004 Eric L. Smith\n");
+  fprintf (f, "Copyright 1995, 2003, 2004, 2005 Eric L. Smith\n");
   fprintf (f, "http://nonpareil.brouhaha.com/\n");
   fprintf (f, "\n");
   fprintf (f, "usage: %s [options...] kmlfile\n", progname);

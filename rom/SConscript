@@ -8,10 +8,10 @@
 # granting permission to redistribute or modify Nonpareil under the
 # terms of any later version of the General Public License.
 
-# Nonpareil is distributed in the hope that they will be useful (or at
-# least amusing), but WITHOUT ANY WARRANTY; without even the implied
-# warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-# See the GNU General Public License for more details.
+# Nonpareil is distributed in the hope that they will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# General Public License for more details.
 
 # You should have received a copy of the GNU General Public License
 # along with this program (in the file "COPYING"); if not, write to
