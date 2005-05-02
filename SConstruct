@@ -1,6 +1,6 @@
 # SConstruct for Nonpareil
 # $Id$
-# Copyright 2004 Eric L. Smith <eric@brouhaha.com>
+# Copyright 2005 Eric L. Smith <eric@brouhaha.com>
 
 # Nonpareil is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License version 2 as
@@ -25,7 +25,7 @@ release = '0.45'  # should get from a file, and use only if a release option
 # Conditionals 
 #-----------------------------------------------------------------------------
 
-opts = Options ()
+opts = Options ('local.py')
 
 opts.AddOptions (EnumOption ('target',
 			     help = 'execution target',
