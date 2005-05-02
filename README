@@ -74,7 +74,7 @@ In 1978, HP introduced their third generation handheld calculators,
 known internally as the Spice series.  These use essentially the same
 processor architecture as the Woodstock series, with the addition of
 an instruction to checksum a 1K region of ROM, used as part of a
-self-test.
+self-test feature.
 
 In 1979, HP introduced their first expandable scientific handheld
 calculator, the HP-41C (Coconut).  It was the first calculator to use
@@ -102,14 +102,14 @@ concatentation of the name under which it was invoked and ".kml".
 This allows you to (for instance) link nonpareil to "hp45" and have it
 automatically try to use "hp45.kml".
 
-Nonpareil attempts to maintain a simulation speed of 3500
-microinstructions per second, the nominal rate of the real
-calculators, so that the HP-55 timer mode runs at roughly the correct
-rate.  Other than the HP-55, the calculators used an LC oscillator
-that was not very accurate.  On a computer that is heavily loaded, the
-microinstruction rate will be reduced, so the HP-55 timer mode (and
-the undocumented HP-45 timer mode) will run slow.  Don't blame me if
-you try to use it and burn your eggs.
+Nonpareil attempts to run the simulation at the same nominal rate of
+microinstruction execution as a real calculator, e.g., 3500
+microinstructions per second for an HP-55.  The HP-55 used a crystal
+oscillator, but most other models used an LC oscillator which was not
+very accurate.  On a computer that is heavily loaded, the
+microinstruction rate will be reduced, so the HP-55 timer mode (and the
+undocumented HP-45 timer mode) will run slow.  Don't blame me if you try
+to use it and burn your eggs.
 
 If you want to use the undocumented timer mode of the HP-45, there are
 comments in hp45.kml explaining the change necessary to that file.  On
@@ -167,13 +167,10 @@ than the HP assembler about forms of the "go to" instruction.
 
 -----------------------------------------------------------------------------
 
-Development tools:
+Installation:
 
-I used GNU tools to build nonpareil and uasm.  Originally I used GCC
-2.5.8, Flex 2.4.7, Bison 1.22, and Make 3.71.  Most recently I'm using
-GCC 3.4.2, Flex 2.5.4a, Bison 1.875c, and SCons 0.96.1.  Flex versions
-prior to 2.4.2 will not work.
-
+The file INSTALLATION provides instructions for configuring, building,
+and installing Nonpareil.
 
 -----------------------------------------------------------------------------
 
