@@ -84,26 +84,30 @@ struct sim_env_t
   int key_buf;        /* most recently pressed key */
 
   bool awake;
+
+  // General display (Coconut and Voyager):
   bool display_enable;
   bool display_blink;
   bool display_blink_state;  /* if blinking, current phase (on or off) */
   int display_blink_count;
-
   int display_count;
 
-  /* Coconut display: */
+  // RAM:
+  uint16_t max_ram;
+  uint16_t ram_addr;  // selected RAM address
+  bool *ram_exists;
+  reg_t *ram;
+
+  // Peripherals:
+  uint8_t max_pf;
+  uint8_t pf_addr;  // selected peripheral address
+  bool *pf_exists;
+
+  // Coconut display:
   digit_t lcd_a [COCONUT_DISPLAY_DIGITS];
   digit_t lcd_b [COCONUT_DISPLAY_DIGITS];
   digit_t lcd_c [COCONUT_DISPLAY_DIGITS];
   uint16_t lcd_ann;
-
-  uint8_t pf_addr;  // selected peripheral address
-
-  // RAM
-  uint16_t max_ram;
-  uint16_t ram_addr;  // selected RAM address
-
-  reg_t *ram;
 };
 
 

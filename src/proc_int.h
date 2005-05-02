@@ -76,8 +76,8 @@ typedef struct
   void (* set_ext_flag)        (sim_t *sim, int flag, bool state);
 
   /* for debugger: */
-  void (* read_ram)            (sim_t *sim, int addr, uint8_t *val);
-  void (* write_ram)           (sim_t *sim, int addr, uint8_t *val);
+  bool (* read_ram)            (sim_t *sim, int addr, uint8_t *val);
+  bool (* write_ram)           (sim_t *sim, int addr, uint8_t *val);
 
   void (* disassemble)         (sim_t *sim, int addr, char *buf, int len);
 
@@ -136,9 +136,6 @@ struct sim_t
 #endif
 
   void (* op_fcn [1024])(struct sim_t *sim, int opcode);
-
-  bool pf_exists [256];
-  bool ram_exists [1024];
 
   void (* rd_n_fcn [256])(struct sim_t *sim, int n);
   void (* wr_n_fcn [256])(struct sim_t *sim, int n);

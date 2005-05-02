@@ -233,12 +233,12 @@ void coconut_display_reset (sim_t *sim)
   sim->env->display_blink = 0;
   sim->env->display_count = 0;
 
-  sim->pf_exists [LCD_DISPLAY] = 1;
+  sim->env->pf_exists [LCD_DISPLAY] = 1;
   sim->rd_n_fcn [LCD_DISPLAY] = & coconut_lcd_rd_n;
   sim->wr_n_fcn [LCD_DISPLAY] = & coconut_lcd_wr_n;
   sim->wr_fcn   [LCD_DISPLAY] = & coconut_lcd_wr;
 
-  sim->pf_exists [HALFNUT] = 1;
+  sim->env->pf_exists [HALFNUT] = 1;
   sim->rd_n_fcn  [HALFNUT] = & halfnut_lcd_rd_n;
   sim->wr_n_fcn  [HALFNUT] = & halfnut_lcd_wr_n;
   sim->wr_fcn    [HALFNUT] = & halfnut_lcd_wr;

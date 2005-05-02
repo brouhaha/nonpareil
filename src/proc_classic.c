@@ -1002,19 +1002,21 @@ void classic_reset_processor (sim_t *sim)
 }
 
 
-static void classic_read_ram (sim_t *sim, int addr, uint8_t *val)
+static bool classic_read_ram (sim_t *sim, int addr, uint8_t *val)
 {
   if (addr > sim->env->max_ram)
     fatal (2, "classic_read_ram: address %d out of range\n", addr);
   memcpy (val, & sim->env->ram [addr], sizeof (reg_t));
+  return true;
 }
 
 
-static void classic_write_ram (sim_t *sim, int addr, uint8_t *val)
+static bool classic_write_ram (sim_t *sim, int addr, uint8_t *val)
 {
   if (addr > sim->env->max_ram)
     fatal (2, "sim_write_ram: address %d out of range\n", addr);
   memcpy (& sim->env->ram [addr], val, sizeof (reg_t));
+  return true;
 }
 
 

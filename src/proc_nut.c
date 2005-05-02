@@ -615,8 +615,8 @@ static void op_read_reg_n (sim_t *sim, int opcode)
 
   if ((opcode >> 6) != 0)
     sim->env->ram_addr = (sim->env->ram_addr & ~0x0f) | (opcode >> 6);
-  is_ram = sim->ram_exists [sim->env->ram_addr];
-  is_pf  = sim->pf_exists  [sim->env->pf_addr];
+  is_ram = sim->env->ram_exists [sim->env->ram_addr];
+  is_pf  = sim->env->pf_exists  [sim->env->pf_addr];
 
   if (is_ram && is_pf)
     {
@@ -648,8 +648,8 @@ static void op_write_reg_n (sim_t *sim, int opcode)
   int is_ram, is_pf;
 
   sim->env->ram_addr = (sim->env->ram_addr & ~0x0f) | (opcode >> 6);
-  is_ram = sim->ram_exists [sim->env->ram_addr];
-  is_pf  = sim->pf_exists  [sim->env->pf_addr];
+  is_ram = sim->env->ram_exists [sim->env->ram_addr];
+  is_pf  = sim->env->pf_exists  [sim->env->pf_addr];
 
   if (is_ram && is_pf)
     {
@@ -680,8 +680,8 @@ static void op_c_to_data (sim_t *sim, int opcode)
   int i;
   int is_ram, is_pf;
 
-  is_ram = sim->ram_exists [sim->env->ram_addr];
-  is_pf  = sim->pf_exists  [sim->env->pf_addr];
+  is_ram = sim->env->ram_exists [sim->env->ram_addr];
+  is_pf  = sim->env->pf_exists  [sim->env->pf_addr];
 
   if (is_ram && is_pf)
     {
@@ -1430,19 +1430,32 @@ void nut_reset_processor (sim_t *sim)
 }
 
 
-static void nut_read_ram (sim_t *sim, int addr, uint8_t *val)
+static bool nut_read_ram (sim_t *sim, int addr, uint8_t *val)
 {
   if (addr > sim->env->max_ram)
     fatal (2, "classic_read_ram: address %d out of range\n", addr);
+  if (! sim->env->ram_exists [addr])
+    return false;
   memcpy (val, & sim->env->ram [addr], sizeof (reg_t));
+  return true;
 }
 
 
-static void nut_write_ram (sim_t *sim, int addr, uint8_t *val)
+static bool nut_write_ram (sim_t *sim, int addr, uint8_t *val)
 {
   if (addr > sim->env->max_ram)
     fatal (2, "sim_write_ram: address %d out of range\n", addr);
+  if (! sim->env->ram_exists [addr])
+    return false;
   memcpy (& sim->env->ram [addr], val, sizeof (reg_t));
+  return true;
+}
+
+
+static void nut_new_pf_addr_space (sim_t *sim, int max_pf)
+{
+  sim->env->max_pf = max_pf;
+  sim->env->pf_exists = alloc (max_pf * sizeof (bool));
 }
 
 
@@ -1450,6 +1463,7 @@ static void nut_new_ram_addr_space (sim_t *sim, int max_ram)
 {
   sim->env->max_ram = max_ram;
   sim->env->ram = alloc (max_ram * sizeof (reg_t));
+  sim->env->ram_exists = alloc (max_ram * sizeof (bool));
 }
 
 
@@ -1458,7 +1472,7 @@ static void nut_new_ram (sim_t *sim, int base_addr, int count)
   int i;
 
   for (i = base_addr; i < (base_addr + count); i++)
-    sim->ram_exists [i] = true;
+    sim->env->ram_exists [i] = true;
 }
 
 
@@ -1468,10 +1482,12 @@ static void nut_new_processor (sim_t *sim, int ram_size)
 
   nut_init_ops (sim);
 
+  nut_new_ram_addr_space (sim, 1024);
+  nut_new_pf_addr_space (sim, 256);
+
   switch (sim->platform)
     {
     case PLATFORM_COCONUT:
-      nut_new_ram_addr_space (sim, 1024);
       nut_new_ram (sim, 0x000, 0x010);
       nut_new_ram (sim, 0x0c0, ram_size);
 
@@ -1479,7 +1495,6 @@ static void nut_new_processor (sim_t *sim, int ram_size)
       break;
 
     case PLATFORM_VOYAGER:
-      nut_new_ram_addr_space (sim, 256);
       if (ram_size >= 64)
 	nut_new_ram (sim, 0x000, 0x020);
       else
