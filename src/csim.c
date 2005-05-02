@@ -71,7 +71,7 @@ static gboolean reg_visible;
 static int max_reg;
 #define MAX_REG 200
 static int reg_width [MAX_REG];
-static GtkWidget *reg_entry_widget [MAX_REG];
+static GtkWidget *reg_widget [MAX_REG];
 static reg_info_t *reg_info [MAX_REG];
 #endif
 
@@ -485,20 +485,24 @@ static void update_register_window (void)
 
   for (reg_num = 0; reg_num < max_reg; reg_num++)
     {
+      reg_info_t *info = reg_info [reg_num];
       if (sim_read_register (sim, reg_num, 0, & val))
 	{
-	  if (reg_info [reg_num]->display_radix == 16)
+	  if (info->display_radix == 16)
 	    snprintf (buf, sizeof (buf), "%0*" PRIx64, reg_width [reg_num], val);
-	  else if (reg_info [reg_num]->display_radix == 10)
+	  else if (info->display_radix == 10)
 	    snprintf (buf, sizeof (buf), "%0*" PRIu64, reg_width [reg_num], val);
-	  else if (reg_info [reg_num]->display_radix == 8)
+	  else if (info->display_radix == 8)
 	    snprintf (buf, sizeof (buf), "%0*" PRIo64, reg_width [reg_num], val);
 	  else // binary
 	    binary_to_string (buf, reg_info [reg_num]->element_bits, val);
 	}
       else
 	snprintf (buf, sizeof (buf), "err");
-      gtk_entry_set_text (GTK_ENTRY (reg_entry_widget [reg_num]), buf);
+      if ((info->display_radix == 2) && (info->element_bits == 1))
+	gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (reg_widget [reg_num]), val);
+      else
+	gtk_entry_set_text (GTK_ENTRY (reg_widget [reg_num]), buf);
     }
 }
 
@@ -509,34 +513,47 @@ static int log2tab [17] =
 
 static bool debug_window_add_register (GtkWidget *table, int reg_num)
 {
-  int bits;
   int l2radix;
+  GtkWidget *hbox;
+  int i;
+  reg_info_t *r;
 
-  reg_info [reg_num] = sim_get_register_info (sim, reg_num);
-  if (! reg_info [reg_num])
+  r = sim_get_register_info (sim, reg_num);
+  if (! r)
     return false;
+  reg_info [reg_num] = r;
 
   gtk_table_attach_defaults (GTK_TABLE (table),
-			     gtk_label_new (reg_info [reg_num]->name),
+			     gtk_label_new (r->name),
 			     0,
 			     1,
 			     reg_num,
 			     reg_num + 1);
 
-  bits = reg_info [reg_num]->element_bits;
-  l2radix = log2tab [reg_info [reg_num]->display_radix];
+  l2radix = log2tab [r->display_radix];
 
-  reg_width [reg_num] = (bits + l2radix - 1) / l2radix;
+  reg_width [reg_num] = (r->element_bits + l2radix - 1) / l2radix;
 
-  reg_entry_widget [reg_num] = gtk_entry_new_with_max_length (reg_width [reg_num]);
+  hbox = gtk_hbox_new (FALSE, 1);
+
+  for (i = 0; i < r->array_element_count; i++)
+    {
+      GtkWidget *w;
+      if ((r->display_radix == 2) && (r->element_bits == 1))
+	w = gtk_check_button_new ();
+      else
+	w = gtk_entry_new_with_max_length (reg_width [reg_num]);
+      if (i == 0)
+	reg_widget [reg_num] = w;
+      gtk_box_pack_start (GTK_BOX (hbox), w, FALSE, TRUE, 0);
+    }
 
   gtk_table_attach_defaults (GTK_TABLE (table),
-			     reg_entry_widget [reg_num],
+			     hbox,
 			     1,
 			     2,
 			     reg_num,
 			     reg_num + 1);
-
   return true;
 }
 
