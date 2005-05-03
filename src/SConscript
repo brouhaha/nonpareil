@@ -165,5 +165,5 @@ Default ([uasm, nonpareil, nsim_conv])
 #                                     source = [uasm, nonpareil]))
 #else:
 env.Alias (target = 'install',
-           source = env.Install (dir = env ['prefix'] + "/lib/nonpareil",
+           source = env.Install (dir = env ['prefix'] + "/bin",
                                  source = [uasm, nonpareil]))
