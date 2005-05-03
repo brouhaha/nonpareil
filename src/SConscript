@@ -152,7 +152,7 @@ nsim_conv = nsim_conv_env.Program (target = 'nsim_conv',
 # default targets
 #-----------------------------------------------------------------------------
 
-Default ([uasm, nonpareil, nsim_conv])
+Default ([nonpareil, nsim_conv, uasm])
 # omit udis for now
 
 #-----------------------------------------------------------------------------
