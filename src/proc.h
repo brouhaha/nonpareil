@@ -90,13 +90,13 @@ void sim_write_rom (sim_t      *sim,
 rom_word_t sim_read_rom (sim_t *sim,
 			 addr_t addr);
 
-void sim_read_ram (sim_t *sim,
+bool sim_read_ram (sim_t *sim,
 		   addr_t addr,
-		   uint8_t *val);
+		   uint64_t *val);
 
-void sim_write_ram (sim_t *sim,
+bool sim_write_ram (sim_t *sim,
 		    int addr,
-		    uint8_t *val);
+		    uint64_t *val);
 
 // returns NULL if reg_num out of range
 reg_info_t *sim_get_register_info (sim_t *sim,

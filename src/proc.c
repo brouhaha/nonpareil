@@ -359,6 +359,24 @@ static void cmd_write_register (sim_t *sim, sim_msg_t *msg)
 }
 
 
+static void cmd_read_ram (sim_t *sim, sim_msg_t *msg)
+{
+  if (sim->proc->read_ram (sim, msg.addr, msg.data))
+    msg->reply = OK;
+  else
+    msg->reply = ARG_RANGE_ERROR;
+}
+
+
+static void cmd_write_ram (sim_t *sim, sim_msg_t *msg)
+{
+  if (sim->proc->write_ram (sim, msg.addr, msg.data))
+    msg->reply = OK;
+  else
+    msg->reply = ARG_RANGE_ERROR;
+}
+
+
 static void handle_sim_cmd (sim_t *sim, sim_msg_t *msg)
 {
   msg->reply = UNIMPLEMENTED;
@@ -383,14 +401,10 @@ static void handle_sim_cmd (sim_t *sim, sim_msg_t *msg)
     case CMD_WRITE_ROM:
       break;
     case CMD_READ_RAM:
-      // deal with bad addr?
-      sim->proc->read_ram (sim, msg->addr, msg->data);
-      msg->reply = OK;
+      cmd_read_ram (sim, msg);
       break;
     case CMD_WRITE_RAM:
-      // deal with bad addr?
-      sim->proc->write_ram (sim, msg->addr, msg->data);
-      msg->reply = OK;
+      cmd_write_ram (sim, msg);
       break;
     case CMD_GET_CYCLE_COUNT:
       msg->cycle_count = sim->cycle_count;
@@ -703,6 +717,34 @@ bool sim_write_register (sim_t   *sim,
   msg.arg2 = index;
   msg.data = (uint8_t *) val;
   msg.cmd = CMD_WRITE_REGISTER;
+  send_cmd_to_sim_thread (sim, (gpointer) & msg);
+  return (msg.reply == OK);
+}
+
+
+bool sim_read_ram (sim_t   *sim,
+		   addr_t  addr,
+		   uint64_t *val)
+{
+  sim_msg_t msg;
+  memset (& msg, 0, sizeof (sim_msg_t));
+  msg.addr = addr;
+  msg.data = (uint8_t *) val;
+  msg.cmd = CMD_READ_RAM;
+  send_cmd_to_sim_thread (sim, (gpointer) & msg);
+  return (msg.reply == OK);
+}
+
+
+bool sim_write_ram (sim_t   *sim,
+		    addr_t  addr,
+		    uint64_t *val)
+{
+  sim_msg_t msg;
+  memset (& msg, 0, sizeof (sim_msg_t));
+  msg.addr = addr;
+  msg.data = (uint8_t *) val;
+  msg.cmd = CMD_WRITE_RAM;
   send_cmd_to_sim_thread (sim, (gpointer) & msg);
   return (msg.reply == OK);
 }
