@@ -65,9 +65,8 @@ Debugger:
 
   Add disassembler for Classic processors.
 
-  Add reflection API for use by debugger (both GUI and command line).
-
-  Add register window.
+  Make the register window update, and make changes get written to
+  register.  Disable editing (and grey out?) while running.
 
   Add debugger commands.  Pass dbt_t as arg to commands.
 
@@ -86,11 +85,6 @@ Internals:
 
   Use glib 2.6 commandline option parser (g_option_xxx functions).
 
-  Change nut pt (pointer selection) from pointer to boolean.  Replace
-  references to *pt to (pt ? q : p).
-
-  Add method to get architecture-specific word size (WSIZE).
-
   Only send display update message to GUI thread if display has changed.
 
   Add code to remove async queue g_source when simulator thread exits.
@@ -105,6 +99,9 @@ Internals:
 
   Use io_count to improve display update timing (already done in nut, add to
   classic and woodstock).
+
+  Change op_arith for Classic and Woodstock to work like Nut, for a
+  substantial reduction in cyclomatic complexity.
 
   Split ALU functions into separate source file.
 
