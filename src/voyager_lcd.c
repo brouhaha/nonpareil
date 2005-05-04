@@ -25,9 +25,9 @@ MA 02111, USA.
 #include <stdio.h>
 
 #include "arch.h"
+#include "util.h"
 #include "display.h"
 #include "proc.h"
-#include "coconut_lcd.h"
 #include "voyager_lcd.h"
 #include "proc_int.h"
 #include "proc_nut.h"
@@ -37,14 +37,49 @@ MA 02111, USA.
 #define VOYAGER_DISPLAY_BLINK_DIVISOR 150
 
 
+typedef struct
+{
+  bool enable;
+  int count;
+
+  bool blink;
+  bool blink_state;
+  int blink_count;
+} voyager_display_reg_t;
+
+
+static reg_detail_t voyager_display_reg_detail [] =
+{
+  {{ "enable", 1, 1, 2 }, OFFSET_OF (voyager_display_reg_t, enable), NULL, NULL },
+  {{ "blink",  1, 1, 2 }, OFFSET_OF (voyager_display_reg_t, blink),  NULL, NULL }
+};
+
+
+static chip_fn_t voyager_display_fn;
+
+
+static chip_detail_t voyager_display_chip_detail =
+{
+  {
+    "Voyager LCD",
+    0
+  },
+  sizeof (voyager_display_reg_detail) / sizeof (reg_detail_t),
+  voyager_display_reg_detail,
+  voyager_display_fn
+};
+
+
 static void voyager_op_display_off (sim_t *sim, int opcode)
 {
+  voyager_display_reg_t *display = sim->chip_data [PFADDR_LCD_DISPLAY];
+
 #ifdef VOYAGER_LCD_DEBUG
   printf ("display off\n");
 #endif
-  sim->env->display_enable = 0;
-  sim->env->display_blink = 0;
-  sim->env->display_count = 2;
+  display->enable = 0;
+  display->blink = 0;
+  display->count = 2;
   // Don't change immediately, as the next instruction might be a
   // display toggle.
 }
@@ -52,24 +87,28 @@ static void voyager_op_display_off (sim_t *sim, int opcode)
 
 static void voyager_op_display_toggle (sim_t *sim, int opcode)
 {
+  voyager_display_reg_t *display = sim->chip_data [PFADDR_LCD_DISPLAY];
+
 #ifdef VOYAGER_LCD_DEBUG
   printf ("display toggle\n");
 #endif
-  sim->env->display_enable = ! sim->env->display_enable;
-  sim->env->display_count = 0;  /* force immediate display update */
+  display->enable = ! display->enable;
+  display->count = 0;  // force immediate display update
 }
 
 
 static void voyager_op_display_blink (sim_t *sim, int opcode)
 {
+  voyager_display_reg_t *display = sim->chip_data [PFADDR_LCD_DISPLAY];
+
 #ifdef VOYAGER_LCD_DEBUG
   printf ("display blink\n");
 #endif
-  sim->env->display_enable = 1;
-  sim->env->display_blink = 1;
-  sim->env->display_blink_state = 1;
-  sim->env->display_blink_count = VOYAGER_DISPLAY_BLINK_DIVISOR;
-  sim->env->display_count = 0;  /* force immediate display update */
+  display->enable = 1;
+  display->blink = 1;
+  display->blink_state = 1;
+  display->blink_count = VOYAGER_DISPLAY_BLINK_DIVISOR;
+  display->count = 0;  // force immediate display update
 }
 
 
@@ -84,9 +123,11 @@ void voyager_display_init_ops (sim_t *sim)
 
 void voyager_display_reset (sim_t *sim)
 {
-  sim->env->display_enable = 0;
-  sim->env->display_blink = 0;
-  sim->env->display_count = 0;
+  voyager_display_reg_t *display = sim->chip_data [PFADDR_LCD_DISPLAY];
+
+  display->enable = 0;
+  display->blink = 0;
+  display->count = 0;
 }
 
 
@@ -149,34 +190,77 @@ voyager_segment_info_t voyager_display_map [11] [9] =
 
 void voyager_display_update (sim_t *sim)
 {
+  nut_reg_t *nut_reg = sim->chip_data [0];
+  voyager_display_reg_t *display = sim->chip_data [PFADDR_LCD_DISPLAY];
+
   int digit;
   int segment;
 
   for (digit = 0; digit < VOYAGER_DISPLAY_DIGITS; digit++)
     {
       sim->display_segments [digit] = 0;
-      if (sim->env->display_enable &&
-	  ((! sim->env->display_blink) || (sim->env->display_blink_state)))
+      if (display->enable &&
+	  ((! display->blink) || (display->blink_state)))
 	{
 	  for (segment = 0; segment < 8; segment++)
 	    {
 	      int vreg = voyager_display_map [digit][segment].reg;
 	      int vdig = voyager_display_map [digit][segment].dig;
 	      int vbit = voyager_display_map [digit][segment].bit;
-	      if (vbit && (sim->env->ram [9 + vreg][vdig] & vbit))
+	      if (vbit && (nut_reg->ram [9 + vreg][vdig] & vbit))
 		sim->display_segments [digit] |= (1 << segment);
 	    }
 	}
     }
 
-  if (sim->env->display_blink)
+  if (display->blink)
     {
-      sim->env->display_blink_count--;
-      if (! sim->env->display_blink_count)
+      display->blink_count--;
+      if (! display->blink_count)
 	{
-	  sim->env->display_blink_state ^= 1;
-	  sim->env->display_blink_count = VOYAGER_DISPLAY_BLINK_DIVISOR;
+	  display->blink_state ^= 1;
+	  display->blink_count = VOYAGER_DISPLAY_BLINK_DIVISOR;
 	}
     }
 }
 
+
+void voyager_display_fn (sim_t *sim, int chip_num, int event)
+{
+  nut_reg_t *nut_reg = sim->chip_data [0];
+  voyager_display_reg_t *display = sim->chip_data [PFADDR_LCD_DISPLAY];
+
+  switch (event)
+    {
+    case nut_event_cycle:
+      if (display->count == 0)
+	{
+	  voyager_display_update (sim);
+	  gui_display_update (sim);
+	  display->count = 15;
+	}
+      else
+	display->count --;
+      break;
+    case nut_event_power_down:
+      display->count = 0;  // force display update
+      if (display->enable)
+	{
+	  /* going to light sleep */
+#ifdef AUTO_POWER_OFF
+	  // $$$ how does display timer work on Voyager?
+	  /* start display timer if LCD chip is selected */
+	  if (nut_reg->pf_addr == PFADDR_LCD_DISPLAY)
+	    display->timer = DISPLAY_TIMEOUT;
+#endif /* AUTO_POWER_OFF */
+	}
+      else
+	/* going to deep sleep */
+	nut_reg->carry = 1;
+      break;
+    case nut_event_power_up:
+      break;
+    default:
+      fatal (3, "voyager_lcd: unknown event %d\n", event);
+    }
+}

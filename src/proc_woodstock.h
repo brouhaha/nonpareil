@@ -31,6 +31,10 @@ typedef digit_t reg_t [WSIZE];
 
 #define EXT_FLAG_SIZE 16
 
+#define MAX_CHIP_COUNT 3  // ACT CPU
+                          // PIK (HP-91, HP-92, HP-95C, HP-97, HP-19C only)
+                          // CRC (HP-67, HP-97 only)
+
 
 typedef enum
   {
@@ -40,7 +44,7 @@ typedef enum
   } inst_state_t;
 
 
-struct sim_env_t
+typedef struct
 {
   reg_t a;
   reg_t b;
@@ -90,5 +94,4 @@ struct sim_env_t
 
   int max_ram;
   reg_t *ram;
-};
-
+} act_reg_t;

@@ -25,23 +25,34 @@ MA 02111, USA.
  * processor models (e.g., proc_woodstock):
  */
 
-
-typedef bool reg_accessor_t (sim_env_t *env,
+typedef bool reg_accessor_t (void *data,
 			     size_t offset,
 			     uint64_t *p);
 
+reg_accessor_t get_14_dig, set_14_dig;
+reg_accessor_t get_2_dig, set_2_dig;
 
 typedef struct
 {
   reg_info_t info;     // publicly visible info: name, bit count, etc.
-  size_t     offset;   // offset into sim_env_t
+  size_t     offset;   // offset into register data structure
   // accessor functions - if NULL, use default
   reg_accessor_t *get;
   reg_accessor_t *set;
 } reg_detail_t;
 
-reg_accessor_t get_14_dig, set_14_dig;
-reg_accessor_t get_2_dig, set_2_dig;
+
+
+typedef void chip_fn_t (sim_t *sim, int chip_num, int event);
+
+
+typedef struct chip_detail_t
+{
+  chip_info_t          info;
+  int                  reg_count;
+  reg_detail_t         *reg_detail;
+  chip_fn_t            *chip_fn;
+} chip_detail_t;
 
 
 /* dispatch table for processor-specific functions: */
@@ -51,8 +62,7 @@ typedef struct
   int max_rom;
   int max_bank;
 
-  int reg_count;
-  reg_detail_t *reg_detail;
+  int max_chip_count;
 
   void (* new_processor)       (sim_t *sim, int ram_size);
   void (* free_processor)      (sim_t *sim);
@@ -81,7 +91,7 @@ typedef struct
 
   void (* disassemble)         (sim_t *sim, int addr, char *buf, int len);
 
-  void (* print_state)         (sim_t *sim, sim_env_t *env);
+  void (* print_state)         (sim_t *sim);
 } processor_dispatch_t;
 
 
@@ -95,6 +105,9 @@ typedef struct sim_thread_vars_t sim_thread_vars_t;
 
 struct sim_t
 {
+  chip_detail_t **chip_detail;   // array [max_chip_count]
+  void **chip_data;         // array [max_chip_count]
+
   bool quit_flag;
 
   bool run_flag;
@@ -112,7 +125,6 @@ struct sim_t
 			     much less than 1.  For instance, 3.5e-3 for
 			     HP-55. */
 
-  sim_env_t *env;		/* architecture-unique */
   uint64_t cycle_count;
 
   segment_bitmap_t *char_gen;
@@ -143,3 +155,15 @@ struct sim_t
 };
 
 
+// Use -1 for chip_num for don't care.
+// Return value is actual chip_num, or negative if error.
+int install_chip (sim_t *sim,
+		  int chip_num,
+		  chip_detail_t *chip_detail,
+		  void *chip_data);
+
+bool remove_chip (sim_t *sim,
+		  int chip_num);
+
+// Notify all chips of an event.
+void chip_event (sim_t *sim, int event);

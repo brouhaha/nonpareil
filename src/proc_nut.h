@@ -33,6 +33,16 @@ typedef digit_t reg_t [WSIZE];
 #define MAX_ROM 16
 #define ROM_SIZE 4096
 
+#define MAX_CHIP_COUNT 256
+
+
+typedef enum
+{
+  nut_event_cycle,
+  nut_event_power_down,
+  nut_event_power_up,
+} nut_event_t;
+
 
 typedef uint16_t rom_addr_t;
 
@@ -46,7 +56,7 @@ typedef enum
   } inst_state_t;
 
 
-struct sim_env_t
+typedef struct
 {
   reg_t a;
   reg_t b;
@@ -85,13 +95,6 @@ struct sim_env_t
 
   bool awake;
 
-  // General display (Coconut and Voyager):
-  bool display_enable;
-  bool display_blink;
-  bool display_blink_state;  /* if blinking, current phase (on or off) */
-  int display_blink_count;
-  int display_count;
-
   // RAM:
   uint16_t max_ram;
   uint16_t ram_addr;  // selected RAM address
@@ -99,15 +102,7 @@ struct sim_env_t
   reg_t *ram;
 
   // Peripherals:
-  uint8_t max_pf;
+  uint16_t max_pf;
   uint8_t pf_addr;  // selected peripheral address
   bool *pf_exists;
-
-  // Coconut display:
-  digit_t lcd_a [COCONUT_DISPLAY_DIGITS];
-  digit_t lcd_b [COCONUT_DISPLAY_DIGITS];
-  digit_t lcd_c [COCONUT_DISPLAY_DIGITS];
-  uint16_t lcd_ann;
-};
-
-
+} nut_reg_t;

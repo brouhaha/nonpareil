@@ -29,7 +29,8 @@ MA 02111, USA.
 #include <libxml/xmlwriter.h>
 
 #include "util.h"
-#include "nsim_conv.h"
+#include "display.h"
+#include "proc.h"
 
 
 static void xml_start_element (xmlTextWriterPtr writer, char *element_name)
@@ -133,25 +134,70 @@ static void write_reg (xmlTextWriterPtr writer,
 }
 
 
-#undef WRITE_RANDOM_MEM
-#ifdef WRITE_RANDOM_MEM
-static uint64_t get_random_data ()
+static void write_registers (sim_t *sim, int chip, xmlTextWriterPtr writer)
 {
-  static uint64_t val = 0xfeeddeadbeefedull;
-  int a;
+  int reg_count;
+  int reg_num;
+  int index;
+  reg_info_t *reg_info;
+  uint64_t val;
+  int digits;
 
-  a = (((val & 0x80000000000000ull) != 0) ^
-       ((val & 0x00000000000001ull) != 0));
-  val = ((val << 1) | a) & 0xffffffffffffffull;
+  reg_count = sim_get_reg_count (sim, chip);
+  if (! reg_count)
+    return;
 
-  return val;
+  xml_start_element (writer, "registers");
+
+  for (reg_num = 0; reg_num < reg_count; reg_num++)
+    {
+      reg_info = sim_get_register_info (sim, chip, reg_num);
+      for (index = 0; index < reg_info->array_element_count; index++)
+	{
+	  if (! sim_read_register (sim, chip, reg_num, index, & val))
+	    fatal (3, "error reading register from sim\n");
+	  digits = (reg_info->element_bits + 15) / 16;
+	  write_reg (writer,
+		     reg_info->name,
+		     reg_info->array_element_count > 1 ? index : -1,
+		     "%0*", PRIx64,
+		     val);
+	}
+    }
+  
+  xml_end_element (writer);  // registers
 }
-#endif
 
-static void write_mem (xmlTextWriterPtr writer,
-		       int addr,
-		       char *format,
-		       ...)
+
+static void write_chips (sim_t *sim, xmlTextWriterPtr writer)
+{
+  int chip_count;
+  int register_count;
+  int chip_num;
+
+  chip_count = sim_get_max_chip_count (sim);
+
+  for (chip_num = 0; chip_num < chip_count; chip_num++)
+    {
+      chip_info_t *chip_info;
+      chip_info = sim_get_chip_info (sim, chip_num);
+      register_count = sim_get_reg_count (sim, chip_num);
+      if (chip_info && register_count)
+	{
+	  xml_start_element (writer, "chip");
+	  xml_write_attribute_string (writer, "name", chip_info->name);
+	  xml_write_attribute_format (writer, "addr", "%02x", chip_num);
+	  write_registers (sim, chip_num, writer);
+	  xml_end_element (writer);  // chip
+	}
+    }
+}
+
+
+static void write_mem_loc (xmlTextWriterPtr writer,
+			   int addr,
+			   char *format,
+			   ...)
 {
   va_list ap;
   xml_start_element (writer, "loc");
@@ -167,9 +213,26 @@ static void write_mem (xmlTextWriterPtr writer,
 }
 
 
-void state_write_xml (char *fn)
+static void write_memory (sim_t *sim, xmlTextWriterPtr writer)
 {
-  int i;
+  addr_t addr;
+  uint64_t data;
+  xml_start_element (writer, "memory");
+
+  xml_write_attribute_string (writer, "as", "ram");
+
+  for (addr = 0; addr < MAX_RAM; addr++)
+    {
+      if (sim_read_ram (sim, addr, & data))
+	write_mem_loc (writer, addr, "%014" PRIx64, data);
+    }
+
+  xml_end_element (writer);  // memory
+}
+
+
+void state_write_xml (sim_t *sim, char *fn)
+{
   xmlOutputBufferPtr out;
   xmlTextWriterPtr writer;
 
@@ -204,50 +267,8 @@ void state_write_xml (char *fn)
   xml_write_attribute_string (writer, "platform", "coconut");
   xml_write_attribute_string (writer, "model", "41cv");
 
-  xml_start_element (writer, "registers");
-
-  write_reg (writer, "a",          -1, "%014" PRIx64, regs.a);
-  write_reg (writer, "b",          -1, "%014" PRIx64, regs.b);
-  write_reg (writer, "c",          -1, "%014" PRIx64, regs.c);
-  write_reg (writer, "m",          -1, "%014" PRIx64, regs.m);
-  write_reg (writer, "n",          -1, "%014" PRIx64, regs.n);
-  write_reg (writer, "g",          -1, "%02"  PRIx64, regs.g);
-  write_reg (writer, "p",          -1, "%01"  PRIx64, regs.p);
-  write_reg (writer, "q",          -1, "%01"  PRIx64, regs.q);
-  write_reg (writer, "q_selected", -1, "%d",  regs.q_selected);
-  write_reg (writer, "status",     -1, "%04"  PRIx64, regs.status);
-  write_reg (writer, "pc",         -1, "%01"  PRIx64, regs.pc);
-
-  for (i = 0; i < 4; i++)
-    write_reg (writer, "stack", i, "%04x", regs.stack [i]);
-
-  write_reg (writer, "awake",   -1, "%d", regs.awake);
-  write_reg (writer, "carry",   -1, "%d", regs.carry);
-  write_reg (writer, "decimal", -1, "%d", regs.decimal);
-
-  xml_end_element (writer);  // registers
-
-  xml_start_element (writer, "memory");
-  xml_write_attribute_string (writer, "as", "ram");
-
-  for (i = 0; i < MAX_RAM; i++)
-    {
-      if (ram_used [i])
-	write_mem (writer, i, "%014" PRIx64, ram [i]);
-    }
-
-  xml_end_element (writer);  // memory
-
-  xml_start_element (writer, "periph");
-  xml_write_attribute_format (writer, "addr", "%02x", LCD_PERIPH_ADDR);
-
-  write_reg (writer, "enable", -1, "%d",          regs.lcd.enable);
-  write_reg (writer, "a",      -1, "%012" PRIx64, regs.lcd.a);
-  write_reg (writer, "b",      -1, "%012" PRIx64, regs.lcd.b);
-  write_reg (writer, "c",      -1, "%012" PRIx64, regs.lcd.c);
-  write_reg (writer, "ann",    -1, "%03"  PRIx64, regs.lcd.ann);
-
-  xml_end_element (writer);  // periph
+  write_chips (sim, writer);
+  write_memory (sim, writer);
 
   xml_end_element (writer);  // state
 

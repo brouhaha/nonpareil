@@ -33,8 +33,12 @@ typedef digit_t reg_t [WSIZE];
 #define MAX_ROM 8
 #define ROM_SIZE 256
 
+#define MAX_CHIP_COUNT 3  // A&R, C&T CPU
+                          // program storage (HP-65 only)
+                          // CRC (HP-65 only)
 
-struct sim_env_t
+
+typedef struct
 {
   reg_t a;
   reg_t b;
@@ -74,6 +78,4 @@ struct sim_env_t
 
   int max_ram;
   reg_t *ram;
-};
-
-
+} classic_cpu_reg_t;

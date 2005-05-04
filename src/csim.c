@@ -443,7 +443,7 @@ static void help_about (GtkWidget *widget, gpointer data)
 		     gtk_label_new (buf));
   gtk_container_add (GTK_CONTAINER (GTK_DIALOG (dialog)->vbox),
 		     gtk_label_new ("Microcode-level calculator simulator\n"
-				    "Copyright 1995, 2003, 2004 Eric L. Smith\n"
+				    "Copyright 1995, 2003, 2004, 2005 Eric L. Smith\n"
 				    "http://nonpareil.brouhaha.com/"));
   if (kml->title || kml->author)
     {
@@ -486,7 +486,11 @@ static void update_register_window (void)
   for (reg_num = 0; reg_num < max_reg; reg_num++)
     {
       reg_info_t *info = reg_info [reg_num];
-      if (sim_read_register (sim, reg_num, 0, & val))
+      if (sim_read_register (sim,
+			     0,  // $$$ CPU only for now
+			     reg_num,
+			     0,
+			     & val))
 	{
 	  if (info->display_radix == 16)
 	    snprintf (buf, sizeof (buf), "%0*" PRIx64, reg_width [reg_num], val);
@@ -518,7 +522,9 @@ static bool debug_window_add_register (GtkWidget *table, int reg_num)
   int i;
   reg_info_t *r;
 
-  r = sim_get_register_info (sim, reg_num);
+  r = sim_get_register_info (sim,
+			     0,  // $$$ CPU only for now
+			     reg_num);
   if (! r)
     return false;
   reg_info [reg_num] = r;

@@ -91,8 +91,9 @@ typedef struct
   bool          b;
   uint64_t      cycle_count;
   addr_t        addr;
-  int           arg;   // keycode, flag number, reg_num, etc.
-  int           arg2;  // index (in read/write register)
+  int           arg1;   // keycode, flag number, chip_num, etc.
+  int           arg2;   // reg_num
+  int           arg3;   // index (in read/write register)
   uint8_t       *data;  // register value, etc.
 } sim_msg_t;
 
@@ -280,27 +281,34 @@ static void send_cmd_to_sim_thread (sim_t *sim, gpointer msg)
 
 static void cmd_read_register (sim_t *sim, sim_msg_t *msg)
 {
-  reg_detail_t *detail;
+  chip_detail_t *chip_detail;
+  reg_detail_t *reg_detail;
   size_t size;
   uint8_t *addr;
   uint64_t *result_val;
 
   msg->reply = ARG_RANGE_ERROR;
-  if (msg->arg >= sim->proc->reg_count)
+
+  if (msg->arg1 >= sim->proc->max_chip_count)
     return;
-  detail = & sim->proc->reg_detail [msg->arg];
-  if (msg->arg2 >= detail->info.array_element_count)
+  chip_detail = sim->chip_detail [msg->arg1];
+  if (! chip_detail)
+    return;
+  if (msg->arg2 >= chip_detail->reg_count)
+    return;
+  reg_detail = & chip_detail->reg_detail [msg->arg2];
+  if (msg->arg3 >= reg_detail->info.array_element_count)
     return;
 
-  size = storage_size [detail->info.element_bits];
-  addr = ((uint8_t *) sim->env) + detail->offset + msg->arg2 * size;
+  size = storage_size [reg_detail->info.element_bits];
+  addr = ((uint8_t *) sim->chip_data [msg->arg1]) + reg_detail->offset + msg->arg3 * size;
   result_val = (uint64_t *) msg->data;
 
-  if (detail->get)
+  if (reg_detail->get)
     {
-      if (detail->get (sim->env,
-		       detail->offset,
-		       result_val))
+      if (reg_detail->get (addr,
+			   reg_detail->offset,
+			   result_val))
 	msg->reply = OK;
     }
   else
@@ -321,26 +329,34 @@ static void cmd_read_register (sim_t *sim, sim_msg_t *msg)
 
 static void cmd_write_register (sim_t *sim, sim_msg_t *msg)
 {
-  reg_detail_t *detail;
+  chip_detail_t *chip_detail;
+  reg_detail_t *reg_detail;
   size_t size;
   uint8_t *addr;
   uint64_t *source_val;
 
-  if (msg->arg >= sim->proc->reg_count)
+  msg->reply = ARG_RANGE_ERROR;
+
+  if (msg->arg1 >= sim->proc->max_chip_count)
     return;
-  detail = & sim->proc->reg_detail [msg->arg];
-  if (msg->arg2 >= detail->info.array_element_count)
+  chip_detail = sim->chip_detail [msg->arg1];
+  if (! chip_detail)
+    return;
+  if (msg->arg2 >= chip_detail->reg_count)
+    return;
+  reg_detail = & chip_detail->reg_detail [msg->arg2];
+  if (msg->arg3 >= reg_detail->info.array_element_count)
     return;
 
-  size = storage_size [detail->info.element_bits];
-  addr = ((uint8_t *) sim->env) + detail->offset + msg->arg2 * size;
+  size = storage_size [reg_detail->info.element_bits];
+  addr = ((uint8_t *) sim->chip_data [msg->arg1]) + reg_detail->offset + msg->arg3 * size;
   source_val = (uint64_t *) msg->data;
 
-  if (detail->set)
+  if (reg_detail->set)
     {
-      if (detail->set (sim->env,
-		       detail->offset,
-		       source_val))
+      if (reg_detail->set (addr,
+			   reg_detail->offset,
+			   source_val))
 	msg->reply = OK;
     }
   else
@@ -361,7 +377,7 @@ static void cmd_write_register (sim_t *sim, sim_msg_t *msg)
 
 static void cmd_read_ram (sim_t *sim, sim_msg_t *msg)
 {
-  if (sim->proc->read_ram (sim, msg.addr, msg.data))
+  if (sim->proc->read_ram (sim, msg->addr, msg->data))
     msg->reply = OK;
   else
     msg->reply = ARG_RANGE_ERROR;
@@ -370,7 +386,7 @@ static void cmd_read_ram (sim_t *sim, sim_msg_t *msg)
 
 static void cmd_write_ram (sim_t *sim, sim_msg_t *msg)
 {
-  if (sim->proc->write_ram (sim, msg.addr, msg.data))
+  if (sim->proc->write_ram (sim, msg->addr, msg->data))
     msg->reply = OK;
   else
     msg->reply = ARG_RANGE_ERROR;
@@ -427,13 +443,13 @@ static void handle_sim_cmd (sim_t *sim, sim_msg_t *msg)
 #ifdef HAS_DEBUGGER
     case CMD_SET_DEBUG_FLAG:
       if (msg->b)
-	sim->debug_flags |= (1 << msg->arg);
+	sim->debug_flags |= (1 << msg->arg1);
       else
-	sim->debug_flags &= ~ (1 << msg->arg);
+	sim->debug_flags &= ~ (1 << msg->arg1);
       msg->reply = OK;
       break;
     case CMD_GET_DEBUG_FLAG:
-      msg->b = ((sim->debug_flags & (1 << msg->arg)) != 0);
+      msg->b = ((sim->debug_flags & (1 << msg->arg1)) != 0);
       msg->reply = OK;
       break;
 #endif // HAS_DEBUGGER
@@ -450,7 +466,7 @@ static void handle_sim_cmd (sim_t *sim, sim_msg_t *msg)
     case CMD_SET_BREAKPOINT:
       break;
     case CMD_PRESS_KEY:
-      sim->proc->press_key (sim, msg->arg);
+      sim->proc->press_key (sim, msg->arg1);
       msg->reply = OK;
       break;
     case CMD_RELEASE_KEY:
@@ -459,7 +475,7 @@ static void handle_sim_cmd (sim_t *sim, sim_msg_t *msg)
       msg->reply = OK;
       break;
     case CMD_SET_EXT_FLAG:
-      sim->proc->set_ext_flag (sim, msg->arg, msg->b);
+      sim->proc->set_ext_flag (sim, msg->arg1, msg->b);
       msg->reply = OK;
       break;
     case CMD_GET_DISPLAY_UPDATE:
@@ -619,6 +635,9 @@ sim_t *sim_init  (int platform,
 								 NULL,  // use main context
 								 gui_cmd_callback);
 
+  sim->chip_detail = alloc (sim->proc->max_chip_count * sizeof (chip_detail_t *));
+  sim->chip_data = alloc (sim->proc->max_chip_count * sizeof (void *));
+
   sim->proc->new_processor (sim, ram_size);
 
   allocate_ucode (sim);
@@ -630,6 +649,24 @@ sim_t *sim_init  (int platform,
   sim->thread_vars->gthread = g_thread_create (sim_thread_func, sim, TRUE, NULL);
 
   return (sim);
+}
+
+
+void sim_quit (sim_t *sim)
+{
+  sim_msg_t msg;
+
+  memset (& msg, 0, sizeof (sim_msg_t));
+  msg.cmd = CMD_QUIT;
+  send_cmd_to_sim_thread (sim, (gpointer) & msg);
+
+  // $$$ should wait for thread exit here
+
+  sim->proc->free_processor (sim);
+
+  free (sim->chip_detail);
+  free (sim->chip_data);
+  free (sim);
 }
 
 
@@ -680,25 +717,84 @@ void sim_stop (sim_t *sim)
 }
 
 
-reg_info_t *sim_get_register_info (sim_t *sim,
-				   int   reg_num)  // 0 and up
+int sim_get_max_chip_count (sim_t *sim)
 {
-  if (reg_num >= sim->proc->reg_count)
+  return sim->proc->max_chip_count;
+}
+
+
+chip_info_t *sim_get_chip_info (sim_t *sim,
+				int   chip_num)
+{
+  chip_detail_t *chip_detail;
+
+  if (chip_num >= sim->proc->max_chip_count)
+    return NULL;
+  chip_detail = sim->chip_detail [chip_num];
+  if (! chip_detail)
+    return NULL;
+  return & chip_detail->info;
+}
+
+
+int sim_get_reg_count (sim_t *sim, int chip_num)
+{
+  chip_detail_t *chip_detail;
+
+  if (chip_num >= sim->proc->max_chip_count)
+    return 0;
+
+  chip_detail = sim->chip_detail [chip_num];
+  if (! chip_detail)
+    return 0;
+
+  return chip_detail->reg_count;
+}
+
+
+reg_info_t *sim_get_register_info (sim_t *sim,
+				   int   chip_num,
+				   int   reg_num)
+{
+  chip_detail_t *chip_detail;
+
+  if (chip_num >= sim->proc->max_chip_count)
+    return 0;
+
+  chip_detail = sim->chip_detail [chip_num];
+  if (! chip_detail)
+    return 0;
+
+  if (reg_num >= chip_detail->reg_count)
     return NULL;
 
-  return & sim->proc->reg_detail [reg_num].info;
+  return & chip_detail->reg_detail [reg_num].info;
 }
 
 
 bool sim_read_register (sim_t   *sim,
+			int     chip_num,
 			int     reg_num,
 			int     index,
 			uint64_t *val)
 {
   sim_msg_t msg;
+  chip_detail_t *chip_detail;
+
+  if (chip_num >= sim->proc->max_chip_count)
+    return false;
+
+  chip_detail = sim->chip_detail [chip_num];
+  if (! chip_detail)
+    return false;
+
+  if (reg_num >= chip_detail->reg_count)
+    return false;
+
   memset (& msg, 0, sizeof (sim_msg_t));
-  msg.arg = reg_num;
-  msg.arg2 = index;
+  msg.arg1 = chip_num;
+  msg.arg2 = reg_num;
+  msg.arg3 = index;
   msg.data = (uint8_t *) val;
   msg.cmd = CMD_READ_REGISTER;
   send_cmd_to_sim_thread (sim, (gpointer) & msg);
@@ -707,14 +803,28 @@ bool sim_read_register (sim_t   *sim,
 
 
 bool sim_write_register (sim_t   *sim,
+			 int     chip_num,
 			 int     reg_num,
 			 int     index,
 			 uint64_t *val)
 {
   sim_msg_t msg;
+  chip_detail_t *chip_detail;
+
+  if (chip_num >= sim->proc->max_chip_count)
+    return false;
+
+  chip_detail = sim->chip_detail [chip_num];
+  if (! chip_detail)
+    return false;
+
+  if (reg_num >= chip_detail->reg_count)
+    return false;
+
   memset (& msg, 0, sizeof (sim_msg_t));
-  msg.arg = reg_num;
-  msg.arg2 = index;
+  msg.arg1 = chip_num;
+  msg.arg2 = reg_num;
+  msg.arg3 = index;
   msg.data = (uint8_t *) val;
   msg.cmd = CMD_WRITE_REGISTER;
   send_cmd_to_sim_thread (sim, (gpointer) & msg);
@@ -755,7 +865,7 @@ void sim_press_key (sim_t *sim, int keycode)
   sim_msg_t msg;
   memset (& msg, 0, sizeof (sim_msg_t));
   msg.cmd = CMD_PRESS_KEY;
-  msg.arg = keycode;
+  msg.arg1 = keycode;
   send_cmd_to_sim_thread (sim, (gpointer) & msg);
 }
 
@@ -774,7 +884,7 @@ void sim_set_ext_flag (sim_t *sim, int flag, bool state)
   sim_msg_t msg;
   memset (& msg, 0, sizeof (sim_msg_t));
   msg.cmd = CMD_SET_EXT_FLAG;
-  msg.arg = flag;
+  msg.arg1 = flag;
   msg.b = state;
   send_cmd_to_sim_thread (sim, (gpointer) & msg);
 }
@@ -795,7 +905,7 @@ void sim_set_debug_flag (sim_t *sim, int debug_flag, bool state)
   sim_msg_t msg;
   memset (& msg, 0, sizeof (sim_msg_t));
   msg.cmd = CMD_SET_DEBUG_FLAG;
-  msg.arg = debug_flag;
+  msg.arg1 = debug_flag;
   msg.b = state;
   send_cmd_to_sim_thread (sim, (gpointer) & msg);
 }
@@ -805,7 +915,7 @@ bool sim_get_debug_flag (sim_t *sim, int debug_flag)
   sim_msg_t msg;
   memset (& msg, 0, sizeof (sim_msg_t));
   msg.cmd = CMD_GET_DEBUG_FLAG;
-  msg.arg = debug_flag;
+  msg.arg1 = debug_flag;
   send_cmd_to_sim_thread (sim, (gpointer) & msg);
   return (msg.b);
 }
@@ -848,13 +958,13 @@ processor_dispatch_t *processor_dispatch [ARCH_MAX] =
 // are internally stored as an array of digits, one digit per byte.
 // The external representation is packed into a single uint of an
 // appropriate size.
-bool get_14_dig (sim_env_t *env, size_t offset, uint64_t *p)
+bool get_14_dig (void *data, size_t offset, uint64_t *p)
 {
   uint64_t val;
   uint8_t *d;
   int i;
 
-  d = ((uint8_t *) env) + offset;
+  d = ((uint8_t *) data) + offset;
   val = 0;
   for (i = 0; i < 14; i++)
     val = (val << 4) + *(d++);
@@ -865,14 +975,14 @@ bool get_14_dig (sim_env_t *env, size_t offset, uint64_t *p)
 }
 
 
-bool set_14_dig (sim_env_t *env, size_t offset, uint64_t *p)
+bool set_14_dig (void *data, size_t offset, uint64_t *p)
 {
   uint64_t val = *p;
   uint8_t *d;
   int i;
 
   memcpy (& val, p, sizeof (val));
-  d = ((uint8_t *) env) + offset;
+  d = ((uint8_t *) data) + offset;
   for (i = 0; i < 14; i++)
     {
       *(d++) = val & 0x0f;
@@ -883,13 +993,13 @@ bool set_14_dig (sim_env_t *env, size_t offset, uint64_t *p)
 }
 
 
-bool get_2_dig (sim_env_t *env, size_t offset, uint64_t *p)
+bool get_2_dig (void *data, size_t offset, uint64_t *p)
 {
   uint8_t val;
   uint8_t *d;
   int i;
 
-  d = ((uint8_t *) env) + offset;
+  d = ((uint8_t *) data) + offset;
   val = 0;
   for (i = 0; i < 2; i++)
     val = (val << 4) + *(d++);
@@ -900,14 +1010,14 @@ bool get_2_dig (sim_env_t *env, size_t offset, uint64_t *p)
 }
 
 
-bool set_2_dig (sim_env_t *env, size_t offset, uint64_t *p)
+bool set_2_dig (void *data, size_t offset, uint64_t *p)
 {
   uint8_t val = *p;
   uint8_t *d;
   int i;
 
   memcpy (& val, p, sizeof (val));
-  d = ((uint8_t *) env) + offset;
+  d = ((uint8_t *) data) + offset;
   for (i = 0; i < 2; i++)
     {
       *(d++) = val & 0x0f;
@@ -918,3 +1028,49 @@ bool set_2_dig (sim_env_t *env, size_t offset, uint64_t *p)
 }
 
 
+int install_chip (sim_t *sim,
+		  int chip_num,
+		  chip_detail_t *chip_detail,
+		  void *chip_data)
+{
+  if (chip_num < 0)
+    {
+      for (chip_num = 0; chip_num < sim->proc->max_chip_count; chip_num++)
+	if (! sim->chip_detail [chip_num])
+	  break;
+    }
+
+  if ((chip_num >= sim->proc->max_chip_count) || sim->chip_detail [chip_num])
+    return -1;
+
+  sim->chip_detail [chip_num] = chip_detail;
+  sim->chip_data   [chip_num] = chip_data;
+
+  return chip_num;
+}
+
+
+bool remove_chip (sim_t *sim,
+		  int chip_num)
+{
+  if (! sim->chip_detail [chip_num])
+    return false;
+
+  free (sim->chip_detail [chip_num]);
+  sim->chip_detail [chip_num] = NULL;
+
+  free (sim->chip_data [chip_num]);
+  sim->chip_data [chip_num] = NULL;
+
+  return true;
+}
+
+
+void chip_event (sim_t *sim, int event)
+{
+  int chip_num;
+
+  for (chip_num = 0; chip_num < sim->proc->max_chip_count; chip_num++)
+    if (sim->chip_detail [chip_num] && sim->chip_detail [chip_num]->chip_fn)
+      sim->chip_detail [chip_num]->chip_fn (sim, chip_num, event);
+}

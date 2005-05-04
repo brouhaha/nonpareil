@@ -1,6 +1,6 @@
 /*
 $Id$
-Copyright 1995, 2004 Eric L. Smith <eric@brouhaha.com>
+Copyright 1995, 2004, 2005 Eric L. Smith <eric@brouhaha.com>
 
 Nonpareil is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License version 2 as
@@ -25,8 +25,8 @@ MA 02111, USA.
 
 // I/O addresses:
 
-#define LCD_DISPLAY 0xfd
-#define HALFNUT     0x10
+#define PFADDR_LCD_DISPLAY 0xfd
+#define PFADDR_HALFNUT     0x10
 
 
 void coconut_display_init_ops (sim_t *sim);

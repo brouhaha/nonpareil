@@ -1,6 +1,6 @@
 /*
 $Id$
-Copyright 1995, 2004 Eric L. Smith <eric@brouhaha.com>
+Copyright 1995, 2004, 2005 Eric L. Smith <eric@brouhaha.com>
 
 Nonpareil is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License version 2 as
@@ -21,6 +21,11 @@ MA 02111, USA.
 
 
 #define VOYAGER_DISPLAY_DIGITS 10
+
+// The Voyager display doesn't have a peripheral address like the
+// Coconut display, but we have to pick a chip number somehow, so we'll
+// use the same one.
+#define PFADDR_LCD_DISPLAY 0xfd
 
 
 void voyager_display_init_ops (sim_t *sim);

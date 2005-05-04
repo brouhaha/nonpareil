@@ -20,6 +20,9 @@ MA 02111, USA.
 */
 
 
+#define MAX_RAM 1024  // $$$ ugly hack, needs to go!
+#define MAX_PF   256  // $$$ ugly hack, needs to go!
+
 typedef uint32_t addr_t;
 
 typedef uint16_t rom_word_t;
@@ -28,12 +31,17 @@ typedef uint16_t rom_word_t;
 /* simulator state, common to all architectures (opaque): */
 typedef struct sim_t sim_t;
 
-/* architecture-unique processor state: registers, etc. (opaque) */
-typedef struct sim_env_t sim_env_t;
+
+// chip_info_t is used to get information on chips
+typedef struct
+{
+  char *name;
+  addr_t addr;
+} chip_info_t;
 
 
 // ref_info_t is used to get information on the available architecturally
-// visible state of a simulator.
+// visible state of a simulated chip.
 typedef struct
 {
   char *name;
@@ -95,21 +103,41 @@ bool sim_read_ram (sim_t *sim,
 		   uint64_t *val);
 
 bool sim_write_ram (sim_t *sim,
-		    int addr,
+		    addr_t addr,
 		    uint64_t *val);
+
+
+// Returns n where valid chip numbers may be in the range 0 .. n-1.
+// Note that not all chips in the range will necessarily exist, and
+// that chips don't necessarily have consecutive numbers.
+int sim_get_max_chip_count (sim_t *sim);
+
+
+// Returns NULL if specified chip_num doesn't exist.
+chip_info_t *sim_get_chip_info (sim_t *sim,
+				int   chip_num);
+
+
+
+// Returns n where valid register numbers are in the range 0 .. n-1.
+int sim_get_reg_count (sim_t *sim, int chip_num);
+
 
 // returns NULL if reg_num out of range
 reg_info_t *sim_get_register_info (sim_t *sim,
+				   int   chip_num,
 				   int   reg_num);  // 0 and up
 
 // returns false if reg_num or index out of range
 bool sim_read_register (sim_t   *sim,
+			int     chip_num,
 			int     reg_num,
 			int     index,
 			uint64_t *val);
 
 // returns false if reg_num or index out of range
 bool sim_write_register (sim_t   *sim,
+			 int     chip_num,
 			 int     reg_num,
 			 int     index,
 			 uint64_t *val);
