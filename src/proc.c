@@ -732,6 +732,16 @@ void sim_stop (sim_t *sim)
 }
 
 
+bool sim_running (sim_t *sim)
+{
+  sim_msg_t msg;
+  memset (& msg, 0, sizeof (sim_msg_t));
+  msg.cmd = CMD_GET_RUN_FLAG;
+  send_cmd_to_sim_thread (sim, (gpointer) & msg);
+  return msg.b;
+}
+
+
 void sim_set_io_pause_flag (sim_t *sim, bool io_pause_flag)
 {
   sim_msg_t msg;
