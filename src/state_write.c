@@ -157,7 +157,7 @@ static void write_registers (sim_t *sim, int chip, xmlTextWriterPtr writer)
 	{
 	  if (! sim_read_register (sim, chip, reg_num, index, & val))
 	    fatal (3, "error reading register from sim\n");
-	  digits = (reg_info->element_bits + 15) / 16;
+	  digits = (reg_info->element_bits + 3) / 4;
 	  write_reg (writer,
 		     reg_info->name,
 		     reg_info->array_element_count > 1 ? index : -1,
