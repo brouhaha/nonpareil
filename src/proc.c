@@ -96,7 +96,7 @@ typedef struct
   int           arg1;   // keycode, flag number, chip_num, etc.
   int           arg2;   // reg_num
   int           arg3;   // index (in read/write register)
-  uint8_t       *data;  // register value, etc.
+  void          *data;  // register value, memory value, etc.
 } sim_msg_t;
 
 
@@ -304,7 +304,7 @@ static void cmd_read_register (sim_t *sim, sim_msg_t *msg)
 
   size = storage_size [reg_detail->info.element_bits];
   addr = ((uint8_t *) sim->chip_data [msg->arg1]) + reg_detail->offset + msg->arg3 * size;
-  result_val = (uint64_t *) msg->data;
+  result_val = msg->data;
 
   if (reg_detail->get)
     {
@@ -352,7 +352,7 @@ static void cmd_write_register (sim_t *sim, sim_msg_t *msg)
 
   size = storage_size [reg_detail->info.element_bits];
   addr = ((uint8_t *) sim->chip_data [msg->arg1]) + reg_detail->offset + msg->arg3 * size;
-  source_val = (uint64_t *) msg->data;
+  source_val = msg->data;
 
   if (reg_detail->set)
     {
@@ -840,7 +840,7 @@ bool sim_read_register (sim_t   *sim,
   msg.arg1 = chip_num;
   msg.arg2 = reg_num;
   msg.arg3 = index;
-  msg.data = (uint8_t *) val;
+  msg.data = val;
   msg.cmd = CMD_READ_REGISTER;
   send_cmd_to_sim_thread (sim, (gpointer) & msg);
   return (msg.reply == OK);
@@ -870,7 +870,7 @@ bool sim_write_register (sim_t   *sim,
   msg.arg1 = chip_num;
   msg.arg2 = reg_num;
   msg.arg3 = index;
-  msg.data = (uint8_t *) val;
+  msg.data = val;
   msg.cmd = CMD_WRITE_REGISTER;
   send_cmd_to_sim_thread (sim, (gpointer) & msg);
   return (msg.reply == OK);
@@ -884,7 +884,7 @@ bool sim_read_ram (sim_t   *sim,
   sim_msg_t msg;
   memset (& msg, 0, sizeof (sim_msg_t));
   msg.addr = addr;
-  msg.data = (uint8_t *) val;
+  msg.data = val;
   msg.cmd = CMD_READ_RAM;
   send_cmd_to_sim_thread (sim, (gpointer) & msg);
   return (msg.reply == OK);
@@ -898,7 +898,7 @@ bool sim_write_ram (sim_t   *sim,
   sim_msg_t msg;
   memset (& msg, 0, sizeof (sim_msg_t));
   msg.addr = addr;
-  msg.data = (uint8_t *) val;
+  msg.data = val;
   msg.cmd = CMD_WRITE_RAM;
   send_cmd_to_sim_thread (sim, (gpointer) & msg);
   return (msg.reply == OK);
