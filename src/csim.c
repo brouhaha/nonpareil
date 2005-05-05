@@ -38,6 +38,7 @@ MA 02111, USA.
 #include "arch.h"
 #include "platform.h"
 #include "model.h"
+#include "state_io.h"
 
 #ifdef HAS_DEBUGGER_CLI
   #include "debugger.h"
@@ -396,13 +397,32 @@ static void quit_callback (GtkWidget *widget, gpointer data)
 
 static void file_open (GtkWidget *widget, gpointer data)
 {
-  /* $$$ not yet implemented */
+#if 0
+  sim_set_io_pause_flag (sim, true);
+  state_read_xml (sim, "dump.nst");
+  sim_set_io_pause_flag (sim, false);
+#endif
 }
 
 
 static void file_save (GtkWidget *widget, gpointer data)
 {
-  /* $$$ not yet implemented */
+#if 1
+  sim_set_io_pause_flag (sim, true);
+  state_write_xml (sim, "dump.nst");
+  sim_set_io_pause_flag (sim, false);
+#else
+  bool was_running;
+
+  was_running = sim_running (sim);
+  if (was_running)
+    sim_stop (sim);
+
+  state_write_xml (sim, "dump.nst");
+
+  if (was_running)
+    sim_start (sim);
+#endif
 }
 
 
