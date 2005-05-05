@@ -1616,16 +1616,30 @@ static void nut_new_processor (sim_t *sim, int ram_size)
     {
     case PLATFORM_COCONUT:
       nut_new_ram (sim, 0x000, 0x010);
+      ram_size -= 16;
+
+      if (ram_size > 320)
+	{
+	  // Base extended memory of 41CX
+	  nut_new_ram (sim, 0x40, 128);
+	  ram_size = 320;
+	}
+
       nut_new_ram (sim, 0x0c0, ram_size);
 
       coconut_display_init_ops (sim);
       break;
 
     case PLATFORM_VOYAGER:
-      if (ram_size >= 64)
-	nut_new_ram (sim, 0x000, 0x020);
-      else
-	nut_new_ram (sim, 0x000, 0x010);
+      nut_new_ram (sim, 0x000, 11);
+      ram_size -= 11;
+
+      if (ram_size > 32)
+	{
+	  nut_new_ram (sim, 0x010, 11);
+	  ram_size -= 11;
+	}
+
       nut_new_ram (sim, 0x100 - ram_size, ram_size);
 
       voyager_display_init_ops (sim);
