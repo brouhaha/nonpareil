@@ -1005,14 +1005,13 @@ processor_dispatch_t *processor_dispatch [ARCH_MAX] =
 // appropriate size.
 bool get_14_dig (void *data, size_t offset, uint64_t *p)
 {
-  uint64_t val;
+  uint64_t val = 0;
   uint8_t *d;
   int i;
 
-  d = ((uint8_t *) data) + offset;
-  val = 0;
+  d = ((uint8_t *) data) + offset + 14;
   for (i = 0; i < 14; i++)
-    val = (val << 4) + *(d++);
+    val = (val << 4) + *(--d);
 
   *p = val;
 
@@ -1026,7 +1025,6 @@ bool set_14_dig (void *data, size_t offset, uint64_t *p)
   uint8_t *d;
   int i;
 
-  memcpy (& val, p, sizeof (val));
   d = ((uint8_t *) data) + offset;
   for (i = 0; i < 14; i++)
     {
@@ -1040,14 +1038,13 @@ bool set_14_dig (void *data, size_t offset, uint64_t *p)
 
 bool get_2_dig (void *data, size_t offset, uint64_t *p)
 {
-  uint8_t val;
+  uint8_t val = 0;
   uint8_t *d;
   int i;
 
-  d = ((uint8_t *) data) + offset;
-  val = 0;
+  d = ((uint8_t *) data) + offset + 2;
   for (i = 0; i < 2; i++)
-    val = (val << 4) + *(d++);
+    val = (val << 4) + *(--d);
 
   *p = val;
 
@@ -1061,7 +1058,6 @@ bool set_2_dig (void *data, size_t offset, uint64_t *p)
   uint8_t *d;
   int i;
 
-  memcpy (& val, p, sizeof (val));
   d = ((uint8_t *) data) + offset;
   for (i = 0; i < 2; i++)
     {
