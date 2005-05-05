@@ -31,6 +31,7 @@ MA 02111, USA.
 #include "util.h"
 #include "display.h"
 #include "proc.h"
+#include "state_io.h"
 
 
 static void xml_start_element (xmlTextWriterPtr writer, char *element_name)
@@ -160,7 +161,8 @@ static void write_registers (sim_t *sim, int chip, xmlTextWriterPtr writer)
 	  write_reg (writer,
 		     reg_info->name,
 		     reg_info->array_element_count > 1 ? index : -1,
-		     "%0*", PRIx64,
+		     "%0*" PRIx64,
+		     digits,
 		     val);
 	}
     }
