@@ -1469,24 +1469,46 @@ static void woodstock_set_ext_flag (sim_t *sim, int flag, bool state)
 
 
 
-static bool woodstock_read_ram (sim_t *sim, int addr, uint8_t *val)
+static bool woodstock_read_ram (sim_t *sim, int addr, uint64_t *val)
 {
   act_reg_t *act_reg = sim->chip_data [0];
+  uint64_t data = 0;
+  int i;
 
   if (addr > act_reg->max_ram)
     fatal (2, "woodstock_read_ram: address %d out of range\n", addr);
-  memcpy (val, act_reg->ram [addr], sizeof (reg_t));
+
+  // pack act_reg->ram [addr] into data
+  for (i = WSIZE - 1; i >= 0; i--)
+    {
+      data <<= 4;
+      data += act_reg->ram [addr] [i];
+    }
+
+  *val = data;
+
   return true;
 }
 
 
-static bool woodstock_write_ram (sim_t *sim, int addr, uint8_t *val)
+static bool woodstock_write_ram (sim_t *sim, int addr, uint64_t *val)
 {
   act_reg_t *act_reg = sim->chip_data [0];
+  uint64_t data;
+  int i;
 
   if (addr > act_reg->max_ram)
     fatal (2, "sim_write_ram: address %d out of range\n", addr);
-  memcpy (act_reg->ram [addr], val, sizeof (reg_t));
+
+  data = *val;
+
+  // now unpack data into act_reg->ram [addr]
+  for (i = 0; i <= WSIZE; i++)
+    {
+      act_reg->ram [addr] [i] = data & 0x0f;
+      data >>= 4;
+    }
+
   return true;
 }
 

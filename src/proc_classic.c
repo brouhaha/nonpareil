@@ -1085,24 +1085,46 @@ void classic_reset_processor (sim_t *sim)
 }
 
 
-static bool classic_read_ram (sim_t *sim, int addr, uint8_t *val)
+static bool classic_read_ram (sim_t *sim, int addr, uint64_t *val)
 {
   classic_cpu_reg_t *cpu_reg = sim->chip_data [0];
+  uint64_t data = 0;
+  int i;
 
   if (addr > cpu_reg->max_ram)
     fatal (2, "classic_read_ram: address %d out of range\n", addr);
-  memcpy (val, & cpu_reg->ram [addr], sizeof (reg_t));
+
+  // pack cpu_reg->ram [addr] into data
+  for (i = WSIZE - 1; i >= 0; i--)
+    {
+      data <<= 4;
+      data += cpu_reg->ram [addr] [i];
+    }
+
+  *val = data;
+
   return true;
 }
 
 
-static bool classic_write_ram (sim_t *sim, int addr, uint8_t *val)
+static bool classic_write_ram (sim_t *sim, int addr, uint64_t *val)
 {
   classic_cpu_reg_t *cpu_reg = sim->chip_data [0];
+  uint64_t data;
+  int i;
 
   if (addr > cpu_reg->max_ram)
     fatal (2, "sim_write_ram: address %d out of range\n", addr);
-  memcpy (& cpu_reg->ram [addr], val, sizeof (reg_t));
+
+  data = *val;
+
+  // now unpack data into cpu_reg->ram [addr]
+  for (i = 0; i <= WSIZE; i++)
+    {
+      cpu_reg->ram [addr] [i] = data & 0x0f;
+      data >>= 4;
+    }
+
   return true;
 }
 

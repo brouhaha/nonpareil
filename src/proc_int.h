@@ -86,8 +86,8 @@ typedef struct
   void (* set_ext_flag)        (sim_t *sim, int flag, bool state);
 
   /* for debugger: */
-  bool (* read_ram)            (sim_t *sim, int addr, uint8_t *val);
-  bool (* write_ram)           (sim_t *sim, int addr, uint8_t *val);
+  bool (* read_ram)            (sim_t *sim, int addr, uint64_t *val);
+  bool (* write_ram)           (sim_t *sim, int addr, uint64_t *val);
 
   void (* disassemble)         (sim_t *sim, int addr, char *buf, int len);
 
