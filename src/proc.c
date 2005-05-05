@@ -54,6 +54,8 @@ typedef enum
 {
   CMD_QUIT,
   CMD_RESET,
+  CMD_GET_IO_PAUSE_FLAG,
+  CMD_SET_IO_PAUSE_FLAG,
   CMD_WRITE_REGISTER,
   CMD_READ_REGISTER,
   CMD_WRITE_ROM,
@@ -406,6 +408,16 @@ static void handle_sim_cmd (sim_t *sim, sim_msg_t *msg)
       // $$$ what to do
       // $$$ Allow reset while runflag is true?
       break;
+    case CMD_SET_IO_PAUSE_FLAG:
+      sim->io_pause_flag = msg->b;
+      g_get_current_time (& sim->thread_vars->last_run_time);
+      g_get_current_time (& sim->thread_vars->next_run_time);
+      msg->reply = OK;
+      break;
+    case CMD_GET_IO_PAUSE_FLAG:
+      msg->b = sim->io_pause_flag;
+      msg->reply = OK;
+      break;
     case CMD_READ_REGISTER:
       cmd_read_register (sim, msg);
       break;
@@ -538,7 +550,7 @@ gpointer sim_thread_func (gpointer data)
 
   while (! sim->quit_flag)
     {
-      if (sim->run_flag)
+      if ((! sim->io_pause_flag) && sim->run_flag)
 	msg = g_async_queue_timed_pop (sim->thread_vars->cmd_q,
 				       & sim->thread_vars->next_run_time);
       else
@@ -549,6 +561,9 @@ gpointer sim_thread_func (gpointer data)
 	  handle_sim_cmd (sim, msg);
 	  continue;
 	}
+
+      if (sim->io_pause_flag)
+	continue;
 
       if (sim->single_cycle_flag)
 	{
@@ -714,6 +729,26 @@ void sim_stop (sim_t *sim)
   msg.cmd = CMD_SET_RUN_FLAG;
   msg.b = false;
   send_cmd_to_sim_thread (sim, (gpointer) & msg);
+}
+
+
+void sim_set_io_pause_flag (sim_t *sim, bool io_pause_flag)
+{
+  sim_msg_t msg;
+  memset (& msg, 0, sizeof (sim_msg_t));
+  msg.cmd = CMD_SET_IO_PAUSE_FLAG;
+  msg.b = io_pause_flag;
+  send_cmd_to_sim_thread (sim, (gpointer) & msg);
+}
+
+
+bool sim_get_io_pause_flag (sim_t *sim)
+{
+  sim_msg_t msg;
+  memset (& msg, 0, sizeof (sim_msg_t));
+  msg.cmd = CMD_GET_IO_PAUSE_FLAG;
+  send_cmd_to_sim_thread (sim, (gpointer) & msg);
+  return msg.b;
 }
 
 

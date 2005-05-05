@@ -110,6 +110,9 @@ struct sim_t
 
   bool quit_flag;
 
+  bool io_pause_flag;    // If true, don't execute anything, state IO is pending
+                         // Overrides run_flag, single_cycle_flag, single_inst_flag.
+
   bool run_flag;
   bool single_cycle_flag;
   bool single_inst_flag;

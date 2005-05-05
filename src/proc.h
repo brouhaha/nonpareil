@@ -80,10 +80,16 @@ void sim_quit         (sim_t *sim);  // kill the sim thread
 void sim_reset        (sim_t *sim);  // resets simulated processor
 void sim_single_cycle (sim_t *sim);  // executes one "cycle"
 void sim_single_inst  (sim_t *sim);  // executes one instruction
-void sim_start        (sim_t *sim);  // starts executing instructions
-void sim_stop         (sim_t *sim);  // stops executing instructions
+void sim_start        (sim_t *sim);  // starts executing instructions (set run flag)
+void sim_stop         (sim_t *sim);  // stops executing instructions (clear run flag)
 
-bool sim_running (sim_t *sim);  // is the simulation running?
+bool sim_running (sim_t *sim);  // is the simulation running? (get run flag)
+
+
+// The simulation pause flag is used to stop the simulator for state I/O.  It
+// overrides (but does not alter) the run flag.
+void sim_set_io_pause_flag (sim_t *sim, bool pause_flag);
+bool sim_get_io_pause_flag (sim_t *sim);
 
 
 uint64_t sim_get_cycle_count (sim_t *siim);
