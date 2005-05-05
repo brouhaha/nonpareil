@@ -123,7 +123,14 @@ void voyager_display_init_ops (sim_t *sim)
 
 void voyager_display_reset (sim_t *sim)
 {
-  voyager_display_reg_t *display = sim->chip_data [PFADDR_LCD_DISPLAY];
+  voyager_display_reg_t *display;
+
+  display = alloc (sizeof (voyager_display_reg_t));
+
+  install_chip (sim,
+		PFADDR_LCD_DISPLAY, 
+		& voyager_display_chip_detail,
+		display);
 
   display->enable = 0;
   display->blink = 0;

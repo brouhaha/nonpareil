@@ -1653,13 +1653,15 @@ static void nut_new_processor (sim_t *sim, int ram_size)
       break;
 
     case PLATFORM_VOYAGER:
-      nut_new_ram (sim, 0x000, 11);
-      ram_size -= 11;
+      nut_new_ram (sim, 0x000, 8);
+      nut_new_ram (sim, 0x009, 2);
+      ram_size -= 8;
 
-      if (ram_size > 32)
+      if (ram_size > 40)
 	{
-	  nut_new_ram (sim, 0x010, 11);
-	  ram_size -= 11;
+	  nut_new_ram (sim, 0x010, 8);
+	  nut_new_ram (sim, 0x019, 2);
+	  ram_size -= 8;
 	}
 
       nut_new_ram (sim, 0x100 - ram_size, ram_size);

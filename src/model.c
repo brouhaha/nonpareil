@@ -30,11 +30,11 @@ model_info_t model_info [] =
   {
     { "01",   PLATFORM_CRICKET,   ARCH_CRICKET,     0,  38400 }, /* osc > bit time? */
     { "10",   PLATFORM_KISS,      ARCH_WOODSTOCK,   0, 185000 },
-    { "10C",  PLATFORM_VOYAGER,   ARCH_NUT,        43, 215000 },
-    { "11C",  PLATFORM_VOYAGER,   ARCH_NUT,        43, 215000 },
-    { "12C",  PLATFORM_VOYAGER,   ARCH_NUT,        43, 215000 },
-    { "15C",  PLATFORM_VOYAGER,   ARCH_NUT,        86, 215000 },
-    { "16C",  PLATFORM_VOYAGER,   ARCH_NUT,        43, 215000 },
+    { "10C",  PLATFORM_VOYAGER,   ARCH_NUT,        40, 215000 },
+    { "11C",  PLATFORM_VOYAGER,   ARCH_NUT,        40, 215000 },
+    { "12C",  PLATFORM_VOYAGER,   ARCH_NUT,        40, 215000 },
+    { "15C",  PLATFORM_VOYAGER,   ARCH_NUT,        80, 215000 },
+    { "16C",  PLATFORM_VOYAGER,   ARCH_NUT,        40, 215000 },
     { "19C",  PLATFORM_TOPCAT,    ARCH_WOODSTOCK,  48, 185000 },
     { "21",   PLATFORM_WOODSTOCK, ARCH_WOODSTOCK,   0, 185000 },
     { "22",   PLATFORM_WOODSTOCK, ARCH_WOODSTOCK,  16, 185000 },

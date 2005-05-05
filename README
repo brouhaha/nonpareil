@@ -203,6 +203,9 @@ circuit designs for PMOS interfacing.
 Bernhard Engl reverse-engineered the bank-switching feature of the
 HP-67 ROM/RAM chips.
 
+HrastProgrammer provided assistance with getting the Voyager calculator
+simulation working.
+
 -----------------------------------------------------------------------------
 
 Ports:
