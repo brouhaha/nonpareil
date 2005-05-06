@@ -199,13 +199,18 @@ void voyager_display_update (sim_t *sim)
       if (display->enable &&
 	  ((! display->blink) || (display->blink_state)))
 	{
-	  for (segment = 0; segment < 8; segment++)
+	  for (segment = 0; segment <= 8; segment++)
 	    {
 	      int vreg = voyager_display_map [digit][segment].reg;
 	      int vdig = voyager_display_map [digit][segment].dig;
 	      int vbit = voyager_display_map [digit][segment].bit;
 	      if (vbit && (nut_reg->ram [9 + vreg][vdig] & vbit))
-		sim->display_segments [digit] |= (1 << segment);
+		{
+		  if (segment < 8)
+		    sim->display_segments [digit] |= (1 << segment);
+		  else
+		    sim->display_segments [digit] |= SEGMENT_ANN;
+		}
 	    }
 	}
     }

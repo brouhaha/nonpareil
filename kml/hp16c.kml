@@ -41,6 +41,17 @@ display
 	color 1  165 175 145  # unlit segments
 	color 2    0   0   0  # lit segments
 
+	annunciator  0  size  5  8 offset  11 46  end  # * (battery low)
+	annunciator  1  size 23  8 offset  21 46  end  # USER
+	annunciator  2  size  5  8 offset  49 46  end  # f
+	annunciator  3  size  6  8 offset  58 46  end  # g
+	annunciator  4  size  5  8 offset  70 46  end  # G
+	annunciator  5  size 17  8 offset  76 46  end  # RAD
+	annunciator  6  size 27  8 offset 100 46  end  # BEGIN
+	annunciator  7  size 21  8 offset 134 46  end  # D.MY
+	annunciator  8  size  6  8 offset 160 46  end  # C
+	annunciator  9  size 23  8 offset 171 46  end  # PRGM
+
 	digits 10
 		size 25 11
 		offset 8 10
