@@ -664,6 +664,9 @@ static void op_read_reg_n (sim_t *sim, int opcode)
   int i;
   int is_ram, is_pf;
 
+  for (i = 0; i < WSIZE; i++)
+    nut_reg->c [i] = 0;
+
   if ((opcode >> 6) != 0)
     nut_reg->ram_addr = (nut_reg->ram_addr & ~0x0f) | (opcode >> 6);
   is_ram = nut_reg->ram_exists [nut_reg->ram_addr];
@@ -688,8 +691,6 @@ static void op_read_reg_n (sim_t *sim, int opcode)
     {
       printf ("warning: stray read RAM %03x PF %02x reg %01x\n",
 	      nut_reg->ram_addr, nut_reg->pf_addr, opcode >> 6);
-      for (i = 0; i < WSIZE; i++)
-	nut_reg->c [i] = 0;
     }
 }
 
