@@ -19,6 +19,7 @@ Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
 MA 02111, USA.
 */
 
+#include <inttypes.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -35,6 +36,12 @@ MA 02111, USA.
 #include "voyager_lcd.h"
 #include "proc_nut.h"
 #include "dis_nut.h"
+
+
+static void print_reg (reg_t reg);
+
+
+#undef WARN_STRAY_WRITE
 
 
 static reg_accessor_t get_s, set_s;
@@ -694,6 +701,7 @@ static void op_read_reg_n (sim_t *sim, int opcode)
     }
 }
 
+
 static void op_write_reg_n (sim_t *sim, int opcode)
 {
   nut_reg_t *nut_reg = sim->chip_data [0];
@@ -712,8 +720,10 @@ static void op_write_reg_n (sim_t *sim, int opcode)
   else if ((! is_ram) && (! is_pf))
     {
 #ifdef WARN_STRAY_WRITE
-      printf ("warning: stray write RAM %03x PF %02x reg %01x\n",
+      printf ("warning: stray write RAM %03x PF %02x reg %01x data ",
 	      nut_reg->ram_addr, nut_reg->pf_addr, opcode >> 6);
+      print_reg (nut_reg->c);
+      printf ("\n");
 #endif
     }
   if (is_ram)
@@ -745,8 +755,10 @@ static void op_c_to_data (sim_t *sim, int opcode)
   else if ((! is_ram) && (! is_pf))
     {
 #ifdef WARN_STRAY_WRITE
-      printf ("warning: stray write RAM %03x PF %02x\n",
+      printf ("warning: stray write RAM %03x PF %02x data ",
 	      nut_reg->ram_addr, nut_reg->pf_addr);
+      print_reg (nut_reg->c);
+      printf ("\n");
 #endif
     }
   if (is_ram)
@@ -1319,7 +1331,7 @@ static void nut_print_state (sim_t *sim)
 {
   nut_reg_t *nut_reg = sim->chip_data [0];
 
-  printf ("cycle %5lld  ", sim->cycle_count);
+  printf ("cycle %5" PRId64 "  ", sim->cycle_count);
   printf ("%c=%x ", (nut_reg->q_sel) ? 'p' : 'P', nut_reg->p);
   printf ("%c=%x ", (nut_reg->q_sel) ? 'Q' : 'q', nut_reg->q);
   printf ("carry=%d ", nut_reg->carry);
