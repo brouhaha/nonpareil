@@ -33,7 +33,6 @@ MA 02111, USA.
 #include "proc_nut.h"
 
 
-#define VOYAGER_LCD_DEBUG
 #define VOYAGER_DISPLAY_BLINK_DIVISOR 150
 
 
@@ -74,9 +73,6 @@ static void voyager_op_display_off (sim_t *sim, int opcode)
 {
   voyager_display_reg_t *display = sim->chip_data [PFADDR_LCD_DISPLAY];
 
-#ifdef VOYAGER_LCD_DEBUG
-  printf ("display off\n");
-#endif
   display->enable = 0;
   display->blink = 0;
   display->count = 2;
@@ -89,9 +85,6 @@ static void voyager_op_display_toggle (sim_t *sim, int opcode)
 {
   voyager_display_reg_t *display = sim->chip_data [PFADDR_LCD_DISPLAY];
 
-#ifdef VOYAGER_LCD_DEBUG
-  printf ("display toggle\n");
-#endif
   display->enable = ! display->enable;
   display->count = 0;  // force immediate display update
 }
@@ -101,9 +94,6 @@ static void voyager_op_display_blink (sim_t *sim, int opcode)
 {
   voyager_display_reg_t *display = sim->chip_data [PFADDR_LCD_DISPLAY];
 
-#ifdef VOYAGER_LCD_DEBUG
-  printf ("display blink\n");
-#endif
   display->enable = 1;
   display->blink = 1;
   display->blink_state = 1;
