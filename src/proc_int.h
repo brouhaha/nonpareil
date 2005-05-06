@@ -119,10 +119,11 @@ struct sim_t
 
   sim_thread_vars_t *thread_vars;
 
+  int model;
+  int platform;
+
   int arch;
   processor_dispatch_t *proc;
-
-  int platform;
 
   double words_per_usec;  /* Processor word times per microsecond, typically
 			     much less than 1.  For instance, 3.5e-3 for

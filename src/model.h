@@ -20,6 +20,9 @@ MA 02111, USA.
 */
 
 
+#define MODEL_UNKNOWN     0
+
+
 typedef struct
 {
   char *name;
@@ -29,4 +32,7 @@ typedef struct
   int clock_frequency;  /* Hz */
 } model_info_t;
 
-model_info_t *get_model_info (char *model);
+
+int find_model_by_name (char *s);
+
+model_info_t *get_model_info (int model);

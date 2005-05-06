@@ -762,6 +762,7 @@ int main (int argc, char *argv[])
   gboolean kml_dump = FALSE;
   gboolean run = TRUE;
 
+  int model;
   model_info_t *model_info;
 
   GtkWidget *event_box;
@@ -835,12 +836,13 @@ int main (int argc, char *argv[])
   if (! kml->model)
     fatal (2, "No model specified in KML\n");
 
-  model_info = get_model_info (kml->model);
-  if (! model_info)
+  model = find_model_by_name (kml->model);
+  if (model == MODEL_UNKNOWN)
     fatal (2, "Unrecognized model specified in KML\n");
 
-  sim = sim_init (model_info->platform,
-		  model_info->cpu_arch,
+  model_info = get_model_info (model);
+
+  sim = sim_init (model,
 		  model_info->clock_frequency,
 		  model_info->ram_size,
 		  kml->character_segment_map);

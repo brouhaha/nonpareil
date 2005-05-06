@@ -57,11 +57,12 @@ typedef struct
  * ram_size is the count of RAM registers external to the ARC chip,
  * 10 for HP-45, 30 for HP-55.
  */
-sim_t *sim_init  (int platform,
-		  int arch,
+sim_t *sim_init  (int model,
 		  int clock_frequency,  /* Hz */
 		  int ram_size,
 		  segment_bitmap_t *char_gen);
+
+int sim_get_model (sim_t *sim);
 
 
 bool sim_read_object_file (sim_t *sim,

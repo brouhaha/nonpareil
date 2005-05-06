@@ -28,6 +28,7 @@ MA 02111, USA.
 
 model_info_t model_info [] =
   {
+    { "unknown", PLATFORM_UNKNOWN< ARCH_UNKNOWN,    0,      0 },
     { "01",   PLATFORM_CRICKET,   ARCH_CRICKET,     0,  38400 }, /* osc > bit time? */
     { "10",   PLATFORM_KISS,      ARCH_WOODSTOCK,   0, 185000 },
     { "10C",  PLATFORM_VOYAGER,   ARCH_NUT,        40, 215000 },
@@ -67,14 +68,20 @@ model_info_t model_info [] =
   };
 
 
-model_info_t *get_model_info (char *model)
+int find_model_by_name (char *s)
 {
   int i;
 
   for (i = 0; i < (sizeof (model_info) / sizeof (model_info_t)); i++)
     {
-      if (strcasecmp (model, model_info [i].name) == 0)
-	return (& model_info [i]);
+      if (strcasecmp (s, model_info [i].name) == 0)
+	return (i);
     }
-  return (NULL);
+  return (MODEL_UNKNOWN);
+}
+
+
+model_info_t *get_model_info (int model)
+{
+  return (& model_info [model]);
 }

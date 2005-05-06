@@ -31,6 +31,9 @@ MA 02111, USA.
 #include "util.h"
 #include "display.h"
 #include "proc.h"
+#include "arch.h"
+#include "platform.h"
+#include "model.h"
 #include "state_io.h"
 
 
@@ -238,6 +241,9 @@ void state_write_xml (sim_t *sim, char *fn)
   xmlOutputBufferPtr out;
   xmlTextWriterPtr writer;
 
+  model_info_t *model_info;
+  arch_info_t *arch_info;
+
   // LIBXML_TEST_VERSION
 
 #if 1
@@ -255,6 +261,8 @@ void state_write_xml (sim_t *sim, char *fn)
   if (xmlTextWriterStartDocument (writer, NULL, "ISO-8859-1", NULL) < 0)
     fatal (2, "can't start document\n");
 
+  model_info = get_model_info (sim_get_model (sim));
+
   if (xmlTextWriterWriteDTD (writer,
                              BAD_CAST "state",           // name
 			     NULL,                       // pubid
@@ -265,9 +273,11 @@ void state_write_xml (sim_t *sim, char *fn)
   xml_start_element (writer, "state");
   xml_write_attribute_string (writer, "version", "1.00");
 
-  xml_write_attribute_string (writer, "arch", "nut");
-  xml_write_attribute_string (writer, "platform", "coconut");
-  xml_write_attribute_string (writer, "model", "41cv");
+  arch_info = get_arch_info (model_info->cpu_arch);
+
+  xml_write_attribute_string (writer, "model", model_info->name);
+  xml_write_attribute_string (writer, "platform", platform_name [model_info->platform]);
+  xml_write_attribute_string (writer, "arch", arch_info->name);
 
   write_chips (sim, writer);
   write_memory (sim, writer);

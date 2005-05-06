@@ -28,10 +28,12 @@ MA 02111, USA.
 
 #include <glib.h>
 
-#include "arch.h"
 #include "util.h"
 #include "display.h"
 #include "proc.h"
+#include "arch.h"
+#include "platform.h"
+#include "model.h"
 #include "proc_int.h"
 #include "glib_async_queue_source.h"
 
@@ -615,23 +617,25 @@ static gboolean gui_cmd_callback (gpointer data)
 // $$$ Some of the initialization here should be moved into
 // the thread function.
 
-sim_t *sim_init  (int platform,
-		  int arch,
+sim_t *sim_init  (int model,
 		  int clock_frequency,  /* Hz */
 		  int ram_size,
 		  segment_bitmap_t *char_gen)
 {
   sim_t *sim;
+  model_info_t *model_info = get_model_info (model);
   arch_info_t *arch_info;
 
   sim = alloc (sizeof (sim_t));
   sim->thread_vars = alloc (sizeof (sim_thread_vars_t));
 
-  sim->arch = arch;
-  sim->proc = processor_dispatch [arch];
-  arch_info = get_arch_info (arch);
+  sim->model = model;
 
-  sim->platform = platform;
+  sim->platform = model_info->platform;
+
+  arch_info = get_arch_info (model_info->cpu_arch);
+  sim->arch = model_info->cpu_arch;
+  sim->proc = processor_dispatch [model_info->cpu_arch];
 
   sim->words_per_usec = clock_frequency / (1.0e6 * arch_info->word_length);
 
@@ -664,6 +668,12 @@ sim_t *sim_init  (int platform,
   sim->thread_vars->gthread = g_thread_create (sim_thread_func, sim, TRUE, NULL);
 
   return (sim);
+}
+
+
+int sim_get_model (sim_t *sim)
+{
+  return sim->model;
 }
 
 
