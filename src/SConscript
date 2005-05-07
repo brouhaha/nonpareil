@@ -53,7 +53,7 @@ common_dis_objs = [];
 for src in common_dis_srcs:
     common_dis_objs.append (env.Object (src))
 
-state_io_srcs = Split ("""state_write.c""")  # state_read.c 
+state_io_srcs = Split ("""state_write.c state_read.c""")
 state_io_objs = [];
 for src in state_io_srcs:
     state_io_objs.append (env.Object (src))

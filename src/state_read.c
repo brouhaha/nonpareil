@@ -19,7 +19,7 @@ Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
 MA 02111, USA.
 */
 
-
+#include <inttypes.h>
 #include <stdarg.h>
 #include <stdbool.h>
 #include <stdint.h>
@@ -30,25 +30,37 @@ MA 02111, USA.
 #include <libxml/SAX.h>
 
 #include "util.h"
-#include "nsim_conv.h"
+#include "display.h"
+#include "proc.h"
+#include "arch.h"
+#include "platform.h"
+#include "model.h"
+#include "state_io.h"
 
 
-typedef enum { cpu, periph } reg_mode_t;
+#define unused __attribute__((unused))
+
 
 typedef struct
 {
-  reg_mode_t reg_mode;
-  uint8_t periph_addr;
+  uint8_t chip_addr;
+  sim_t *sim;
 } sax_data_t;
 
 
-static void parse_state (char **attrs)
+static void parse_state (sax_data_t *sdata, char **attrs)
 {
   int i;
   bool got_version = false;
   bool got_arch = false;
   bool got_platform = false;
   bool got_model = false;
+
+  model_info_t *model_info;
+  arch_info_t *arch_info;
+
+  model_info = get_model_info (sim_get_model (sdata->sim));
+  arch_info = get_arch_info (model_info->cpu_arch);
 
   for (i = 0; attrs && attrs [i]; i+= 2)
     {
@@ -59,23 +71,26 @@ static void parse_state (char **attrs)
 		     attrs [i + 1]);
 	  got_version = true;
 	}
-      else if (strcmp (attrs [i], "arch") == 0)
+      else if (strcmp (attrs [i], "model") == 0)
 	{
-	  if (strcmp (attrs [i + 1], "nut") != 0)
-	    fatal (3, "Can't convert from arch '%s'\n", attrs [i + 1]);
-	  got_arch = true;
+	  if (strcmp (attrs [i + 1], model_info->name) != 0)
+	    fatal (3, "model '%s' doesn't match simulator model '%s'\n",
+		   attrs [i + 1], model_info->name);
+	  got_model = true;
 	}
       else if (strcmp (attrs [i], "platform") == 0)
 	{
-	  if (strcmp (attrs [i + 1], "coconut") != 0)
-	    fatal (3, "Can't convert from platform '%s'\n", attrs [i + 1]);
+	  if (strcmp (attrs [i + 1], platform_name [model_info->platform]) != 0)
+	    fatal (3, "platform '%s' doesn't match simulator platform '%s'\n",
+		   attrs [i + 1], platform_name [model_info->platform]);
 	  got_platform = true;
 	}
-      else if (strcmp (attrs [i], "model") == 0)
+      else if (strcmp (attrs [i], "arch") == 0)
 	{
-	  if (strncmp (attrs [i + 1], "41", 2) != 0)
-	    fatal (3, "Can't convert from model '%s'\n", attrs [i + 1]);
-	  got_model = true;
+	  if (strcmp (attrs [i + 1], arch_info->name) != 0)
+	    fatal (3, "arch '%s' doesn't match simulator arch '%s'\n",
+		   attrs [i + 1], platform_name [model_info->platform]);
+	  got_arch = true;
 	}
       else
 	warning ("unknown attribute '%s' in 'loc' element\n", attrs [i]);
@@ -90,136 +105,95 @@ static void parse_state (char **attrs)
     warning ("state file doesn't have model\n");
 }
 
-static void parse_cpu_reg (char **attrs)
+
+static void parse_chip (sax_data_t *sdata, char **attrs)
 {
   int i;
-  char *name = NULL;
+  bool got_chip_addr = false;
+
+  for (i = 0; attrs && attrs [i]; i += 2)
+    {
+      if (strcmp (attrs [i], "addr") == 0)
+	{
+	  sdata->chip_addr = strtoul (attrs [i + 1], NULL, 16);
+	  got_chip_addr = true;
+	}
+      else if (strcmp (attrs [i], "name") == 0)
+	{ ; }
+      else
+	warning ("unknown attribute '%s' in 'chip' element\n", attrs [i]);
+    }
+  if (! got_chip_addr)
+    fatal (3, "chip element with no address\n");
+}
+
+
+static void parse_registers (sax_data_t *sdata, char **attrs)
+{
+  ; // don't need to do anything
+}
+
+
+static void parse_reg (sax_data_t *sdata, char **attrs)
+{
+  int i;
+  bool got_name = false;
   bool got_index = false;
   bool got_data = false;
-  uint64_t index;
+  char *name;
+  uint64_t index = 0;
   uint64_t data;
-  
-  for (i = 0; attrs && attrs [i]; i+= 2)
+  int reg_num;
+
+  for (i = 0; attrs && attrs [i]; i += 2)
     {
       if (strcmp (attrs [i], "name") == 0)
-	name = attrs [i + 1];
+	{
+	  name = attrs [i + 1];
+	  got_name = true;
+	}
       else if (strcmp (attrs [i], "index") == 0)
 	{
-	  index = strtoull (attrs [i + 1], NULL, 16);
+	  index = strtoul (attrs [i + 1], NULL, 16);
 	  got_index = true;
 	}
       else if (strcmp (attrs [i], "data") == 0)
 	{
-	  data = strtoull (attrs [i + 1], NULL, 16);
+	  data = strtoul (attrs [i + 1], NULL, 16);
 	  got_data = true;
 	}
       else
 	warning ("unknown attribute '%s' in 'reg' element\n", attrs [i]);
     }
-
-  if (! name)
-    fatal (3, "missing 'name' attribute in 'reg' element\n");
+  if (! got_name)
+    warning ("register with no name\n");
   if (! got_data)
-    fatal (3, "missing 'data' attribute in 'reg' element\n");
-  if ((strcmp (name, "stack") == 0) && ! got_index)
-    fatal (3, "stack register must have 'index' attribute\n");
-  if ((strcmp (name, "stack") != 0) && got_index)
-    fatal (3, "only stack register may have 'index' attribute\n");
-  if (got_index && (index >= MAX_STACK))
-    fatal (3, "index attribute out of range\n");
+    warning ("register with no data\n");
+  if (! (got_name && got_data))
+    return;
 
-  if (strcmp (name, "a") == 0)
-    regs.a = data;
-  else if (strcmp (name, "b") == 0)
-    regs.b = data;
-  else if (strcmp (name, "c") == 0)
-    regs.c = data;
-  else if (strcmp (name, "m") == 0)
-    regs.m = data;
-  else if (strcmp (name, "n") == 0)
-    regs.n = data;
-  else if (strcmp (name, "g") == 0)
-    regs.g = data;
-  else if (strcmp (name, "p") == 0)
-    regs.p = data;
-  else if (strcmp (name, "q") == 0)
-    regs.q = data;
-  else if (strcmp (name, "status") == 0)
-    regs.status = data;
-  else if (strcmp (name, "pc") == 0)
-    regs.pc = data;
-  else if (strcmp (name, "stack") == 0)
-    regs.stack [index] = data;
-  else if (strcmp (name, "awake") == 0)
-    regs.awake = data;
-  else if (strcmp (name, "carry") == 0)
-    regs.carry = data;
-  else if (strcmp (name, "decimal") == 0)
-    regs.decimal = data;
-  else if (strcmp (name, "q_selected") == 0)
-    regs.q_selected = data;
-  else
-    warning ("unknown CPU register '%s'\n", name);
-}
-
-
-static void parse_lcd_reg (char **attrs)
-{
-  int i;
-  char *name = NULL;
-  bool got_data = false;
-  uint64_t data;
-  
-  for (i = 0; attrs && attrs [i]; i+= 2)
+  // find register
+  reg_num = sim_find_register (sdata->sim, sdata->chip_addr, name);
+  if (reg_num < 0)
     {
-      if (strcmp (attrs [i], "name") == 0)
-	name = attrs [i + 1];
-      else if (strcmp (attrs [i], "data") == 0)
-	{
-	  data = strtoull (attrs [i + 1], NULL, 16);
-	  got_data = true;
-	}
-      else
-	warning ("unknown attribute '%s' in 'reg' element\n", attrs [i]);
+      warning ("unknown register '%s'\n", name);
+      return;
     }
 
-  if (! name)
-    fatal (3, "missing 'name' attribute in 'reg' element\n");
-  if (! got_data)
-    fatal (3, "missing 'data' attribute in 'reg' element\n");
-
-  if (strcmp (name, "enable") == 0)
-    regs.lcd.enable = data;
-  else if (strcmp (name, "a") == 0)
-    regs.lcd.a = data;
-  else if (strcmp (name, "b") == 0)
-    regs.lcd.b = data;
-  else if (strcmp (name, "c") == 0)
-    regs.lcd.c = data;
-  else if (strcmp (name, "ann") == 0)
-    regs.lcd.ann = data;
-  else
-    warning ("unknown LCD register '%s'\n", name);
+  // write register
+  if (! sim_write_register (sdata->sim, sdata->chip_addr, reg_num, index, & data))
+    fatal (3, "error writing '%014" PRIx64 "' to register '%s' (num %d) index %d\n", data, name, reg_num, index);
 }
 
 
-static void parse_reg (sax_data_t *data, char **attrs)
+static void parse_memory (sax_data_t *sdata, char **attrs)
 {
-  if (data->reg_mode == cpu)
-    parse_cpu_reg (attrs);
-  else
-    switch (data->periph_addr)
-      {
-      case LCD_PERIPH_ADDR:
-	parse_lcd_reg (attrs);
-	break;
-      default:
-	warning ("unknown peripheral address %02x\n", data->periph_addr);
-      }
+  ; // don't need to do anything
+  // someday we'll want to check the "as" attribute (address space)
 }
 
 
-static void parse_ram (char **attrs)
+static void parse_loc (sax_data_t *sdata, char **attrs)
 {
   int i;
   bool got_addr = false;
@@ -246,57 +220,31 @@ static void parse_ram (char **attrs)
     fatal (3, "missing 'addr' attribute in 'loc' element\n");
   if (! got_data)
     fatal (3, "missing 'data' attribute in 'loc' element\n");
-  if (addr >= MAX_RAM)
-    fatal (3, "RAM address out of range\n");
-  ram [addr] = data;
-  ram_used [addr] = true;
+
+  // write RAM
+  if (! sim_write_ram (sdata->sim, addr, & data))
+    fatal (3, "error writing '%014" PRIx64 "' to RAM addr %03x\n", data, addr);
 }
 
-
-static void parse_periph (sax_data_t *data, char **attrs)
-{
-  int i;
-  bool got_addr = false;
-  uint64_t addr;
-
-  data->reg_mode = periph;
-  
-  for (i = 0; attrs && attrs [i]; i+= 2)
-    {
-      if (strcmp (attrs [i], "addr") == 0)
-	{
-	  addr = strtoull (attrs [i + 1], NULL, 16);
-	  got_addr = true;
-	}
-      else
-	warning ("unknown attribute '%s' in 'periph' element\n", attrs [i]);
-    }
-  if (! got_addr)
-    fatal (3, "missing 'addr' attribute in 'loc' element\n");
-  if (addr != LCD_PERIPH_ADDR)
-    fatal (3, "peripheral address out of range\n");
-
-  data->periph_addr = addr;
-}
 
 static void sax_start_element (void *ref,
 			       const xmlChar *name,
 			       const xmlChar **attrs)
 {
-  sax_data_t *data = ref;
+  sax_data_t *sdata = ref;
 
   if (strcmp (name, "state") == 0)
-    parse_state ((char **) attrs);
+    parse_state (sdata, (char **) attrs);
+  else if (strcmp (name, "chip") == 0)
+    parse_chip (sdata, (char **) attrs);
   else if (strcmp (name, "registers") == 0)
-    { data->reg_mode = cpu; }
+    parse_registers (sdata, (char **) attrs);
   else if (strcmp (name, "reg") == 0)
-    parse_reg (data, (char **) attrs);
+    parse_reg (sdata, (char **) attrs);
   else if (strcmp (name, "memory") == 0)
-    { ; }
+    parse_memory (sdata, (char **) attrs);
   else if (strcmp (name, "loc") == 0)
-    parse_ram ((char **) attrs);
-  else if (strcmp (name, "periph") == 0)
-    parse_periph (data, (char **) attrs);
+    parse_loc (sdata, (char **) attrs);
   else
     warning ("unknown element '%s'\n", name);
 }
@@ -304,7 +252,7 @@ static void sax_start_element (void *ref,
 static xmlEntityPtr sax_get_entity (void *ref,
 				    const xmlChar *name)
 {
-  sax_data_t *data unused = ref;
+  sax_data_t *sdata unused = ref;
   return xmlGetPredefinedEntity (name);
 }
 
@@ -313,7 +261,7 @@ static void sax_warning (void *ref,
 			 const char *msg,
 			 ...)
 {
-  sax_data_t *data unused = ref;
+  sax_data_t *sdata unused = ref;
   va_list ap;
 
   va_start (ap, msg);
@@ -327,7 +275,7 @@ static void sax_error (void *ref,
 		       const char *msg,
 		       ...)
 {
-  sax_data_t *data unused = ref;
+  sax_data_t *sdata unused = ref;
   va_list ap;
 
   va_start (ap, msg);
@@ -341,7 +289,7 @@ static void sax_fatal_error (void *ref,
 			     const char *msg,
 			     ...)
 {
-  sax_data_t *data unused = ref;
+  sax_data_t *sdata unused = ref;
   va_list ap;
 
   va_start (ap, msg);
@@ -351,7 +299,7 @@ static void sax_fatal_error (void *ref,
 }
 
 
-xmlSAXHandler sax_handler =
+static xmlSAXHandler sax_handler =
 {
   .getEntity     = sax_get_entity,
   .startElement  = sax_start_element,
@@ -361,13 +309,15 @@ xmlSAXHandler sax_handler =
 };
 
 
-void state_read_xml (char *fn)
+void state_read_xml (sim_t *sim, char *fn)
 {
-  sax_data_t sax_data;
+  sax_data_t sdata;
 
-  memset (& sax_data, 0, sizeof (sax_data));
+  memset (& sdata, 0, sizeof (sdata));
+
+  sdata.sim = sim;
 
   xmlSAXUserParseFile (& sax_handler,
-		       & sax_data,
+		       & sdata,
 		       fn);
 }

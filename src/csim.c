@@ -397,7 +397,7 @@ static void quit_callback (GtkWidget *widget, gpointer data)
 
 static void file_open (GtkWidget *widget, gpointer data)
 {
-#if 0
+#if 1
   sim_set_io_pause_flag (sim, true);
   state_read_xml (sim, "dump.nst");
   sim_set_io_pause_flag (sim, false);
