@@ -184,7 +184,8 @@ bool sim_read_object_file (sim_t *sim, char *fn)
 {
   FILE *f;
   int bank, i;
-  addr_t addr;
+  int addr;  // should change to addr_t, but will have to change
+             // the parse function profiles to match.
   rom_word_t opcode;
   int count = 0;
   char buf [80];
@@ -228,7 +229,8 @@ bool sim_read_listing_file (sim_t *sim, char *fn)
 {
   FILE *f;
   int bank, i;
-  addr_t addr;
+  int addr;  // should change to addr_t, but will have to change
+             // the parse function profiles to match.
   rom_word_t opcode;
   int count = 0;
   char buf [80];
