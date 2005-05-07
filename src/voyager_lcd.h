@@ -20,7 +20,7 @@ MA 02111, USA.
 */
 
 
-#define VOYAGER_DISPLAY_DIGITS 10
+#define VOYAGER_DISPLAY_DIGITS 11
 
 // The Voyager display doesn't have a peripheral address like the
 // Coconut display, but we have to pick a chip number somehow, so we'll

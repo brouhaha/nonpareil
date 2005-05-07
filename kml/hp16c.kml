@@ -52,7 +52,7 @@ display
 	annunciator  8  size  6  8 offset 160 46  end  # C
 	annunciator  9  size 23  8 offset 171 46  end  # PRGM
 
-	digits 10
+	digits 11
 		size 25 11
 		offset 8 10
 	end
