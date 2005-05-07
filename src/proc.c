@@ -809,6 +809,30 @@ int sim_get_reg_count (sim_t *sim, int chip_num)
 }
 
 
+int sim_find_register (sim_t *sim,
+		       int   chip_num,
+		       char  *name)
+{
+  int reg_num;
+  chip_detail_t *chip_detail;
+
+  if (chip_num >= sim->proc->max_chip_count)
+    return -1;
+
+  chip_detail = sim->chip_detail [chip_num];
+  if (! chip_detail)
+    return -1;
+
+  for (reg_num = 0; reg_num < chip_detail->reg_count; reg_num++)
+    {
+      if (strcmp (name, chip_detail->reg_detail [reg_num].info.name) == 0)
+	return reg_num;
+    }
+
+  return -1;
+}
+
+
 reg_info_t *sim_get_register_info (sim_t *sim,
 				   int   chip_num,
 				   int   reg_num)

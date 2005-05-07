@@ -130,6 +130,12 @@ chip_info_t *sim_get_chip_info (sim_t *sim,
 int sim_get_reg_count (sim_t *sim, int chip_num);
 
 
+// Returns register number, or -1 if not found.
+int sim_find_register (sim_t *sim,
+		       int   chip_num,
+		       char  *name);
+
+
 // returns NULL if reg_num out of range
 reg_info_t *sim_get_register_info (sim_t *sim,
 				   int   chip_num,
