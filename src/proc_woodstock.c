@@ -404,6 +404,16 @@ static void op_arith (sim_t *sim, int opcode)
 }
 
 
+static void handle_del_rom (act_reg_t *act_reg)
+{
+  if (act_reg->del_rom_flag)
+    {
+      act_reg->pc = (act_reg->del_rom << 8) + (act_reg->pc & 0377);
+      act_reg->del_rom_flag = 0;
+    }
+}
+
+
 static void op_goto (sim_t *sim, int opcode)
 {
   act_reg_t *act_reg = sim->chip_data [0];
@@ -411,11 +421,7 @@ static void op_goto (sim_t *sim, int opcode)
   if (! act_reg->prev_carry)
     {
       act_reg->pc = (act_reg->pc & ~0377) | (opcode >> 2);
-      if (act_reg->del_rom_flag)
-	{
-	  act_reg->pc = (act_reg->del_rom << 8) + (act_reg->pc & 0377);
-	  act_reg->del_rom_flag = 0;
-	}
+      handle_del_rom (act_reg);
     }
 }
 
@@ -434,11 +440,7 @@ static void op_jsb (sim_t *sim, int opcode)
       act_reg->sp = 0;
     }
   act_reg->pc = (act_reg->pc & ~0377) | (opcode >> 2);
-  if (act_reg->del_rom_flag)
-    {
-      act_reg->pc = (act_reg->del_rom << 8) + (act_reg->pc & 0377);
-      act_reg->del_rom_flag = 0;
-    }
+  handle_del_rom (act_reg);
 }
 
 
@@ -967,6 +969,7 @@ static void op_keys_to_rom_addr (sim_t *sim, int opcode)
   act_reg_t *act_reg = sim->chip_data [0];
 
   act_reg->pc = act_reg->pc & ~0377;
+  handle_del_rom (act_reg);
   if (act_reg->key_buf < 0)
     {
       printf ("keys->rom address with no key pressed\n");
@@ -976,11 +979,28 @@ static void op_keys_to_rom_addr (sim_t *sim, int opcode)
 }
 
 
+static void op_keys_to_a (sim_t *sim, int opcode)
+{
+  act_reg_t *act_reg = sim->chip_data [0];
+
+  if (act_reg->key_buf < 0)
+    {
+      printf ("keys->a with no key pressed\n");
+      act_reg->a [2] = 0;
+      act_reg->a [1] = 0;
+      return;
+    }
+  act_reg->a [2] = act_reg->key_buf >> 4;
+  act_reg->a [1] = act_reg->key_buf & 0x0f;
+}
+
+
 static void op_a_to_rom_addr (sim_t *sim, int opcode)
 {
   act_reg_t *act_reg = sim->chip_data [0];
 
   act_reg->pc = act_reg->pc & ~0377;
+  handle_del_rom (act_reg);
   act_reg->pc += ((act_reg->a [2] << 4) + act_reg->a [1]);
 }
 
@@ -1080,7 +1100,7 @@ static void init_ops (sim_t *sim)
   sim->op_fcn [01710] = op_f_exch_a;
 
   sim->op_fcn [00020] = op_keys_to_rom_addr;
-  /* 0010 unknown */
+  sim->op_fcn [00120] = op_keys_to_a;
   sim->op_fcn [00220] = op_a_to_rom_addr;
   sim->op_fcn [00320] = op_display_reset_twf;
   sim->op_fcn [00420] = op_binary;
@@ -1101,9 +1121,14 @@ static void init_ops (sim_t *sim)
   sim->op_fcn [01760] = op_nop;  /* "HI I'M WOODSTOCK" */
 
   /* CRC chip in 67/97 */
-  // sim->op_fcn [00560] = ???;
   sim->op_fcn [00300] = op_crc_test_f1;
   sim->op_fcn [01500] = op_crc_clear_f1;
+
+  sim->op_fcn [00560] = op_nop;
+
+  sim->op_fcn [00400] = op_nop;
+  sim->op_fcn [01000] = op_nop;
+  sim->op_fcn [01300] = op_nop;
 
   /*
    * Instruction codings unknown (probably 0120 and 0320):
