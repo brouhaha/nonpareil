@@ -65,7 +65,11 @@ typedef struct
 
   bool decimal;  // true for arithmetic radix 10, false for 16
 
-  bool carry, prev_carry;
+  bool carry;       // carry being generated in current instruction
+  bool prev_carry;  // carry that resulted from previous instruction
+
+  int prev_tef_last;  // last digit of field of previous arith. instruction
+                      // used to simulate bug in logical or and and
 
   bool s [SSIZE];
 

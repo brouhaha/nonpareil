@@ -304,6 +304,8 @@ static void op_arith (sim_t *sim, int opcode)
     case 7:  /* s  */  first = WSIZE - 1;       last = WSIZE - 1;       break;
     }
 
+  nut_reg->prev_tef_last = last;
+
   switch (op)
     {
     case 0x00:  /* a=0 */
@@ -1144,6 +1146,11 @@ static void op_or (sim_t *sim, int opcode)
 
   for (i = 0; i < WSIZE; i++)
     nut_reg->c [i] |= nut_reg->a [i];
+  if (nut_reg->prev_carry && (nut_reg->prev_tef_last == (WSIZE - 1)))
+    {
+      nut_reg->c [WSIZE - 1] = nut_reg->c [0];
+      nut_reg->a [WSIZE - 1] = nut_reg->c [0];
+    }
 }
 
 static void op_and (sim_t *sim, int opcode)
@@ -1153,19 +1160,25 @@ static void op_and (sim_t *sim, int opcode)
 
   for (i = 0; i < WSIZE; i++)
     nut_reg->c [i] &= nut_reg->a [i];
+  if (nut_reg->prev_carry && (nut_reg->prev_tef_last == (WSIZE - 1)))
+    {
+      nut_reg->c [WSIZE - 1] = nut_reg->c [0];
+      nut_reg->a [WSIZE - 1] = nut_reg->c [0];
+    }
 }
 
 static void op_rcr (sim_t *sim, int opcode)
 {
   nut_reg_t *nut_reg = sim->chip_data [0];
-  int count, i, j;
+  int i, j;
   reg_t t;
 
-  count = tmap [opcode >> 6];
+  j = tmap [opcode >> 6];
   for (i = 0; i < WSIZE; i++)
     {
-      j = (i + count) % WSIZE;
-      t [i] = nut_reg->c [j];
+      t [i] = nut_reg->c [j++];
+      if (j >= WSIZE)
+	j = 0;
     }
   for (i = 0; i < WSIZE; i++)
     nut_reg->c [i] = t [i];
@@ -1228,6 +1241,7 @@ static void nut_init_ops (sim_t *sim)
   sim->op_fcn [0x3cc] = op_test_kb;
   sim->op_fcn [0x3d4] = op_dec_pt;
   sim->op_fcn [0x3dc] = op_inc_pt;
+  // 0x3fc = LCD compensation
 
   for (i = 0; i < 16; i++)
     {
@@ -1271,12 +1285,14 @@ static void nut_init_ops (sim_t *sim)
   sim->op_fcn [0x3e0] = op_return;
 
   // 0x030 = display blink (Voyager)
+  // 0x030 = ROMBLK (Hepax)
   sim->op_fcn [0x070] = op_c_to_n;
   sim->op_fcn [0x0b0] = op_n_to_c;
   sim->op_fcn [0x0f0] = op_c_exch_n;
   sim->op_fcn [0x130] = op_ldi;
   sim->op_fcn [0x170] = op_push_c;
   sim->op_fcn [0x1b0] = op_pop_c;
+  // 0x1f0 = WPTOG (Hepax)
   sim->op_fcn [0x230] = op_keys_to_rom_addr;
   sim->op_fcn [0x270] = op_c_to_dadd;
   // sim->op_fcn [0x2b0] = op_clear_regs;
