@@ -54,6 +54,7 @@ MA 02111, USA.
 
 typedef enum
 {
+  CMD_EVENT,
   CMD_QUIT,
   CMD_RESET,
   CMD_GET_IO_PAUSE_FLAG,
@@ -404,6 +405,10 @@ static void handle_sim_cmd (sim_t *sim, sim_msg_t *msg)
   msg->reply = UNIMPLEMENTED;
   switch (msg->cmd)
     {
+    case CMD_EVENT:
+      chip_event (sim, msg->arg1);
+      msg->reply = OK;
+      break;
     case CMD_QUIT:
       sim->quit_flag = true;
       msg->reply = OK;
@@ -411,6 +416,7 @@ static void handle_sim_cmd (sim_t *sim, sim_msg_t *msg)
     case CMD_RESET:
       // $$$ what to do
       // $$$ Allow reset while runflag is true?
+      msg->reply = OK;
       break;
     case CMD_SET_IO_PAUSE_FLAG:
       sim->io_pause_flag = msg->b;
@@ -676,6 +682,17 @@ sim_t *sim_init  (int model,
 int sim_get_model (sim_t *sim)
 {
   return sim->model;
+}
+
+
+void sim_event (sim_t *sim, int event)
+{
+  sim_msg_t msg;
+
+  memset (& msg, 0, sizeof (sim_msg_t));
+  msg.cmd = CMD_EVENT;
+  msg.arg1 = event;
+  send_cmd_to_sim_thread (sim, (gpointer) & msg);
 }
 
 

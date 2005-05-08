@@ -23,6 +23,25 @@ MA 02111, USA.
 #define MAX_RAM 1024  // $$$ ugly hack, needs to go!
 #define MAX_PF   256  // $$$ ugly hack, needs to go!
 
+
+// common events:
+enum
+{
+  event_reset,
+  event_power_down,
+  event_power_up,
+  event_sleep,
+  event_wake,
+  event_cycle,       // occurs during every simulation cycle
+  event_save_starting,
+  event_save_completed,
+  event_restore_starting,
+  event_restore_completed,
+
+  first_arch_event = 0x100
+};
+
+
 typedef uint32_t addr_t;
 
 typedef uint16_t rom_word_t;
@@ -76,6 +95,8 @@ bool sim_read_listing_file (struct sim_t *sim,
  * the simulator thread, and wait for a reply.
  */
 
+void sim_event        (sim_t *sim, int event);
+
 void sim_quit         (sim_t *sim);  // kill the sim thread
 
 void sim_reset        (sim_t *sim);  // resets simulated processor
@@ -84,7 +105,7 @@ void sim_single_inst  (sim_t *sim);  // executes one instruction
 void sim_start        (sim_t *sim);  // starts executing instructions (set run flag)
 void sim_stop         (sim_t *sim);  // stops executing instructions (clear run flag)
 
-bool sim_running (sim_t *sim);  // is the simulation running? (get run flag)
+bool sim_running      (sim_t *sim);  // is the simulation running? (get run flag)
 
 
 // The simulation pause flag is used to stop the simulator for state I/O.  It

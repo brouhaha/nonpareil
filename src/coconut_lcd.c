@@ -357,7 +357,7 @@ void coconut_display_fn (sim_t *sim, int chip_num, int event)
 
   switch (event)
     {
-    case nut_event_cycle:
+    case event_cycle:
       if (display->count == 0)
 	{
 	  coconut_display_update (sim);
@@ -367,8 +367,12 @@ void coconut_display_fn (sim_t *sim, int chip_num, int event)
       else
 	display->count --;
       break;
-    case nut_event_power_down:
-      display->count = 0;  // force display update
+    case event_sleep:
+      // force display update
+      coconut_display_update (sim);
+      gui_display_update (sim);
+      display->count = 15;
+
       if (display->enable)
 	{
 	  /* going to light sleep */
@@ -382,10 +386,16 @@ void coconut_display_fn (sim_t *sim, int chip_num, int event)
 	/* going to deep sleep */
 	nut_reg->carry = 1;
       break;
-    case nut_event_power_up:
+    case event_wake:
+    case event_restore_completed:
+      // force display update
+      coconut_display_update (sim);
+      gui_display_update (sim);
+      display->count = 15;
       break;
     default:
-      fatal (3, "coconut_lcd: unknown event %d\n", event);
+      // warning ("coconut_lcd: unknown event %d\n", event);
+      break;
     }
 }
 

@@ -36,14 +36,6 @@ typedef digit_t reg_t [WSIZE];
 #define MAX_CHIP_COUNT 256
 
 
-typedef enum
-{
-  nut_event_cycle,
-  nut_event_power_down,
-  nut_event_power_up,
-} nut_event_t;
-
-
 typedef uint16_t rom_addr_t;
 
 

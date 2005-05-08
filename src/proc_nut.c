@@ -1187,7 +1187,7 @@ static void op_powoff (sim_t *sim, int opcode)
 #endif
   nut_reg->awake = false;
   nut_reg->pc = 0;
-  chip_event (sim, nut_event_power_down);
+  chip_event (sim, event_sleep);
 }
 
 
@@ -1399,7 +1399,7 @@ static bool nut_execute_cycle (sim_t *sim)
     }
   sim->cycle_count++;
 
-  chip_event (sim, nut_event_cycle);
+  chip_event (sim, event_cycle);
 
   return (true);
 }
@@ -1499,6 +1499,7 @@ static void nut_press_key (sim_t *sim, int keycode)
     printf ("waking up!\n");
 #endif
   nut_reg->awake = true;
+  chip_event (sim, event_wake);
 }
 
 static void nut_release_key (sim_t *sim)
