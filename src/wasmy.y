@@ -362,7 +362,8 @@ misc_inst       : inst_load_const
                 | inst_noop
 		| inst_key_to_rom
 		| inst_a_to_rom
-/*		| inst_key_to_a */
+		| inst_key_to_a
+                | inst_reset_twf
 		| inst_return
 		| inst_binary
 		| inst_decimal
@@ -405,10 +406,16 @@ inst_del_rom    : DELAYED ROM expr          { $3 = range ($3, 0, 15);
 
 inst_key_to_rom	: KEYS ARROW ROM ADDRESS    { emit (00020); } ;
 
+inst_key_to_a	: KEYS ARROW A              { emit (00120); } ;
+
 inst_a_to_rom	: A ARROW ROM ADDRESS       { emit (00220); } ;
+
+inst_reset_twf  : RESET TWF                 { emit (00320); } ;
 
 inst_decimal	: DECIMAL		    { emit (01410); } ;
 inst_binary	: BINARY		    { emit (00420); } ;
+
+inst_rotate_left_a : ROTATE LEFT A          { emit (00520); } ;
 
 inst_return	: RETURN                    { emit (01020); } ;
 
