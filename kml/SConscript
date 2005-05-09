@@ -19,6 +19,7 @@
 # Boston, MA 02111, USA.
 
 Import('env')
+Import('release')
 
 #-----------------------------------------------------------------------------
 # Install KML files
@@ -33,3 +34,10 @@ kmls = Split ("""hp35.kml hp45.kml hp55.kml hp80.kml
 env.Alias (target = 'install',
            source = env.Install (dir = env ['prefix'] + "/lib/nonpareil",
                                  source = kmls))
+
+#-----------------------------------------------------------------------------
+# source tarball
+#-----------------------------------------------------------------------------
+
+env.Distribute ('nonpareil-' + release,
+                kmls)

@@ -19,6 +19,7 @@
 # Boston, MA 02111, USA.
 
 Import('env')
+Import('release')
 
 #-----------------------------------------------------------------------------
 # common
@@ -77,6 +78,8 @@ uasm_srcs = Split ("""asm.c symtab.c
 
 uasm = uasm_env.Program (target = 'uasm',
                          source = uasm_srcs + common_objs)
+
+Export('uasm')
 
 #-----------------------------------------------------------------------------
 # nonpareil
@@ -176,3 +179,11 @@ Default ([nonpareil, uasm])
 env.Alias (target = 'install',
            source = env.Install (dir = env ['prefix'] + "/bin",
                                  source = [uasm, nonpareil]))
+
+#-----------------------------------------------------------------------------
+# source tarball
+#-----------------------------------------------------------------------------
+
+env.Distribute ('nonpareil-' + release,
+                common_srcs + common_dis_srcs + state_io_srcs +
+                uasm_srcs + nonpareil_srcs)

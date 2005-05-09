@@ -19,6 +19,7 @@
 # Boston, MA 02111, USA.
 
 Import('env')
+Import('release')
 Import('uasm')
 
 import os.path
@@ -57,3 +58,10 @@ Default (asm_objs)
 env.Alias (target = 'install',
            source = env.Install (dir = env ['prefix'] + "/lib/nonpareil",
                                  source = asm_objs))
+
+#-----------------------------------------------------------------------------
+# source tarball
+#-----------------------------------------------------------------------------
+
+env.Distribute ('nonpareil-' + release,
+                asm_srcs)

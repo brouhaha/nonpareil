@@ -18,7 +18,7 @@
 # the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
 # Boston, MA 02111, USA.
 
-release = '0.45'  # should get from a file, and use only if a release option
+release = '0.60'  # should get from a file, and use only if a release option
                   # is specified
 
 #-----------------------------------------------------------------------------
@@ -70,14 +70,67 @@ if env ['target'] == 'windows':
 else:
 	build_dir = 'build'
 
-Export('env')
-SConscript('src/SConscript',
-	   build_dir=build_dir,
-	   duplicate=0)
-#	   exports = 'env')
+
 
 #-----------------------------------------------------------------------------
-# Assemble ROM sources
+# source tar file builder by Paul Davis
+# posted to scons-users on 1-May-2005
+# changed to use "-z" option to tar rather than "-j", to get gzip output
+#-----------------------------------------------------------------------------
+
+import SCons
+
+def distcopy (target, source, env):
+    treedir = str (target[0])
+
+    try:
+        os.mkdir (treedir)
+    except OSError, (errnum, strerror):
+        if errnum != errno.EEXIST:
+            print 'mkdir ', treedir, ':', strerror
+
+    cmd = 'tar cf - '
+    #
+    # we don't know what characters might be in the file names
+    # so quote them all before passing them to the shell
+    #
+    all_files = ([ str(s) for s in source ])
+    cmd += " ".join ([ "'%s'" % quoted for quoted in all_files])
+    cmd += ' | (cd ' + treedir + ' && tar xf -)'
+    p = os.popen (cmd)
+    return p.close ();
+
+def tarballer (target, source, env):            
+    cmd = 'tar -czf ' + str (target[0]) +  ' ' + str(source[0]) + "  --exclude '*~'"
+    print 'running ', cmd, ' ... '
+    p = os.popen (cmd)
+    return p.close ()
+
+dist_bld = Builder (action = distcopy,
+                    target_factory = SCons.Node.FS.default_fs.Entry,
+                    source_factory = SCons.Node.FS.default_fs.Entry,
+                    multi = 1)
+
+tarball_bld = Builder (action = tarballer,
+                       target_factory = SCons.Node.FS.default_fs.Entry,
+                       source_factory = SCons.Node.FS.default_fs.Entry)
+
+env.Append (BUILDERS = {'Distribute' : dist_bld})
+env.Append (BUILDERS = {'Tarball' : tarball_bld})
+
+#-----------------------------------------------------------------------------
+# code
+#-----------------------------------------------------------------------------
+
+Export ('env')
+Export ('release')
+
+SConscript ('src/SConscript',
+            build_dir=build_dir,
+            duplicate=0)
+
+#-----------------------------------------------------------------------------
+# ROM sources
 #-----------------------------------------------------------------------------
 
 SConscript ('asm/SConscript',
@@ -85,9 +138,17 @@ SConscript ('asm/SConscript',
 	    duplicate=0)
 
 #-----------------------------------------------------------------------------
-# Install KML, image, firmware files
+# KML, image, firmware files
 #-----------------------------------------------------------------------------
 
 SConscript ('rom/SConscript')
 SConscript ('kml/SConscript')
 SConscript ('image/SConscript')
+
+#-----------------------------------------------------------------------------
+# package a source tarball
+#-----------------------------------------------------------------------------
+
+env.Alias (target = 'dist',
+           source = env.Tarball ('nonpareil-' + release + '.tar.gz',
+                                 'nonpareil-' + release))
