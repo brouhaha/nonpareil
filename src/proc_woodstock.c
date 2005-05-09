@@ -1131,10 +1131,6 @@ static void init_ops (sim_t *sim)
   sim->op_fcn [01300] = op_nop;
 
   /*
-   * Instruction codings unknown (probably 0120 and 0320):
-   *    KEYS -> A
-   *    RESET TWF
-   *
    * Instruction codings unknown (probably 1160..1760):
    *    PRINT 0
    *    PRINT 1
@@ -1193,23 +1189,32 @@ static void woodstock_display_scan (sim_t *sim)
   int b = act_reg->b [sim->display_scan_position];
   segment_bitmap_t segs = 0;
 
-  if ((act_reg->display_14_digit) && (! sim->display_digit_position))
-    {
-      sim->display_segments [sim->display_digit_position++] = 0;
-      /* make room for sign */
-    }
-
   if (act_reg->display_enable)
     {
-      if (b & 2)
+      if (act_reg->display_14_digit && (sim->display_digit_position == 0))
 	{
-	  if ((a >= 2) && ((a & 7) != 7))
+	  if (act_reg->a [2] & 0x01)
+	    sim->display_segments [sim->display_digit_position++] = 0;
+	  else
+	    sim->display_segments [sim->display_digit_position++] = sim->char_gen ['-'];
+        }
+      if (act_reg->display_14_digit && (sim->display_digit_position == 12))
+	{
+	  if (a & 0x0a)
 	    segs = sim->char_gen ['-'];
+        }
+      else 
+        {
+          if (b & 2)
+	    {
+	      if ((a >= 2) && ((a & 7) != 7))
+	        segs = sim->char_gen ['-'];
+	    }
+          else
+	    segs = sim->char_gen [a + '0'];
+          if (b & 1)
+	    segs |= sim->char_gen ['.'];
 	}
-      else
-	segs = sim->char_gen [a];
-      if (b & 1)
-	segs |= sim->char_gen ['.'];
     }
 
   sim->display_segments [sim->display_digit_position++] = segs;
@@ -1239,7 +1244,7 @@ static void spice_display_scan (sim_t *sim)
 	    segs = sim->char_gen ['-'];
 	}
       else
-	segs = sim->char_gen [a];
+	segs = sim->char_gen [a + '0'];
       if (b & 1)
 	segs |= sim->char_gen [(b & 2) ? ',' : '.'];
     }
