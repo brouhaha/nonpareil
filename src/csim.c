@@ -451,7 +451,6 @@ static void edit_paste (GtkWidget *widget, gpointer data)
 static void help_about (GtkWidget *widget, gpointer data)
 {
   GtkWidget *dialog;
-  char buf [200];
 
   dialog = gtk_dialog_new_with_buttons ("About Nonpareil",
 					GTK_WINDOW (main_window),
@@ -462,9 +461,8 @@ static void help_about (GtkWidget *widget, gpointer data)
 
   gtk_dialog_set_has_separator (GTK_DIALOG (dialog), TRUE);
 
-  sprintf (buf, "Nonpareil release %s", MAKESTR(NONPAREIL_RELEASE));
   gtk_container_add (GTK_CONTAINER (GTK_DIALOG (dialog)->vbox),
-		     gtk_label_new (buf));
+		     gtk_label_new (nonpareil_release));
   gtk_container_add (GTK_CONTAINER (GTK_DIALOG (dialog)->vbox),
 		     gtk_label_new ("Microcode-level calculator simulator\n"
 				    "Copyright 1995, 2003, 2004, 2005 Eric L. Smith\n"
