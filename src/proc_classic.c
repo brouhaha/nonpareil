@@ -1090,20 +1090,27 @@ static bool classic_read_ram (sim_t *sim, int addr, uint64_t *val)
   classic_cpu_reg_t *cpu_reg = sim->chip_data [0];
   uint64_t data = 0;
   int i;
+  bool status;
 
   if (addr > cpu_reg->max_ram)
-    fatal (2, "classic_read_ram: address %d out of range\n", addr);
-
-  // pack cpu_reg->ram [addr] into data
-  for (i = WSIZE - 1; i >= 0; i--)
     {
-      data <<= 4;
-      data += cpu_reg->ram [addr] [i];
+      status = false;
+      warning ("classic_read_ram: address %d out of range\n", addr);
+    }
+  else
+    {
+      // pack cpu_reg->ram [addr] into data
+      for (i = WSIZE - 1; i >= 0; i--)
+	{
+	  data <<= 4;
+	  data += cpu_reg->ram [addr] [i];
+	}
+      status = true;
     }
 
   *val = data;
 
-  return true;
+  return status;
 }
 
 
@@ -1114,7 +1121,10 @@ static bool classic_write_ram (sim_t *sim, int addr, uint64_t *val)
   int i;
 
   if (addr > cpu_reg->max_ram)
-    fatal (2, "sim_write_ram: address %d out of range\n", addr);
+    {
+      warning ("classic_write_ram: address %d out of range\n", addr);
+      return false;
+    }
 
   data = *val;
 
