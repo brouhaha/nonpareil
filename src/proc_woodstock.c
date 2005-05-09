@@ -1189,32 +1189,31 @@ static void woodstock_display_scan (sim_t *sim)
   int b = act_reg->b [sim->display_scan_position];
   segment_bitmap_t segs = 0;
 
+  if (act_reg->display_14_digit && (sim->display_digit_position == 0))
+    {
+      // save room for mantissa sign
+      sim->display_segments [sim->display_digit_position++] = 0;
+    }
+
   if (act_reg->display_enable)
     {
-      if (act_reg->display_14_digit && (sim->display_digit_position == 0))
+      if (b & 2)
 	{
-	  if (act_reg->a [2] & 0x01)
-	    sim->display_segments [sim->display_digit_position++] = 0;
-	  else
-	    sim->display_segments [sim->display_digit_position++] = sim->char_gen ['-'];
-        }
+	  if ((a >= 2) && ((a & 7) != 7))
+	    segs = sim->char_gen ['-'];
+	}
+      else
+	segs = sim->char_gen [a];
       if (act_reg->display_14_digit && (sim->display_digit_position == 12))
 	{
-	  if (a & 0x0a)
-	    segs = sim->char_gen ['-'];
-        }
-      else 
-        {
-          if (b & 2)
-	    {
-	      if ((a >= 2) && ((a & 7) != 7))
-	        segs = sim->char_gen ['-'];
-	    }
-          else
-	    segs = sim->char_gen [a];
-          if (b & 1)
-	    segs |= sim->char_gen ['.'];
+	  // mantissa sign comes from E segment of exponent sign digit
+	  if (segs & (1 << 4))
+	    sim->display_segments [0] = sim->char_gen ['-'];  
+          // exponent sign digit only has G segment
+	  segs &= sim->char_gen ['-'];
 	}
+      if (b & 1)
+	segs |= sim->char_gen ['.'];
     }
 
   sim->display_segments [sim->display_digit_position++] = segs;
