@@ -19,38 +19,41 @@
 # Boston, MA 02111, USA.
 
 Import('env')
+Import('uasm')
+
+import os.path
 
 #-----------------------------------------------------------------------------
 # Assemble ROM sources
 #-----------------------------------------------------------------------------
 
-asm_srcs = Split ("hp35.asm hp45.asm hp55.asm hp80.asm")
-uasm = File('#/build/uasm')
-env['ASCOM'] = '$AS $SOURCES -o $TARGET'
-env['AS'] =  str(uasm)
+def AssembleGenerator (source, target, env, for_signature):
+    return '%s %s -o %s -l %s' % (uasm [0].path, source [0], target [0], target [1])
 
-#uasm_bld = env.Builder (action = '$UASMCOM',
-#                        suffix = '.obj',
-#                    src_suffix = '.asm')
-#env.Append(BUILDERS = {'Obj' : uasm_bld})
+def AssembleEmitter (target, source, env):
+    target.append (os.path.splitext (target [0].path) [0]+'.lst')
+    env.Depends (target, uasm)
+    return (target, source)
 
-hp35_obj = env.Object('hp35.asm')
-hp45_obj = env.Object('hp45.asm')
-hp55_obj = env.Object('hp55.asm')
-hp80_obj = env.Object('hp80.asm')
+Assemble = Builder (generator = AssembleGenerator,
+                    suffix = '.obj',
+                    src_suffix = '.asm',
+                    emitter = AssembleEmitter)
 
+env.Append (BUILDERS = { 'Assemble': Assemble })
 
 #-----------------------------------------------------------------------------
 # Define default targets
 #-----------------------------------------------------------------------------
 
-Default (hp35_obj)
-Default (hp45_obj)
-Default (hp55_obj)
-Default (hp80_obj)
+asm_srcs = Split ("hp35.asm hp45.asm hp55.asm hp80.asm")
 
-roms = [hp35_obj, hp45_obj, hp55_obj, hp80_obj]
+asm_objs = []
+for src in asm_srcs:
+    asm_objs.append (env.Assemble (src))
+
+Default (asm_objs)
 
 env.Alias (target = 'install',
            source = env.Install (dir = env ['prefix'] + "/lib/nonpareil",
-                                 source = roms))
+                                 source = asm_objs))
