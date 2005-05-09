@@ -1211,7 +1211,7 @@ static void woodstock_display_scan (sim_t *sim)
 	        segs = sim->char_gen ['-'];
 	    }
           else
-	    segs = sim->char_gen [a + '0'];
+	    segs = sim->char_gen [a];
           if (b & 1)
 	    segs |= sim->char_gen ['.'];
 	}
@@ -1244,7 +1244,7 @@ static void spice_display_scan (sim_t *sim)
 	    segs = sim->char_gen ['-'];
 	}
       else
-	segs = sim->char_gen [a + '0'];
+	segs = sim->char_gen [a];
       if (b & 1)
 	segs |= sim->char_gen [(b & 2) ? ',' : '.'];
     }
