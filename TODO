@@ -5,7 +5,9 @@ $Id$
 
 Build process:
 
-  Create a proper SCons builder for uasm.
+  Fix SCons emitter for uasm to put listing files in obj, not obj/obj.
+
+  Fix source tarball builder.
 
   Create an RPM .spec file.
 
@@ -125,13 +127,13 @@ Better model support:
   Dump actual ROMs:
       Classic:    HP-45, HP-55, HP-65, HP-70, HP-80
       Classic/printing:  HP-46, HP-81, HP 9805A
-      Woodstock:  HP-22, HP-27, HP-29C, HP-67
+      Woodstock:  HP-22, HP-27, HP-29C
       Topcat:     HP-91, HP-92, HP-95C, HP-97
       Sting:      HP-10, HP-19C
       Spice:      HP-31E, HP-33E
       Cricket:    HP-01
 
-  Compare actual HP-45 and HP-55 ROMs to CASM output.
+  Compare actual HP-45, HP-55, and HP-80 ROMs to CASM output.
 
   Add Woodstock microinstructions for card reader
 
