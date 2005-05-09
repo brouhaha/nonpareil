@@ -46,6 +46,27 @@ static int woodstock_disassemble_branch (char *mnem, int addr, int op1,
 }
 
 
+static char *woodstock_misc_00_mnem [16] =
+  {
+    "???",
+    "???",
+    "???",
+    "crc f1?",
+    "???",
+    "???",
+    "???",
+    "???",
+    "???",
+    "???",
+    "???",
+    "???",
+    "???",
+    "???",
+    "???",
+    "???"
+  };
+
+
 static char *woodstock_misc_10_mnem [16] =
   {
     "clear regs",
@@ -70,9 +91,9 @@ static char *woodstock_misc_10_mnem [16] =
 static char *woodstock_misc_20_mnem [16] =
   {
     "keys -> rom address",
-    "???",
+    "keys -> a",
     "a -> rom address",
-    "???",
+    "reset twf",
     "binary",
     "rotate a left",
     "p - 1 -> p",
@@ -105,7 +126,8 @@ static char *woodstock_misc_60_mnem [16] =
     "rom checksum",
     "???",
     "???",
-    "hi i'm woodstock"
+    "???"   // "hi i'm woodstock" in HP-25 source code.  Apparently a NOP
+            // to ACT, but used by CRC or PIK.
   };
 
 
@@ -125,7 +147,7 @@ static int woodstock_disassemble_00 (int addr, int op1, int op2,
   switch (op1 & 074)
     {
     case 000:
-      snprintf (buf, len, "???");
+      snprintf (buf, len, "%s", woodstock_misc_00_mnem [arg]);
       break;
     case 004:
       snprintf (buf, len, "1 -> s %d", arg);
