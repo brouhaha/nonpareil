@@ -1033,7 +1033,7 @@ static void op_display_reset_twf (sim_t *sim, int opcode)
 static void op_crc_clear_f1 (sim_t *sim, int opcode)
 {
   // don't do anything, as CRC F1 is controlled by hardware
-  // (in our case, ext_flag [0])
+  // (in our case, ext_flag [1])
   ;  
 }
 
@@ -1042,7 +1042,7 @@ static void op_crc_test_f1 (sim_t *sim, int opcode)
 {
   act_reg_t *act_reg = sim->chip_data [0];
 
-  if (act_reg->ext_flag [0])
+  if (act_reg->ext_flag [1])
     act_reg->s [3] = 1;
 }
 
