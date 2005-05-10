@@ -6,10 +6,14 @@ $Id$
 
 News:
 
-Release 0.xx of Nonpareil is an interim development release.
+Release 0.60 of Nonpareil is an interim development release.
 
-In this release, the HP-21, HP-25, HP-31E, HP-33C, HP-35, HP-37E, HP-41CV,
-HP-45, HP-55, and HP-80 are simulated.
+In this release, the following calculators are simulated:
+	HP-35, HP-45, HP-55, HP-80
+	HP-21, HP-25
+	HP-31E, HP-33C, HP-34C, HP-37E, HP-38E, HP-38C
+	HP-41CV
+	HP-11C, HP-16C
 
 The menu commands other than "Quit" and "About" are not implemented.
 
@@ -91,8 +95,9 @@ simulating the following calculators:
 
   Classic series:    HP-35, HP-45, HP-55, HP-70, HP-80
   Woodstock series:  HP-21, HP-22, HP-25, HP-25C, HP-27, HP-29C
-  Spice series:      HP-31E, HP-32E, HP-33E, HP-33C, HP-37E
+  Spice series:      HP-31E, HP-32E, HP-33E, HP-33C, HP-37E, HP-38E, HP-38C
   Coconut:           HP-41C, HP-41CV
+  Voyager:           HP-10C, HP-11C, HP-12C, HP-15C, HP-16C
 
 Nonpareil uses the Gtk+ 2.2 toolkit and Glib 2.2.
 
