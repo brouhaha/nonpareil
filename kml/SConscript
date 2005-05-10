@@ -27,6 +27,7 @@ Import('release')
 
 kmls = Split ("""hp35.kml hp45.kml hp55.kml hp80.kml
                  hp25.kml
+                 hp67.kml
                  hp32e.kml hp33c.kml hp34c.kml hp37e.kml hp38c.kml hp38e.kml
                  hp41cv.kml
                  hp16c.kml""")

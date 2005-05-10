@@ -192,16 +192,17 @@ Thomas Olesen.
 Thomas Olesen improved the HP-41CV KML file for a more realistic display
 "font" and alpha keyboard mapping.
 
-Images of the HP-21, HP-25, HP-32E, HP-33C, HP-35, HP-37E, HP-45, HP-55,
-and HP-80 are copyrighted by David G. Hicks of the Museum of HP
-Calculators and have been included in this package by his permission:
+Images of the HP-21, HP-25, HP-32E, HP-33C, HP-34C, HP-35, HP-37E, HP-38C,
+HP-45, HP-55, and HP-80 are copyrighted by David G. Hicks of the Museum of
+HP Calculators and have been included in this package by his permission:
         http://www.hpmuseum.org/
 
 Bernhard Engl, Richard Ottosen, and Jim Philips provided assistance with
 circuit designs for PMOS interfacing.
 
 Bernhard Engl reverse-engineered the bank-switching feature of the
-HP-67 ROM/RAM chips.
+Woodstock series ROM chips, and built a ROM emulator which was used
+to run keycode verification tests.
 
 HrastProgrammer provided assistance with getting the Voyager calculator
 simulation working.
