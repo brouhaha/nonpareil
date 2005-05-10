@@ -1092,7 +1092,7 @@ static bool classic_read_ram (sim_t *sim, int addr, uint64_t *val)
   int i;
   bool status;
 
-  if (addr > cpu_reg->max_ram)
+  if (addr >= cpu_reg->max_ram)
     {
       status = false;
       warning ("classic_read_ram: address %d out of range\n", addr);
@@ -1120,7 +1120,7 @@ static bool classic_write_ram (sim_t *sim, int addr, uint64_t *val)
   uint64_t data;
   int i;
 
-  if (addr > cpu_reg->max_ram)
+  if (addr >= cpu_reg->max_ram)
     {
       warning ("classic_write_ram: address %d out of range\n", addr);
       return false;

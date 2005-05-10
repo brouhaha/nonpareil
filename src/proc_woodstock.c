@@ -1505,7 +1505,7 @@ static bool woodstock_read_ram (sim_t *sim, int addr, uint64_t *val)
   int i;
   bool status;
 
-  if (addr > act_reg->max_ram)
+  if (addr >= act_reg->max_ram)
     {
       status = false;
       // warning ("woodstock_read_ram: address %d out of range\n", addr);
@@ -1533,7 +1533,7 @@ static bool woodstock_write_ram (sim_t *sim, int addr, uint64_t *val)
   uint64_t data;
   int i;
 
-  if (addr > act_reg->max_ram)
+  if (addr >= act_reg->max_ram)
     {
       warning ("woodstock_write_ram: address %d out of range\n", addr);
       return false;
