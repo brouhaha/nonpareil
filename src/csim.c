@@ -755,7 +755,7 @@ gboolean on_move_window (GtkWidget *widget, GdkEventButton *event)
 int main (int argc, char *argv[])
 {
   char *kml_name = NULL;
-  char *kml_fn = NULL;
+  char *kml_fn, *image_fn, *rom_fn, *listing_fn;
 
   gboolean shape = SHAPE_DEFAULT;
   gboolean kml_dump = FALSE;
@@ -844,9 +844,13 @@ int main (int argc, char *argv[])
 		  model_info->ram_size,
 		  kml->character_segment_map);
 
-  file_pixbuf = gdk_pixbuf_new_from_file (kml->image, & error);
+  image_fn = find_file_in_path_list (kml->image, NULL, default_path);
+  if (! image_fn)
+    fatal (2, "can't find image file '%s'\n", kml->image);
+
+  file_pixbuf = gdk_pixbuf_new_from_file (image_fn, & error);
   if (! file_pixbuf)
-    fatal (2, "can't load image '%s'\n", kml->image);
+    fatal (2, "can't load image '%s'\n", image_fn);
 
   if (! kml->has_background_size)
     {
@@ -953,13 +957,22 @@ int main (int argc, char *argv[])
 		    GTK_SIGNAL_FUNC (quit_callback),
 		    NULL);
 
-  if (! sim_read_object_file (sim, kml->rom))
-    fatal (2, "unable to read object file '%s'\n", kml->rom);
+  rom_fn = find_file_in_path_list (kml->rom, NULL, default_path);
+  if (! rom_fn)
+    fatal (2, "can't find ROM file '%s'\n", kml->rom);
+
+  if (! sim_read_object_file (sim, rom_fn))
+    fatal (2, "can't read object file '%s'\n", rom_fn);
 
 #ifdef HAS_DEBUGGER
   if (kml->rom_listing)
-    if (! sim_read_listing_file (sim, kml->rom_listing))
-      fprintf (stderr, "warning: unable to read listing file '%s'\n", kml->rom_listing);
+    {
+      listing_fn = find_file_in_path_list (kml->rom_listing, NULL, default_path);
+      if (! listing_fn)
+	warning ("can't find ROM listing file '%s'\n", kml->rom_listing);
+      else if (! sim_read_listing_file (sim, listing_fn))
+	warning ("can't read ROM listing file '%s'\n", listing_fn);
+    }
 #endif
 
   sim_reset (sim);
