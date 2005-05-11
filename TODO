@@ -9,8 +9,7 @@ Bugs and critical features for next release:
 
   Voyager annunciators.
 
-  Implement menu commands:
-      File - Open, Save, save As
+  State restore doesn't seem to update display properly.
 
 
 Build process:
@@ -88,6 +87,12 @@ Debugger:
 
 Internals:
 
+  Use glib file handling:
+    g_build_filename()
+    g_stat()
+
+  Use glib memory allocation/deallocation
+
   New memory API.
 
   Use glib g_get_user_config_dir(), g_get_system_data_dirs(), etc.
@@ -143,9 +148,9 @@ Better model support:
 
   Compare actual HP-45, HP-55, and HP-80 ROMs to CASM output.
 
-  Add Woodstock microinstructions for card reader
+  Add Woodstock microinstructions for card reader (HP-67, HP-97)
 
-  Add Woodstock microinstructions for printer
+  Add Woodstock microinstructions for printer (HP-19C, HP-91, HP-92, HP-97)
 
   Add HP-65 microinstructions for program memory access.
 

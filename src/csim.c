@@ -52,6 +52,7 @@ MA 02111, USA.
 
 char *default_path = MAKESTR(DEFAULT_PATH);
 
+char state_fn [255];
 
 gboolean scancode_debug = FALSE;
 
@@ -392,29 +393,71 @@ gboolean on_key_event (GtkWidget *widget, GdkEventKey *event)
 
 static void quit_callback (GtkWidget *widget, gpointer data)
 {
+  if (*state_fn)
+    {
+      printf ("saving '%s'\n", state_fn);
+      state_write_xml (sim, state_fn);
+    }
   gtk_main_quit ();
 }
 
 
 static void file_open (GtkWidget *widget, gpointer data)
 {
-#if 1
-  state_read_xml (sim, "dump.nst");
-#endif
-}
+  GtkWidget *dialog;
 
+  dialog = gtk_file_chooser_dialog_new ("Load Calculator State",
+					GTK_WINDOW (main_window),
+					GTK_FILE_CHOOSER_ACTION_OPEN,
+					GTK_STOCK_CANCEL,
+					GTK_RESPONSE_CANCEL,
+					GTK_STOCK_OPEN,
+					GTK_RESPONSE_ACCEPT,
+					NULL);
 
-static void file_save (GtkWidget *widget, gpointer data)
-{
-#if 1
-  state_write_xml (sim, "dump.nst");
-#endif
+  if (gtk_dialog_run (GTK_DIALOG (dialog)) == GTK_RESPONSE_ACCEPT)
+    {
+      char *fn = gtk_file_chooser_get_filename (GTK_FILE_CHOOSER (dialog));
+      strncpy (state_fn, fn, sizeof (state_fn));
+      g_free (fn);
+      state_read_xml (sim, state_fn);
+    }
+
+  gtk_widget_destroy (dialog);
 }
 
 
 static void file_save_as (GtkWidget *widget, gpointer data)
 {
-  /* $$$ not yet implemented */
+  GtkWidget *dialog;
+
+  dialog = gtk_file_chooser_dialog_new ("Save Calculator State",
+					GTK_WINDOW (main_window),
+					GTK_FILE_CHOOSER_ACTION_SAVE,
+					GTK_STOCK_CANCEL,
+					GTK_RESPONSE_CANCEL,
+					GTK_STOCK_SAVE,
+					GTK_RESPONSE_ACCEPT,
+					NULL);
+
+  if (gtk_dialog_run (GTK_DIALOG (dialog)) == GTK_RESPONSE_ACCEPT)
+    {
+      char *fn = gtk_file_chooser_get_filename (GTK_FILE_CHOOSER (dialog));
+      strncpy (state_fn, fn, sizeof (state_fn));
+      g_free (fn);
+      state_write_xml (sim, state_fn);
+    }
+
+  gtk_widget_destroy (dialog);
+}
+
+
+static void file_save (GtkWidget *widget, gpointer data)
+{
+  if (*state_fn)
+    state_write_xml (sim, state_fn);
+  else
+    file_save_as (widget, data);
 }
 
 
@@ -666,7 +709,7 @@ static GtkItemFactoryEntry menu_items [] =
     { "/File/_Save",    "<control>S", file_save,     0, "<StockItem>", GTK_STOCK_SAVE },
     { "/File/Save _As", NULL,         file_save_as,  0, "<Item>" },
     { "/File/sep1",     NULL,         NULL,          0, "<Separator>" },
-    { "/File/_Quit",    "<CTRL>Q",    gtk_main_quit, 0, "<StockItem>", GTK_STOCK_QUIT },
+    { "/File/_Quit",    "<CTRL>Q",    quit_callback, 0, "<StockItem>", GTK_STOCK_QUIT },
     { "/_Edit",         NULL,         NULL,          0, "<Branch>" },
     { "/Edit/_Copy",    "<control>C", edit_copy,     0, "<StockItem>", GTK_STOCK_COPY },
     { "/Edit/_Paste",   "<control>V", edit_paste,    0, "<StockItem>", GTK_STOCK_PASTE },
@@ -730,6 +773,33 @@ gboolean on_move_window (GtkWidget *widget, GdkEventButton *event)
 	}
     }
   return (FALSE);
+}
+
+
+void set_default_state_path (void)
+{
+  const char *p;
+  model_info_t *model_info;
+
+  model_info = get_model_info (sim_get_model (sim));
+
+  p = g_get_home_dir ();
+  printf ("home directory is '%s'\n", p);
+  strcpy (state_fn, p);
+  // $$$ not sure whether we're supposed to g_free() the home dir string
+
+  max_strncat (state_fn, "/.nonpareil", sizeof (state_fn));
+  if (! dir_exists (state_fn))
+    {
+      if (! create_dir (state_fn))
+	warning ("can't create directory '%s'\n", state_fn);
+    }
+
+  max_strncat (state_fn, "/", sizeof (state_fn));
+  max_strncat (state_fn, model_info->name, sizeof (state_fn));
+  max_strncat (state_fn, ".nst", sizeof (state_fn));
+
+  printf ("default state path '%s'\n", state_fn);
 }
 
 
@@ -959,6 +1029,14 @@ int main (int argc, char *argv[])
   sim_reset (sim);
 
   init_switches ();
+
+  set_default_state_path ();
+
+  if ((*state_fn) && file_exists (state_fn))
+    {
+      printf ("loading '%s'\n", state_fn);
+      state_read_xml (sim, state_fn);
+    }
 
   if (run)
     sim_start (sim);
