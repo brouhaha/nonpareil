@@ -341,7 +341,7 @@ static void halfnut_lcd_wr (sim_t *sim)
 }
 
 
-void coconut_display_init_ops (sim_t *sim)
+static void coconut_display_init_ops (sim_t *sim)
 {
   sim->display_digits = COCONUT_DISPLAY_DIGITS;
   sim->op_fcn [0x2e0] = coconut_op_display_off;
@@ -350,13 +350,81 @@ void coconut_display_init_ops (sim_t *sim)
 }
 
 
-void coconut_display_event_fn (sim_t *sim, int chip_num, int event)
+static chip_event_fn_t coconut_display_event_fn;
+
+
+static chip_detail_t coconut_display_chip_detail =
+{
+  {
+    "Coconut LCD",
+    PFADDR_LCD_DISPLAY
+  },
+  sizeof (coconut_display_reg_detail) / sizeof (reg_detail_t),
+  coconut_display_reg_detail,
+  coconut_display_event_fn
+};
+
+
+static void coconut_display_reset (sim_t *sim)
+{
+  coconut_display_reg_t *display = sim->chip_data [PFADDR_LCD_DISPLAY];
+  int i;
+
+  display->enable = false;
+  display->blink = false;
+  display->count = 0;
+
+  for (i = 0; i < COCONUT_DISPLAY_DIGITS; i++)
+    {
+      display->a [i] = 0;
+      display->b [i] = 0;
+      display->c [i] = 0;
+    }
+  display->ann = 0;
+}
+
+
+static void coconut_display_update (sim_t *sim)
+{
+  coconut_display_reg_t *display = sim->chip_data [PFADDR_LCD_DISPLAY];
+  int i;
+  int j = 0;
+
+  for (i = LEFT; i >= RIGHT; i--)
+    {
+      int segments = 0;
+      if (display->enable)
+	{
+	  int b = display->b [i];
+	  int c = ((display->c [i] << 6) +
+		   ((b & 3) << 4) +
+		   display->a [i]);
+	  segments = sim->char_gen [c];
+	  switch (b >> 2)
+	    {
+	    case 0:  break;  /* no punctuation */
+	    case 1:  segments |= SEGMENTS_PERIOD; break;
+	    case 2:  segments |= SEGMENTS_COLON;  break;
+	    case 3:  segments |= SEGMENTS_COMMA;  break;
+	    }
+	  if (display->ann & (1 << i))
+	    segments |= SEGMENT_ANN;
+	}
+      sim->display_segments [j++] = segments;
+    }
+}
+
+
+static void coconut_display_event_fn (sim_t *sim, int chip_num, int event)
 {
   nut_reg_t *nut_reg = sim->chip_data [0];
   coconut_display_reg_t *display = sim->chip_data [PFADDR_LCD_DISPLAY];
 
   switch (event)
     {
+    case event_reset:
+       coconut_display_reset (sim);
+       break;
     case event_cycle:
       if (display->count == 0)
 	{
@@ -400,30 +468,14 @@ void coconut_display_event_fn (sim_t *sim, int chip_num, int event)
 }
 
 
-static chip_detail_t coconut_display_chip_detail =
+void coconut_display_init (sim_t *sim)
 {
-  {
-    "Coconut LCD",
-    PFADDR_LCD_DISPLAY
-  },
-  sizeof (coconut_display_reg_detail) / sizeof (reg_detail_t),
-  coconut_display_reg_detail,
-  coconut_display_event_fn
-};
+  coconut_display_init_ops (sim);
 
-
-void coconut_display_reset (sim_t *sim)
-{
   nut_reg_t *nut_reg = sim->chip_data [0];
   coconut_display_reg_t *display;
-  int i;
 
   display = alloc (sizeof (coconut_display_reg_t));
-
-  display->enable = false;
-  display->blink = false;
-  display->count = 0;
-
   nut_reg->pf_exists [PFADDR_LCD_DISPLAY] = 1;
   sim->rd_n_fcn [PFADDR_LCD_DISPLAY] = & coconut_lcd_rd_n;
   sim->wr_n_fcn [PFADDR_LCD_DISPLAY] = & coconut_lcd_wr_n;
@@ -438,44 +490,4 @@ void coconut_display_reset (sim_t *sim)
   sim->rd_n_fcn  [PFADDR_HALFNUT] = & halfnut_lcd_rd_n;
   sim->wr_n_fcn  [PFADDR_HALFNUT] = & halfnut_lcd_wr_n;
   sim->wr_fcn    [PFADDR_HALFNUT] = & halfnut_lcd_wr;
-
-  for (i = 0; i < COCONUT_DISPLAY_DIGITS; i++)
-    {
-      display->a [i] = 0;
-      display->b [i] = 0;
-      display->c [i] = 0;
-    }
-  display->ann = 0;
 }
-
-
-void coconut_display_update (sim_t *sim)
-{
-  coconut_display_reg_t *display = sim->chip_data [PFADDR_LCD_DISPLAY];
-  int i;
-  int j = 0;
-
-  for (i = LEFT; i >= RIGHT; i--)
-    {
-      int segments = 0;
-      if (display->enable)
-	{
-	  int b = display->b [i];
-	  int c = ((display->c [i] << 6) +
-		   ((b & 3) << 4) +
-		   display->a [i]);
-	  segments = sim->char_gen [c];
-	  switch (b >> 2)
-	    {
-	    case 0:  break;  /* no punctuation */
-	    case 1:  segments |= SEGMENTS_PERIOD; break;
-	    case 2:  segments |= SEGMENTS_COLON;  break;
-	    case 3:  segments |= SEGMENTS_COMMA;  break;
-	    }
-	  if (display->ann & (1 << i))
-	    segments |= SEGMENT_ANN;
-	}
-      sim->display_segments [j++] = segments;
-    }
-}
-

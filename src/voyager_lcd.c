@@ -102,7 +102,7 @@ static void voyager_op_display_blink (sim_t *sim, int opcode)
 }
 
 
-void voyager_display_init_ops (sim_t *sim)
+static void voyager_display_init_ops (sim_t *sim)
 {
   sim->display_digits = VOYAGER_DISPLAY_DIGITS;
   sim->op_fcn [0x030] = voyager_op_display_blink;
@@ -111,16 +111,9 @@ void voyager_display_init_ops (sim_t *sim)
 }
 
 
-void voyager_display_reset (sim_t *sim)
+static void voyager_display_reset (sim_t *sim)
 {
-  voyager_display_reg_t *display;
-
-  display = alloc (sizeof (voyager_display_reg_t));
-
-  install_chip (sim,
-		PFADDR_LCD_DISPLAY, 
-		& voyager_display_chip_detail,
-		display);
+  voyager_display_reg_t *display = sim->chip_data [PFADDR_LCD_DISPLAY];
 
   display->enable = 0;
   display->blink = 0;
@@ -188,7 +181,7 @@ voyager_segment_info_t voyager_display_map [11] [10] =
   };
 
 
-void voyager_display_update (sim_t *sim)
+static void voyager_display_update (sim_t *sim)
 {
   nut_reg_t *nut_reg = sim->chip_data [0];
   voyager_display_reg_t *display = sim->chip_data [PFADDR_LCD_DISPLAY];
@@ -230,13 +223,16 @@ void voyager_display_update (sim_t *sim)
 }
 
 
-void voyager_display_event_fn (sim_t *sim, int chip_num, int event)
+static void voyager_display_event_fn (sim_t *sim, int chip_num, int event)
 {
   nut_reg_t *nut_reg = sim->chip_data [0];
   voyager_display_reg_t *display = sim->chip_data [PFADDR_LCD_DISPLAY];
 
   switch (event)
     {
+    case event_reset:
+       voyager_display_reset (sim);
+       break;
     case event_cycle:
       if (display->count == 0)
 	{
@@ -278,4 +274,19 @@ void voyager_display_event_fn (sim_t *sim, int chip_num, int event)
       // warning ("voyager_lcd: unknown event %d\n", event);
       break;
     }
+}
+
+
+void voyager_display_init (sim_t *sim)
+{
+  voyager_display_reg_t *display;
+
+  voyager_display_init_ops (sim);
+
+  display = alloc (sizeof (voyager_display_reg_t));
+
+  install_chip (sim,
+		PFADDR_LCD_DISPLAY, 
+		& voyager_display_chip_detail,
+		display);
 }

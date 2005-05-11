@@ -647,8 +647,6 @@ sim_t *sim_init  (int model,
 
   sim->words_per_usec = clock_frequency / (1.0e6 * arch_info->word_length);
 
-  g_thread_init (NULL);  /* $$$ has Gtk already done this? */
-
   sim->thread_vars->cmd_q = g_async_queue_new ();
   sim->thread_vars->reply_q = g_async_queue_new ();
   sim->thread_vars->gui_cmd_q = g_async_queue_new ();

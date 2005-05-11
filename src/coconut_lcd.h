@@ -29,8 +29,4 @@ MA 02111, USA.
 #define PFADDR_HALFNUT     0x10
 
 
-void coconut_display_init_ops (sim_t *sim);
-
-void coconut_display_reset (sim_t *sim);
-
-void coconut_display_update (sim_t *sim);
+void coconut_display_init (sim_t *sim);

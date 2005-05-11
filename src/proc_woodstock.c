@@ -1259,22 +1259,6 @@ static void spice_display_scan (sim_t *sim)
 }
 
 
-static void woodstock_event_fn (sim_t *sim, int chip_num, int event)
-{
-  act_reg_t *act_reg = sim->chip_data [0];
-
-  switch (event)
-    {
-    case event_restore_completed:
-      // force display update
-      break;
-    default:
-      // warning ("proc_woodstock: unknown event %d\n", event);
-      break;
-    }
-}
-
-
 static void print_reg (char *label, reg_t reg)
 {
   int i;
@@ -1573,7 +1557,7 @@ static bool woodstock_write_ram (sim_t *sim, int addr, uint64_t *val)
 }
 
 
-static void woodstock_reset_processor (sim_t *sim)
+static void woodstock_reset (sim_t *sim)
 {
   act_reg_t *act_reg = sim->chip_data [0];
 
@@ -1642,13 +1626,32 @@ static void woodstock_new_processor (sim_t *sim, int ram_size)
 
   init_ops (sim);
 
-  woodstock_reset_processor (sim);
+  chip_event (sim, event_reset);
 }
 
 
 static void woodstock_free_processor (sim_t *sim)
 {
   remove_chip (sim, 0);
+}
+
+
+static void woodstock_event_fn (sim_t *sim, int chip_num, int event)
+{
+  // act_reg_t *act_reg = sim->chip_data [0];
+
+  switch (event)
+    {
+    case event_reset:
+       woodstock_reset (sim);
+       break;
+    case event_restore_completed:
+      // force display update
+      break;
+    default:
+      // warning ("proc_woodstock: unknown event %d\n", event);
+      break;
+    }
 }
 
 
@@ -1664,8 +1667,6 @@ processor_dispatch_t woodstock_processor =
 
     .parse_object_line   = woodstock_parse_object_line,
     .parse_listing_line  = woodstock_parse_listing_line,
-
-    .reset_processor     = woodstock_reset_processor,
 
     .execute_cycle       = woodstock_execute_cycle,
     .execute_instruction = woodstock_execute_instruction,

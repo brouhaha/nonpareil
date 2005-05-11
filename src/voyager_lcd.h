@@ -28,8 +28,4 @@ MA 02111, USA.
 #define PFADDR_LCD_DISPLAY 0xfd
 
 
-void voyager_display_init_ops (sim_t *sim);
-
-void voyager_display_reset (sim_t *sim);
-
-void voyager_display_update (sim_t *sim);
+void voyager_display_init (sim_t *sim);

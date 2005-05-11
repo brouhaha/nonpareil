@@ -80,6 +80,9 @@ static reg_detail_t nut_cpu_reg_detail [] =
 };
 
 
+static chip_event_fn_t nut_event_fn;
+
+
 static chip_detail_t nut_cpu_chip_detail =
 {
   {
@@ -88,7 +91,7 @@ static chip_detail_t nut_cpu_chip_detail =
   },
   sizeof (nut_cpu_reg_detail) / sizeof (reg_detail_t),
   nut_cpu_reg_detail,
-  NULL
+  nut_event_fn
 };
 
 
@@ -649,6 +652,20 @@ static void op_c_exch_n (sim_t *sim, int opcode)
  * RAM and peripheral operations
  */
 
+static void nut_ram_read_zero (nut_reg_t *nut_reg, int addr, reg_t *reg)
+{
+  int i;
+  printf ("returning zero for read from RAM address %03x\n", addr);
+  for (i = 0; i < WSIZE; i++)
+    (*reg) [i] = 0;
+}
+
+
+static void nut_ram_write_ignore (nut_reg_t *nut_reg, int addr, reg_t *reg)
+{
+  printf ("ignoring write to RAM address %03x\n", addr);
+}
+
 static void op_c_to_dadd (sim_t *sim, int opcode)
 {
   nut_reg_t *nut_reg = sim->chip_data [0];
@@ -669,7 +686,8 @@ static void op_c_to_pfad (sim_t *sim, int opcode)
 static void op_read_reg_n (sim_t *sim, int opcode)
 {
   nut_reg_t *nut_reg = sim->chip_data [0];
-
+  uint16_t ram_addr;
+  uint8_t pf_addr;
   int i;
   int is_ram, is_pf;
 
@@ -678,28 +696,35 @@ static void op_read_reg_n (sim_t *sim, int opcode)
 
   if ((opcode >> 6) != 0)
     nut_reg->ram_addr = (nut_reg->ram_addr & ~0x0f) | (opcode >> 6);
-  is_ram = nut_reg->ram_exists [nut_reg->ram_addr];
-  is_pf  = nut_reg->pf_exists  [nut_reg->pf_addr];
+
+  ram_addr = nut_reg->ram_addr;
+  pf_addr = nut_reg->pf_addr;
+
+  is_ram = nut_reg->ram_exists [ram_addr];
+  is_pf  = nut_reg->pf_exists  [pf_addr];
 
   if (is_ram && is_pf)
     {
       printf ("warning: conflicting read RAM %03x PF %02x reg %01x\n",
-	      nut_reg->ram_addr, nut_reg->pf_addr, opcode >> 6);
+	      ram_addr, pf_addr, opcode >> 6);
     }
   if (is_ram)
     {
-      for (i = 0; i < WSIZE; i++)
-	nut_reg->c [i] = nut_reg->ram [nut_reg->ram_addr][i];
+      if (nut_reg->ram_read_fn [ram_addr])
+        nut_reg->ram_read_fn [ram_addr] (nut_reg, ram_addr, & nut_reg->c);
+      else
+        for (i = 0; i < WSIZE; i++)
+	  nut_reg->c [i] = nut_reg->ram [ram_addr][i];
     }
   else if (is_pf)
     {
-      if (sim->rd_n_fcn [nut_reg->pf_addr])
-	(*sim->rd_n_fcn [nut_reg->pf_addr]) (sim, opcode >> 6);
+      if (sim->rd_n_fcn [pf_addr])
+	(*sim->rd_n_fcn [pf_addr]) (sim, opcode >> 6);
     }
   else
     {
       printf ("warning: stray read RAM %03x PF %02x reg %01x\n",
-	      nut_reg->ram_addr, nut_reg->pf_addr, opcode >> 6);
+	      ram_addr, pf_addr, opcode >> 6);
     }
 }
 
@@ -707,71 +732,88 @@ static void op_read_reg_n (sim_t *sim, int opcode)
 static void op_write_reg_n (sim_t *sim, int opcode)
 {
   nut_reg_t *nut_reg = sim->chip_data [0];
+  uint16_t ram_addr;
+  uint8_t pf_addr;
   int i;
   int is_ram, is_pf;
 
   nut_reg->ram_addr = (nut_reg->ram_addr & ~0x0f) | (opcode >> 6);
-  is_ram = nut_reg->ram_exists [nut_reg->ram_addr];
-  is_pf  = nut_reg->pf_exists  [nut_reg->pf_addr];
+
+  ram_addr = nut_reg->ram_addr;
+  pf_addr = nut_reg->pf_addr;
+
+  is_ram = nut_reg->ram_exists [ram_addr];
+  is_pf  = nut_reg->pf_exists  [pf_addr];
 
   if (is_ram && is_pf)
     {
       printf ("warning: conflicting write RAM %03x PF %02x reg %01x\n",
-	      nut_reg->ram_addr, nut_reg->pf_addr, opcode >> 6);
+	      ram_addr, pf_addr, opcode >> 6);
     }
   else if ((! is_ram) && (! is_pf))
     {
 #ifdef WARN_STRAY_WRITE
       printf ("warning: stray write RAM %03x PF %02x reg %01x data ",
-	      nut_reg->ram_addr, nut_reg->pf_addr, opcode >> 6);
+	      ram_addr, pf_addr, opcode >> 6);
       print_reg (nut_reg->c);
       printf ("\n");
 #endif
     }
   if (is_ram)
     {
-      for (i = 0; i < WSIZE; i++)
-	nut_reg->ram [nut_reg->ram_addr][i] = nut_reg->c [i];
+      if (nut_reg->ram_write_fn [ram_addr])
+        nut_reg->ram_write_fn [ram_addr] (nut_reg, ram_addr, & nut_reg->c);
+      else
+	for (i = 0; i < WSIZE; i++)
+	  nut_reg->ram [ram_addr][i] = nut_reg->c [i];
     }
   if (is_pf)
     {
-      if (sim->wr_n_fcn [nut_reg->pf_addr])
-	(*sim->wr_n_fcn [nut_reg->pf_addr]) (sim, opcode >> 6);
+      if (sim->wr_n_fcn [pf_addr])
+	(*sim->wr_n_fcn [pf_addr]) (sim, opcode >> 6);
     }
 }
 
 static void op_c_to_data (sim_t *sim, int opcode)
 {
   nut_reg_t *nut_reg = sim->chip_data [0];
+  uint16_t ram_addr;
+  uint8_t pf_addr;
   int i;
   int is_ram, is_pf;
 
-  is_ram = nut_reg->ram_exists [nut_reg->ram_addr];
-  is_pf  = nut_reg->pf_exists  [nut_reg->pf_addr];
+  ram_addr = nut_reg->ram_addr;
+  pf_addr = nut_reg->pf_addr;
+
+  is_ram = nut_reg->ram_exists [ram_addr];
+  is_pf  = nut_reg->pf_exists  [pf_addr];
 
   if (is_ram && is_pf)
     {
       printf ("warning: conflicting write RAM %03x PF %02x\n",
-	      nut_reg->ram_addr, nut_reg->pf_addr);
+	      ram_addr, pf_addr);
     }
   else if ((! is_ram) && (! is_pf))
     {
 #ifdef WARN_STRAY_WRITE
       printf ("warning: stray write RAM %03x PF %02x data ",
-	      nut_reg->ram_addr, nut_reg->pf_addr);
+	      ram_addr, pf_addr);
       print_reg (nut_reg->c);
       printf ("\n");
 #endif
     }
   if (is_ram)
     {
-      for (i = 0; i < WSIZE; i++)
-	nut_reg->ram [nut_reg->ram_addr][i] = nut_reg->c [i];
+      if (nut_reg->ram_write_fn [ram_addr])
+        nut_reg->ram_write_fn [ram_addr] (nut_reg, ram_addr, & nut_reg->c);
+      else
+        for (i = 0; i < WSIZE; i++)
+          nut_reg->ram [ram_addr][i] = nut_reg->c [i];
     }
   if (is_pf)
     {
-      if (sim->wr_fcn [nut_reg->pf_addr])
-	(*sim->wr_fcn [nut_reg->pf_addr]) (sim);
+      if (sim->wr_fcn [pf_addr])
+	(*sim->wr_fcn [pf_addr]) (sim);
     }
 }
 
@@ -1412,6 +1454,10 @@ static bool nut_execute_cycle (sim_t *sim)
       nut_reg->pc++;
       op_ldi_cycle_2 (sim, opcode);
       break;
+    default:
+      printf ("nut: bad inst_state %d!\n", nut_reg->inst_state);
+      nut_reg->inst_state = norm;
+      break;
     }
   sim->cycle_count++;
 
@@ -1531,7 +1577,7 @@ static void nut_set_ext_flag (sim_t *sim, int flag, bool state)
 }
 
 
-void nut_reset_processor (sim_t *sim)
+static void nut_reset (sim_t *sim)
 {
   nut_reg_t *nut_reg = sim->chip_data [0];
   int i;
@@ -1561,29 +1607,6 @@ void nut_reset_processor (sim_t *sim)
   nut_reg->carry = 1;
 
   nut_reg->key_flag = 0;
-
-  switch (sim->platform)
-    {
-    case PLATFORM_COCONUT:
-      coconut_display_reset (sim);
-      break;
-    case PLATFORM_VOYAGER:
-      voyager_display_reset (sim);
-      break;
-    }
-}
-
-
-static bool nut_ram_read_zero (sim_t *sim, int addr, uint64_t *val)
-{
-  *val = 0;
-  return true;
-}
-
-
-static bool nut_ram_write_ignore (sim_t *sim, int addr, uint64_t *val)
-{
-  return true;
 }
 
 
@@ -1597,9 +1620,6 @@ static bool nut_read_ram (sim_t *sim, int addr, uint64_t *val)
     fatal (2, "classic_read_ram: address %d out of range\n", addr);
   if (! nut_reg->ram_exists [addr])
     return false;
-
-  if (nut_reg->ram_read_fn [addr])
-    return nut_reg->ram_read_fn [addr] (sim, addr, val);
 
   // pack nut_reg->ram [addr] into data
   for (i = WSIZE - 1; i >= 0; i--)
@@ -1624,9 +1644,6 @@ static bool nut_write_ram (sim_t *sim, int addr, uint64_t *val)
     fatal (2, "sim_write_ram: address %d out of range\n", addr);
   if (! nut_reg->ram_exists [addr])
     return false;
-
-  if (nut_reg->ram_read_fn [addr])
-    return nut_reg->ram_write_fn [addr] (sim, addr, val);
 
   data = *val;
 
@@ -1700,7 +1717,7 @@ static void nut_new_processor (sim_t *sim, int ram_size)
 
       nut_new_ram (sim, 0x0c0, ram_size);
 
-      coconut_display_init_ops (sim);
+      coconut_display_init (sim);
       break;
 
     case PLATFORM_VOYAGER:
@@ -1723,17 +1740,33 @@ static void nut_new_processor (sim_t *sim, int ram_size)
 
       nut_new_ram (sim, 0x100 - ram_size, ram_size);
 
-      voyager_display_init_ops (sim);
+      voyager_display_init (sim);
       break;
     }
 
-  nut_reset_processor (sim);
+  chip_event (sim, event_reset);
 }
 
 
 static void nut_free_processor (sim_t *sim)
 {
   remove_chip (sim, 0);
+}
+
+
+static void nut_event_fn (sim_t *sim, int chip_num, int event)
+{
+  // nut_reg_t *nut_reg = sim->chip_data [0];
+
+  switch (event)
+    {
+    case event_reset:
+       nut_reset (sim);
+       break;
+    default:
+      // warning ("proc_nut: unknown event %d\n", event);
+      break;
+    }
 }
 
 
@@ -1749,8 +1782,6 @@ processor_dispatch_t nut_processor =
 
     .parse_object_line   = nut_parse_object_line,
     .parse_listing_line  = nut_parse_listing_line,
-
-    .reset_processor     = nut_reset_processor,
 
     .execute_cycle       = nut_execute_cycle,
     .execute_instruction = nut_execute_instruction,

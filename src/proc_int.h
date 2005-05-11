@@ -72,8 +72,6 @@ typedef struct
   bool (* parse_listing_line)  (char *buf, int *bank, int *addr,
 				rom_word_t *opcode);
 
-  void (* reset_processor)     (sim_t *sim);
-
   /* returns false if asleep (can't execute cycles) */
   bool (* execute_cycle)       (sim_t *sim);
 

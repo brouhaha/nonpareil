@@ -830,6 +830,8 @@ int main (int argc, char *argv[])
 
   progname = newstr (argv [0]);
 
+  g_thread_init (NULL);
+
   gtk_init (& argc, & argv);
 
   while (--argc)
@@ -1036,6 +1038,7 @@ int main (int argc, char *argv[])
     {
       printf ("loading '%s'\n", state_fn);
       state_read_xml (sim, state_fn);
+      printf ("loaded\n");
     }
 
   if (run)

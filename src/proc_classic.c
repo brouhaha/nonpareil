@@ -1061,7 +1061,7 @@ static void classic_set_ext_flag (sim_t *sim, int flag, bool state)
 }
 
 
-void classic_reset_processor (sim_t *sim)
+static void classic_reset (sim_t *sim)
 {
   classic_cpu_reg_t *cpu_reg = sim->chip_data [0];
 
@@ -1157,13 +1157,29 @@ static void classic_new_processor (sim_t *sim, int ram_size)
 
   init_ops (sim);
 
-  classic_reset_processor (sim);
+  chip_event (sim, event_reset);
 }
 
 
 static void classic_free_processor (sim_t *sim)
 {
   remove_chip (sim, 0);
+}
+
+
+static void classic_event_fn (sim_t *sim, int chip_num, int event)
+{
+  // classic_cpu_reg_t *cpu_reg = sim->chip_data [0];
+
+  switch (event)
+    {
+    case event_reset:
+       classic_reset (sim);
+       break;
+    default:
+      // warning ("proc_classic: unknown event %d\n", event);
+      break;
+    }
 }
 
 
@@ -1179,8 +1195,6 @@ processor_dispatch_t classic_processor =
 
     .parse_object_line   = classic_parse_object_line,
     .parse_listing_line  = classic_parse_listing_line,
-
-    .reset_processor     = classic_reset_processor,
 
     // cycle is same as instruction
     .execute_cycle       = classic_execute_instruction,

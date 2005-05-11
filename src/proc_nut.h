@@ -48,9 +48,11 @@ typedef enum
   } inst_state_t;
 
 
-typedef bool ram_access_fn_t (sim_t *sim, int addr, uint64_t *val);
+struct nut_reg_t;
 
-typedef struct
+typedef void ram_access_fn_t (struct nut_reg_t *nut_reg, int addr, reg_t *reg);
+
+typedef struct nut_reg_t
 {
   reg_t a;
   reg_t b;
