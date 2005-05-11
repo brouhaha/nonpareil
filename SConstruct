@@ -75,9 +75,10 @@ else:
 # source tar file builder by Paul Davis
 # posted to scons-users on 1-May-2005
 # changed to use "-z" option to tar rather than "-j", to get gzip output
+# removed the exclude of '*~'
 #-----------------------------------------------------------------------------
 
-import os, SCons
+import os, errno, SCons
 
 def distcopy (target, source, env):
     treedir = str (target[0])
@@ -100,7 +101,7 @@ def distcopy (target, source, env):
     return p.close ();
 
 def tarballer (target, source, env):            
-    cmd = 'tar -czf ' + str (target[0]) +  ' ' + str(source[0]) + "  --exclude '*~'"
+    cmd = 'tar -czf ' + str (target[0]) +  ' ' + str(source[0])
     print 'running ', cmd, ' ... '
     p = os.popen (cmd)
     return p.close ()
