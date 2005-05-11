@@ -18,8 +18,7 @@
 # the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
 # Boston, MA 02111, USA.
 
-Import('env')
-Import('release')
+Import('env source_release_dir')
 
 #-----------------------------------------------------------------------------
 # Install KML files
@@ -40,5 +39,5 @@ env.Alias (target = 'install',
 # source tarball
 #-----------------------------------------------------------------------------
 
-env.Distribute ('nonpareil-' + release,
-                kmls)
+env.Distribute (source_release_dir,
+                ['SConscript'] + kmls)

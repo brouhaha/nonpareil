@@ -71,14 +71,13 @@ else:
 	build_dir = 'build'
 
 
-
 #-----------------------------------------------------------------------------
 # source tar file builder by Paul Davis
 # posted to scons-users on 1-May-2005
 # changed to use "-z" option to tar rather than "-j", to get gzip output
 #-----------------------------------------------------------------------------
 
-import SCons
+import os, SCons
 
 def distcopy (target, source, env):
     treedir = str (target[0])
@@ -119,11 +118,22 @@ env.Append (BUILDERS = {'Distribute' : dist_bld})
 env.Append (BUILDERS = {'Tarball' : tarball_bld})
 
 #-----------------------------------------------------------------------------
+# package a source tarball
+#-----------------------------------------------------------------------------
+
+files = Split ("""README COPYING INSTALL TODO SConstruct""")
+
+source_release_dir = env.Distribute ('nonpareil-' + release, files)
+
+env.Alias (target = 'dist',
+           source = env.Tarball ('nonpareil-' + release + '.tar.gz',
+                                 source_release_dir))
+
+#-----------------------------------------------------------------------------
 # code
 #-----------------------------------------------------------------------------
 
-Export ('env')
-Export ('release')
+Export ('env source_release_dir')
 
 SConscript ('src/SConscript',
             build_dir=build_dir,
@@ -145,10 +155,3 @@ SConscript ('rom/SConscript')
 SConscript ('kml/SConscript')
 SConscript ('image/SConscript')
 
-#-----------------------------------------------------------------------------
-# package a source tarball
-#-----------------------------------------------------------------------------
-
-env.Alias (target = 'dist',
-           source = env.Tarball ('nonpareil-' + release + '.tar.gz',
-                                 'nonpareil-' + release))
