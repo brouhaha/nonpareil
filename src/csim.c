@@ -399,11 +399,7 @@ static void quit_callback (GtkWidget *widget, gpointer data)
 static void file_open (GtkWidget *widget, gpointer data)
 {
 #if 1
-  sim_set_io_pause_flag (sim, true);
-  sim_event (sim, event_restore_starting);
   state_read_xml (sim, "dump.nst");
-  sim_event (sim, event_restore_completed);
-  sim_set_io_pause_flag (sim, false);
 #endif
 }
 
@@ -411,22 +407,7 @@ static void file_open (GtkWidget *widget, gpointer data)
 static void file_save (GtkWidget *widget, gpointer data)
 {
 #if 1
-  sim_set_io_pause_flag (sim, true);
-  sim_event (sim, event_save_starting);
   state_write_xml (sim, "dump.nst");
-  sim_event (sim, event_save_completed);
-  sim_set_io_pause_flag (sim, false);
-#else
-  bool was_running;
-
-  was_running = sim_running (sim);
-  if (was_running)
-    sim_stop (sim);
-
-  state_write_xml (sim, "dump.nst");
-
-  if (was_running)
-    sim_start (sim);
 #endif
 }
 

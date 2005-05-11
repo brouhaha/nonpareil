@@ -313,6 +313,9 @@ void state_read_xml (sim_t *sim, char *fn)
 {
   sax_data_t sdata;
 
+  sim_set_io_pause_flag (sim, true);
+  sim_event (sim, event_restore_starting);
+
   memset (& sdata, 0, sizeof (sdata));
 
   sdata.sim = sim;
@@ -320,4 +323,7 @@ void state_read_xml (sim_t *sim, char *fn)
   xmlSAXUserParseFile (& sax_handler,
 		       & sdata,
 		       fn);
+
+  sim_event (sim, event_restore_completed);
+  sim_set_io_pause_flag (sim, false);
 }

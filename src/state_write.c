@@ -246,6 +246,9 @@ void state_write_xml (sim_t *sim, char *fn)
 
   // LIBXML_TEST_VERSION
 
+  sim_set_io_pause_flag (sim, true);
+  sim_event (sim, event_save_starting);
+
 #if 1
   out = xmlOutputBufferCreateFilename (fn, NULL, true);
 
@@ -288,6 +291,9 @@ void state_write_xml (sim_t *sim, char *fn)
     fatal (2, "can't end document\n");
 
   xmlFreeTextWriter (writer);
+
+  sim_event (sim, event_save_completed);
+  sim_set_io_pause_flag (sim, false);
 }
 
 
