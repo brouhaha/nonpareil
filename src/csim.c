@@ -27,6 +27,7 @@ MA 02111, USA.
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
 #include <gdk/gdk.h>
 #include <gtk/gtk.h>
 
@@ -751,13 +752,9 @@ gboolean on_move_window (GtkWidget *widget, GdkEventButton *event)
 }
 
 
-#ifndef PATH_MAX
-#define PATH_MAX 256
-#endif
-
-
 int main (int argc, char *argv[])
 {
+  char *kml_name = NULL;
   char *kml_fn = NULL;
 
   gboolean shape = SHAPE_DEFAULT;
@@ -779,8 +776,6 @@ int main (int argc, char *argv[])
   GtkWidget *image;
 
   GdkBitmap *image_mask_bitmap = NULL;
-
-  char buf [PATH_MAX];
 
   progname = newstr (argv [0]);
 
@@ -806,18 +801,18 @@ int main (int argc, char *argv[])
 	  else
 	    fatal (1, "unrecognized option '%s'\n", argv [0]);
 	}
-      else if (kml_fn)
+      else if (kml_name)
 	fatal (1, "only one KML file may be specified\n");
       else
-	kml_fn = argv [0];
+	kml_name = argv [0];
     }
 
+  if (! kml_name)
+    kml_name = progname;
+
+  kml_fn = find_file_in_path_list (kml_name, ".kml", default_path);
   if (! kml_fn)
-    {
-      strncpy (buf, progname, sizeof (buf));
-      strncat (buf, ".kml", sizeof (buf));
-      kml_fn = & buf [0];
-    }
+    fatal (2, "can't find KML file '%s'\n", kml_fn);
 
   kml = read_kml_file (kml_fn);
   if (! kml)
