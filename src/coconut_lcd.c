@@ -350,7 +350,7 @@ void coconut_display_init_ops (sim_t *sim)
 }
 
 
-void coconut_display_fn (sim_t *sim, int chip_num, int event)
+void coconut_display_event_fn (sim_t *sim, int chip_num, int event)
 {
   nut_reg_t *nut_reg = sim->chip_data [0];
   coconut_display_reg_t *display = sim->chip_data [PFADDR_LCD_DISPLAY];
@@ -408,7 +408,7 @@ static chip_detail_t coconut_display_chip_detail =
   },
   sizeof (coconut_display_reg_detail) / sizeof (reg_detail_t),
   coconut_display_reg_detail,
-  coconut_display_fn
+  coconut_display_event_fn
 };
 
 

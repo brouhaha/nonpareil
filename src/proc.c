@@ -1165,6 +1165,6 @@ void chip_event (sim_t *sim, int event)
   int chip_num;
 
   for (chip_num = 0; chip_num < sim->proc->max_chip_count; chip_num++)
-    if (sim->chip_detail [chip_num] && sim->chip_detail [chip_num]->chip_fn)
-      sim->chip_detail [chip_num]->chip_fn (sim, chip_num, event);
+    if (sim->chip_detail [chip_num] && sim->chip_detail [chip_num]->chip_event_fn)
+      sim->chip_detail [chip_num]->chip_event_fn (sim, chip_num, event);
 }

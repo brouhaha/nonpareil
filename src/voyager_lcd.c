@@ -54,7 +54,7 @@ static reg_detail_t voyager_display_reg_detail [] =
 };
 
 
-static chip_fn_t voyager_display_fn;
+static chip_event_fn_t voyager_display_event_fn;
 
 
 static chip_detail_t voyager_display_chip_detail =
@@ -65,7 +65,7 @@ static chip_detail_t voyager_display_chip_detail =
   },
   sizeof (voyager_display_reg_detail) / sizeof (reg_detail_t),
   voyager_display_reg_detail,
-  voyager_display_fn
+  voyager_display_event_fn
 };
 
 
@@ -230,7 +230,7 @@ void voyager_display_update (sim_t *sim)
 }
 
 
-void voyager_display_fn (sim_t *sim, int chip_num, int event)
+void voyager_display_event_fn (sim_t *sim, int chip_num, int event)
 {
   nut_reg_t *nut_reg = sim->chip_data [0];
   voyager_display_reg_t *display = sim->chip_data [PFADDR_LCD_DISPLAY];

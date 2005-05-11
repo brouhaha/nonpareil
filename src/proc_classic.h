@@ -65,13 +65,22 @@ typedef struct
 
   int prev_pc;  /* used to store complete five-digit octal address of instruction */
 
-  int display_enable;
+  uint8_t ext_flag [SSIZE];  /* external flags, e.g., slide switches,
+				magnetic card inserted */
 
+  // keyboard
   bool key_flag;      /* true if a key is down */
   int key_buf;        /* most recently pressed key */
 
-  uint8_t ext_flag [SSIZE];  /* external flags, e.g., slide switches,
-				magnetic card inserted */
+  // display
+  bool display_enable;
+
+  int left_scan;
+  int right_scan;
+  int display_scan_position;   /* word index, left_scan down to right_scan */
+  int display_digit_position;  /* character index, 0 to MAX_DIGIT_POSITION-1 */
+
+  void (* display_scan_fn) (sim_t *sim);
 
   // RAM
   int ram_addr;  /* selected RAM address */

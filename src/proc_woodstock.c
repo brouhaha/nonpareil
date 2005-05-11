@@ -76,6 +76,9 @@ static reg_detail_t woodstock_cpu_reg_detail [] =
 };
 
 
+static chip_event_fn_t woodstock_event_fn;
+
+
 static chip_detail_t woodstock_cpu_chip_detail =
 {
   {
@@ -84,7 +87,7 @@ static chip_detail_t woodstock_cpu_chip_detail =
   },
   sizeof (woodstock_cpu_reg_detail) / sizeof (reg_detail_t),
   woodstock_cpu_reg_detail,
-  NULL
+  woodstock_event_fn,
 };
 
 
@@ -1026,7 +1029,7 @@ static void op_display_reset_twf (sim_t *sim, int opcode)
   act_reg_t *act_reg = sim->chip_data [0];
 
   act_reg->display_14_digit = true;
-  sim->right_scan = 0;
+  act_reg->right_scan = 0;
 }
 
 
@@ -1168,15 +1171,17 @@ static void woodstock_disassemble (sim_t *sim, int addr, char *buf, int len)
 
 static void display_scan_advance (sim_t *sim)
 {
-  if ((--sim->display_scan_position) < sim->right_scan)
+  act_reg_t *act_reg = sim->chip_data [0];
+
+  if ((--act_reg->display_scan_position) < act_reg->right_scan)
     {
-      while (sim->display_digit_position < MAX_DIGIT_POSITION)
-	sim->display_segments [sim->display_digit_position++] = 0;
+      while (act_reg->display_digit_position < MAX_DIGIT_POSITION)
+	sim->display_segments [act_reg->display_digit_position++] = 0;
 
       gui_display_update (sim);
 
-      sim->display_digit_position = 0;
-      sim->display_scan_position = sim->left_scan;
+      act_reg->display_digit_position = 0;
+      act_reg->display_scan_position = act_reg->left_scan;
     }
 }
 
@@ -1185,14 +1190,14 @@ static void woodstock_display_scan (sim_t *sim)
 {
   act_reg_t *act_reg = sim->chip_data [0];
 
-  int a = act_reg->a [sim->display_scan_position];
-  int b = act_reg->b [sim->display_scan_position];
+  int a = act_reg->a [act_reg->display_scan_position];
+  int b = act_reg->b [act_reg->display_scan_position];
   segment_bitmap_t segs = 0;
 
-  if (act_reg->display_14_digit && (sim->display_digit_position == 0))
+  if (act_reg->display_14_digit && (act_reg->display_digit_position == 0))
     {
       // save room for mantissa sign
-      sim->display_segments [sim->display_digit_position++] = 0;
+      sim->display_segments [act_reg->display_digit_position++] = 0;
     }
 
   if (act_reg->display_enable)
@@ -1204,7 +1209,7 @@ static void woodstock_display_scan (sim_t *sim)
 	}
       else
 	segs = sim->char_gen [a];
-      if (act_reg->display_14_digit && (sim->display_digit_position == 12))
+      if (act_reg->display_14_digit && (act_reg->display_digit_position == 12))
 	{
 	  // mantissa sign comes from E segment of exponent sign digit
 	  if (segs & (1 << 4))
@@ -1216,7 +1221,7 @@ static void woodstock_display_scan (sim_t *sim)
 	segs |= sim->char_gen ['.'];
     }
 
-  sim->display_segments [sim->display_digit_position++] = segs;
+  sim->display_segments [act_reg->display_digit_position++] = segs;
 
   display_scan_advance (sim);
 }
@@ -1226,16 +1231,16 @@ static void spice_display_scan (sim_t *sim)
 {
   act_reg_t *act_reg = sim->chip_data [0];
 
-  int a = act_reg->a [sim->display_scan_position];
-  int b = act_reg->b [sim->display_scan_position];
+  int a = act_reg->a [act_reg->display_scan_position];
+  int b = act_reg->b [act_reg->display_scan_position];
   segment_bitmap_t segs = 0;
 
-  if (! sim->display_digit_position)
-    sim->display_segments [sim->display_digit_position++] = 0;  /* make room for sign */
+  if (! act_reg->display_digit_position)
+    sim->display_segments [act_reg->display_digit_position++] = 0;  /* make room for sign */
 
   if (act_reg->display_enable)
     {
-      if ((sim->display_scan_position == sim->left_scan) && (b & 4))
+      if ((act_reg->display_scan_position == act_reg->left_scan) && (b & 4))
 	sim->display_segments [0] = sim->char_gen ['-'];
       if (b == 6)
 	{
@@ -1248,9 +1253,25 @@ static void spice_display_scan (sim_t *sim)
 	segs |= sim->char_gen [(b & 2) ? ',' : '.'];
     }
 
-  sim->display_segments [sim->display_digit_position++] = segs;
+  sim->display_segments [act_reg->display_digit_position++] = segs;
 
   display_scan_advance (sim);
+}
+
+
+static void woodstock_event_fn (sim_t *sim, int chip_num, int event)
+{
+  act_reg_t *act_reg = sim->chip_data [0];
+
+  switch (event)
+    {
+    case event_restore_completed:
+      // force display update
+      break;
+    default:
+      // warning ("proc_woodstock: unknown event %d\n", event);
+      break;
+    }
 }
 
 
@@ -1365,7 +1386,7 @@ static bool woodstock_execute_cycle (sim_t *sim)
 
   sim->cycle_count++;
 
-  sim->display_scan_fn (sim);
+  act_reg->display_scan_fn (sim);
 
   return (true);  /* never sleeps */
 }
@@ -1572,8 +1593,8 @@ static void woodstock_reset_processor (sim_t *sim)
   act_reg->p = 0;
 
   act_reg->display_enable = 0;
-  sim->display_digit_position = 0;
-  sim->display_scan_position = WSIZE - 1;
+  act_reg->display_digit_position = 0;
+  act_reg->display_scan_position = WSIZE - 1;
 
   act_reg->key_buf = -1;  // no key has been pressed
   act_reg->key_flag = 0;
@@ -1601,23 +1622,23 @@ static void woodstock_new_processor (sim_t *sim, int ram_size)
       // default to twelve digits, but RESET TWF instruction switches to
       // fourteen digits plus special case for sign
       sim->display_digits = MAX_DIGIT_POSITION;
-      sim->display_scan_fn = woodstock_display_scan;
-      sim->left_scan = WSIZE - 1;
-      sim->right_scan = 2;
+      act_reg->display_scan_fn = woodstock_display_scan;
+      act_reg->left_scan = WSIZE - 1;
+      act_reg->right_scan = 2;
       break;
     case PLATFORM_SPICE:
       // ten digits plus special-case for sign
       sim->display_digits = MAX_DIGIT_POSITION;
-      sim->display_scan_fn = spice_display_scan;
-      sim->left_scan = WSIZE - 2;
-      sim->right_scan = 3;
+      act_reg->display_scan_fn = spice_display_scan;
+      act_reg->left_scan = WSIZE - 2;
+      act_reg->right_scan = 3;
       break;
     default:
       fatal (2, "Woodstock arch doesn't know how to handle display for platform %s\n", platform_name [sim->platform]);
     }
 
-  sim->display_scan_position = sim->left_scan;
-  sim->display_digit_position = 0;
+  act_reg->display_scan_position = act_reg->left_scan;
+  act_reg->display_digit_position = 0;
 
   init_ops (sim);
 

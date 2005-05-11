@@ -43,7 +43,7 @@ typedef struct
 
 
 
-typedef void chip_fn_t (sim_t *sim, int chip_num, int event);
+typedef void chip_event_fn_t (sim_t *sim, int chip_num, int event);
 
 
 typedef struct chip_detail_t
@@ -51,7 +51,7 @@ typedef struct chip_detail_t
   chip_info_t          info;
   int                  reg_count;
   reg_detail_t         *reg_detail;
-  chip_fn_t            *chip_fn;
+  chip_event_fn_t      *chip_event_fn;
 } chip_detail_t;
 
 
@@ -133,15 +133,8 @@ struct sim_t
 
   segment_bitmap_t *char_gen;
 
-  int left_scan;
-  int right_scan;
-  int display_scan_position;   /* word index, left_scan down to right_scan */
-  int display_digit_position;  /* character index, 0 to MAX_DIGIT_POSITION-1 */
-
   int display_digits;
   segment_bitmap_t display_segments [MAX_DIGIT_POSITION];
-
-  void (* display_scan_fn) (sim_t *sim);
 
   rom_word_t *ucode;
   bool       *breakpoint;

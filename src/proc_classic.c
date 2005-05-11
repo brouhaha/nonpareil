@@ -808,43 +808,43 @@ static void classic_disassemble (sim_t *sim, int addr, char *buf, int len)
 static void classic_display_scan (sim_t *sim)
 {
   classic_cpu_reg_t *cpu_reg = sim->chip_data [0];
-  int a = cpu_reg->a [sim->display_scan_position];
-  int b = cpu_reg->b [sim->display_scan_position];
+  int a = cpu_reg->a [cpu_reg->display_scan_position];
+  int b = cpu_reg->b [cpu_reg->display_scan_position];
 
-  if (sim->display_digit_position < MAX_DIGIT_POSITION)
+  if (cpu_reg->display_digit_position < MAX_DIGIT_POSITION)
     {
-      sim->display_segments [sim->display_digit_position] = 0;  /* blank */
+      sim->display_segments [cpu_reg->display_digit_position] = 0;  /* blank */
 
       if (cpu_reg->display_enable && (b <= 7))
 	{
-	  if ((sim->display_scan_position == 2) ||
-	      (sim->display_scan_position == 13))
+	  if ((cpu_reg->display_scan_position == 2) ||
+	      (cpu_reg->display_scan_position == 13))
 	    {
 	      if (a >= 8)
-		sim->display_segments [sim->display_digit_position] = sim->char_gen ['-'];
+		sim->display_segments [cpu_reg->display_digit_position] = sim->char_gen ['-'];
 	    }
 	  else
-	    sim->display_segments [sim->display_digit_position] = sim->char_gen ['0' + a];
+	    sim->display_segments [cpu_reg->display_digit_position] = sim->char_gen ['0' + a];
       
 	  if (b == 2)
 	    {
-	      if ((++sim->display_digit_position) < MAX_DIGIT_POSITION)
-		sim->display_segments [sim->display_digit_position] = sim->char_gen ['.'];
+	      if ((++cpu_reg->display_digit_position) < MAX_DIGIT_POSITION)
+		sim->display_segments [cpu_reg->display_digit_position] = sim->char_gen ['.'];
 	    }
 	}
     }
 
-  sim->display_digit_position++;
+  cpu_reg->display_digit_position++;
 
-  if ((--sim->display_scan_position) < sim->right_scan)
+  if ((--cpu_reg->display_scan_position) < cpu_reg->right_scan)
     {
-      while (sim->display_digit_position < MAX_DIGIT_POSITION)
-	sim->display_segments [sim->display_digit_position++] = 0;
+      while (cpu_reg->display_digit_position < MAX_DIGIT_POSITION)
+	sim->display_segments [cpu_reg->display_digit_position++] = 0;
 
       gui_display_update (sim);
 
-      sim->display_digit_position = 0;
-      sim->display_scan_position = sim->left_scan;
+      cpu_reg->display_digit_position = 0;
+      cpu_reg->display_scan_position = cpu_reg->left_scan;
     }
 }
 
@@ -923,7 +923,7 @@ bool classic_execute_instruction (sim_t *sim)
   (* sim->op_fcn [opcode]) (sim, opcode);
   sim->cycle_count++;
 
-  sim->display_scan_fn (sim);
+  cpu_reg->display_scan_fn (sim);
 
   return (true);  /* never sleeps */
 }
@@ -1078,8 +1078,8 @@ void classic_reset_processor (sim_t *sim)
   cpu_reg->p = 0;
 
   cpu_reg->display_enable = 0;
-  sim->display_digit_position = 0;
-  sim->display_scan_position = sim->left_scan;
+  cpu_reg->display_digit_position = 0;
+  cpu_reg->display_scan_position = cpu_reg->left_scan;
 
   cpu_reg->key_flag = 0;
 }
@@ -1151,9 +1151,9 @@ static void classic_new_processor (sim_t *sim, int ram_size)
   install_chip (sim, 0, & classic_cpu_chip_detail, cpu_reg);
 
   sim->display_digits = MAX_DIGIT_POSITION;
-  sim->display_scan_fn = classic_display_scan;
-  sim->left_scan = WSIZE - 1;
-  sim->right_scan = 0;
+  cpu_reg->display_scan_fn = classic_display_scan;
+  cpu_reg->left_scan = WSIZE - 1;
+  cpu_reg->right_scan = 0;
 
   init_ops (sim);
 
