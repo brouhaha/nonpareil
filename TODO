@@ -3,11 +3,19 @@ Copyright 1995, 2003, 2004, 2005 Eric L. Smith <eric@brouhaha.com>
 $Id$
 
 
+Bugs and critical features for next release:
+
+  Regression: keyboard not working at all.
+
+  Voyager annunciators.
+
+  Implement menu commands:
+      File - Open, Save, save As
+
+
 Build process:
 
   Fix SCons emitter for uasm to put listing files in obj, not obj/obj.
-
-  Fix source tarball builder.
 
   Create an RPM .spec file.
 
@@ -32,8 +40,7 @@ User interface:
       Ignore key release and hold key for a fixed (configurable?) number of
           simulation cycles?
 
-  Implement menu commands:
-      File - Open, Save, save As
+  Implement edit menu commands:
       Edit - Copy, Paste
 
   Make button highlighting look better.
@@ -60,7 +67,9 @@ User interface:
       URL (unofficial)
   Unfortunately getting the comments will require the file to be
   read twice, once by gdk_pixbuf_new_from_file(), and once by direct
-  calls to libpng, libjpeg, etc.
+  calls to libpng, libjpeg, etc.  Update: maybe can do parallel
+  parsing on the fly, by reading the file myself and passing the
+  data into a GdkPixbufLoader.
 
 
 Debugger:
@@ -79,8 +88,7 @@ Debugger:
 
 Internals:
 
-  Save/restore state, using pseudo-reflection API.  Use XML?  Glib has
-  simple XML support (g_markup_xxx functions), or use libxml2.
+  New memory API.
 
   Use glib g_get_user_config_dir(), g_get_system_data_dirs(), etc.
   from glib 2.6 to locate KML (or ZIP) files, user save files, etc.
