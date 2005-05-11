@@ -138,10 +138,23 @@ void trim_trailing_whitespace (char *s)
 bool file_exists (char *fn)
 {
   struct stat stat_buf;
-
-  // printf ("Looking for '%s'\n", fn);
-
   return (stat (fn, & stat_buf) == 0) && S_ISREG (stat_buf.st_mode);
+}
+
+
+bool dir_exists (char *fn)
+{
+  struct stat stat_buf;
+  return (stat (fn, & stat_buf) == 0) && S_ISDIR (stat_buf.st_mode);
+}
+
+
+#define DEF_DIR_MODE (S_IRUSR|S_IWUSR|S_IXUSR|S_IRGRP|S_IXGRP|S_IROTH|S_IXOTH)
+
+
+bool create_dir (char *fn)
+{
+  return mkdir (fn, DEF_DIR_MODE) == 0;
 }
 
 

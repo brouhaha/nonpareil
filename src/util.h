@@ -54,7 +54,13 @@ char *max_strncat (char *dest, const char *src, size_t n);
 
 void trim_trailing_whitespace (char *s);
 
+
 bool file_exists (char *fn);
+
+bool dir_exists (char *fn);
+
+bool create_dir (char *fn);
+
 
 // Given a base filename, an optional suffix, and a colon-delimited
 // list of directory paths, try to find a file.  Returns a newly allocated
