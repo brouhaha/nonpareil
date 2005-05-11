@@ -1,0 +1,12 @@
+Debugging information for Nonpareil
+Copyright 2005 Eric L. Smith <eric@brouhaha.com>
+$Id$
+
+
+When using GDB to debug Nonpareil, sometimes GDB will stop with a
+message "Program received signal SIG33, Real-time event 33.".
+
+You can give the command "handle SIG33 nostop noprint", then continue.
+
+In case you're wondering, a SIG33 is a German tank with a 150 mm
+howitzer.  Naturally GDB is somewhat taken aback upon encountering one.

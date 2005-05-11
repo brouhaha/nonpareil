@@ -122,7 +122,7 @@ env.Append (BUILDERS = {'Tarball' : tarball_bld})
 # package a source tarball
 #-----------------------------------------------------------------------------
 
-files = Split ("""README COPYING INSTALL TODO SConstruct""")
+files = Split ("""README COPYING INSTALL DEBUGGING TODO SConstruct""")
 
 source_release_dir = env.Distribute ('nonpareil-' + release, files)
 
