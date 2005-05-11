@@ -113,23 +113,28 @@ button 49  type 0  size 38 32  offset 450 298  down 2 8 keycode 0x35  end
 button 40  type 0  size 38 32  offset 504 298  down 2 8 keycode 0x15  end
 
 # main keyboard:
-scancode 48 map 48 47 end  # 0
-scancode 49 map 49 37 end  # 1
-scancode 50 map 50 38 end  # 2
-scancode 51 map 51 39 end  # 3
-scancode 52 map 52 27 end  # 4
-scancode 53 map 53 28 end  # 5
-scancode 54 map 54 29 end  # 6
-scancode 55 map 55 17 end  # 7
-scancode 56 map 56 18 end  # 8
-scancode 57 map 57 19 end  # 9
-scancode 46 map 46 48 end  # .
-scancode 43 map 43 40 end  # +
-scancode 45 map 45 30 end  # -
-scancode 42 map 42 20 end  # *
-scancode 47 map 47 10 end  # /
+scancode  48 map  48 47 end  # 0
+scancode  49 map  49 37 end  # 1
+scancode  50 map  50 38 end  # 2
+scancode  51 map  51 39 end  # 3
+scancode  52 map  52 27 end  # 4
+scancode  53 map  53 28 end  # 5
+scancode  54 map  54 29 end  # 6
+scancode  55 map  55 17 end  # 7
+scancode  56 map  56 18 end  # 8
+scancode  57 map  57 19 end  # 9
+scancode  97 map  97 11 end  # A
+scancode  98 map  98 12 end  # B
+scancode  99 map  99 13 end  # C
+scancode 100 map 100 14 end  # D
+scancode 101 map 101 14 end  # E
+scancode 102 map 102 14 end  # F
+scancode  46 map  46 48 end  # .
+scancode  43 map  43 40 end  # +
+scancode  45 map  45 30 end  # -
+scancode  42 map  42 20 end  # *
+scancode  47 map  47 10 end  # /
 scancode 65293 map 65293 36 end  # ENTER
-scancode 99 map 99 49 end  # c - CHS
 
 # keypad:
 scancode 65456 map 65456 47 end  # 0
