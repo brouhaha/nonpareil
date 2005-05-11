@@ -20,9 +20,15 @@ MA 02111, USA.
 */
 
 #include <stdarg.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+// POSIX for fstat:
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
 
 #include "util.h"
 
@@ -97,6 +103,16 @@ char *newstrn (char *orig, int max_len)
 }
 
 
+char *max_strncat (char *dest, const char *src, size_t n)
+{
+  size_t len1 = strlen (dest);
+
+  if (len1 < (n - 1))
+    strncpy (dest + len1, src, (n - 1) - len1);
+  return dest;
+}
+
+
 void trim_trailing_whitespace (char *s)
 {
   int i;
@@ -111,4 +127,64 @@ void trim_trailing_whitespace (char *s)
       else
 	break;
     }
+}
+
+
+#ifndef PATH_MAX
+#define PATH_MAX 256
+#endif
+
+
+bool file_exists (char *fn)
+{
+  struct stat stat_buf;
+
+  // printf ("Looking for '%s'\n", fn);
+
+  return (stat (fn, & stat_buf) == 0) && S_ISREG (stat_buf.st_mode);
+}
+
+
+// Given a base filename, an optional suffix, and a colon-delimited
+// list of directory paths, try to find a file.
+char *find_file_in_path_list (char *name, char *opt_suffix, char *path_list)
+{
+  char buf [PATH_MAX];
+
+  // First look in the current directory, even if it's not in the path.
+  strncpy (buf, name, sizeof (buf));
+  if (file_exists (buf))
+    goto found;
+  if (opt_suffix)
+    {
+      max_strncat (buf, opt_suffix, sizeof (buf));
+      if (file_exists (buf))
+	goto found;
+    }
+
+  while (path_list && *path_list)
+    {
+      char *p = strchr (path_list, ':');
+      size_t n = p ? (p - path_list) : strlen (path_list);
+      strncpy (buf, path_list, n);
+      max_strncat (buf, "/", sizeof (buf));
+      max_strncat (buf, name, sizeof (buf));
+      if (file_exists (buf))
+	goto found;
+      if (opt_suffix)
+	{
+	  max_strncat (buf, opt_suffix, sizeof (buf));
+	  if (file_exists (buf))
+	    goto found;
+	}
+      if (p)
+	path_list = p + 1;
+      else
+	path_list = NULL;
+    }
+
+  return NULL;
+
+ found:
+  return (newstr (buf));
 }

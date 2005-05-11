@@ -47,5 +47,16 @@ char *newstr (char *orig);
 
 char *newstrn (char *orig, int max_len);
 
+// max_strncat() is similar to strncat(), except that the size parameter
+// is the maximum total length of the destination, not the maximum number
+// of characters to concatenate.
+char *max_strncat (char *dest, const char *src, size_t n);
+
 void trim_trailing_whitespace (char *s);
 
+bool file_exists (char *fn);
+
+// Given a base filename, an optional suffix, and a colon-delimited
+// list of directory paths, try to find a file.  Returns a newly allocated
+// string with the filename if found, or NULL otherwise.
+char *find_file_in_path_list (char *name, char *opt_suffix, char *path_list);

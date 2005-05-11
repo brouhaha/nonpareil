@@ -31,6 +31,7 @@ MA 02111, USA.
 %option noyywrap
 
 %{
+#include <stdbool.h>
 #include <string.h>
 
 #include "wasmy.h"
