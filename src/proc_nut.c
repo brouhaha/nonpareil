@@ -1574,6 +1574,19 @@ void nut_reset_processor (sim_t *sim)
 }
 
 
+static bool nut_ram_read_zero (sim_t *sim, int addr, uint64_t *val)
+{
+  *val = 0;
+  return true;
+}
+
+
+static bool nut_ram_write_ignore (sim_t *sim, int addr, uint64_t *val)
+{
+  return true;
+}
+
+
 static bool nut_read_ram (sim_t *sim, int addr, uint64_t *val)
 {
   nut_reg_t *nut_reg = sim->chip_data [0];
@@ -1584,6 +1597,9 @@ static bool nut_read_ram (sim_t *sim, int addr, uint64_t *val)
     fatal (2, "classic_read_ram: address %d out of range\n", addr);
   if (! nut_reg->ram_exists [addr])
     return false;
+
+  if (nut_reg->ram_read_fn [addr])
+    return nut_reg->ram_read_fn [addr] (sim, addr, val);
 
   // pack nut_reg->ram [addr] into data
   for (i = WSIZE - 1; i >= 0; i--)
@@ -1608,6 +1624,9 @@ static bool nut_write_ram (sim_t *sim, int addr, uint64_t *val)
     fatal (2, "sim_write_ram: address %d out of range\n", addr);
   if (! nut_reg->ram_exists [addr])
     return false;
+
+  if (nut_reg->ram_read_fn [addr])
+    return nut_reg->ram_write_fn [addr] (sim, addr, val);
 
   data = *val;
 
@@ -1636,8 +1655,10 @@ static void nut_new_ram_addr_space (sim_t *sim, int max_ram)
   nut_reg_t *nut_reg = sim->chip_data [0];
 
   nut_reg->max_ram = max_ram;
-  nut_reg->ram = alloc (max_ram * sizeof (reg_t));
-  nut_reg->ram_exists = alloc (max_ram * sizeof (bool));
+  nut_reg->ram_exists   = alloc (max_ram * sizeof (bool));
+  nut_reg->ram          = alloc (max_ram * sizeof (reg_t));
+  nut_reg->ram_read_fn  = alloc (max_ram * sizeof (ram_access_fn_t *));
+  nut_reg->ram_write_fn = alloc (max_ram * sizeof (ram_access_fn_t *));
 }
 
 
@@ -1684,14 +1705,20 @@ static void nut_new_processor (sim_t *sim, int ram_size)
 
     case PLATFORM_VOYAGER:
       nut_new_ram (sim, 0x000, 8);
-      nut_new_ram (sim, 0x009, 2);
       ram_size -= 8;
+
+      nut_new_ram (sim, 0x008, 3);  // I/O registers
+      nut_reg->ram_read_fn  [0x08] = nut_ram_read_zero;
+      nut_reg->ram_write_fn [0x08] = nut_ram_write_ignore;
 
       if (ram_size > 40)
 	{
 	  nut_new_ram (sim, 0x010, 8);
-	  nut_new_ram (sim, 0x019, 2);
 	  ram_size -= 8;
+
+	  nut_new_ram (sim, 0x018, 3);  // I/O registers
+	  nut_reg->ram_read_fn  [0x18] = nut_ram_read_zero;
+	  nut_reg->ram_write_fn [0x18] = nut_ram_write_ignore;
 	}
 
       nut_new_ram (sim, 0x100 - ram_size, ram_size);

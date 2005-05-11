@@ -48,6 +48,8 @@ typedef enum
   } inst_state_t;
 
 
+typedef bool ram_access_fn_t (sim_t *sim, int addr, uint64_t *val);
+
 typedef struct
 {
   reg_t a;
@@ -96,6 +98,8 @@ typedef struct
   uint16_t ram_addr;  // selected RAM address
   bool *ram_exists;
   reg_t *ram;
+  ram_access_fn_t **ram_read_fn;
+  ram_access_fn_t **ram_write_fn;
 
   // Peripherals:
   uint16_t max_pf;
