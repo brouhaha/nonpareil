@@ -860,12 +860,25 @@ int main (int argc, char *argv[])
 	kml_name = argv [0];
     }
 
-  if (! kml_name)
-    kml_name = progname;
+  if (kml_name)
+    {
+      kml_fn = find_file_in_path_list (kml_name, ".kml", default_path);
+      if (! kml_fn)
+	fatal (2, "can't find KML file '%s'\n", kml_name);
+    }
+  else
+    {
+      char *p = strrchr (progname, '/');
+      if (p)
+	p++;
+      else
+	p = progname;
+      kml_name = newstrcat (p, ".kml");
+      kml_fn = find_file_in_path_list (kml_name, NULL, default_path);
+      if (! kml_fn)
+	fatal (1, "can't find KML file '%s'\n", kml_name);
+    }
 
-  kml_fn = find_file_in_path_list (kml_name, ".kml", default_path);
-  if (! kml_fn)
-    fatal (2, "can't find KML file '%s'\n", kml_fn);
 
   kml = read_kml_file (kml_fn);
   if (! kml)
