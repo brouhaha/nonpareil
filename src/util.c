@@ -89,6 +89,20 @@ char *newstr (char *orig)
 }
 
 
+char *newstrcat (char *orig1, char *orig2)
+{
+  int len1, len2;
+  char *r;
+
+  len1 = strlen (orig1);
+  len2 = strlen (orig2);
+  r = (char *) alloc (len1 + len2 + 1);
+  memcpy (r, orig1, len1);
+  memcpy (r + len1, orig2, len2 + 1);
+  return (r);
+}
+
+
 char *newstrn (char *orig, int max_len)
 {
   int len;

@@ -45,6 +45,8 @@ void *alloc (size_t size);
 
 char *newstr (char *orig);
 
+char *newstrcat (char *orig1, char *orig2);
+
 char *newstrn (char *orig, int max_len);
 
 // max_strncat() is similar to strncat(), except that the size parameter
