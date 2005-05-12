@@ -86,12 +86,15 @@ Export('uasm')
 
 nonpareil_env = env.Copy ()
 
-nonpareil_srcs = Split ("""proc.c
+nonpareil_srcs = Split ("""csim.c proc.c
+                           display.c glib_async_queue_source.c
 			   kmll.l kmly.y kml.c
                            platform.c model.c
                            proc_classic.c
                            proc_woodstock.c
                            proc_nut.c coconut_lcd.c voyager_lcd.c""")
+
+more_nonpareil_srcs = Split ("""debugger.c""")
 
 nonpareil_packages = "gtk+-2.0 gdk-2.0 gdk-pixbuf-2.0 glib-2.0 gthread-2.0"
 
@@ -122,10 +125,6 @@ if env ['has_debugger_cli']:
         debugger_env.Append (CPPDEFINES = {'USE_READLINE': 1})
         nonpareil_env.Append (LIBS = 'readline')
     nonpareil_objs.append (debugger_env.Object ('debugger.c'))
-
-nonpareil_objs.append (csim_env.Object ('csim.c'))
-nonpareil_objs.append (csim_env.Object ('display.c'))
-nonpareil_objs.append (csim_env.Object ('glib_async_queue_source.c'))
 
 for src in nonpareil_srcs:
     nonpareil_objs.append (nonpareil_env.Object (src))
@@ -193,8 +192,9 @@ headers = Split ("""util.h
                     asm.h symtab.h
                     nsim_conv.h""")
 
-misc = Split ("""SConscript ChangeLog""")
+misc = Split ("""SConscript ChangeLog release.c""")
 
 env.Distribute (source_release_dir,
                 misc + headers + common_srcs + common_dis_srcs +
-                state_io_srcs + uasm_srcs + nonpareil_srcs)
+                state_io_srcs + uasm_srcs +
+                nonpareil_srcs + more_nonpareil_srcs)
