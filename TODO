@@ -11,6 +11,8 @@ Bugs and critical features for next release:
 
   State restore doesn't seem to update display properly.
 
+  State restore needs to deal with ext_flags, key positions.
+
 
 Build process:
 
