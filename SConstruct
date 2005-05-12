@@ -18,7 +18,7 @@
 # the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
 # Boston, MA 02111, USA.
 
-release = '0.60'  # should get from a file, and use only if a release option
+release = '0.61'  # should get from a file, and use only if a release option
                   # is specified
 
 #-----------------------------------------------------------------------------
@@ -156,3 +156,8 @@ SConscript ('rom/SConscript')
 SConscript ('kml/SConscript')
 SConscript ('image/SConscript')
 
+#-----------------------------------------------------------------------------
+# scons-local, in case the user doesn't want to install scons
+#-----------------------------------------------------------------------------
+
+SConscript ('scons-local/SConscript')
