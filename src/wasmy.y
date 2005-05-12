@@ -364,6 +364,7 @@ misc_inst       : inst_load_const
 		| inst_a_to_rom
 		| inst_key_to_a
                 | inst_reset_twf
+		| inst_rotate_left_a
 		| inst_return
 		| inst_binary
 		| inst_decimal
