@@ -1035,11 +1035,7 @@ int main (int argc, char *argv[])
   set_default_state_path ();
 
   if ((*state_fn) && file_exists (state_fn))
-    {
-      printf ("loading '%s'\n", state_fn);
-      state_read_xml (sim, state_fn);
-      printf ("loaded\n");
-    }
+    state_read_xml (sim, state_fn);
 
   if (run)
     sim_start (sim);
