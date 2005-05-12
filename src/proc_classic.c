@@ -73,30 +73,30 @@ static chip_detail_t classic_cpu_chip_detail =
 };
 
 
-static bool get_s (void *data, size_t offset, uint64_t *p)
+static bool get_s (void *data, uint64_t *p)
 {
   uint16_t val;
   uint8_t *d;
   int i;
 
-  d = ((uint8_t *) data) + offset;
+  d = ((uint8_t *) data) + SSIZE;
   val = 0;
   for (i = 0; i < SSIZE; i++)
-    val = (val < 1) + *(d++);
+    val = (val < 1) + *(--d);
 
   *p = val;
 
   return true;
 }
 
-static bool set_s (void *data, size_t offset, uint64_t *p)
+static bool set_s (void *data, uint64_t *p)
 {
   uint16_t val;
   uint8_t *d;
   int i;
 
   val = *p;
-  d = ((uint8_t *) data) + offset;
+  d = (uint8_t *) data;
   for (i = 0; i < SSIZE; i++)
     {
       *(d++) = val & 0x01;

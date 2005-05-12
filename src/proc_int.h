@@ -26,7 +26,6 @@ MA 02111, USA.
  */
 
 typedef bool reg_accessor_t (void *data,
-			     size_t offset,
 			     uint64_t *p);
 
 reg_accessor_t get_14_dig, set_14_dig;

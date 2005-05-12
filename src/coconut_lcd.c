@@ -64,13 +64,13 @@ static reg_detail_t coconut_display_reg_detail [] =
 };
 
 
-static bool get_coconut_lcd_4 (void *data, size_t offset, uint64_t *p)
+static bool get_coconut_lcd_4 (void *data, uint64_t *p)
 {
   uint64_t val;
   uint8_t *d;
   int i;
 
-  d = ((uint8_t *) data) + offset + COCONUT_DISPLAY_DIGITS;
+  d = ((uint8_t *) data) + COCONUT_DISPLAY_DIGITS;
   val = 0;
   for (i = 0; i < COCONUT_DISPLAY_DIGITS; i++)
     val = (val << 4) + *(--d);
@@ -81,14 +81,14 @@ static bool get_coconut_lcd_4 (void *data, size_t offset, uint64_t *p)
 }
 
 
-static bool set_coconut_lcd_4 (void *data, size_t offset, uint64_t *p)
+static bool set_coconut_lcd_4 (void *data, uint64_t *p)
 {
   uint64_t val;
   uint8_t *d;
   int i;
 
   val = *p;
-  d = ((uint8_t *) data) + offset;
+  d = (uint8_t *) data;
   for (i = 0; i < COCONUT_DISPLAY_DIGITS; i++)
     {
       *(d++) = val & 0x0f;
@@ -99,13 +99,13 @@ static bool set_coconut_lcd_4 (void *data, size_t offset, uint64_t *p)
 }
 
 
-static bool get_coconut_lcd_1 (void *data, size_t offset, uint64_t *p)
+static bool get_coconut_lcd_1 (void *data, uint64_t *p)
 {
   uint64_t val;
   uint8_t *d;
   int i;
 
-  d = ((uint8_t *) data) + offset + COCONUT_DISPLAY_DIGITS;
+  d = ((uint8_t *) data) + COCONUT_DISPLAY_DIGITS;
   val = 0;
   for (i = 0; i < COCONUT_DISPLAY_DIGITS; i++)
     val = (val << 1) + *(--d);
@@ -116,14 +116,14 @@ static bool get_coconut_lcd_1 (void *data, size_t offset, uint64_t *p)
 }
 
 
-static bool set_coconut_lcd_1 (void *data, size_t offset, uint64_t *p)
+static bool set_coconut_lcd_1 (void *data, uint64_t *p)
 {
   uint64_t val;
   uint8_t *d;
   int i;
 
   val = *p;
-  d = ((uint8_t *) data) + offset;
+  d = (uint8_t *) data;
   for (i = 0; i < COCONUT_DISPLAY_DIGITS; i++)
     {
       *(d++) = val & 0x01;

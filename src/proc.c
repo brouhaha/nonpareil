@@ -313,9 +313,7 @@ static void cmd_read_register (sim_t *sim, sim_msg_t *msg)
 
   if (reg_detail->get)
     {
-      if (reg_detail->get (addr,
-			   reg_detail->offset,
-			   result_val))
+      if (reg_detail->get (addr, result_val))
 	msg->reply = OK;
     }
   else
@@ -361,9 +359,7 @@ static void cmd_write_register (sim_t *sim, sim_msg_t *msg)
 
   if (reg_detail->set)
     {
-      if (reg_detail->set (addr,
-			   reg_detail->offset,
-			   source_val))
+      if (reg_detail->set (addr, source_val))
 	msg->reply = OK;
     }
   else
@@ -1054,13 +1050,13 @@ processor_dispatch_t *processor_dispatch [ARCH_MAX] =
 // are internally stored as an array of digits, one digit per byte.
 // The external representation is packed into a single uint of an
 // appropriate size.
-bool get_14_dig (void *data, size_t offset, uint64_t *p)
+bool get_14_dig (void *data, uint64_t *p)
 {
   uint64_t val = 0;
   uint8_t *d;
   int i;
 
-  d = ((uint8_t *) data) + offset + 14;
+  d = ((uint8_t *) data) + 14;
   for (i = 0; i < 14; i++)
     val = (val << 4) + *(--d);
 
@@ -1070,13 +1066,13 @@ bool get_14_dig (void *data, size_t offset, uint64_t *p)
 }
 
 
-bool set_14_dig (void *data, size_t offset, uint64_t *p)
+bool set_14_dig (void *data, uint64_t *p)
 {
   uint64_t val = *p;
   uint8_t *d;
   int i;
 
-  d = ((uint8_t *) data) + offset;
+  d = (uint8_t *) data;
   for (i = 0; i < 14; i++)
     {
       *(d++) = val & 0x0f;
@@ -1087,13 +1083,13 @@ bool set_14_dig (void *data, size_t offset, uint64_t *p)
 }
 
 
-bool get_2_dig (void *data, size_t offset, uint64_t *p)
+bool get_2_dig (void *data, uint64_t *p)
 {
   uint8_t val = 0;
   uint8_t *d;
   int i;
 
-  d = ((uint8_t *) data) + offset + 2;
+  d = ((uint8_t *) data) + 2;
   for (i = 0; i < 2; i++)
     val = (val << 4) + *(--d);
 
@@ -1103,13 +1099,13 @@ bool get_2_dig (void *data, size_t offset, uint64_t *p)
 }
 
 
-bool set_2_dig (void *data, size_t offset, uint64_t *p)
+bool set_2_dig (void *data, uint64_t *p)
 {
   uint8_t val = *p;
   uint8_t *d;
   int i;
 
-  d = ((uint8_t *) data) + offset;
+  d = ((uint8_t *) data);
   for (i = 0; i < 2; i++)
     {
       *(d++) = val & 0x0f;
