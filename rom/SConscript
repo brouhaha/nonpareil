@@ -24,7 +24,7 @@ Import('env source_release_dir')
 # Install firmware files
 #-----------------------------------------------------------------------------
 
-roms = Split ("""hp25.obj
+roms = Split ("""hp21.obj hp25.obj
                  hp67.obj
                  hp32e.obj hp33c.obj hp34c.obj hp37e.obj hp38c.obj hp38e.obj
                  hp41cv.obj

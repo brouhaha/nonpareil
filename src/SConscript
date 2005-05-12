@@ -183,6 +183,18 @@ env.Alias (target = 'install',
 # source tarball
 #-----------------------------------------------------------------------------
 
+headers = Split ("""util.h
+                    arch.h model.h platform.h kml.h
+                    proc.h proc_int.h glib_async_queue_source.h
+                    proc_classic.h proc_nut.h proc_woodstock.h
+                    state_io.h
+                    debugger.h dis_woodstock.h dis_nut.h
+                    display_gtk.h display.h coconut_lcd.h voyager_lcd.h
+                    asm.h symtab.h
+                    nsim_conv.h""")
+
+misc = Split ("""SConscript ChangeLog""")
+
 env.Distribute (source_release_dir,
-                ['SConscript'] + common_srcs + common_dis_srcs +
+                misc + headers + common_srcs + common_dis_srcs +
                 state_io_srcs + uasm_srcs + nonpareil_srcs)

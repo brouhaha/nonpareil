@@ -25,11 +25,11 @@ Import('env source_release_dir')
 #-----------------------------------------------------------------------------
 
 images = Split ("""hp35.png hp45.png hp55.png hp80.png
-	           hp25.png
+	           hp21.png hp25.png
                    hp67.png
                    hp32e.png hp33c.png hp34c.png hp37e.png hp38c.png
                    hp41cv.png
-                   hp16c.png""")
+                   hp15c.png hp16c.png""")
 
 env.Alias (target = 'install',
            source = env.Install (dir = env ['prefix'] + "/lib/nonpareil",
