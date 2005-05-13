@@ -603,8 +603,10 @@ static void op_bank_switch (sim_t *sim, int opcode)
   act_reg_t *act_reg = sim->chip_data [0];
 
   act_reg->bank ^= 1;
+#ifdef DEBUG_BANK_SWITCH
   printf ("bank switch at %04o, will select bank %o\n",
 	  act_reg->prev_pc, act_reg->bank);
+#endif
 }
 
 
@@ -1311,8 +1313,10 @@ static bool woodstock_execute_cycle (sim_t *sim)
       (act_reg->pc < 02000) &&
       (act_reg->bank == 1))
      {
+#ifdef DEBUG_BANK_SWITCH
 	printf ("implicit bank switch at %04o, will select bank 0\n",
 		act_reg->pc);
+#endif
 	act_reg->bank = 0;
      }
 
