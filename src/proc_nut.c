@@ -655,7 +655,6 @@ static void op_c_exch_n (sim_t *sim, int opcode)
 static void nut_ram_read_zero (nut_reg_t *nut_reg, int addr, reg_t *reg)
 {
   int i;
-  printf ("returning zero for read from RAM address %03x\n", addr);
   for (i = 0; i < WSIZE; i++)
     (*reg) [i] = 0;
 }
@@ -663,7 +662,7 @@ static void nut_ram_read_zero (nut_reg_t *nut_reg, int addr, reg_t *reg)
 
 static void nut_ram_write_ignore (nut_reg_t *nut_reg, int addr, reg_t *reg)
 {
-  printf ("ignoring write to RAM address %03x\n", addr);
+  ;
 }
 
 static void op_c_to_dadd (sim_t *sim, int opcode)
