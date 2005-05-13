@@ -92,6 +92,7 @@ void wasm_error (char *s);
 %type <integer> goto_form
 
 %type <integer> stat_bit
+%type <integer> stat_bit_name
 
 %%
 
@@ -288,8 +289,8 @@ status_inst     : inst_set_stat
                 | inst_tst_stat_e
                 ;
 
-stat_bit_name	: IDENT
-		| F ;
+stat_bit_name	: IDENT { $$ = 0; }
+		| F { $$ = 0; };
 
 stat_bit	: S stat_bit_name expr { $$ = range ($3, 0, 15); } ;
 
@@ -377,7 +378,7 @@ inst_disp_off   : DISPLAY OFF               { emit (00310); } ;
 inst_disp_tog   : DISPLAY TOGGLE            { emit (00210); } ;
 inst_c_exch_m1  : C EXCHANGE M1             { emit (00410); }
 		| M1 EXCHANGE C             { emit (00410); } ;
-inst_m1_to_c    : M1 ARROW C                { emit (00510); }
+inst_m1_to_c    : M1 ARROW C                { emit (00510); } ;
 inst_c_exch_m2  : C EXCHANGE M2             { emit (00610); }
 		| M2 EXCHANGE C             { emit (00610); } ;
 inst_m2_to_c    : M2 ARROW C                { emit (00710); } ;
@@ -390,7 +391,7 @@ inst_f_to_a	: F ARROW A FIELDSPEC 	    { $4 = range ($4, 3, 3);
 inst_f_exch_a	: F EXCHANGE A FIELDSPEC    { $4 = range ($4, 3, 3);
 					      emit (01710); }
 		| A FIELDSPEC EXCHANGE F    { $2 = range ($2, 3, 3);
-					      emit (01710); }
+					      emit (01710); } ;
 inst_clr_reg    : CLEAR REGISTERS           { emit (00010); } ;
 
 inst_sel_rom    : SELECT ROM expr           { $3 = range ($3, 0, 15);
