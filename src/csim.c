@@ -394,10 +394,7 @@ gboolean on_key_event (GtkWidget *widget, GdkEventKey *event)
 static void quit_callback (GtkWidget *widget, gpointer data)
 {
   if (*state_fn)
-    {
-      printf ("saving '%s'\n", state_fn);
-      state_write_xml (sim, state_fn);
-    }
+    state_write_xml (sim, state_fn);
   gtk_main_quit ();
 }
 
@@ -784,7 +781,6 @@ void set_default_state_path (void)
   model_info = get_model_info (sim_get_model (sim));
 
   p = g_get_home_dir ();
-  printf ("home directory is '%s'\n", p);
   strcpy (state_fn, p);
   // $$$ not sure whether we're supposed to g_free() the home dir string
 
@@ -798,8 +794,6 @@ void set_default_state_path (void)
   max_strncat (state_fn, "/", sizeof (state_fn));
   max_strncat (state_fn, model_info->name, sizeof (state_fn));
   max_strncat (state_fn, ".nst", sizeof (state_fn));
-
-  printf ("default state path '%s'\n", state_fn);
 }
 
 
