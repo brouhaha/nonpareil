@@ -28,7 +28,7 @@ roms = Split ("""hp21.obj hp25.obj
                  hp67.obj
                  hp32e.obj hp33c.obj hp34c.obj hp37e.obj hp38c.obj hp38e.obj
                  hp41cv.obj
-                 hp16c.obj""")
+                 hp15c.obj hp16c.obj""")
 
 env.Alias (target = 'install',
            source = env.Install (dir = env ['prefix'] + "/lib/nonpareil",

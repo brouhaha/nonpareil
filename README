@@ -6,14 +6,14 @@ $Id$
 
 News:
 
-Release 0.60 of Nonpareil is an interim development release.
+Release 0.63 of Nonpareil is an interim development release.
 
 In this release, the following calculators are simulated:
 	HP-35, HP-45, HP-55, HP-80
 	HP-21, HP-25
 	HP-31E, HP-33C, HP-34C, HP-37E, HP-38E, HP-38C
 	HP-41CV
-	HP-11C, HP-16C
+	HP-11C, HP-15C, HP-16C
 
 The menu commands other than "Quit" and "About" are not implemented.
 
