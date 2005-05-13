@@ -86,13 +86,15 @@ Export('uasm')
 
 nonpareil_env = env.Copy ()
 
-nonpareil_srcs = Split ("""csim.c proc.c
+nonpareil_srcs = Split ("""proc.c
                            display.c glib_async_queue_source.c
 			   kmll.l kmly.y kml.c
                            platform.c model.c
                            proc_classic.c
                            proc_woodstock.c
                            proc_nut.c coconut_lcd.c voyager_lcd.c""")
+
+nonpareil_csim_srcs = Split ("""csim.c""")
 
 more_nonpareil_srcs = Split ("""debugger.c""")
 
@@ -125,6 +127,9 @@ if env ['has_debugger_cli']:
         debugger_env.Append (CPPDEFINES = {'USE_READLINE': 1})
         nonpareil_env.Append (LIBS = 'readline')
     nonpareil_objs.append (debugger_env.Object ('debugger.c'))
+
+for src in nonpareil_csim_srcs:
+    nonpareil_objs.append (csim_env.Object (src))
 
 for src in nonpareil_srcs:
     nonpareil_objs.append (nonpareil_env.Object (src))
@@ -197,4 +202,4 @@ misc = Split ("""SConscript ChangeLog release.c""")
 env.Distribute (source_release_dir,
                 misc + headers + common_srcs + common_dis_srcs +
                 state_io_srcs + uasm_srcs +
-                nonpareil_srcs + more_nonpareil_srcs)
+                nonpareil_srcs + nonpareil_csim_srcs + more_nonpareil_srcs)
