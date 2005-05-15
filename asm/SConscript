@@ -47,9 +47,7 @@ env.Append (BUILDERS = { 'Assemble': Assemble })
 
 asm_srcs = Split ("""hp35.asm hp45.asm hp55.asm hp80.asm""")
 
-asm_objs = []
-for src in asm_srcs:
-    asm_objs.append (env.Assemble (src))
+asm_objs = [env.Assemble(src) for src in asm_srcs]
 
 Default (asm_objs)
 

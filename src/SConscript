@@ -44,19 +44,13 @@ if env ['target'] == 'windows':
 	env.Append (CCFLAGS = ['-mms-bitfields'])
 
 common_srcs = Split ("""util.c arch.c""")
-common_objs = []
-for src in common_srcs:
-    common_objs.append (env.Object (src))
+common_objs = [env.Object(src) for src in common_srcs]
 
 common_dis_srcs = Split ("""dis_woodstock.c dis_nut.c""")
-common_dis_objs = [];
-for src in common_dis_srcs:
-    common_dis_objs.append (env.Object (src))
+common_dis_objs = [env.Object(src) for src in common_dis_srcs];
 
 state_io_srcs = Split ("""state_write.c state_read.c""")
-state_io_objs = [];
-for src in state_io_srcs:
-    state_io_objs.append (env.Object (src))
+state_io_objs = [env.Object(src) for src in state_io_srcs];
 state_io_packages = "libxml-2.0"
 
 release_env = env.Copy (CPPDEFINES = { 'NONPAREIL_RELEASE': env ['RELEASE']})
