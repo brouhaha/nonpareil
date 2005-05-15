@@ -78,7 +78,7 @@ else:
 # removed the exclude of '*~'
 #-----------------------------------------------------------------------------
 
-import os, errno, SCons
+import os, errno, time, SCons
 
 def distcopy (target, source, env):
     treedir = str (target[0])
@@ -119,7 +119,7 @@ env.Append (BUILDERS = {'Distribute' : dist_bld})
 env.Append (BUILDERS = {'Tarball' : tarball_bld})
 
 #-----------------------------------------------------------------------------
-# package a source tarball
+# package a release source tarball or a snapshot
 #-----------------------------------------------------------------------------
 
 files = Split ("""README COPYING INSTALL DEBUGGING TODO SConstruct""")
@@ -130,11 +130,19 @@ env.Alias (target = 'dist',
            source = env.Tarball ('nonpareil-' + release + '.tar.gz',
                                  source_release_dir))
 
+snap_date = time.strftime ("%Y.%m.%d")
+
+snapshot_dir = env.Distribute ('nonpareil-' + snap_date, files)
+
+env.Alias (target ='snap',
+           source = env.Tarball ('nonpareil-' + snap_date + '.tar.gz',
+                                 snapshot_dir))
+
 #-----------------------------------------------------------------------------
 # code
 #-----------------------------------------------------------------------------
 
-Export ('env source_release_dir')
+Export ('env source_release_dir snapshot_dir')
 
 SConscript ('src/SConscript',
             build_dir=build_dir,

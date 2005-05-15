@@ -18,7 +18,7 @@
 # the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
 # Boston, MA 02111, USA.
 
-Import('env source_release_dir')
+Import('env source_release_dir snapshot_dir')
 
 #-----------------------------------------------------------------------------
 # common
@@ -199,7 +199,10 @@ headers = Split ("""util.h
 
 misc = Split ("""SConscript ChangeLog release.c""")
 
-env.Distribute (source_release_dir,
-                misc + headers + common_srcs + common_dis_srcs +
-                state_io_srcs + uasm_srcs +
-                nonpareil_srcs + nonpareil_csim_srcs + more_nonpareil_srcs)
+dist_files = (misc + headers + common_srcs + common_dis_srcs +
+              state_io_srcs + uasm_srcs +
+              nonpareil_srcs + nonpareil_csim_srcs + more_nonpareil_srcs)
+
+env.Distribute (source_release_dir, dist_files)
+
+env.Distribute (snapshot_dir, dist_files)

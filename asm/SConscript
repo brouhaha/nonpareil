@@ -18,7 +18,7 @@
 # the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
 # Boston, MA 02111, USA.
 
-Import('env uasm source_release_dir')
+Import('env uasm source_release_dir snapshot_dir')
 
 import os.path
 
@@ -61,5 +61,9 @@ env.Alias (target = 'install',
 # source tarball
 #-----------------------------------------------------------------------------
 
-env.Distribute (source_release_dir,
-                ['SConscript'] + asm_srcs)
+dist_files = ['SConscript'] + asm_srcs
+
+env.Distribute (source_release_dir, dist_files)
+
+env.Distribute (snapshot_dir, dist_files)
+
