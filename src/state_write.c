@@ -221,12 +221,16 @@ static void write_mem_loc (xmlTextWriterPtr writer,
 static void write_memory (sim_t *sim, xmlTextWriterPtr writer)
 {
   addr_t addr;
+  addr_t max_ram;
   uint64_t data;
+
+  max_ram = sim_get_max_ram (sim);
+
   xml_start_element (writer, "memory");
 
   xml_write_attribute_string (writer, "as", "ram");
 
-  for (addr = 0; addr < MAX_RAM; addr++)
+  for (addr = 0; addr < max_ram; addr++)
     {
       if (sim_read_ram (sim, addr, & data))
 	write_mem_loc (writer, addr, "%014" PRIx64, data);
