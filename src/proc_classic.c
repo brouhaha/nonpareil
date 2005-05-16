@@ -702,25 +702,25 @@ static void op_display_toggle (sim_t *sim, int opcode)
 }
 
 
-static void init_ops (sim_t *sim)
+static void init_ops (classic_cpu_reg_t *cpu_reg)
 {
   int i, j;
 
   for (i = 0; i < 1024; i += 4)
     {
-      sim->op_fcn [i + 0] = bad_op;
-      sim->op_fcn [i + 1] = op_jsb;    /* type 1: aaaaaaaa01 */
-      sim->op_fcn [i + 2] = op_arith;  /* type 2: ooooowww10 */
-      sim->op_fcn [i + 3] = op_goto;   /* type 1: aaaaaaaa11 */
+      cpu_reg->op_fcn [i + 0] = bad_op;
+      cpu_reg->op_fcn [i + 1] = op_jsb;    /* type 1: aaaaaaaa01 */
+      cpu_reg->op_fcn [i + 2] = op_arith;  /* type 2: ooooowww10 */
+      cpu_reg->op_fcn [i + 3] = op_goto;   /* type 1: aaaaaaaa11 */
     }
 
   /* type 3 instructions: nnnnff0100*/
   for (i = 0; i <= 15; i ++)
     {
-      sim->op_fcn [0x004 + (i << 6)] = op_set_s;
-      sim->op_fcn [0x014 + (i << 6)] = op_test_s;
-      sim->op_fcn [0x024 + (i << 6)] = op_clr_s;
-      sim->op_fcn [0x034 /* + (i << 6) */ ] = op_clear_s;
+      cpu_reg->op_fcn [0x004 + (i << 6)] = op_set_s;
+      cpu_reg->op_fcn [0x014 + (i << 6)] = op_test_s;
+      cpu_reg->op_fcn [0x024 + (i << 6)] = op_clr_s;
+      cpu_reg->op_fcn [0x034 /* + (i << 6) */ ] = op_clear_s;
     }
 
   /* New instructions in HP-55 and maybe HP-65, wedged into the unused
@@ -728,39 +728,39 @@ static void init_ops (sim_t *sim)
      probably cleared all status like 0x034. */
   for (i = 0; i <= 7; i ++)
     {
-      sim->op_fcn [0x074 + (i << 7)] = op_del_sel_rom;
+      cpu_reg->op_fcn [0x074 + (i << 7)] = op_del_sel_rom;
     }
-  sim->op_fcn [0x234] = op_del_sel_grp;
-  sim->op_fcn [0x2b4] = op_del_sel_grp;
+  cpu_reg->op_fcn [0x234] = op_del_sel_grp;
+  cpu_reg->op_fcn [0x2b4] = op_del_sel_grp;
 
   /* type 4 instructions: ppppff1100 */
   for (i = 0; i <= 15; i ++)
     {
-      sim->op_fcn [0x00c + (i << 6)] = op_set_p;
-      sim->op_fcn [0x02c + (i << 6)] = op_test_p;
-      sim->op_fcn [0x01c /* + (i << 6) */ ] = op_dec_p;
-      sim->op_fcn [0x03c /* + (i << 6) */ ] = op_inc_p;
+      cpu_reg->op_fcn [0x00c + (i << 6)] = op_set_p;
+      cpu_reg->op_fcn [0x02c + (i << 6)] = op_test_p;
+      cpu_reg->op_fcn [0x01c /* + (i << 6) */ ] = op_dec_p;
+      cpu_reg->op_fcn [0x03c /* + (i << 6) */ ] = op_inc_p;
     }
 
   /* type 5 instructions: nnnnff1000 */
   for (i = 0; i <= 9; i++)
-      sim->op_fcn [0x018 + (i << 6)] = op_load_constant;
+      cpu_reg->op_fcn [0x018 + (i << 6)] = op_load_constant;
   for (i = 0; i <= 1; i++)
     {
-      sim->op_fcn [0x028 /* + (i << 4) */ ] = op_display_toggle;
-      sim->op_fcn [0x0a8 /* + (i << 4) */ ] = op_c_exch_m;
-      sim->op_fcn [0x128 /* + (i << 4) */ ] = op_c_to_stack;
-      sim->op_fcn [0x1a8 /* + (i << 4) */ ] = op_stack_to_a;
-      sim->op_fcn [0x228 /* + (i << 4) */ ] = op_display_off;
-      sim->op_fcn [0x2a8 /* + (i << 4) */ ] = op_m_to_c;
-      sim->op_fcn [0x328 /* + (i << 4) */ ] = op_down_rotate;
-      sim->op_fcn [0x3a8 /* + (i << 4) */ ] = op_clear_reg;
+      cpu_reg->op_fcn [0x028 /* + (i << 4) */ ] = op_display_toggle;
+      cpu_reg->op_fcn [0x0a8 /* + (i << 4) */ ] = op_c_exch_m;
+      cpu_reg->op_fcn [0x128 /* + (i << 4) */ ] = op_c_to_stack;
+      cpu_reg->op_fcn [0x1a8 /* + (i << 4) */ ] = op_stack_to_a;
+      cpu_reg->op_fcn [0x228 /* + (i << 4) */ ] = op_display_off;
+      cpu_reg->op_fcn [0x2a8 /* + (i << 4) */ ] = op_m_to_c;
+      cpu_reg->op_fcn [0x328 /* + (i << 4) */ ] = op_down_rotate;
+      cpu_reg->op_fcn [0x3a8 /* + (i << 4) */ ] = op_clear_reg;
       for (j = 0; j <= 3; j++)
 	{
 #if 0
-	  sim->op_fcn [0x068 + (j << 8) + (i << 4)] = op_is_to_a;
+	  cpu_reg->op_fcn [0x068 + (j << 8) + (i << 4)] = op_is_to_a;
 #endif
-	  sim->op_fcn [0x0e8 + (j << 8) + (i << 4)] = op_data_to_c;
+	  cpu_reg->op_fcn [0x0e8 + (j << 8) + (i << 4)] = op_data_to_c;
 	  /* BCD->C is nominally 0x2f8 */
 	}
     }
@@ -768,23 +768,23 @@ static void init_ops (sim_t *sim)
   /* type 6 instructions: nnnff10000 */
   for (i = 0; i <= 7; i++)
     {
-      sim->op_fcn [0x010 + (i << 7)] = op_sel_rom;
-      sim->op_fcn [0x030 /* + (i << 7) */ ] = op_return;
+      cpu_reg->op_fcn [0x010 + (i << 7)] = op_sel_rom;
+      cpu_reg->op_fcn [0x030 /* + (i << 7) */ ] = op_return;
       if (i & 1)
-	sim->op_fcn [0x050 + 0x080 /* + (i << 7) */ ] = op_keys_to_rom_addr;
+	cpu_reg->op_fcn [0x050 + 0x080 /* + (i << 7) */ ] = op_keys_to_rom_addr;
 #if 0
       else
-	sim->op_fcn [0x050 /* + (i << 7) */ ] = op_external_entry;
+	cpu_reg->op_fcn [0x050 /* + (i << 7) */ ] = op_external_entry;
 #endif
     }
-  sim->op_fcn [0x270] = op_c_to_addr;  /* also 0x370 */
-  sim->op_fcn [0x2f0] = op_c_to_data;
+  cpu_reg->op_fcn [0x270] = op_c_to_addr;  /* also 0x370 */
+  cpu_reg->op_fcn [0x2f0] = op_c_to_data;
 
   /* no type 7 or type 8 instructions: xxxx100000, xxx1000000 */
 
   /* type 9 and 10 instructions: xxx0000000 */
-  sim->op_fcn [0x200] = op_rom_addr_to_buf;
-  sim->op_fcn [0x000] = op_nop;
+  cpu_reg->op_fcn [0x200] = op_rom_addr_to_buf;
+  cpu_reg->op_fcn [0x000] = op_nop;
 }
 
 
@@ -923,7 +923,7 @@ bool classic_execute_instruction (sim_t *sim)
       cpu_reg->s [i] = 1;
 
   cpu_reg->pc++;
-  (* sim->op_fcn [opcode]) (sim, opcode);
+  (* cpu_reg->op_fcn [opcode]) (sim, opcode);
   sim->cycle_count++;
 
   cpu_reg->display_scan_fn (sim);
@@ -1158,7 +1158,7 @@ static void classic_new_processor (sim_t *sim, int ram_size)
   cpu_reg->left_scan = WSIZE - 1;
   cpu_reg->right_scan = 0;
 
-  init_ops (sim);
+  init_ops (cpu_reg);
 
   chip_event (sim, event_reset);
 }

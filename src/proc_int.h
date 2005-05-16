@@ -141,8 +141,6 @@ struct sim_t
   int debug_flags;  /* SIM_DEBUG_TRACE etc. */
 #endif
 
-  void (* op_fcn [1024])(struct sim_t *sim, int opcode);
-
   void (* rd_n_fcn [256])(struct sim_t *sim, int n);
   void (* wr_n_fcn [256])(struct sim_t *sim, int n);
   void (* wr_fcn   [256])(struct sim_t *sim);

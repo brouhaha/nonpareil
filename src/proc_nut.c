@@ -1245,103 +1245,103 @@ static void op_powoff (sim_t *sim, int opcode)
 }
 
 
-static void nut_init_ops (sim_t *sim)
+static void nut_init_ops (nut_reg_t *nut_reg)
 {
   int i;
 
   for (i = 0; i < 1024; i += 4)
     {
-      sim->op_fcn [i + 0] = bad_op;
-      sim->op_fcn [i + 1] = op_long_branch;
-      sim->op_fcn [i + 2] = op_arith;  /* type 2: ooooowww10 */
-      sim->op_fcn [i + 3] = op_short_branch;
+      nut_reg->op_fcn [i + 0] = bad_op;
+      nut_reg->op_fcn [i + 1] = op_long_branch;
+      nut_reg->op_fcn [i + 2] = op_arith;  /* type 2: ooooowww10 */
+      nut_reg->op_fcn [i + 3] = op_short_branch;
     }
 
-  sim->op_fcn [0x000] = op_nop;
+  nut_reg->op_fcn [0x000] = op_nop;
 
-  // sim->op_fcn [0x040] = op_write_mldl;
+  // nut_reg->op_fcn [0x040] = op_write_mldl;
 
-  // sim->op_fcn [0x100] = op_enbank1;
-  // sim->op_fcn [0x180] = op_enbank2;
+  // nut_reg->op_fcn [0x100] = op_enbank1;
+  // nut_reg->op_fcn [0x180] = op_enbank2;
 
   // for (i = 0; i < 8; i++)
   //   op_fcn [0x200 + (i << 6)] = op_write_pil;
 
   for (i = 0; i < WSIZE; i ++)
     {
-      sim->op_fcn [0x004 + (itmap [i] << 6)] = op_clr_s;
-      sim->op_fcn [0x008 + (itmap [i] << 6)] = op_set_s;
-      sim->op_fcn [0x00c + (itmap [i] << 6)] = op_test_s;
-      sim->op_fcn [0x014 + (itmap [i] << 6)] = op_test_pt;
-      sim->op_fcn [0x01c + (itmap [i] << 6)] = op_set_pt;
-      sim->op_fcn [0x02c + (itmap [i] << 6)] = op_test_ext_flag;
-      sim->op_fcn [0x03c + (itmap [i] << 6)] = op_rcr;
+      nut_reg->op_fcn [0x004 + (itmap [i] << 6)] = op_clr_s;
+      nut_reg->op_fcn [0x008 + (itmap [i] << 6)] = op_set_s;
+      nut_reg->op_fcn [0x00c + (itmap [i] << 6)] = op_test_s;
+      nut_reg->op_fcn [0x014 + (itmap [i] << 6)] = op_test_pt;
+      nut_reg->op_fcn [0x01c + (itmap [i] << 6)] = op_set_pt;
+      nut_reg->op_fcn [0x02c + (itmap [i] << 6)] = op_test_ext_flag;
+      nut_reg->op_fcn [0x03c + (itmap [i] << 6)] = op_rcr;
     }
-  sim->op_fcn [0x3c4] = op_clear_all_s;
-  sim->op_fcn [0x3c8] = op_reset_kb;
-  sim->op_fcn [0x3cc] = op_test_kb;
-  sim->op_fcn [0x3d4] = op_dec_pt;
-  sim->op_fcn [0x3dc] = op_inc_pt;
+  nut_reg->op_fcn [0x3c4] = op_clear_all_s;
+  nut_reg->op_fcn [0x3c8] = op_reset_kb;
+  nut_reg->op_fcn [0x3cc] = op_test_kb;
+  nut_reg->op_fcn [0x3d4] = op_dec_pt;
+  nut_reg->op_fcn [0x3dc] = op_inc_pt;
   // 0x3fc = LCD compensation
 
   for (i = 0; i < 16; i++)
     {
-      sim->op_fcn [0x010 + (i << 6)] = op_lc;
-      // sim->op_fcn [0x024 + (i << 6)] = op_selprf;
-      sim->op_fcn [0x028 + (i << 6)] = op_write_reg_n;
-      sim->op_fcn [0x038 + (i << 6)] = op_read_reg_n;
+      nut_reg->op_fcn [0x010 + (i << 6)] = op_lc;
+      // nut_reg->op_fcn [0x024 + (i << 6)] = op_selprf;
+      nut_reg->op_fcn [0x028 + (i << 6)] = op_write_reg_n;
+      nut_reg->op_fcn [0x038 + (i << 6)] = op_read_reg_n;
     }
 
-  sim->op_fcn [0x058] = op_c_to_g;
-  sim->op_fcn [0x098] = op_g_to_c;
-  sim->op_fcn [0x0d8] = op_c_exch_g;
+  nut_reg->op_fcn [0x058] = op_c_to_g;
+  nut_reg->op_fcn [0x098] = op_g_to_c;
+  nut_reg->op_fcn [0x0d8] = op_c_exch_g;
 
-  sim->op_fcn [0x158] = op_c_to_m;
-  sim->op_fcn [0x198] = op_m_to_c;
-  sim->op_fcn [0x1d8] = op_c_exch_m;
+  nut_reg->op_fcn [0x158] = op_c_to_m;
+  nut_reg->op_fcn [0x198] = op_m_to_c;
+  nut_reg->op_fcn [0x1d8] = op_c_exch_m;
 
-  sim->op_fcn [0x258] = op_sb_to_f;
-  sim->op_fcn [0x298] = op_f_to_sb;
-  sim->op_fcn [0x2d8] = op_f_exch_sb;
+  nut_reg->op_fcn [0x258] = op_sb_to_f;
+  nut_reg->op_fcn [0x298] = op_f_to_sb;
+  nut_reg->op_fcn [0x2d8] = op_f_exch_sb;
 
-  sim->op_fcn [0x358] = op_c_to_s;
-  sim->op_fcn [0x398] = op_s_to_c;
-  sim->op_fcn [0x3d8] = op_c_exch_s;
+  nut_reg->op_fcn [0x358] = op_c_to_s;
+  nut_reg->op_fcn [0x398] = op_s_to_c;
+  nut_reg->op_fcn [0x3d8] = op_c_exch_s;
 
-  sim->op_fcn [0x020] = op_pop;
-  sim->op_fcn [0x060] = op_powoff;
-  sim->op_fcn [0x0a0] = op_sel_p;
-  sim->op_fcn [0x0e0] = op_sel_q;
-  sim->op_fcn [0x120] = op_test_pq;
-  sim->op_fcn [0x160] = op_lld;
-  sim->op_fcn [0x1a0] = op_clear_abc;
-  sim->op_fcn [0x1e0] = op_goto_c;
-  sim->op_fcn [0x220] = op_keys_to_c;
-  sim->op_fcn [0x260] = op_set_hex;
-  sim->op_fcn [0x2a0] = op_set_dec;
+  nut_reg->op_fcn [0x020] = op_pop;
+  nut_reg->op_fcn [0x060] = op_powoff;
+  nut_reg->op_fcn [0x0a0] = op_sel_p;
+  nut_reg->op_fcn [0x0e0] = op_sel_q;
+  nut_reg->op_fcn [0x120] = op_test_pq;
+  nut_reg->op_fcn [0x160] = op_lld;
+  nut_reg->op_fcn [0x1a0] = op_clear_abc;
+  nut_reg->op_fcn [0x1e0] = op_goto_c;
+  nut_reg->op_fcn [0x220] = op_keys_to_c;
+  nut_reg->op_fcn [0x260] = op_set_hex;
+  nut_reg->op_fcn [0x2a0] = op_set_dec;
   // 0x2e0 = display off (Nut, Voyager)
   // 0x320 = display toggle (Nut, Voyager)
-  sim->op_fcn [0x360] = op_return_if_carry;
-  sim->op_fcn [0x3a0] = op_return_if_no_carry;
-  sim->op_fcn [0x3e0] = op_return;
+  nut_reg->op_fcn [0x360] = op_return_if_carry;
+  nut_reg->op_fcn [0x3a0] = op_return_if_no_carry;
+  nut_reg->op_fcn [0x3e0] = op_return;
 
   // 0x030 = display blink (Voyager)
   // 0x030 = ROMBLK (Hepax)
-  sim->op_fcn [0x070] = op_c_to_n;
-  sim->op_fcn [0x0b0] = op_n_to_c;
-  sim->op_fcn [0x0f0] = op_c_exch_n;
-  sim->op_fcn [0x130] = op_ldi;
-  sim->op_fcn [0x170] = op_push_c;
-  sim->op_fcn [0x1b0] = op_pop_c;
+  nut_reg->op_fcn [0x070] = op_c_to_n;
+  nut_reg->op_fcn [0x0b0] = op_n_to_c;
+  nut_reg->op_fcn [0x0f0] = op_c_exch_n;
+  nut_reg->op_fcn [0x130] = op_ldi;
+  nut_reg->op_fcn [0x170] = op_push_c;
+  nut_reg->op_fcn [0x1b0] = op_pop_c;
   // 0x1f0 = WPTOG (Hepax)
-  sim->op_fcn [0x230] = op_keys_to_rom_addr;
-  sim->op_fcn [0x270] = op_c_to_dadd;
-  // sim->op_fcn [0x2b0] = op_clear_regs;
-  sim->op_fcn [0x2f0] = op_c_to_data;
-  sim->op_fcn [0x330] = op_rom_to_c;
-  sim->op_fcn [0x370] = op_or;
-  sim->op_fcn [0x3b0] = op_and;
-  sim->op_fcn [0x3f0] = op_c_to_pfad;
+  nut_reg->op_fcn [0x230] = op_keys_to_rom_addr;
+  nut_reg->op_fcn [0x270] = op_c_to_dadd;
+  // nut_reg->op_fcn [0x2b0] = op_clear_regs;
+  nut_reg->op_fcn [0x2f0] = op_c_to_data;
+  nut_reg->op_fcn [0x330] = op_rom_to_c;
+  nut_reg->op_fcn [0x370] = op_or;
+  nut_reg->op_fcn [0x3b0] = op_and;
+  nut_reg->op_fcn [0x3f0] = op_c_to_pfad;
 
 }
 
@@ -1440,7 +1440,7 @@ static bool nut_execute_cycle (sim_t *sim)
     {
     case norm:
       nut_reg->pc++;
-      (* sim->op_fcn [opcode]) (sim, opcode);
+      (* nut_reg->op_fcn [opcode]) (sim, opcode);
       break;
     case long_branch:
       nut_reg->pc++;
@@ -1696,7 +1696,7 @@ static void nut_new_processor (sim_t *sim, int ram_size)
 
   install_chip (sim, 0, & nut_cpu_chip_detail, nut_reg);
 
-  nut_init_ops (sim);
+  nut_init_ops (nut_reg);
 
   nut_new_ram_addr_space (sim, 1024);
   nut_new_pf_addr_space (sim, 256);

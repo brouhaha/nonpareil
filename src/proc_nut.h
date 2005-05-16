@@ -95,6 +95,8 @@ typedef struct nut_reg_t
 
   bool awake;
 
+  void (* op_fcn [1024])(struct sim_t *sim, int opcode);
+
   // RAM:
   uint16_t max_ram;
   uint16_t ram_addr;  // selected RAM address

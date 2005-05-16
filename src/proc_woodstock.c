@@ -1052,88 +1052,88 @@ static void op_crc_test_f1 (sim_t *sim, int opcode)
 }
 
 
-static void init_ops (sim_t *sim)
+static void init_ops (act_reg_t *act_reg)
 {
   int i;
 
   for (i = 0; i < 1024; i += 4)
     {
-      sim->op_fcn [i + 0] = bad_op;
-      sim->op_fcn [i + 1] = op_jsb;    /* type 1: aaaaaaaa01 */
-      sim->op_fcn [i + 2] = op_arith;  /* type 2: ooooowww10 */
-      sim->op_fcn [i + 3] = op_goto;   /* type 1: aaaaaaaa11 */
+      act_reg->op_fcn [i + 0] = bad_op;
+      act_reg->op_fcn [i + 1] = op_jsb;    /* type 1: aaaaaaaa01 */
+      act_reg->op_fcn [i + 2] = op_arith;  /* type 2: ooooowww10 */
+      act_reg->op_fcn [i + 3] = op_goto;   /* type 1: aaaaaaaa11 */
     }
 
   for (i = 0; i <= 15; i ++)
     {
       /* xx00 uassigned */
-      sim->op_fcn [00004 + (i << 6)] = op_set_s;
+      act_reg->op_fcn [00004 + (i << 6)] = op_set_s;
       /* xx10 misc */
-      sim->op_fcn [00014 + (i << 6)] = op_clr_s;
+      act_reg->op_fcn [00014 + (i << 6)] = op_clr_s;
       /* xx20 misc */
-      sim->op_fcn [00024 + (i << 6)] = op_test_s_eq_1;
-      sim->op_fcn [00030 + (i << 6)] = op_load_constant;
-      sim->op_fcn [00034 + (i << 6)] = op_test_s_eq_0;
-      sim->op_fcn [00040 + (i << 6)] = op_sel_rom;
-      sim->op_fcn [00044 + (i << 6)] = op_test_p_eq;
-      sim->op_fcn [00050 + (i << 6)] = op_c_to_register;
-      sim->op_fcn [00054 + (i << 6)] = op_test_p_ne;
+      act_reg->op_fcn [00024 + (i << 6)] = op_test_s_eq_1;
+      act_reg->op_fcn [00030 + (i << 6)] = op_load_constant;
+      act_reg->op_fcn [00034 + (i << 6)] = op_test_s_eq_0;
+      act_reg->op_fcn [00040 + (i << 6)] = op_sel_rom;
+      act_reg->op_fcn [00044 + (i << 6)] = op_test_p_eq;
+      act_reg->op_fcn [00050 + (i << 6)] = op_c_to_register;
+      act_reg->op_fcn [00054 + (i << 6)] = op_test_p_ne;
       /* xx60 misc */
-      sim->op_fcn [00064 + (i << 6)] = op_del_sel_rom;
-      sim->op_fcn [00070 + (i << 6)] = op_register_to_c;
-      sim->op_fcn [00074 + (i << 6)] = op_set_p;
+      act_reg->op_fcn [00064 + (i << 6)] = op_del_sel_rom;
+      act_reg->op_fcn [00070 + (i << 6)] = op_register_to_c;
+      act_reg->op_fcn [00074 + (i << 6)] = op_set_p;
     }
 
-  sim->op_fcn [00000] = op_nop;
-  sim->op_fcn [00070] = op_data_to_c;
+  act_reg->op_fcn [00000] = op_nop;
+  act_reg->op_fcn [00070] = op_data_to_c;
 
-  sim->op_fcn [00010] = op_clear_reg;
-  sim->op_fcn [00110] = op_clear_s;
-  sim->op_fcn [00210] = op_display_toggle;
-  sim->op_fcn [00310] = op_display_off;
-  sim->op_fcn [00410] = op_m1_exch_c;
-  sim->op_fcn [00510] = op_m1_to_c;
-  sim->op_fcn [00610] = op_m2_exch_c;
-  sim->op_fcn [00710] = op_m2_to_c;
-  sim->op_fcn [01010] = op_stack_to_a;
-  sim->op_fcn [01110] = op_down_rotate;
-  sim->op_fcn [01210] = op_y_to_a;
-  sim->op_fcn [01310] = op_c_to_stack;
-  sim->op_fcn [01410] = op_decimal;
+  act_reg->op_fcn [00010] = op_clear_reg;
+  act_reg->op_fcn [00110] = op_clear_s;
+  act_reg->op_fcn [00210] = op_display_toggle;
+  act_reg->op_fcn [00310] = op_display_off;
+  act_reg->op_fcn [00410] = op_m1_exch_c;
+  act_reg->op_fcn [00510] = op_m1_to_c;
+  act_reg->op_fcn [00610] = op_m2_exch_c;
+  act_reg->op_fcn [00710] = op_m2_to_c;
+  act_reg->op_fcn [01010] = op_stack_to_a;
+  act_reg->op_fcn [01110] = op_down_rotate;
+  act_reg->op_fcn [01210] = op_y_to_a;
+  act_reg->op_fcn [01310] = op_c_to_stack;
+  act_reg->op_fcn [01410] = op_decimal;
   /* 1510 unassigned */
-  sim->op_fcn [01610] = op_f_to_a;
-  sim->op_fcn [01710] = op_f_exch_a;
+  act_reg->op_fcn [01610] = op_f_to_a;
+  act_reg->op_fcn [01710] = op_f_exch_a;
 
-  sim->op_fcn [00020] = op_keys_to_rom_addr;
-  sim->op_fcn [00120] = op_keys_to_a;
-  sim->op_fcn [00220] = op_a_to_rom_addr;
-  sim->op_fcn [00320] = op_display_reset_twf;
-  sim->op_fcn [00420] = op_binary;
-  sim->op_fcn [00520] = op_circulate_a_left;
-  sim->op_fcn [00620] = op_dec_p;
-  sim->op_fcn [00720] = op_inc_p;
-  sim->op_fcn [01020] = op_return;
+  act_reg->op_fcn [00020] = op_keys_to_rom_addr;
+  act_reg->op_fcn [00120] = op_keys_to_a;
+  act_reg->op_fcn [00220] = op_a_to_rom_addr;
+  act_reg->op_fcn [00320] = op_display_reset_twf;
+  act_reg->op_fcn [00420] = op_binary;
+  act_reg->op_fcn [00520] = op_circulate_a_left;
+  act_reg->op_fcn [00620] = op_dec_p;
+  act_reg->op_fcn [00720] = op_inc_p;
+  act_reg->op_fcn [01020] = op_return;
   /* 1120..1720 unknown, probably printer */
 
   /* 0060 unknown */
   /* 0160..0760 unassigned/unknown */
-  sim->op_fcn [01060] = op_bank_switch;
-  sim->op_fcn [01160] = op_c_to_addr;
-  sim->op_fcn [01260] = op_clear_data_regs;
-  sim->op_fcn [01360] = op_c_to_data;
-  sim->op_fcn [01460] = op_rom_selftest;  /* Only on Spice series */
+  act_reg->op_fcn [01060] = op_bank_switch;
+  act_reg->op_fcn [01160] = op_c_to_addr;
+  act_reg->op_fcn [01260] = op_clear_data_regs;
+  act_reg->op_fcn [01360] = op_c_to_data;
+  act_reg->op_fcn [01460] = op_rom_selftest;  /* Only on Spice series */
   /* 1560..1660 unassigned/unknown */
-  sim->op_fcn [01760] = op_nop;  /* "HI I'M WOODSTOCK" */
+  act_reg->op_fcn [01760] = op_nop;  /* "HI I'M WOODSTOCK" */
 
   /* CRC chip in 67/97 */
-  sim->op_fcn [00300] = op_crc_test_f1;
-  sim->op_fcn [01500] = op_crc_clear_f1;
+  act_reg->op_fcn [00300] = op_crc_test_f1;
+  act_reg->op_fcn [01500] = op_crc_clear_f1;
 
-  sim->op_fcn [00560] = op_nop;
+  act_reg->op_fcn [00560] = op_nop;
 
-  sim->op_fcn [00400] = op_nop;
-  sim->op_fcn [01000] = op_nop;
-  sim->op_fcn [01300] = op_nop;
+  act_reg->op_fcn [00400] = op_nop;
+  act_reg->op_fcn [01000] = op_nop;
+  act_reg->op_fcn [01300] = op_nop;
 
   /*
    * Instruction codings unknown (probably 1160..1760):
@@ -1357,7 +1357,7 @@ static bool woodstock_execute_cycle (sim_t *sim)
   switch (prev_inst_state)
     {
     case norm:
-      (* sim->op_fcn [opcode]) (sim, opcode);
+      (* act_reg->op_fcn [opcode]) (sim, opcode);
       break;
     case branch:
       if (! act_reg->prev_carry)
@@ -1628,7 +1628,7 @@ static void woodstock_new_processor (sim_t *sim, int ram_size)
   act_reg->display_scan_position = act_reg->left_scan;
   act_reg->display_digit_position = 0;
 
-  init_ops (sim);
+  init_ops (act_reg);
 
   chip_event (sim, event_reset);
 }

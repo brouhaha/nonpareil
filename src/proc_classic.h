@@ -82,6 +82,8 @@ typedef struct
 
   void (* display_scan_fn) (sim_t *sim);
 
+  void (* op_fcn [1024])(struct sim_t *sim, int opcode);
+
   // RAM
   int ram_addr;  /* selected RAM address */
 

@@ -343,10 +343,12 @@ static void halfnut_lcd_wr (sim_t *sim)
 
 static void coconut_display_init_ops (sim_t *sim)
 {
+  nut_reg_t *nut_reg = sim->chip_data [0];
+
   sim->display_digits = COCONUT_DISPLAY_DIGITS;
-  sim->op_fcn [0x2e0] = coconut_op_display_off;
-  sim->op_fcn [0x320] = coconut_op_display_toggle;
-  sim->op_fcn [0x3fc] = coconut_op_display_compensation;
+  nut_reg->op_fcn [0x2e0] = coconut_op_display_off;
+  nut_reg->op_fcn [0x320] = coconut_op_display_toggle;
+  nut_reg->op_fcn [0x3fc] = coconut_op_display_compensation;
 }
 
 

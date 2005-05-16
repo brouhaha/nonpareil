@@ -104,10 +104,12 @@ static void voyager_op_display_blink (sim_t *sim, int opcode)
 
 static void voyager_display_init_ops (sim_t *sim)
 {
+  nut_reg_t *nut_reg = sim->chip_data [0];
+
   sim->display_digits = VOYAGER_DISPLAY_DIGITS;
-  sim->op_fcn [0x030] = voyager_op_display_blink;
-  sim->op_fcn [0x2e0] = voyager_op_display_off;
-  sim->op_fcn [0x320] = voyager_op_display_toggle;
+  nut_reg->op_fcn [0x030] = voyager_op_display_blink;
+  nut_reg->op_fcn [0x2e0] = voyager_op_display_off;
+  nut_reg->op_fcn [0x320] = voyager_op_display_toggle;
 }
 
 
