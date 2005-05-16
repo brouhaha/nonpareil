@@ -61,6 +61,9 @@ static reg_detail_t classic_cpu_reg_detail [] =
 };
 
 
+static chip_event_fn_t classic_event_fn;
+
+
 static chip_detail_t classic_cpu_chip_detail =
 {
   {
@@ -69,7 +72,7 @@ static chip_detail_t classic_cpu_chip_detail =
   },
   sizeof (classic_cpu_reg_detail) / sizeof (reg_detail_t),
   classic_cpu_reg_detail,
-  NULL
+  classic_event_fn
 };
 
 
