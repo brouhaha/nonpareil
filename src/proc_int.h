@@ -140,10 +140,6 @@ struct sim_t
 #ifdef HAS_DEBUGGER
   int debug_flags;  /* SIM_DEBUG_TRACE etc. */
 #endif
-
-  void (* rd_n_fcn [256])(struct sim_t *sim, int n);
-  void (* wr_n_fcn [256])(struct sim_t *sim, int n);
-  void (* wr_fcn   [256])(struct sim_t *sim);
 };
 
 

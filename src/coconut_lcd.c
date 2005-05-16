@@ -479,9 +479,9 @@ void coconut_display_init (sim_t *sim)
 
   display = alloc (sizeof (coconut_display_reg_t));
   nut_reg->pf_exists [PFADDR_LCD_DISPLAY] = 1;
-  sim->rd_n_fcn [PFADDR_LCD_DISPLAY] = & coconut_lcd_rd_n;
-  sim->wr_n_fcn [PFADDR_LCD_DISPLAY] = & coconut_lcd_wr_n;
-  sim->wr_fcn   [PFADDR_LCD_DISPLAY] = & coconut_lcd_wr;
+  nut_reg->rd_n_fcn [PFADDR_LCD_DISPLAY] = & coconut_lcd_rd_n;
+  nut_reg->wr_n_fcn [PFADDR_LCD_DISPLAY] = & coconut_lcd_wr_n;
+  nut_reg->wr_fcn   [PFADDR_LCD_DISPLAY] = & coconut_lcd_wr;
 
   install_chip (sim,
 		PFADDR_LCD_DISPLAY, 
@@ -489,7 +489,7 @@ void coconut_display_init (sim_t *sim)
 		display);
 
   nut_reg->pf_exists [PFADDR_HALFNUT] = 1;
-  sim->rd_n_fcn  [PFADDR_HALFNUT] = & halfnut_lcd_rd_n;
-  sim->wr_n_fcn  [PFADDR_HALFNUT] = & halfnut_lcd_wr_n;
-  sim->wr_fcn    [PFADDR_HALFNUT] = & halfnut_lcd_wr;
+  nut_reg->rd_n_fcn  [PFADDR_HALFNUT] = & halfnut_lcd_rd_n;
+  nut_reg->wr_n_fcn  [PFADDR_HALFNUT] = & halfnut_lcd_wr_n;
+  nut_reg->wr_fcn    [PFADDR_HALFNUT] = & halfnut_lcd_wr;
 }

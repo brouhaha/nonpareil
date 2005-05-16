@@ -717,8 +717,8 @@ static void op_read_reg_n (sim_t *sim, int opcode)
     }
   else if (is_pf)
     {
-      if (sim->rd_n_fcn [pf_addr])
-	(*sim->rd_n_fcn [pf_addr]) (sim, opcode >> 6);
+      if (nut_reg->rd_n_fcn [pf_addr])
+	(*nut_reg->rd_n_fcn [pf_addr]) (sim, opcode >> 6);
     }
   else
     {
@@ -768,8 +768,8 @@ static void op_write_reg_n (sim_t *sim, int opcode)
     }
   if (is_pf)
     {
-      if (sim->wr_n_fcn [pf_addr])
-	(*sim->wr_n_fcn [pf_addr]) (sim, opcode >> 6);
+      if (nut_reg->wr_n_fcn [pf_addr])
+	(*nut_reg->wr_n_fcn [pf_addr]) (sim, opcode >> 6);
     }
 }
 
@@ -811,8 +811,8 @@ static void op_c_to_data (sim_t *sim, int opcode)
     }
   if (is_pf)
     {
-      if (sim->wr_fcn [pf_addr])
-	(*sim->wr_fcn [pf_addr]) (sim);
+      if (nut_reg->wr_fcn [pf_addr])
+	(*nut_reg->wr_fcn [pf_addr]) (sim);
     }
 }
 

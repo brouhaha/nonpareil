@@ -109,4 +109,8 @@ typedef struct nut_reg_t
   uint16_t max_pf;
   uint8_t pf_addr;  // selected peripheral address
   bool *pf_exists;
+
+  void (* rd_n_fcn [256])(struct sim_t *sim, int n);
+  void (* wr_n_fcn [256])(struct sim_t *sim, int n);
+  void (* wr_fcn   [256])(struct sim_t *sim);
 } nut_reg_t;
