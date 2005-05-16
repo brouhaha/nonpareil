@@ -1615,7 +1615,7 @@ static bool nut_read_ram (sim_t *sim, int addr, uint64_t *val)
   uint64_t data = 0;
   int i;
 
-  if (addr > nut_reg->max_ram)
+  if (addr > sim->max_ram)
     fatal (2, "classic_read_ram: address %d out of range\n", addr);
   if (! nut_reg->ram_exists [addr])
     return false;
@@ -1639,7 +1639,7 @@ static bool nut_write_ram (sim_t *sim, int addr, uint64_t *val)
   uint64_t data;
   int i;
 
-  if (addr > nut_reg->max_ram)
+  if (addr > sim->max_ram)
     fatal (2, "sim_write_ram: address %d out of range\n", addr);
   if (! nut_reg->ram_exists [addr])
     return false;
@@ -1670,7 +1670,7 @@ static void nut_new_ram_addr_space (sim_t *sim, int max_ram)
 {
   nut_reg_t *nut_reg = sim->chip_data [0];
 
-  nut_reg->max_ram = max_ram;
+  sim->max_ram = max_ram;
   nut_reg->ram_exists   = alloc (max_ram * sizeof (bool));
   nut_reg->ram          = alloc (max_ram * sizeof (reg_t));
   nut_reg->ram_read_fn  = alloc (max_ram * sizeof (ram_access_fn_t *));

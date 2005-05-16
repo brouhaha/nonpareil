@@ -133,13 +133,17 @@ struct sim_t
   int display_digits;
   segment_bitmap_t display_segments [MAX_DIGIT_POSITION];
 
-  rom_word_t *ucode;
-  bool       *breakpoint;
-  char       **source;
-
 #ifdef HAS_DEBUGGER
   int debug_flags;  /* SIM_DEBUG_TRACE etc. */
 #endif
+
+  // RAM:
+  uint16_t   max_ram;
+
+  // ROM:
+  rom_word_t *ucode;
+  bool       *breakpoint;
+  char       **source;
 };
 
 

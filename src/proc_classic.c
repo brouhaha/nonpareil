@@ -465,11 +465,11 @@ static void op_c_to_addr (sim_t *sim, int opcode)
 {
   classic_cpu_reg_t *cpu_reg = sim->chip_data [0];
 
-  if (cpu_reg->max_ram > 10)
+  if (sim->max_ram > 10)
     cpu_reg->ram_addr = cpu_reg->c [12] * 10 + cpu_reg->c [11];
   else
     cpu_reg->ram_addr = cpu_reg->c [12];
-  if (cpu_reg->ram_addr >= cpu_reg->max_ram)
+  if (cpu_reg->ram_addr >= sim->max_ram)
     printf ("c -> ram addr: address %d out of range\n", cpu_reg->ram_addr);
 }
 
@@ -479,7 +479,7 @@ static void op_c_to_data (sim_t *sim, int opcode)
   classic_cpu_reg_t *cpu_reg = sim->chip_data [0];
   int i;
 
-  if (cpu_reg->ram_addr >= cpu_reg->max_ram)
+  if (cpu_reg->ram_addr >= sim->max_ram)
     {
       printf ("c -> data: address %d out of range\n", cpu_reg->ram_addr);
       return;
@@ -494,7 +494,7 @@ static void op_data_to_c (sim_t *sim, int opcode)
   classic_cpu_reg_t *cpu_reg = sim->chip_data [0];
   int i;
 
-  if (cpu_reg->ram_addr >= cpu_reg->max_ram)
+  if (cpu_reg->ram_addr >= sim->max_ram)
     {
       printf ("data -> c: address %d out of range, loading 0\n", cpu_reg->ram_addr);
       for (i = 0; i < WSIZE; i++)
@@ -1095,7 +1095,7 @@ static bool classic_read_ram (sim_t *sim, int addr, uint64_t *val)
   int i;
   bool status;
 
-  if (addr >= cpu_reg->max_ram)
+  if (addr >= sim->max_ram)
     {
       status = false;
       warning ("classic_read_ram: address %d out of range\n", addr);
@@ -1123,7 +1123,7 @@ static bool classic_write_ram (sim_t *sim, int addr, uint64_t *val)
   uint64_t data;
   int i;
 
-  if (addr >= cpu_reg->max_ram)
+  if (addr >= sim->max_ram)
     {
       warning ("classic_write_ram: address %d out of range\n", addr);
       return false;
@@ -1148,7 +1148,8 @@ static void classic_new_processor (sim_t *sim, int ram_size)
 
   cpu_reg = alloc (sizeof (classic_cpu_reg_t));
 
-  cpu_reg->max_ram = ram_size;
+  // RAM is contiguous starting from address 0.
+  sim->max_ram = ram_size;
   cpu_reg->ram = alloc (ram_size * sizeof (reg_t));
 
   install_chip (sim, 0, & classic_cpu_chip_detail, cpu_reg);

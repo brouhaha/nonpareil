@@ -98,7 +98,6 @@ typedef struct nut_reg_t
   void (* op_fcn [1024])(struct sim_t *sim, int opcode);
 
   // RAM:
-  uint16_t max_ram;
   uint16_t ram_addr;  // selected RAM address
   bool *ram_exists;
   reg_t *ram;

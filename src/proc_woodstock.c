@@ -661,7 +661,7 @@ static void op_c_to_addr (sim_t *sim, int opcode)
   if (sim->debug_flags & (1 << SIM_DEBUG_RAM_TRACE))
     printf ("RAM select %02x\n", act_reg->ram_addr);
 #endif
-  if (act_reg->ram_addr >= act_reg->max_ram)
+  if (act_reg->ram_addr >= sim->max_ram)
     printf ("c -> ram addr: address %d out of range\n", act_reg->ram_addr);
 }
 
@@ -671,7 +671,7 @@ static void op_c_to_data (sim_t *sim, int opcode)
   act_reg_t *act_reg = sim->chip_data [0];
   int i;
 
-  if (act_reg->ram_addr >= act_reg->max_ram)
+  if (act_reg->ram_addr >= sim->max_ram)
     {
       printf ("c -> data: address %02x out of range\n", act_reg->ram_addr);
       return;
@@ -695,7 +695,7 @@ static void op_data_to_c (sim_t *sim, int opcode)
   act_reg_t *act_reg = sim->chip_data [0];
   int i;
 
-  if (act_reg->ram_addr >= act_reg->max_ram)
+  if (act_reg->ram_addr >= sim->max_ram)
     {
       printf ("data -> c: address %d out of range, loading 0\n", act_reg->ram_addr);
       for (i = 0; i < WSIZE; i++)
@@ -724,7 +724,7 @@ static void op_c_to_register (sim_t *sim, int opcode)
   act_reg->ram_addr &= ~017;
   act_reg->ram_addr += (opcode >> 6);
 
-  if (act_reg->ram_addr >= act_reg->max_ram)
+  if (act_reg->ram_addr >= sim->max_ram)
     {
       printf ("c -> register: address %d out of range\n", act_reg->ram_addr);
       return;
@@ -751,7 +751,7 @@ static void op_register_to_c (sim_t *sim, int opcode)
   act_reg->ram_addr &= ~017;
   act_reg->ram_addr += (opcode >> 6);
 
-  if (act_reg->ram_addr >= act_reg->max_ram)
+  if (act_reg->ram_addr >= sim->max_ram)
     {
       printf ("register -> c: address %d out of range, loading 0\n", act_reg->ram_addr);
       for (i = 0; i < WSIZE; i++)
@@ -1514,7 +1514,7 @@ static bool woodstock_read_ram (sim_t *sim, int addr, uint64_t *val)
   int i;
   bool status;
 
-  if (addr >= act_reg->max_ram)
+  if (addr >= sim->max_ram)
     {
       status = false;
       // warning ("woodstock_read_ram: address %d out of range\n", addr);
@@ -1542,7 +1542,7 @@ static bool woodstock_write_ram (sim_t *sim, int addr, uint64_t *val)
   uint64_t data;
   int i;
 
-  if (addr >= act_reg->max_ram)
+  if (addr >= sim->max_ram)
     {
       warning ("woodstock_write_ram: address %d out of range\n", addr);
       return false;
@@ -1598,7 +1598,8 @@ static void woodstock_new_processor (sim_t *sim, int ram_size)
 
   act_reg = alloc (sizeof (act_reg_t));
 
-  act_reg->max_ram = ram_size;
+  // RAM is contiguous starting from address 0.
+  sim->max_ram = ram_size;
   act_reg->ram = alloc (ram_size * sizeof (reg_t));
 
   install_chip (sim, 0, & woodstock_cpu_chip_detail, act_reg);

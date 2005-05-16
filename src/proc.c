@@ -924,6 +924,12 @@ bool sim_write_register (sim_t   *sim,
 }
 
 
+addr_t sim_get_max_ram (sim_t *sim)
+{
+  return sim->max_ram;
+}
+
+
 bool sim_read_ram (sim_t   *sim,
 		   addr_t  addr,
 		   uint64_t *val)

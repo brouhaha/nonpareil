@@ -126,6 +126,8 @@ void sim_write_rom (sim_t      *sim,
 rom_word_t sim_read_rom (sim_t *sim,
 			 addr_t addr);
 
+addr_t sim_get_max_ram (sim_t *sim);
+
 bool sim_read_ram (sim_t *sim,
 		   addr_t addr,
 		   uint64_t *val);

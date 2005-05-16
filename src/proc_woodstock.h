@@ -104,7 +104,5 @@ typedef struct
 
   // RAM
   int ram_addr;  /* selected RAM address */
-
-  int max_ram;
   reg_t *ram;
 } act_reg_t;
