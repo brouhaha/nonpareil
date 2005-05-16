@@ -52,7 +52,7 @@ MA 02111, USA.
 #endif
 
 
-struct dbg_t
+struct dbg_cli_t
 {
   sim_t *sim;
   GThread *thread;
@@ -70,14 +70,14 @@ struct dbg_t
 #ifdef USE_TCL
 #define CMD_ARGS ClientData clientData, Tcl_Interp *interp, int argc, char *argv[]
 #else
-#define CMD_ARGS dbg_t *dbg, int argc, char *argv[]
+#define CMD_ARGS dbg_cli_t *dbg, int argc, char *argv[]
 #endif
 
 
 static int xyzzy_cmd (CMD_ARGS)
 {
 #ifdef USE_TCL
-  dbg_t *dbg = (dbg_t *) clientData;
+  dbg_cli_t *dbg = (dbg_cli_t *) clientData;
 #endif
   fprintf (dbg->err, "Nothing happens here.\n");
   return (0);
@@ -87,7 +87,7 @@ static int xyzzy_cmd (CMD_ARGS)
 static int go_cmd (CMD_ARGS)
 {
 #ifdef USE_TCL
-  dbg_t *dbg = (dbg_t *) clientData;
+  dbg_cli_t *dbg = (dbg_cli_t *) clientData;
 #endif
   if (sim_running (dbg->sim))
     {
@@ -102,7 +102,7 @@ static int go_cmd (CMD_ARGS)
 static int halt_cmd (CMD_ARGS)
 {
 #ifdef USE_TCL
-  dbg_t *dbg = (dbg_t *) clientData;
+  dbg_cli_t *dbg = (dbg_cli_t *) clientData;
 #endif
   if (! sim_running (dbg->sim))
     {
@@ -117,7 +117,7 @@ static int halt_cmd (CMD_ARGS)
 static int step_cmd (CMD_ARGS)
 {
 #ifdef USE_TCL
-  dbg_t *dbg = (dbg_t *) clientData;
+  dbg_cli_t *dbg = (dbg_cli_t *) clientData;
 #endif
   if (sim_running (dbg->sim))
     {
@@ -155,7 +155,7 @@ typedef struct
 } cmd_entry;
 
 
-cmd_entry cmd_table [] =
+static cmd_entry cmd_table [] =
 {
   { "go",    (cmd_t) go_cmd,         1, "Go           start execution\n" },
   { "halt",  (cmd_t) halt_cmd,       2, "HAlt         halt execution\n" },
@@ -189,7 +189,7 @@ static int find_cmd (char *s)
 static int help_cmd (CMD_ARGS)
 {
 #ifdef USE_TCL
-  dbg_t *dbg = (dbg_t *) clientData;
+  dbg_cli_t *dbg = (dbg_cli_t *) clientData;
 #endif
   int i;
 
@@ -241,7 +241,7 @@ static void execute_command (CMD_ARGS)
  * print prompt, get a line of input, return a copy
  * caller must free
  */
-char *readline (dbg_t *dbg, char *prompt)
+static char *readline (dbg_cli_t *dbg, char *prompt)
 {
   char inbuf [MAX_LINE];
 
@@ -257,7 +257,7 @@ char *readline (dbg_t *dbg, char *prompt)
 
 
 
-static void debugger_command (dbg_t *dbg, char *cmd)
+static void debugger_command (dbg_cli_t *dbg, char *cmd)
 {
 #ifdef USE_TCL
   int result;
@@ -293,7 +293,7 @@ static void debugger_command (dbg_t *dbg, char *cmd)
 
 #ifdef USE_TCL
 #if 0
-void run_tcl_rc_files (dbg_t *dbg)
+static void run_tcl_rc_files (dbg_cli_t *dbg)
 {
   int i;
   int result;
@@ -315,7 +315,7 @@ void run_tcl_rc_files (dbg_t *dbg)
 #endif
 
 
-void init_tcl (dbg_t *dbg)
+static void init_tcl (dbg_cli_t *dbg)
 {
   cmd_entry *ce;
 
@@ -330,12 +330,12 @@ void init_tcl (dbg_t *dbg)
 #endif
 
 
-gpointer debugger_thread_func (gpointer data)
+static gpointer debugger_thread_func (gpointer data)
 {
-  dbg_t *dbg;
+  dbg_cli_t *dbg;
   char *line = NULL;
 
-  dbg = (dbg_t *) data;
+  dbg = (dbg_cli_t *) data;
 
   dbg->in = fdopen (dbg->slave_pty, "r");
   dbg->out = fdopen (dbg->slave_pty, "w");
@@ -373,13 +373,13 @@ gpointer debugger_thread_func (gpointer data)
 }
 
 
-dbg_t *init_debugger (sim_t *sim)
+static dbg_cli_t *init_debugger_cli (sim_t *sim)
 {
-  dbg_t *dbg;
+  dbg_cli_t *dbg;
   int master_pty;
   GtkWidget *vte;
   
-  dbg = alloc (sizeof (dbg_t));
+  dbg = alloc (sizeof (dbg_cli_t));
 
   dbg->sim = sim;
 
@@ -402,10 +402,24 @@ dbg_t *init_debugger (sim_t *sim)
   return (dbg);
 }
 
-void show_debugger (dbg_t *dbg, gboolean visible)
+static void show_debugger_cli (dbg_cli_t *dbg, gboolean visible)
 {
   if (visible)
     gtk_widget_show_all (dbg->window);
   else
     gtk_widget_hide (dbg->window);
+}
+
+
+static gboolean dbg_visible;
+static dbg_cli_t *dbg_cli;
+
+void debug_cli_window (GtkWidget *widget, gpointer data)
+{
+  if (! dbg)
+    dbg = init_debugger_cli (sim);
+
+  dbg_visible = ! dbg_visible;
+
+  show_debugger_cli (dbg, dbg_visible);
 }

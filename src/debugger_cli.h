@@ -1,6 +1,6 @@
 /*
 $Id$
-Copyright 2004 Eric L. Smith <eric@brouhaha.com>
+Copyright 2004, 2005 Eric L. Smith <eric@brouhaha.com>
 
 Nonpareil is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License version 2 as
@@ -19,8 +19,7 @@ Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
 MA 02111, USA.
 */
 
-typedef struct dbg_t dbg_t;
+typedef struct dbg_cli_t dbg_cli_t;
 
-dbg_t *init_debugger (sim_t *sim);
+void debug_cli_window (GtkWidget *widget, gpointer data);
 
-void show_debugger (dbg_t *dbg, gboolean visible);

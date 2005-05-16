@@ -41,12 +41,12 @@ opts.AddOptions (EnumOption ('target',
 			     help = 'compile for debugging',
 			     default = 1))
 
-opts.AddOptions (BoolOption ('has_debugger',
-			     help = 'has_debugger',
+opts.AddOptions (BoolOption ('has_debugger_gui',
+			     help = 'enable debugger GUI',
 			     default = 0),
 
 		 BoolOption ('has_debugger_cli',
-			     help = 'has_debugger_cli',
+			     help = 'enable debugger CLI',
 			     default = 0),
 
 		 BoolOption ('use_tcl',

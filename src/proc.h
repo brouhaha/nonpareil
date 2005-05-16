@@ -205,7 +205,7 @@ void sim_set_breakpoint (sim_t  *sim,
 void sim_clear_breakpoint (sim_t  *sim,
 			   addr_t address);
 
-#endif /* HAS_DEBUGGER */
+#endif // HAS_DEBUGGER
 
 
 /*

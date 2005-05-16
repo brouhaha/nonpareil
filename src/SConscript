@@ -90,15 +90,23 @@ nonpareil_srcs = Split ("""proc.c glib_async_queue_source.c
 
 nonpareil_csim_srcs = Split ("""csim.c""")
 
-more_nonpareil_srcs = Split ("""debugger.c""")
+nonpareil_debugger_gui_srcs = Split ("""debugger_gui.c""")
+
+nonpareil_debugger_cli_srcs = Split ("""debugger_cli.c""")
 
 nonpareil_packages = "gtk+-2.0 gdk-2.0 gdk-pixbuf-2.0 glib-2.0 gthread-2.0"
 
+nonpareil_objs = []
+
+if env ['has_debugger_gui'] or env ['has_debugger_cli']:
+    nonpareil_env.Append (CPPDEFINES = {'HAS_DEBUGGER': 1})
+
 if env ['has_debugger_cli']:
     nonpareil_packages += ' vte'
+    nonpareil_env.Append (LIBS = 'util')  # for PTY support
 
-if env ['has_debugger']:
-    nonpareil_env.Append (CPPDEFINES = {'HAS_DEBUGGER': 1})
+if env ['has_debugger_gui']:
+    nonpareil_objs.append (nonpareil_env.Object (nonpareil_debugger_gui_srcs))
 
 nonpareil_env.ParseConfig(pkg_config_cmd + nonpareil_packages)
 
@@ -108,19 +116,19 @@ csim_env.Append (CPPDEFINES = {'DEFAULT_PATH': env ['prefix'] + "/lib/nonpareil"
 if env ['target'] == 'windows':
     csim_env.Append (CPPDEFINES = {'SHAPE_DEFAULT': "false"})
 
-nonpareil_objs = []
+if env ['has_debugger_gui']:
+    csim_env.Append (CPPDEFINES = {'HAS_DEBUGGER_GUI': 1})
 
 if env ['has_debugger_cli']:
     csim_env.Append (CPPDEFINES = {'HAS_DEBUGGER_CLI': 1})
-    debugger_env = csim_env.Copy ()
-    nonpareil_env.Append (LIBS = 'util')  # for PTY support
+    debugger_cli_env = csim_env.Copy ()
     if env ['use_tcl']:
-        debugger_env.Append (CPPDEFINES = {'USE_TCL': 1})
+        debugger_cli_env.Append (CPPDEFINES = {'USE_TCL': 1})
         nonpareil_env.Append (LIBS = 'tcl')
     if env ['use_readline']:
-        debugger_env.Append (CPPDEFINES = {'USE_READLINE': 1})
+        debugger_cli_env.Append (CPPDEFINES = {'USE_READLINE': 1})
         nonpareil_env.Append (LIBS = 'readline')
-    nonpareil_objs.append (debugger_env.Object ('debugger.c'))
+    nonpareil_objs.append (debugger_cli_env.Object (nonpareil_debugger_cli_srcs))
 
 for src in nonpareil_csim_srcs:
     nonpareil_objs.append (csim_env.Object (src))
@@ -186,8 +194,10 @@ headers = Split ("""util.h
                     proc.h proc_int.h glib_async_queue_source.h
                     proc_classic.h proc_nut.h proc_woodstock.h
                     state_io.h
-                    debugger.h dis_woodstock.h dis_nut.h
-                    display_gtk.h display.h coconut_lcd.h voyager_lcd.h
+                    debugger_gui.h debugger_cli.h
+                    dis_woodstock.h dis_nut.h
+                    display.h coconut_lcd.h voyager_lcd.h
+                    display_gtk.h keyboard.h slide_switch.h
                     asm.h symtab.h
                     nsim_conv.h""")
 
@@ -195,7 +205,9 @@ misc = Split ("""SConscript ChangeLog release.c""")
 
 dist_files = (misc + headers + common_srcs + common_dis_srcs +
               state_io_srcs + uasm_srcs +
-              nonpareil_srcs + nonpareil_csim_srcs + more_nonpareil_srcs)
+              nonpareil_srcs + nonpareil_csim_srcs +
+              nonpareil_debugger_gui_srcs +
+              nonpareil_debugger_cli_srcs)
 
 env.Distribute (source_release_dir, dist_files)
 
