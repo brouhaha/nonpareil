@@ -36,6 +36,7 @@ MA 02111, USA.
 #include "kml.h"
 #include "display_gtk.h"
 #include "proc.h"
+#include "keyboard.h"
 #include "slide_switch.h"
 #include "arch.h"
 #include "platform.h"
@@ -108,95 +109,6 @@ void usage (FILE *f)
 }
 
 
-typedef struct
-{
-  GtkWidget *widget;
-  GtkWidget *fixed;
-  kml_button_t *kml_button;
-} button_info_t;
-
-
-void button_pressed (GtkWidget *widget, button_info_t *button)
-{
-  sim_press_key (sim, button->kml_button->keycode);
-#ifdef KEYBOARD_DEBUG
-  printf ("pressed %d\n", button->kml_button->keycode);
-#endif
-}
-
-
-void button_released (GtkWidget *widget, button_info_t *button)
-{
-  sim_release_key (sim);
-#ifdef KEYBOARD_DEBUG
-  printf ("released %d\n", button->kml_button->keycode);
-#endif
-}
-
-
-void add_key (GtkWidget *fixed,
-	      GdkPixbuf *window_pixbuf,
-	      kml_button_t *kml_button,
-	      button_info_t *button_info)
-{
-  GdkPixbuf *button_pixbuf;
-  GtkWidget *button_image;
-
-  button_info->kml_button = kml_button;
-
-  button_pixbuf = gdk_pixbuf_new_subpixbuf (window_pixbuf,
-					    kml_button->offset.x - kml->background_offset.x,
-					    kml_button->offset.y - kml->background_offset.y,
-					    kml_button->size.width,
-					    kml_button->size.height);
-
-  button_image = gtk_image_new_from_pixbuf (button_pixbuf);
-
-  button_info->fixed = fixed;
-  
-  button_info->widget = gtk_button_new ();
-
-  gtk_button_set_relief (GTK_BUTTON (button_info->widget), GTK_RELIEF_NONE);
-
-  gtk_widget_set_size_request (button_info->widget,
-			       kml_button->size.width,
-			       kml_button->size.height);
-
-  gtk_fixed_put (GTK_FIXED (fixed),
-		 button_info->widget,
-		 kml_button->offset.x - kml->background_offset.x,
-		 kml_button->offset.y - kml->background_offset.y);
-
-  g_signal_connect (G_OBJECT (button_info->widget),
-		    "pressed",
-		    G_CALLBACK (& button_pressed),
-		    (gpointer) button_info);
-
-  g_signal_connect (G_OBJECT (button_info->widget),
-		    "released",
-		    G_CALLBACK (& button_released),
-		    (gpointer) button_info);
-
-  gtk_container_add (GTK_CONTAINER (button_info->widget), button_image);
-}
-
-
-button_info_t *button_info [KML_MAX_BUTTON];
-
-
-void add_keys (GdkPixbuf *window_pixbuf, GtkWidget *fixed)
-{
-  int i;
-
-  for (i = 0; i < KML_MAX_BUTTON; i++)
-    if (kml->button [i])
-      {
-	button_info [i] = alloc (sizeof (button_info_t));
-	add_key (fixed, window_pixbuf, kml->button [i], button_info [i]);
-      }
-}
-
-
 void process_commands (kml_command_list_t *commands,
 		       int scancode,
 		       int pressed);
@@ -215,21 +127,11 @@ void process_command (kml_command_list_t *command,
 		   scancode, command->arg1);
 	  return;
 	}
-      if (! button_info [command->arg2])
+      if (! set_key_state (command->arg2, pressed))
 	{
 	  fprintf (stderr, "scancode %d has map command for nonexistent key %d\n",
 		   scancode, command->arg2);
 	  return;
-	}
-      if (pressed)
-	{
-	  button_pressed (button_info [command->arg2]->widget,
-			  button_info [command->arg2]);
-	}
-      else
-	{
-	  button_released (button_info [command->arg2]->widget,
-			   button_info [command->arg2]);
 	}
       break;
     case KML_CMD_IFPRESSED:
@@ -864,12 +766,8 @@ int main (int argc, char *argv[])
       gtk_fixed_put (GTK_FIXED (fixed), image, 0, 0);
     }
 
-  add_slide_switches (sim,
-		      kml,
-		      background_pixbuf,
-		      fixed);
-
-  add_keys (background_pixbuf, fixed);
+  add_slide_switches (sim, kml, background_pixbuf, fixed);
+  add_keys (sim, kml, background_pixbuf, fixed);
 
   // Have to show everything here, or display_init() can't construct the
   // GCs for the annunciators.

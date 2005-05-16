@@ -81,7 +81,7 @@ Export('uasm')
 nonpareil_env = env.Copy ()
 
 nonpareil_srcs = Split ("""proc.c glib_async_queue_source.c
-                           display.c slide_switch.c
+                           display.c keyboard.c slide_switch.c
 			   kmll.l kmly.y kml.c
                            platform.c model.c
                            proc_classic.c
