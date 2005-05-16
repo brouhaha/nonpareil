@@ -36,6 +36,7 @@ MA 02111, USA.
 #include "kml.h"
 #include "display_gtk.h"
 #include "proc.h"
+#include "slide_switch.h"
 #include "arch.h"
 #include "platform.h"
 #include "model.h"
@@ -104,121 +105,6 @@ void usage (FILE *f)
 #ifdef HAS_DEBUGGER
   fprintf (f, "   --stop\n");
 #endif
-}
-
-
-typedef struct
-{
-  GtkWidget *widget [KML_MAX_SWITCH_POSITION];
-  GtkWidget *image [KML_MAX_SWITCH_POSITION];
-  GtkWidget *fixed;
-  kml_switch_t *kml_switch;
-  int flag [KML_MAX_SWITCH_POSITION];
-} switch_info_t;
-
-
-void switch_toggled (GtkWidget *widget, switch_info_t *sw)
-{
-  int pos;
-  gboolean state;
-
-  for (pos = 0; pos < KML_MAX_SWITCH_POSITION; pos++)
-    {
-      if (widget == sw->widget [pos])
-	break;
-    }
-  if (pos >= KML_MAX_SWITCH_POSITION)
-    fatal (2, "can't find switch position\n");
-
-  state = gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (widget));
-
-  if (sw->flag [pos])
-    sim_set_ext_flag (sim, sw->flag [pos], state);
-}
-
-
-void add_switch (GtkWidget *fixed,
-		 GdkPixbuf *window_pixbuf,
-		 kml_switch_t *kml_switch,
-		 switch_info_t *switch_info)
-{
-  int i;
-  GSList *group = NULL;
-
-  switch_info->fixed = fixed;
-  switch_info->kml_switch = kml_switch;
-  
-  for (i = 0; i < KML_MAX_SWITCH_POSITION; i++)
-    if (kml_switch->position [i])
-      {
-	switch_info->flag [i] = kml_switch->position [i]->flag;
-	switch_info->widget [i] = gtk_radio_button_new (group);
-
-	group = gtk_radio_button_get_group (GTK_RADIO_BUTTON (switch_info->widget [i]));
-
-	/* Though it's a radio button, don't display it as one! */
-	gtk_toggle_button_set_mode (GTK_TOGGLE_BUTTON (switch_info->widget [i]),
-				    FALSE);
-
-
-	gtk_button_set_relief (GTK_BUTTON (switch_info->widget [i]), GTK_RELIEF_NONE);
-	gtk_widget_set_size_request (switch_info->widget [i],
-				     kml_switch->size.width,
-				     kml_switch->size.height);
-
-	gtk_fixed_put (GTK_FIXED (fixed),
-		       switch_info->widget [i],
-		       kml_switch->position [i]->offset.x - kml->background_offset.x,
-		       kml_switch->position [i]->offset.y - kml->background_offset.y);
-
-	if (i == kml_switch->default_position)
-	  gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (switch_info->widget [i]),
-					TRUE);
-
-	g_signal_connect (G_OBJECT (switch_info->widget [i]),
-			  "toggled",
-			  G_CALLBACK (& switch_toggled),
-			  (gpointer) switch_info);
-      }
-}
-
-
-switch_info_t *switch_info [KML_MAX_SWITCH];
-
-
-void add_switches (GdkPixbuf *window_pixbuf, GtkWidget *fixed)
-{
-  int i;
-
-  for (i = 0; i < KML_MAX_SWITCH; i++)
-    if (kml->kswitch [i])
-      {
-	switch_info [i] = alloc (sizeof (switch_info_t));
-	add_switch (fixed, window_pixbuf, kml->kswitch [i], switch_info [i]);
-      }
-}
-
-
-static void init_switch (switch_info_t *sw)
-{
-  int pos;
-  gboolean state;
-
-  for (pos = 0; pos < KML_MAX_SWITCH_POSITION; pos++)
-    if (sw->flag [pos])
-      {
-	state = gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (sw->widget [pos]));
-	sim_set_ext_flag (sim, sw->flag [pos], state);
-      }
-}
-
-static void init_switches (void)
-{
-  int i;
-
-  for (i = 0; i < KML_MAX_SWITCH; i++)
-    if (switch_info [i])
-      init_switch (switch_info [i]);
 }
 
 
@@ -800,7 +686,10 @@ void set_default_state_path (void)
 int main (int argc, char *argv[])
 {
   char *kml_name = NULL;
-  char *kml_fn, *image_fn, *rom_fn, *listing_fn;
+  char *kml_fn, *image_fn, *rom_fn;
+#ifdef HAS_DEBUGGER
+  char *listing_fn;
+#endif
 
   gboolean shape = SHAPE_DEFAULT;
   gboolean kml_dump = FALSE;
@@ -975,7 +864,10 @@ int main (int argc, char *argv[])
       gtk_fixed_put (GTK_FIXED (fixed), image, 0, 0);
     }
 
-  add_switches (background_pixbuf, fixed);
+  add_slide_switches (sim,
+		      kml,
+		      background_pixbuf,
+		      fixed);
 
   add_keys (background_pixbuf, fixed);
 
@@ -1037,7 +929,7 @@ int main (int argc, char *argv[])
 
   sim_reset (sim);
 
-  init_switches ();
+  init_slide_switches ();
 
   set_default_state_path ();
 
