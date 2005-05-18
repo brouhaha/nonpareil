@@ -6,6 +6,9 @@ $Id$
 
 Prerequisites:
 
+Nonpareil requires the GTK+ 2x toolkit and libxml2 (normally present on all
+systems with GTK+ 2.x).
+
 Nonpareil is built using SCons instead of Make.  SCons requires Python 1.5.2
 or newer, but has no other special dependencies.  If you do not wish to
 install SCons on your system, a standalone copy is provided in the directory
@@ -16,9 +19,9 @@ Nonpareil is normally built using the GNU toolchain.  It is written in
 C99 (ISO/IEC 9899:1999), Flex, and Bison.  It might be possible to build
 it with other tools, but I have not attempted this.
 
-Originally I used GCC 2.5.8, Flex 2.4.7, Bison 1.22, and Make 3.71.
-Most recently I'm using GCC 3.4.2, Flex 2.5.4a, Bison 1.875c, and SCons
-0.96.90.  Flex versions prior to 2.4.2 will not work.
+Development was originally done with GCC 2.5.8, Flex 2.4.7, Bison 1.22,
+and Make 3.71.  Current development uses GCC 3.4.2, Flex 2.5.4a, Bison
+1.875c, and SCons 0.96.90.  Flex versions prior to 2.4.2 will not work.
 
 -----------------------------------------------------------------------------
 
@@ -29,6 +32,11 @@ The Nonpareil installation prefix defaults to /usr/local.  If you want
 Nonpareil to be installed in a different directory, create a file
 'local.py' in the top level directory, containing a line of the form:
         prefix = '/path/to/install/directory'
+
+The executable will be installed in a "bin" directory under the prefix
+path, and the KML, ROM, and image files will be installed in a
+"lib/nonpareil" directory under the prefix path.  Thus the defaults are
+"/usr/local/bin/nonpareil" and "/usr/local/lib/nonpareil/*.kml" etc.
 
 -----------------------------------------------------------------------------
 
