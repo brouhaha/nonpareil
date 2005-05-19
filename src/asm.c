@@ -416,7 +416,13 @@ int err_vprintf (char *format, va_list ap)
   int res;
 
   if (listfile && (pass == 2))
-    vfprintf (listfile, format, ap);
+    {
+      va_list ap_copy;
+
+      va_copy (ap_copy, ap);
+      vfprintf (listfile, format, ap_copy);
+      va_end (ap_copy);
+    }
   res = vfprintf (stderr, format, ap);
   return (res);
 }
