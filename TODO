@@ -16,8 +16,6 @@ Bugs and critical features for next release:
 
 Build process:
 
-  Fix SCons emitter for uasm to put listing files in obj, not obj/obj.
-
   Create an RPM .spec file.
 
 
@@ -73,20 +71,6 @@ User interface:
   data into a GdkPixbufLoader.
 
 
-Debugger:
-
-  Add disassembler for Classic processors.
-
-  Make the register window update, and make changes get written to
-  register.  Disable editing (and grey out?) while running.
-
-  Add debugger commands.  Pass dbt_t as arg to commands.
-
-  Create new VTE patch based on feedback from Nalin.
-
-  Change Tcl standard I/O streams to use pty file descriptor.
-
-
 Internals:
 
   Use glib file handling:
@@ -94,6 +78,12 @@ Internals:
     g_stat()
 
   Use glib memory allocation/deallocation
+
+  Split proc.c into separate GUI thread and simulator thread portions.
+
+  Move more of the simulator initialization into the simulator thread.
+
+  Load ROM using CMD_WRITE_ROM.
 
   New memory API.
 
@@ -106,14 +96,6 @@ Internals:
 
   Add code to remove async queue g_source when simulator thread exits.
 
-  Implement async queue based functions needed by debugger.
-
-  Move more of the simulator initialization into the simulator thread.
-
-  Load ROM using CMD_WRITE_ROM.
-
-  Split proc.c into separate GUI thread and simulator thread portions.
-
   Use io_count to improve display update timing (already done in nut, add to
   classic and woodstock).
 
@@ -124,15 +106,45 @@ Internals:
 
   Replace globals in csim.c with structure.  Allow for multiple instances.
 
-  Clean up memory usage of symbols in CASM
 
-  Implement symbol cross-reference in CASM
+KML:
 
   It would be nice to use a pure parser for KML, pass in the kml_t
   pointer as input, and return it from read_kml_file().  But Flex
   doesn't yet seem to have support for the Bison pure_parser option.
   There exist patches, but I don't want to make people use those.
   Better to wait for a production release of Flex.
+
+  Use XML files instead of KML?  (.nml?)
+
+
+Assembler:
+
+  Clean up memory usage of symbols in CASM
+
+  Implement symbol cross-reference in CASM
+
+
+Disassembler:
+
+  Add disassembler for Classic processors.
+
+  Make disassembler talk to sim thread rather than passing in two
+  words as parameters.
+
+
+Debugger:
+
+  Make the register window update, and make changes get written to
+  register.  Disable editing (and grey out?) while running.
+
+  Add debugger commands.  Pass dbt_t as arg to commands.
+
+  Create new VTE patch based on feedback from Nalin.
+
+  Change Tcl standard I/O streams to use pty file descriptor.
+
+  Implement async queue based functions needed by debugger.
 
 
 Better model support:
@@ -152,7 +164,7 @@ Better model support:
 
   Add Woodstock microinstructions for card reader (HP-67, HP-97)
 
-  Add Woodstock microinstructions for printer (HP-19C, HP-91, HP-92, HP-97)
+  Add Woodstock microinstructions for printer (HP-19C, HP-91, HP-92, HP-95C, HP-97)
 
   Add HP-65 microinstructions for program memory access.
 
