@@ -27,3 +27,7 @@ void add_slide_switches (sim_t *sim,
 
 
 void init_slide_switches (void);
+
+void set_slide_switch_position (int number, int position);
+
+bool get_slide_switch_position (int number, int *position);

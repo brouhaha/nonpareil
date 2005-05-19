@@ -162,3 +162,30 @@ void init_slide_switches (void)
     if (slide_switch_info [i])
       init_slide_switch (slide_switch_info [i]);
 }
+
+
+void set_slide_switch_position (int number, int position)
+{
+  gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (slide_switch_info [number]->widget [position]), TRUE);
+  init_slide_switch (slide_switch_info [number]);
+}
+
+
+bool get_slide_switch_position (int number, int *position)
+{
+  int i;
+
+  if (! slide_switch_info [number])
+    return false;
+  for (i = 0; i < KML_MAX_SWITCH_POSITION; i++)
+    {
+      slide_switch_info_t *sw = slide_switch_info [number];
+      if (sw->widget [i] &&
+	  gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (sw->widget [i])))
+	{
+	  *position = i;
+	  return true;
+	}
+    }
+  fatal (3, "Can't find active slide switch position\n");
+}

@@ -27,11 +27,16 @@ MA 02111, USA.
 #include <stdlib.h>
 #include <string.h>
 
+#include <gdk/gdk.h>
+#include <gtk/gtk.h>
+
 #include <libxml/SAX.h>
 
 #include "util.h"
 #include "display.h"
+#include "kml.h"
 #include "proc.h"
+#include "slide_switch.h"
 #include "arch.h"
 #include "platform.h"
 #include "model.h"
@@ -103,6 +108,43 @@ static void parse_state (sax_data_t *sdata, char **attrs)
     warning ("state file doesn't have platform\n");
   if (! got_model)
     warning ("state file doesn't have model\n");
+}
+
+
+static void parse_ui (sax_data_t *sdata, char **attrs)
+{
+  ; // don't need to do anything
+}
+
+
+static void parse_switch (sax_data_t *sdata, char **attrs)
+{
+  int i;
+  int number;
+  int position;
+  bool got_number = false;
+  bool got_position = false;
+
+  for (i = 0; attrs && attrs [i]; i += 2)
+    {
+      if (strcmp (attrs [i], "number") == 0)
+	{
+	  number = strtoul (attrs [i + 1], NULL, 16);
+	  got_number = true;
+	}
+      else if (strcmp (attrs [i], "position") == 0)
+	{
+	  position = strtoul (attrs [i + 1], NULL, 16);
+	  got_position = true;
+	}
+      else
+	warning ("unknown attribute '%s' in 'switch' element\n", attrs [i]);
+    }
+  if (! got_number)
+    fatal (3, "switch element with no number\n");
+  if (! got_position)
+    fatal (3, "switch element with no position\n");
+  set_slide_switch_position (number, position);
 }
 
 
@@ -235,6 +277,10 @@ static void sax_start_element (void *ref,
 
   if (strcmp (name, "state") == 0)
     parse_state (sdata, (char **) attrs);
+  else if (strcmp (name, "ui") == 0)
+    parse_ui (sdata, (char **) attrs);
+  else if (strcmp (name, "switch") == 0)
+    parse_switch (sdata, (char **) attrs);
   else if (strcmp (name, "chip") == 0)
     parse_chip (sdata, (char **) attrs);
   else if (strcmp (name, "registers") == 0)

@@ -26,11 +26,16 @@ MA 02111, USA.
 #include <stdint.h>
 #include <stdio.h>
 
+#include <gdk/gdk.h>
+#include <gtk/gtk.h>
+
 #include <libxml/xmlwriter.h>
 
 #include "util.h"
 #include "display.h"
+#include "kml.h"
 #include "proc.h"
+#include "slide_switch.h"
 #include "arch.h"
 #include "platform.h"
 #include "model.h"
@@ -117,6 +122,30 @@ static void xml_write_attribute_string (xmlTextWriterPtr writer,
 				   BAD_CAST attribute_name, 
 				   BAD_CAST value) < 0)
     fatal (2, "can't write element\n");
+}
+
+
+static void write_slide_switches (sim_t *sim, xmlTextWriterPtr writer)
+{
+  int switch_number;
+  int switch_position;
+
+  for (switch_number = 0; switch_number < KML_MAX_SWITCH; switch_number++)
+    if (get_slide_switch_position (switch_number, & switch_position))
+      {
+	xml_start_element (writer, "switch");
+	xml_write_attribute_format (writer, "number", "%x", switch_number);
+	xml_write_attribute_format (writer, "position", "%x", switch_position);
+	xml_end_element (writer);  // switch
+      }
+}
+
+
+static void write_ui (sim_t *sim, xmlTextWriterPtr writer)
+{
+  xml_start_element (writer, "ui");
+  write_slide_switches (sim, writer);
+  xml_end_element (writer);  // ui
 }
 
 
@@ -286,6 +315,7 @@ void state_write_xml (sim_t *sim, char *fn)
   xml_write_attribute_string (writer, "platform", platform_name [model_info->platform]);
   xml_write_attribute_string (writer, "arch", arch_info->name);
 
+  write_ui (sim, writer);
   write_chips (sim, writer);
   write_memory (sim, writer);
 

@@ -1,11 +1,17 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
 
-<!ELEMENT state (chip*, memory*)>
+<!ELEMENT state (ui*, chip*, memory*)>
 <!ATTLIST state 
           version  CDATA #REQUIRED
           arch     CDATA #REQUIRED
           platform CDATA #REQUIRED
           model    CDATA #REQUIRED>
+
+<!ELEMENT ui (switch*)>
+
+<!ELEMENT switch EMPTY>
+          number CDATA #REQUIRED
+          position CDATA #REQUIRED>
 
 <!ELEMENT chip (reg*)>
 <!ATTLIST chip
