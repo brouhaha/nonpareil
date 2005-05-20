@@ -49,89 +49,15 @@ typedef struct
 } coconut_display_reg_t;
 
 
-static reg_accessor_t get_coconut_lcd_4, set_coconut_lcd_4;
-static reg_accessor_t get_coconut_lcd_1, set_coconut_lcd_1;
-
-
 static reg_detail_t coconut_display_reg_detail [] =
 {
-  {{ "enable", 1, 1, 2 }, OFFSET_OF (coconut_display_reg_t, enable), NULL, NULL },
-  {{ "blink",  1, 1, 2 }, OFFSET_OF (coconut_display_reg_t, blink),  NULL, NULL },
-  {{ "a",      COCONUT_DISPLAY_DIGITS * 4,  1, 16 }, OFFSET_OF (coconut_display_reg_t, a),    get_coconut_lcd_4, set_coconut_lcd_4 },
-  {{ "b",      COCONUT_DISPLAY_DIGITS * 4,  1, 16 }, OFFSET_OF (coconut_display_reg_t, b),    get_coconut_lcd_4, set_coconut_lcd_4 },
-  {{ "c",      COCONUT_DISPLAY_DIGITS * 1,  1, 16 }, OFFSET_OF (coconut_display_reg_t, c),    get_coconut_lcd_1, set_coconut_lcd_1 },
-  {{ "ann",    COCONUT_DISPLAY_DIGITS,      1,  2 }, OFFSET_OF (coconut_display_reg_t, ann),  NULL, NULL },
+  {{ "enable", 1, 1, 2 }, OFFSET_OF (coconut_display_reg_t, enable), NULL, NULL, 0 },
+  {{ "blink",  1, 1, 2 }, OFFSET_OF (coconut_display_reg_t, blink),  NULL, NULL, 0 },
+  {{ "a",      COCONUT_DISPLAY_DIGITS * 4,  1, 16 }, OFFSET_OF (coconut_display_reg_t, a),    get_digits, set_digits, COCONUT_DISPLAY_DIGITS },
+  {{ "b",      COCONUT_DISPLAY_DIGITS * 4,  1, 16 }, OFFSET_OF (coconut_display_reg_t, b),    get_digits, set_digits, COCONUT_DISPLAY_DIGITS },
+  {{ "c",      COCONUT_DISPLAY_DIGITS * 1,  1, 16 }, OFFSET_OF (coconut_display_reg_t, c),    get_bit_digits, set_bit_digits, COCONUT_DISPLAY_DIGITS },
+  {{ "ann",    COCONUT_DISPLAY_DIGITS,      1,  2 }, OFFSET_OF (coconut_display_reg_t, ann),  NULL, NULL, 0 },
 };
-
-
-static bool get_coconut_lcd_4 (void *data, uint64_t *p)
-{
-  uint64_t val;
-  uint8_t *d;
-  int i;
-
-  d = ((uint8_t *) data) + COCONUT_DISPLAY_DIGITS;
-  val = 0;
-  for (i = 0; i < COCONUT_DISPLAY_DIGITS; i++)
-    val = (val << 4) + *(--d);
-
-  *p = val;
-
-  return true;
-}
-
-
-static bool set_coconut_lcd_4 (void *data, uint64_t *p)
-{
-  uint64_t val;
-  uint8_t *d;
-  int i;
-
-  val = *p;
-  d = (uint8_t *) data;
-  for (i = 0; i < COCONUT_DISPLAY_DIGITS; i++)
-    {
-      *(d++) = val & 0x0f;
-      val >>= 4;
-    }
-
-  return true;
-}
-
-
-static bool get_coconut_lcd_1 (void *data, uint64_t *p)
-{
-  uint64_t val;
-  uint8_t *d;
-  int i;
-
-  d = ((uint8_t *) data) + COCONUT_DISPLAY_DIGITS;
-  val = 0;
-  for (i = 0; i < COCONUT_DISPLAY_DIGITS; i++)
-    val = (val << 1) + *(--d);
-
-  *p = val;
-
-  return true;
-}
-
-
-static bool set_coconut_lcd_1 (void *data, uint64_t *p)
-{
-  uint64_t val;
-  uint8_t *d;
-  int i;
-
-  val = *p;
-  d = (uint8_t *) data;
-  for (i = 0; i < COCONUT_DISPLAY_DIGITS; i++)
-    {
-      *(d++) = val & 0x01;
-      val >>= 1;
-    }
-
-  return true;
-}
 
 
 static void coconut_op_display_off (sim_t *sim, int opcode)

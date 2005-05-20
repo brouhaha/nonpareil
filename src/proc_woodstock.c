@@ -41,38 +41,35 @@ MA 02111, USA.
 #undef STACK_WARNING
 
 
-static reg_accessor_t get_s, set_s;
-
-
 static reg_detail_t woodstock_cpu_reg_detail [] =
 {
-  {{ "a",        56,  1, 16 }, OFFSET_OF (act_reg_t, a),  get_14_dig, set_14_dig },
-  {{ "b",        56,  1, 16 }, OFFSET_OF (act_reg_t, b),  get_14_dig, set_14_dig },
-  {{ "c",        56,  1, 16 }, OFFSET_OF (act_reg_t, c),  get_14_dig, set_14_dig },
-  {{ "y",        56,  1, 16 }, OFFSET_OF (act_reg_t, y),  get_14_dig, set_14_dig },
-  {{ "z",        56,  1, 16 }, OFFSET_OF (act_reg_t, z),  get_14_dig, set_14_dig },
-  {{ "t",        56,  1, 16 }, OFFSET_OF (act_reg_t, t),  get_14_dig, set_14_dig },
-  {{ "m1",       56,  1, 16 }, OFFSET_OF (act_reg_t, m1),  get_14_dig, set_14_dig },
-  {{ "m2",       56,  1, 16 }, OFFSET_OF (act_reg_t, m2),  get_14_dig, set_14_dig },
-  {{ "p",         4,  1, 16 }, OFFSET_OF (act_reg_t, p),     NULL,     NULL },
-  {{ "f",         4,  1, 16 }, OFFSET_OF (act_reg_t, f),     NULL,     NULL },
-  {{ "decimal",   1,  1,  2 }, OFFSET_OF (act_reg_t, decimal), NULL, NULL },
-  {{ "carry",     1,  1,  2 }, OFFSET_OF (act_reg_t, carry),   NULL, NULL },
+  {{ "a",        56,  1, 16 }, OFFSET_OF (act_reg_t, a),  get_digits, set_digits, WSIZE },
+  {{ "b",        56,  1, 16 }, OFFSET_OF (act_reg_t, b),  get_digits, set_digits, WSIZE },
+  {{ "c",        56,  1, 16 }, OFFSET_OF (act_reg_t, c),  get_digits, set_digits, WSIZE },
+  {{ "y",        56,  1, 16 }, OFFSET_OF (act_reg_t, y),  get_digits, set_digits, WSIZE },
+  {{ "z",        56,  1, 16 }, OFFSET_OF (act_reg_t, z),  get_digits, set_digits, WSIZE },
+  {{ "t",        56,  1, 16 }, OFFSET_OF (act_reg_t, t),  get_digits, set_digits, WSIZE },
+  {{ "m1",       56,  1, 16 }, OFFSET_OF (act_reg_t, m1), get_digits, set_digits, WSIZE },
+  {{ "m2",       56,  1, 16 }, OFFSET_OF (act_reg_t, m2), get_digits, set_digits, WSIZE },
+  {{ "p",         4,  1, 16 }, OFFSET_OF (act_reg_t, p),       NULL, NULL, 0 },
+  {{ "f",         4,  1, 16 }, OFFSET_OF (act_reg_t, f),       NULL, NULL, 0 },
+  {{ "decimal",   1,  1,  2 }, OFFSET_OF (act_reg_t, decimal), NULL, NULL, 0 },
+  {{ "carry",     1,  1,  2 }, OFFSET_OF (act_reg_t, carry),   NULL, NULL, 0 },
   // prev_carry
-  {{ "s",     SSIZE,  1,  2 }, OFFSET_OF (act_reg_t, s),  get_s,    set_s },
-  {{ "ext_flag", EXT_FLAG_SIZE,  1,  2 }, OFFSET_OF (act_reg_t, ext_flag),  get_s,    set_s },
-  {{ "bank",      1,  1,  2 }, OFFSET_OF (act_reg_t, bank), NULL, NULL },
-  {{ "pc",       12,  1,  8 }, OFFSET_OF (act_reg_t, pc), NULL, NULL },
+  {{ "s",     SSIZE,  1,  2 }, OFFSET_OF (act_reg_t, s), get_bools, set_bools, SSIZE },
+  {{ "ext_flag", EXT_FLAG_SIZE,  1,  2 }, OFFSET_OF (act_reg_t, ext_flag), get_bools, set_bools, EXT_FLAG_SIZE },
+  {{ "bank",      1,  1,  2 }, OFFSET_OF (act_reg_t, bank), NULL, NULL, 0 },
+  {{ "pc",       12,  1,  8 }, OFFSET_OF (act_reg_t, pc),   NULL, NULL, 0 },
   // prev_pc
-  {{ "stack", 12, STACK_SIZE, 8 }, OFFSET_OF (act_reg_t, return_stack), NULL, NULL },
-  {{ "del_rom_flag", 1,  1,  2 }, OFFSET_OF (act_reg_t, del_rom_flag), NULL, NULL },
-  {{ "del_rom",   4,  1,  8 }, OFFSET_OF (act_reg_t, del_rom), NULL, NULL },
+  {{ "stack", 12, STACK_SIZE, 8 }, OFFSET_OF (act_reg_t, return_stack), NULL, NULL, 0 },
+  {{ "del_rom_flag", 1,  1,  2 }, OFFSET_OF (act_reg_t, del_rom_flag),  NULL, NULL, 0 },
+  {{ "del_rom",   4,  1,  8 }, OFFSET_OF (act_reg_t, del_rom), NULL, NULL, 0 },
 
-  {{ "display_enable", 1,  1,  2 }, OFFSET_OF (act_reg_t, display_enable),   NULL, NULL },
-  {{ "display_14_digit",  1,  1,  2 }, OFFSET_OF (act_reg_t, display_14_digit),   NULL, NULL },
+  {{ "display_enable", 1,  1,  2 }, OFFSET_OF (act_reg_t, display_enable), NULL, NULL, 0 },
+  {{ "display_14_digit",  1,  1,  2 }, OFFSET_OF (act_reg_t, display_14_digit),   NULL, NULL, 0 },
   // key_flag
   // key_buf
-  {{ "ram_addr",  8,  1, 16 }, OFFSET_OF (act_reg_t, ram_addr), NULL, NULL },
+  {{ "ram_addr",  8,  1, 16 }, OFFSET_OF (act_reg_t, ram_addr), NULL, NULL, 0 },
 };
 
 
@@ -89,40 +86,6 @@ static chip_detail_t woodstock_cpu_chip_detail =
   woodstock_cpu_reg_detail,
   woodstock_event_fn,
 };
-
-
-static bool get_s (void *data, uint64_t *p)
-{
-  uint16_t val;
-  bool *d;
-  int i;
-
-  d = ((bool *) data) + SSIZE;
-  val = 0;
-  for (i = 0; i < SSIZE; i++)
-    val = (val << 1) + *(--d);
-
-  *p = val;
-
-  return true;
-}
-
-static bool set_s (void *data, uint64_t *p)
-{
-  uint16_t val;
-  bool *d;
-  int i;
-
-  val = *p;
-  d = (bool *) data;
-  for (i = 0; i < SSIZE; i++)
-    {
-      *(d++) = val & 0x01;
-      val >>= 1;
-    }
-
-  return true;
-}
 
 
 static inline uint8_t arithmetic_base (act_reg_t *act_reg)

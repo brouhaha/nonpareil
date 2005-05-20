@@ -44,28 +44,25 @@ static void print_reg (reg_t reg);
 #undef WARN_STRAY_WRITE
 
 
-static reg_accessor_t get_s, set_s;
-
-
 static reg_detail_t nut_cpu_reg_detail [] =
 {
-  {{ "a",        56,  1, 16 }, OFFSET_OF (nut_reg_t, a),  get_14_dig, set_14_dig },
-  {{ "b",        56,  1, 16 }, OFFSET_OF (nut_reg_t, b),  get_14_dig, set_14_dig },
-  {{ "c",        56,  1, 16 }, OFFSET_OF (nut_reg_t, c),  get_14_dig, set_14_dig },
-  {{ "m",        56,  1, 16 }, OFFSET_OF (nut_reg_t, m),  get_14_dig, set_14_dig },
-  {{ "n",        56,  1, 16 }, OFFSET_OF (nut_reg_t, n),  get_14_dig, set_14_dig },
-  {{ "g",         8,  1, 16 }, OFFSET_OF (nut_reg_t, g),  get_2_dig,  set_2_dig },
-  {{ "p",         4,  1, 16 }, OFFSET_OF (nut_reg_t, p),     NULL,     NULL },
-  {{ "q",         4,  1, 16 }, OFFSET_OF (nut_reg_t, q),     NULL,     NULL },
-  {{ "q_sel",     1,  1,  2 }, OFFSET_OF (nut_reg_t, q_sel), NULL,     NULL },
-  {{ "fo",        8,  1, 16 }, OFFSET_OF (nut_reg_t, fo), get_2_dig,  set_2_dig },
-  {{ "s",     SSIZE,  1,  2 }, OFFSET_OF (nut_reg_t, s),  get_s,    set_s },
-  {{ "pc",       16,  1, 16 }, OFFSET_OF (nut_reg_t, pc), NULL, NULL },
+  {{ "a",        56,  1, 16 }, OFFSET_OF (nut_reg_t, a),  get_digits, set_digits, WSIZE },
+  {{ "b",        56,  1, 16 }, OFFSET_OF (nut_reg_t, b),  get_digits, set_digits, WSIZE },
+  {{ "c",        56,  1, 16 }, OFFSET_OF (nut_reg_t, c),  get_digits, set_digits, WSIZE },
+  {{ "m",        56,  1, 16 }, OFFSET_OF (nut_reg_t, m),  get_digits, set_digits, WSIZE },
+  {{ "n",        56,  1, 16 }, OFFSET_OF (nut_reg_t, n),  get_digits, set_digits, WSIZE },
+  {{ "g",         8,  1, 16 }, OFFSET_OF (nut_reg_t, g),  get_digits,  set_digits, 2 },
+  {{ "p",         4,  1, 16 }, OFFSET_OF (nut_reg_t, p),     NULL,     NULL, 0 },
+  {{ "q",         4,  1, 16 }, OFFSET_OF (nut_reg_t, q),     NULL,     NULL, 0 },
+  {{ "q_sel",     1,  1,  2 }, OFFSET_OF (nut_reg_t, q_sel), NULL,     NULL, 0 },
+  {{ "fo",        8,  1, 16 }, OFFSET_OF (nut_reg_t, fo), get_digits,  set_digits, 2 },
+  {{ "s",     SSIZE,  1,  2 }, OFFSET_OF (nut_reg_t, s),  get_bools,    set_bools, SSIZE },
+  {{ "pc",       16,  1, 16 }, OFFSET_OF (nut_reg_t, pc), NULL, NULL, 0 },
   // prev_pc
-  {{ "stack", 16, STACK_DEPTH, 16 }, OFFSET_OF (nut_reg_t, stack), NULL, NULL },
-  {{ "decimal",   1,  1,  2 }, OFFSET_OF (nut_reg_t, decimal), NULL, NULL },
-  {{ "carry",     1,  1,  2 }, OFFSET_OF (nut_reg_t, carry),   NULL, NULL },
-  {{ "awake",     1,  1,  2 }, OFFSET_OF (nut_reg_t, awake),   NULL, NULL },
+  {{ "stack", 16, STACK_DEPTH, 16 }, OFFSET_OF (nut_reg_t, stack), NULL, NULL, 0 },
+  {{ "decimal",   1,  1,  2 }, OFFSET_OF (nut_reg_t, decimal), NULL, NULL, 0 },
+  {{ "carry",     1,  1,  2 }, OFFSET_OF (nut_reg_t, carry),   NULL, NULL, 0 },
+  {{ "awake",     1,  1,  2 }, OFFSET_OF (nut_reg_t, awake),   NULL, NULL, 0 },
 
   // inst_state
   // first_word
@@ -75,8 +72,8 @@ static reg_detail_t nut_cpu_reg_detail [] =
   // key_down
   // key_flag
   // key_buf
-  {{ "pf_addr",   8,  1, 16 }, OFFSET_OF (nut_reg_t, pf_addr),  NULL, NULL },
-  {{ "ram_addr", 10,  1, 16 }, OFFSET_OF (nut_reg_t, ram_addr), NULL, NULL },
+  {{ "pf_addr",   8,  1, 16 }, OFFSET_OF (nut_reg_t, pf_addr),  NULL, NULL, 0 },
+  {{ "ram_addr", 10,  1, 16 }, OFFSET_OF (nut_reg_t, ram_addr), NULL, NULL, 0 },
 };
 
 
@@ -102,40 +99,6 @@ static int tmap [16] =
 /* map from register index to high opcode bits */
 static int itmap [WSIZE] =
 { 0xe, 0xc, 0x8, 0x0, 0x1, 0x2, 0x5, 0xa, 0x4, 0x9, 0x3, 0x6, 0xd, 0xb };
-
-
-static bool get_s (void *data, uint64_t *p)
-{
-  uint16_t val;
-  bool *d;
-  int i;
-
-  d = ((bool *) data) + SSIZE;
-  val = 0;
-  for (i = 0; i < SSIZE; i++)
-    val = (val << 1) + *(--d);
-
-  *p = val;
-
-  return true;
-}
-
-static bool set_s (void *data, uint64_t *p)
-{
-  uint16_t val;
-  bool *d;
-  int i;
-
-  val = *p;
-  d = (bool *) data;
-  for (i = 0; i < SSIZE; i++)
-    {
-      *(d++) = val & 0x01;
-      val >>= 1;
-    }
-
-  return true;
-}
 
 
 static inline uint8_t arithmetic_base (nut_reg_t *nut_reg)

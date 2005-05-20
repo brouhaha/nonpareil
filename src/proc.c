@@ -313,7 +313,7 @@ static void cmd_read_register (sim_t *sim, sim_msg_t *msg)
 
   if (reg_detail->get)
     {
-      if (reg_detail->get (addr, result_val))
+      if (reg_detail->get (addr, result_val, reg_detail->accessor_arg))
 	msg->reply = OK;
     }
   else
@@ -359,7 +359,7 @@ static void cmd_write_register (sim_t *sim, sim_msg_t *msg)
 
   if (reg_detail->set)
     {
-      if (reg_detail->set (addr, source_val))
+      if (reg_detail->set (addr, source_val, reg_detail->accessor_arg))
 	msg->reply = OK;
     }
   else
@@ -1056,14 +1056,14 @@ processor_dispatch_t *processor_dispatch [ARCH_MAX] =
 // are internally stored as an array of digits, one digit per byte.
 // The external representation is packed into a single uint of an
 // appropriate size.
-bool get_14_dig (void *data, uint64_t *p)
+bool get_digits (void *data, uint64_t *p, int arg)
 {
   uint64_t val = 0;
   uint8_t *d;
   int i;
 
-  d = ((uint8_t *) data) + 14;
-  for (i = 0; i < 14; i++)
+  d = ((uint8_t *) data) + arg;
+  for (i = 0; i < arg; i++)
     val = (val << 4) + *(--d);
 
   *p = val;
@@ -1072,14 +1072,14 @@ bool get_14_dig (void *data, uint64_t *p)
 }
 
 
-bool set_14_dig (void *data, uint64_t *p)
+bool set_digits (void *data, uint64_t *p, int arg)
 {
   uint64_t val = *p;
   uint8_t *d;
   int i;
 
   d = (uint8_t *) data;
-  for (i = 0; i < 14; i++)
+  for (i = 0; i < arg; i++)
     {
       *(d++) = val & 0x0f;
       val >>= 4;
@@ -1089,15 +1089,15 @@ bool set_14_dig (void *data, uint64_t *p)
 }
 
 
-bool get_2_dig (void *data, uint64_t *p)
+bool get_bit_digits (void *data, uint64_t *p, int arg)
 {
-  uint8_t val = 0;
+  uint64_t val = 0;
   uint8_t *d;
   int i;
 
-  d = ((uint8_t *) data) + 2;
-  for (i = 0; i < 2; i++)
-    val = (val << 4) + *(--d);
+  d = ((uint8_t *) data) + arg;
+  for (i = 0; i < arg; i++)
+    val = (val << 1) + *(--d);
 
   *p = val;
 
@@ -1105,17 +1105,51 @@ bool get_2_dig (void *data, uint64_t *p)
 }
 
 
-bool set_2_dig (void *data, uint64_t *p)
+bool set_bit_digits (void *data, uint64_t *p, int arg)
 {
-  uint8_t val = *p;
+  uint64_t val = *p;
   uint8_t *d;
   int i;
 
-  d = ((uint8_t *) data);
-  for (i = 0; i < 2; i++)
+  d = (uint8_t *) data;
+  for (i = 0; i < arg; i++)
     {
       *(d++) = val & 0x0f;
-      val >>= 4;
+      val >>= 1;
+    }
+
+  return true;
+}
+
+
+bool get_bools (void *data, uint64_t *p, int arg)
+{
+  uint16_t val;
+  bool *d;
+  int i;
+
+  d = ((bool *) data) + arg;
+  val = 0;
+  for (i = 0; i < arg; i++)
+    val = (val << 1) + *(--d);
+
+  *p = val;
+
+  return true;
+}
+
+bool set_bools (void *data, uint64_t *p, int arg)
+{
+  uint16_t val;
+  bool *d;
+  int i;
+
+  val = *p;
+  d = (bool *) data;
+  for (i = 0; i < arg; i++)
+    {
+      *(d++) = val & 0x01;
+      val >>= 1;
     }
 
   return true;

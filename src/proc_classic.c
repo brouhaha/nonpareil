@@ -33,29 +33,26 @@ MA 02111, USA.
 #include "proc_classic.h"
 
 
-static reg_accessor_t get_s, set_s;
-
-
 static reg_detail_t classic_cpu_reg_detail [] =
 {
-  {{ "a",        56,  1, 16 }, OFFSET_OF (classic_cpu_reg_t, a),  get_14_dig, set_14_dig },
-  {{ "b",        56,  1, 16 }, OFFSET_OF (classic_cpu_reg_t, b),  get_14_dig, set_14_dig },
-  {{ "c",        56,  1, 16 }, OFFSET_OF (classic_cpu_reg_t, c),  get_14_dig, set_14_dig },
-  {{ "d",        56,  1, 16 }, OFFSET_OF (classic_cpu_reg_t, d),  get_14_dig, set_14_dig },
-  {{ "e",        56,  1, 16 }, OFFSET_OF (classic_cpu_reg_t, e),  get_14_dig, set_14_dig },
-  {{ "f",        56,  1, 16 }, OFFSET_OF (classic_cpu_reg_t, f),  get_14_dig, set_14_dig },
-  {{ "m",        56,  1, 16 }, OFFSET_OF (classic_cpu_reg_t, m),  get_14_dig, set_14_dig },
-  {{ "p",         4,  1, 16 }, OFFSET_OF (classic_cpu_reg_t, p),     NULL,     NULL },
-  {{ "carry",     1,  1,  2 }, OFFSET_OF (classic_cpu_reg_t, carry),   NULL, NULL },
+  {{ "a",        56,  1, 16 }, OFFSET_OF (classic_cpu_reg_t, a),  get_digits, set_digits, WSIZE },
+  {{ "b",        56,  1, 16 }, OFFSET_OF (classic_cpu_reg_t, b),  get_digits, set_digits, WSIZE },
+  {{ "c",        56,  1, 16 }, OFFSET_OF (classic_cpu_reg_t, c),  get_digits, set_digits, WSIZE },
+  {{ "d",        56,  1, 16 }, OFFSET_OF (classic_cpu_reg_t, d),  get_digits, set_digits, WSIZE },
+  {{ "e",        56,  1, 16 }, OFFSET_OF (classic_cpu_reg_t, e),  get_digits, set_digits, WSIZE },
+  {{ "f",        56,  1, 16 }, OFFSET_OF (classic_cpu_reg_t, f),  get_digits, set_digits, WSIZE },
+  {{ "m",        56,  1, 16 }, OFFSET_OF (classic_cpu_reg_t, m),  get_digits, set_digits, WSIZE },
+  {{ "p",         4,  1, 16 }, OFFSET_OF (classic_cpu_reg_t, p),     NULL,     NULL, 0 },
+  {{ "carry",     1,  1,  2 }, OFFSET_OF (classic_cpu_reg_t, carry),   NULL, NULL, 0 },
   // prev_carry
-  {{ "s",     SSIZE,  1,  2 }, OFFSET_OF (classic_cpu_reg_t, s),      get_s,    set_s },
-  {{ "ext_flag", EXT_FLAG_SIZE,  1,  2 }, OFFSET_OF (classic_cpu_reg_t, ext_flag),  get_s,    set_s },
-  {{ "group",     8,  1,  3 }, OFFSET_OF (classic_cpu_reg_t, group),  NULL,     NULL },
-  {{ "rom",       8,  1,  3 }, OFFSET_OF (classic_cpu_reg_t, rom),    NULL,     NULL },
-  {{ "pc",        8,  1,  3 }, OFFSET_OF (classic_cpu_reg_t, pc),     NULL,     NULL },
-  {{ "ret_pc",    8,  1,  3 }, OFFSET_OF (classic_cpu_reg_t, ret_pc), NULL,     NULL },
+  {{ "s",     SSIZE,  1,  2 }, OFFSET_OF (classic_cpu_reg_t, s),  get_bools,  set_bools, SSIZE },
+  {{ "ext_flag", EXT_FLAG_SIZE,  1,  2 }, OFFSET_OF (classic_cpu_reg_t, ext_flag),  get_bools, set_bools, EXT_FLAG_SIZE },
+  {{ "group",     8,  1,  3 }, OFFSET_OF (classic_cpu_reg_t, group),  NULL,     NULL, 0 },
+  {{ "rom",       8,  1,  3 }, OFFSET_OF (classic_cpu_reg_t, rom),    NULL,     NULL, 0 },
+  {{ "pc",        8,  1,  3 }, OFFSET_OF (classic_cpu_reg_t, pc),     NULL,     NULL, 0 },
+  {{ "ret_pc",    8,  1,  3 }, OFFSET_OF (classic_cpu_reg_t, ret_pc), NULL,     NULL, 0 },
   // prev_pc
-  {{ "display_enable", 1,  1,  2 }, OFFSET_OF (classic_cpu_reg_t, display_enable),   NULL, NULL },
+  {{ "display_enable", 1,  1,  2 }, OFFSET_OF (classic_cpu_reg_t, display_enable),   NULL, NULL, 0 },
   // key_flag
   // key_buf
 };
@@ -74,40 +71,6 @@ static chip_detail_t classic_cpu_chip_detail =
   classic_cpu_reg_detail,
   classic_event_fn
 };
-
-
-static bool get_s (void *data, uint64_t *p)
-{
-  uint16_t val;
-  bool *d;
-  int i;
-
-  d = ((bool *) data) + SSIZE;
-  val = 0;
-  for (i = 0; i < SSIZE; i++)
-    val = (val << 1) + *(--d);
-
-  *p = val;
-
-  return true;
-}
-
-static bool set_s (void *data, uint64_t *p)
-{
-  uint16_t val;
-  bool *d;
-  int i;
-
-  val = *p;
-  d = (bool *) data;
-  for (i = 0; i < SSIZE; i++)
-    {
-      *(d++) = val & 0x01;
-      val >>= 1;
-    }
-
-  return true;
-}
 
 
 static void bad_op (sim_t *sim, int opcode)

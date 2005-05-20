@@ -26,10 +26,18 @@ MA 02111, USA.
  */
 
 typedef bool reg_accessor_t (void *data,
-			     uint64_t *p);
+			     uint64_t *p,
+			     int arg);
 
-reg_accessor_t get_14_dig, set_14_dig;
-reg_accessor_t get_2_dig, set_2_dig;
+// get/set one four-bit digit per uint8
+reg_accessor_t get_digits, set_digits;
+
+// get/set one bit per uint8
+reg_accessor_t get_bit_digits, set_bit_digits;
+
+// get/set array of bools
+reg_accessor_t get_bools, set_bools;
+
 
 typedef struct
 {
@@ -38,6 +46,7 @@ typedef struct
   // accessor functions - if NULL, use default
   reg_accessor_t *get;
   reg_accessor_t *set;
+  int accessor_arg;
 } reg_detail_t;
 
 
