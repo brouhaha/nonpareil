@@ -189,6 +189,8 @@ typographical errors in my entry of the HP-45 and HP-55 source code.
 
 Steven Ellis and Steven Knight helped with the SConstruct and SConscript
 files, which are used to build the Nonpareil using SCons rather than make.
+I also used an SCons source tarball builder posted to the scons-users
+mailing list by Paul Davis.
 
 The HP-41C image (hp41cv.png) is a stylized illustration rendered by
 my older NSIM simulator with improvements by Maciej Bartosiak and
