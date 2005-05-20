@@ -147,4 +147,5 @@ bool set_key_state (int keycode, bool pressed)
   else
     button_widget_released (button_info [keycode]->widget,
 			    button_info [keycode]);
+  return true;
 }
