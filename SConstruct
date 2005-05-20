@@ -18,7 +18,7 @@
 # the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
 # Boston, MA 02111, USA.
 
-release = '0.63'  # should get from a file, and use only if a release option
+release = '0.64'  # should get from a file, and use only if a release option
                   # is specified
 
 #-----------------------------------------------------------------------------
