@@ -18,31 +18,10 @@
 # the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
 # Boston, MA 02111, USA.
 
-Import('env uasm source_release_dir snapshot_dir')
-
-import os.path
+Import('env source_release_dir snapshot_dir')
 
 #-----------------------------------------------------------------------------
 # Assemble ROM sources
-#-----------------------------------------------------------------------------
-
-def AssembleGenerator (source, target, env, for_signature):
-    return '%s %s -o %s -l %s' % (uasm [0].path, source [0], target [0], target [1])
-
-def AssembleEmitter (target, source, env):
-    target.append (os.path.splitext (str (target [0])) [0]+'.lst')
-    env.Depends (target, uasm)
-    return (target, source)
-
-Assemble = Builder (generator = AssembleGenerator,
-                    suffix = '.obj',
-                    src_suffix = '.asm',
-                    emitter = AssembleEmitter)
-
-env.Append (BUILDERS = { 'Assemble': Assemble })
-
-#-----------------------------------------------------------------------------
-# Define default targets
 #-----------------------------------------------------------------------------
 
 asm_srcs = Split ("""hp35.asm hp45.asm hp55.asm hp80.asm""")

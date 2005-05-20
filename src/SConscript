@@ -62,17 +62,30 @@ env.ParseConfig(pkg_config_cmd + state_io_packages)
 # uasm
 #-----------------------------------------------------------------------------
 
-uasm_env = env.Copy ()
-
 uasm_srcs = Split ("""asm.c symtab.c
             	      asml.l asmy.y
                       casml.l casmy.y
                       wasml.l wasmy.y""")
 
-uasm = uasm_env.Program (target = 'uasm',
-                         source = uasm_srcs + common_objs)
+uasm = env.Program (target = 'uasm',
+                    source = uasm_srcs + common_objs)
 
-Export('uasm')
+import os.path
+
+def AssembleEmitter (target, source, env):
+    target.append (os.path.splitext (str (target [0])) [0] + '.lst')
+    env.Depends (target, "$UASM")
+    return (target, source)
+
+Assemble = Builder (action = "$UASMCOM",
+                    suffix = '.obj',
+                    src_suffix = '.asm',
+                    emitter = AssembleEmitter)
+
+env.Append (BUILDERS = { 'Assemble': Assemble },
+            UASM = uasm,
+            UASMCOM = "$UASM $UASMFLAGS $SOURCE -o $TARGET -l ${TARGETS[1]}")
+
 
 #-----------------------------------------------------------------------------
 # nonpareil
