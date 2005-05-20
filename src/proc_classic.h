@@ -52,7 +52,7 @@ typedef struct
 
   uint8_t carry, prev_carry;
 
-  uint8_t s [SSIZE];
+  bool s [SSIZE];
 
   uint8_t pc;
   uint8_t rom;
@@ -65,8 +65,8 @@ typedef struct
 
   int prev_pc;  /* used to store complete five-digit octal address of instruction */
 
-  uint8_t ext_flag [SSIZE];  /* external flags, e.g., slide switches,
-				magnetic card inserted */
+  bool ext_flag [SSIZE];  /* external flags, e.g., slide switches,
+			     magnetic card inserted */
 
   // keyboard
   bool key_flag;      /* true if a key is down */
