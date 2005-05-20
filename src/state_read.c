@@ -196,12 +196,12 @@ static void parse_reg (sax_data_t *sdata, char **attrs)
 	}
       else if (strcmp (attrs [i], "index") == 0)
 	{
-	  index = strtoul (attrs [i + 1], NULL, 16);
+	  index = strtoull (attrs [i + 1], NULL, 16);
 	  got_index = true;
 	}
       else if (strcmp (attrs [i], "data") == 0)
 	{
-	  data = strtoul (attrs [i + 1], NULL, 16);
+	  data = strtoull (attrs [i + 1], NULL, 16);
 	  got_data = true;
 	}
       else
