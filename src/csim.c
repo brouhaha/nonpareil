@@ -301,6 +301,7 @@ static GtkItemFactoryEntry menu_items [] =
 #endif
 #ifdef HAS_DEBUGGER_GUI
     { "/Debug/Show Reg", NULL,        debug_show_reg, 0, "<Item>" },
+    { "/Debug/Show RAM", NULL,        debug_show_ram, 0, "<Item>" },
     { "/Debug/Run",     NULL,         debug_run,     0, "<Item>" },
     { "/Debug/Step",    NULL,         debug_step,    0, "<Item>" },
     { "/Debug/Trace",   NULL,         debug_trace,   0, "<ToggleItem>" },

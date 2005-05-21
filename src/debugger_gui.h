@@ -34,3 +34,5 @@ void debug_key_trace (GtkWidget *widget, gpointer data);
 void debug_ram_trace (GtkWidget *widget, gpointer data);
 
 void debug_show_reg (GtkWidget *widget, gpointer data);
+
+void debug_show_ram (GtkWidget *widget, gpointer data);

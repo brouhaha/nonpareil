@@ -45,6 +45,13 @@ static int reg_width [MAX_REG];
 static GtkWidget *reg_widget [MAX_REG];
 static reg_info_t *reg_info [MAX_REG];
 
+static GtkWidget *ram_window;
+static gboolean ram_visible;
+static int max_ram;
+#define MAX_RAM 1024
+static GtkWidget *ram_widget [MAX_RAM];
+static int ram_addr [MAX_RAM];
+
 
 static void binary_to_string (char *buf, int bits, uint64_t val)
 {
@@ -185,6 +192,108 @@ void debug_show_reg (GtkWidget *widget, gpointer data)
     }
   else
     gtk_widget_hide (reg_window);
+}
+
+
+static void update_ram_window (void)
+{
+  int index;
+  char buf [15];
+  uint64_t val;
+
+  for (index = 0; index < max_ram; index++)
+    {
+      if (sim_read_ram (dsim, ram_addr [index], & val))
+	snprintf (buf, sizeof (buf), "%014" PRIx64, val);
+      else
+	snprintf (buf, sizeof (buf), "err");
+      gtk_entry_set_text (GTK_ENTRY (ram_widget [index]), buf);
+    }
+}
+
+
+static bool debug_window_add_ram (GtkWidget *table, int addr)
+{
+  char addr_str [4];
+
+  ram_addr [max_ram] = addr;
+
+  sprintf (addr_str, "%03x", addr);
+
+  gtk_table_attach_defaults (GTK_TABLE (table),
+			     gtk_label_new (addr_str),
+			     0,
+			     1,
+			     max_ram,
+			     max_ram + 1);
+
+  ram_widget [max_ram] = gtk_entry_new_with_max_length (14);
+
+  gtk_table_attach_defaults (GTK_TABLE (table),
+			     ram_widget [max_ram],
+			     1,
+			     2,
+			     max_ram,
+			     max_ram + 1);
+
+  max_ram++;
+
+  return true;
+}
+
+
+static gboolean on_destroy_ram_window_event (GtkWidget *widget,
+					     GdkEventAny *event)
+{
+  ram_visible = false;
+  ram_window = NULL;
+  return (FALSE);
+}
+
+
+void debug_show_ram (GtkWidget *widget, gpointer data)
+{
+  GtkWidget *table;
+  GtkWidget *scrolled_window;
+  int addr = 0;
+  int limit;
+  uint64_t val;
+  
+  if (! ram_window)
+    {
+      max_ram = 0;
+      ram_visible = false;
+      ram_window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
+      gtk_window_set_title (GTK_WINDOW (ram_window), "RAM");
+
+      g_signal_connect (G_OBJECT (ram_window),
+			"destroy",
+			GTK_SIGNAL_FUNC (on_destroy_ram_window_event),
+			NULL);
+
+      table = gtk_table_new (1, 2, FALSE);
+
+      scrolled_window = gtk_scrolled_window_new (NULL, NULL);
+
+      gtk_scrolled_window_add_with_viewport (GTK_SCROLLED_WINDOW (scrolled_window), table);
+
+      gtk_container_add (GTK_CONTAINER (ram_window), scrolled_window);
+
+      limit = sim_get_max_ram (dsim);
+      for (addr = 0; addr < limit; addr++)
+	if (sim_read_ram (dsim, addr, & val))
+	  debug_window_add_ram (table, addr);
+    }
+
+  ram_visible = ! ram_visible;
+
+  if (ram_visible)
+    {
+      update_ram_window ();
+      gtk_widget_show_all (ram_window);
+    }
+  else
+    gtk_widget_hide (ram_window);
 }
 
 
