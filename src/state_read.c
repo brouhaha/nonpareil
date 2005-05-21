@@ -120,8 +120,8 @@ static void parse_ui (sax_data_t *sdata, char **attrs)
 static void parse_switch (sax_data_t *sdata, char **attrs)
 {
   int i;
-  int number;
-  int position;
+  uint32_t number;
+  uint32_t position;
   bool got_number = false;
   bool got_position = false;
 
@@ -129,12 +129,12 @@ static void parse_switch (sax_data_t *sdata, char **attrs)
     {
       if (strcmp (attrs [i], "number") == 0)
 	{
-	  number = strtoul (attrs [i + 1], NULL, 16);
+	  number = str_to_uint32 (attrs [i + 1], NULL, 16);
 	  got_number = true;
 	}
       else if (strcmp (attrs [i], "position") == 0)
 	{
-	  position = strtoul (attrs [i + 1], NULL, 16);
+	  position = str_to_uint32 (attrs [i + 1], NULL, 16);
 	  got_position = true;
 	}
       else
@@ -157,7 +157,7 @@ static void parse_chip (sax_data_t *sdata, char **attrs)
     {
       if (strcmp (attrs [i], "addr") == 0)
 	{
-	  sdata->chip_addr = strtoul (attrs [i + 1], NULL, 16);
+	  sdata->chip_addr = str_to_uint32 (attrs [i + 1], NULL, 16);
 	  got_chip_addr = true;
 	}
       else if (strcmp (attrs [i], "name") == 0)
@@ -196,12 +196,12 @@ static void parse_reg (sax_data_t *sdata, char **attrs)
 	}
       else if (strcmp (attrs [i], "index") == 0)
 	{
-	  index = strtoull (attrs [i + 1], NULL, 16);
+	  index = str_to_uint64 (attrs [i + 1], NULL, 16);
 	  got_index = true;
 	}
       else if (strcmp (attrs [i], "data") == 0)
 	{
-	  data = strtoull (attrs [i + 1], NULL, 16);
+	  data = str_to_uint64 (attrs [i + 1], NULL, 16);
 	  got_data = true;
 	}
       else
@@ -247,12 +247,12 @@ static void parse_loc (sax_data_t *sdata, char **attrs)
     {
       if (strcmp (attrs [i], "addr") == 0)
 	{
-	  addr = strtoull (attrs [i + 1], NULL, 16);
+	  addr = str_to_uint64 (attrs [i + 1], NULL, 16);
 	  got_addr = true;
 	}
       else if (strcmp (attrs [i], "data") == 0)
 	{
-	  data = strtoull (attrs [i + 1], NULL, 16);
+	  data = str_to_uint64 (attrs [i + 1], NULL, 16);
 	  got_data = true;
 	}
       else

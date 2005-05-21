@@ -21,6 +21,7 @@ MA 02111, USA.
 
 #include <stdarg.h>
 #include <stdbool.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -141,6 +142,21 @@ void trim_trailing_whitespace (char *s)
       else
 	break;
     }
+}
+
+
+// The following work on Fedora Core 3, both i386 and x86_64 architectures.
+// But to do this right I either need to have a compile-time configuration
+// test, or code my own implmentation.
+ 
+uint32_t str_to_uint32 (const char *nptr, char **endptr, int base)
+{
+  return strtoul (nptr, endptr, base);
+}
+
+uint64_t str_to_uint64 (const char *nptr, char **endptr, int base)
+{
+  return strtoull (nptr, endptr, base);
 }
 
 

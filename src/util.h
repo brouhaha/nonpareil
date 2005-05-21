@@ -57,6 +57,15 @@ char *max_strncat (char *dest, const char *src, size_t n);
 void trim_trailing_whitespace (char *s);
 
 
+// Replacements for strtoul and strtoull:
+
+uint32_t str_to_uint32 (const char *nptr, char **endptr, int base);
+
+uint64_t str_to_uint64 (const char *nptr, char **endptr, int base);
+
+
+// File and directory handling:
+
 bool file_exists (char *fn);
 
 bool dir_exists (char *fn);
