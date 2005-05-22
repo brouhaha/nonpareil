@@ -25,25 +25,11 @@ and Make 3.71.  Current development uses GCC 3.4.2, Flex 2.5.4a, Bison
 
 -----------------------------------------------------------------------------
 
-Configuration:
-
-
-The Nonpareil installation prefix defaults to /usr/local.  If you want
-Nonpareil to be installed in a different directory, create a file
-'local.py' in the top level directory, containing a line of the form:
-        prefix = '/path/to/install/directory'
-
-The executable will be installed in a "bin" directory under the prefix
-path, and the KML, ROM, and image files will be installed in a
-"lib/nonpareil" directory under the prefix path.  Thus the defaults are
-"/usr/local/bin/nonpareil" and "/usr/local/lib/nonpareil/*.kml" etc.
-
------------------------------------------------------------------------------
-
 Building Nonpareil:
 
-If you have SCons installed on your system, building Nonpareil is as
-simple as giving the command
+If you have SCons installed on your system, and are satisfied with the
+default configuration options, building Nonpareil is as simple as
+giving the command
 
 	% scons
 
@@ -59,4 +45,40 @@ whereever these instructions call for the use of scons.
 
 Installing Nonpareil:
 
+The default installation of scons may be accomplished by the command:
+
 	% scons install
+
+-----------------------------------------------------------------------------
+
+Configuration:
+
+Nonpareil has a number of configuration options that may be set at
+compile time by command line arguments to scons.  Brief descriptions
+of the configuration options as well as their default and current
+settings may be obtained with the command "scons -h".
+
+The configuration options are cached in a file "nonpareil.conf".  To
+reset all settings to their default values, delete this file.
+
+The Nonpareil installation prefix defaults to "/usr/local".  If you want
+Nonpareil to be installed in a different directory, set the prefix to
+a different path when building Nonpareil, e.g.
+    scons prefix=/path/to/base/install/directory
+
+By default, the Nonpareil executable programs will be installed in a
+"bin" directory under the prefix path, and the KML, ROM, and image
+files will be installed in a "lib/nonpareil" directory under the
+prefix path.  Thus the full defaults paths are "/usr/local/bin/nonpareil"
+and "/usr/local/lib/nonpareil/*.kml" etc.  For more control over the
+installation locations of the binaries and library files, you can
+use the "bindir" and "libdir" configuration options.
+
+When building binary packages (e.g., RPM, deb, or GARstow), it is often
+convenient to install into a virtual root directory.  This can be
+accomplished using the "destdir" configuration option.  For instance:
+    scons install prefix=/usr destdir=/var/tmp/nonpareil-3874
+will install the executables into "/var/tmp/nonpareil-3874/usr/bin/",
+and the library files into "/var/tmp/nonpareil-3874/usr/lib/nonpareil/",
+though they will be configured for actual runtime use in "/usr/bin/"
+and "/usr/lib/nonpareil/".
