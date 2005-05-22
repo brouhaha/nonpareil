@@ -147,24 +147,38 @@ env.Append (BUILDERS = {'Distribute' : dist_bld})
 env.Append (BUILDERS = {'Tarball' : tarball_bld})
 
 #-----------------------------------------------------------------------------
-# package a release source tarball or a snapshot
+# package a release source tarball
 #-----------------------------------------------------------------------------
 
 files = Split ("""README COPYING INSTALL DEBUGGING TODO SConstruct""")
 
 source_release_dir = env.Distribute ('nonpareil-' + release, files)
 
-env.Alias (target = 'dist',
-           source = env.Tarball ('nonpareil-' + release + '.tar.gz',
-                                 source_release_dir))
+env.AddPreAction (source_release_dir, Delete (source_release_dir))
+
+source_release_tarball = env.Tarball ('nonpareil-' + release + '.tar.gz',
+                                      source_release_dir)
+
+env.Alias ('dist', source_release_tarball)
+
+env.AddPostAction (source_release_tarball, Delete (source_release_dir))
+
+#-----------------------------------------------------------------------------
+# package a source snapshot tarball
+#-----------------------------------------------------------------------------
 
 snap_date = time.strftime ("%Y.%m.%d")
 
 snapshot_dir = env.Distribute ('nonpareil-' + snap_date, files)
 
-env.Alias (target ='snap',
-           source = env.Tarball ('nonpareil-' + snap_date + '.tar.gz',
-                                 snapshot_dir))
+env.AddPreAction (snapshot_dir, Delete (snapshot_dir))
+
+snapshot_tarball = env.Tarball ('nonpareil-' + snap_date + '.tar.gz',
+                                snapshot_dir)
+
+env.Alias ('snap', snapshot_tarball)
+
+env.AddPostAction (snapshot_tarball, Delete (snapshot_dir))
 
 #-----------------------------------------------------------------------------
 # code
