@@ -21,11 +21,15 @@
 release = '0.66'  # should get from a file, and use only if a release option
                   # is specified
 
+conf_file = 'nonpareil.conf'
+
+env = Environment
+
 #-----------------------------------------------------------------------------
-# Conditionals 
+# Options
 #-----------------------------------------------------------------------------
 
-opts = Options ('local.py')
+opts = Options (conf_file)
 
 opts.AddOptions (EnumOption ('target',
 			     help = 'execution target',
@@ -68,8 +72,12 @@ opts.AddOptions (EnumOption ('target',
 			     default = 1))  # only if has_debugger_cli
 
 #-----------------------------------------------------------------------------
+# Cache options
+#-----------------------------------------------------------------------------
 
 env = Environment (options = opts)
+opts.Update (env)
+opts.Save (conf_file, env)
 
 env ['RELEASE'] = release
 
