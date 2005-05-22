@@ -95,6 +95,10 @@ Help (opts.GenerateHelpText (env))
 # More defaults and variable settings
 #-----------------------------------------------------------------------------
 
+# Don't scatter .sconsign files everywhere, and especially don't put them
+# into install directories.
+SConsignFile ()
+
 env ['RELEASE'] = release
 
 if env ['target'] == 'windows':
