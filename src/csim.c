@@ -42,6 +42,7 @@ MA 02111, USA.
 #include "platform.h"
 #include "model.h"
 #include "state_io.h"
+#include "about.h"
 
 #ifdef HAS_DEBUGGER_GUI
   #include "debugger_gui.h"
@@ -249,39 +250,7 @@ static void edit_paste (GtkWidget *widget, gpointer data)
 
 static void help_about (GtkWidget *widget, gpointer data)
 {
-  GtkWidget *dialog;
-
-  dialog = gtk_dialog_new_with_buttons ("About Nonpareil",
-					GTK_WINDOW (main_window),
-					GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
-					GTK_STOCK_OK,
-					GTK_RESPONSE_NONE,
-					NULL);
-
-  gtk_dialog_set_has_separator (GTK_DIALOG (dialog), TRUE);
-
-  gtk_container_add (GTK_CONTAINER (GTK_DIALOG (dialog)->vbox),
-		     gtk_label_new (nonpareil_release));
-  gtk_container_add (GTK_CONTAINER (GTK_DIALOG (dialog)->vbox),
-		     gtk_label_new ("Microcode-level calculator simulator\n"
-				    "Copyright 1995, 2003, 2004, 2005 Eric L. Smith\n"
-				    "http://nonpareil.brouhaha.com/"));
-  if (kml->title || kml->author)
-    {
-      gtk_container_add (GTK_CONTAINER (GTK_DIALOG (dialog)->vbox),
-			 gtk_hseparator_new ());
-      gtk_container_add (GTK_CONTAINER (GTK_DIALOG (dialog)->vbox),
-			 gtk_label_new ("KML:"));
-      if (kml->title)
-	gtk_container_add (GTK_CONTAINER (GTK_DIALOG (dialog)->vbox),
-			   gtk_label_new (kml->title));
-      if (kml->author)
-	gtk_container_add (GTK_CONTAINER (GTK_DIALOG (dialog)->vbox),
-			   gtk_label_new (kml->author));
-    }
-  gtk_widget_show_all (dialog);
-  gtk_dialog_run (GTK_DIALOG (dialog));
-  gtk_widget_destroy (dialog);
+  about_dialog (main_window, kml);
 }
 
 

@@ -94,6 +94,7 @@ env.Append (BUILDERS = { 'Assemble': Assemble },
 nonpareil_env = env.Copy ()
 
 nonpareil_srcs = Split ("""proc.c glib_async_queue_source.c
+                           about.c
                            display.c keyboard.c slide_switch.c
 			   kmll.l kmly.y kml.c
                            platform.c model.c
@@ -205,6 +206,7 @@ headers = Split ("""util.h
                     debugger_gui.h debugger_cli.h
                     dis_woodstock.h dis_nut.h
                     display.h coconut_lcd.h voyager_lcd.h
+                    about.h
                     display_gtk.h keyboard.h slide_switch.h
                     asm.h symtab.h
                     nsim_conv.h""")
