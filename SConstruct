@@ -44,11 +44,11 @@ opts.AddOptions (EnumOption ('target',
 		 # Don't use PathOption for other paths, because we don't
 		 # require the directories to preexist.
 		 ('bindir',
-		  'path for executable files (default is $prefix/bin',
+		  'path for executable files (default is $prefix/bin)',
 		  ''),
 
 		 ('libdir',
-		  'path for library files (default is $prefix/lib/nonpareil',
+		  'path for library files (default is $prefix/lib/nonpareil)',
 		  ''),
 
 		 ('destdir',
@@ -62,19 +62,19 @@ opts.AddOptions (EnumOption ('target',
 		 # Feature switches:
 
 		 BoolOption ('has_debugger_gui',
-			     help = 'enable debugger GUI',
+			     help = 'enable debugger GUI interface',
 			     default = 0),
 
 		 BoolOption ('has_debugger_cli',
-			     help = 'enable debugger CLI',
+			     help = 'enable debugger command-line interface',
 			     default = 0),
 
 		 BoolOption ('use_tcl',
-			     help = 'use_tcl',
+			     help = 'use Tcl as debug command interpreter (only when debugger CLI is enabled)',
 			     default = 1),  # only if has_debugger_cli
 
 		 BoolOption ('use_readline',
-			     help = 'use_readline',
+			     help = 'use Readline library for command editing and history (only when debugger CLI is enabled)',
 			     default = 1))  # only if has_debugger_cli
 
 #-----------------------------------------------------------------------------
