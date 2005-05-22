@@ -79,6 +79,16 @@ env = Environment (options = opts)
 opts.Update (env)
 opts.Save (conf_file, env)
 
+#-----------------------------------------------------------------------------
+# Generate help text from options
+#-----------------------------------------------------------------------------
+
+Help (opts.GenerateHelpText (env))
+
+#-----------------------------------------------------------------------------
+# More defaults and variable settings
+#-----------------------------------------------------------------------------
+
 env ['RELEASE'] = release
 
 if env ['target'] == 'windows':
