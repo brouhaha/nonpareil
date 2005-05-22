@@ -69,11 +69,9 @@ opts.AddOptions (EnumOption ('target',
 
 #-----------------------------------------------------------------------------
 
-opts.AddOptions (('PACKAGE', 'package name', 'nonpareil'),
-		 ('RELEASE', 'release number', release))
-
-
 env = Environment (options = opts)
+
+env ['RELEASE'] = release
 
 if env ['target'] == 'windows':
 	build_dir = 'wbuild'
