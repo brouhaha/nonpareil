@@ -189,13 +189,8 @@ Default ([nonpareil, uasm])
 # install
 #-----------------------------------------------------------------------------
 
-#if env ['target'] == 'windows':
-#    env.Alias (target = 'install',
-#               source = env.Install (dir = env ['wdestdir'],
-#                                     source = [uasm, nonpareil]))
-#else:
 env.Alias (target = 'install',
-           source = env.Install (dir = env ['destdir'] + "/bin",
+           source = env.Install (dir = env ['destdir'] + env ['bindir'],
                                  source = [uasm, nonpareil]))
 
 #-----------------------------------------------------------------------------

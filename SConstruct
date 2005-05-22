@@ -37,16 +37,22 @@ opts.AddOptions (EnumOption ('target',
 			     default = 'native',
 			     ignorecase = 1),
 
-		 # Don't use PathOption, because we don't require the
-		 # prefix directory to preexist.
-		 ('prefix',
-		  'installation path prefix',
-		  '/usr/local'),
+		 PathOption ('prefix',
+			     'installation path prefix',
+			     '/usr/local'),
 
-		 # Don't use PathOption, because we don't require the
-		 # prefix directory to preexist.
+		 # Don't use PathOption for other paths, because we don't
+		 # require the directories to preexist.
+		 ('bindir',
+		  'path for executable files (default is $prefix/bin',
+		  ''),
+
+		 ('libdir',
+		  'path for library files (default is $prefix/lib/nonpareil',
+		  ''),
+
 		 ('destdir',
-		  'destination directory path (for packaging)',
+		  'installation virtual root directory (for packaging)',
 		  ''),
 
 		 BoolOption ('debug',
@@ -96,14 +102,18 @@ if env ['target'] == 'windows':
 else:
 	build_dir = 'build'
 
-if not env ['destdir']:
-	env ['destdir'] = env ['prefix']
+if not env ['bindir']:
+	env ['bindir'] = env ['prefix'] + '/bin'
+
+if not env ['libdir']:
+	env ['libdir'] = env ['prefix'] + '/lib/nonpareil'
 
 #-----------------------------------------------------------------------------
-# source tar file builder by Paul Davis
-# posted to scons-users on 1-May-2005
-# changed to use "-z" option to tar rather than "-j", to get gzip output
-# removed the exclude of '*~'
+# Source tar file builder by Paul Davis
+# Posted to scons-users on 1-May-2005
+# Changed to use "-z" option to tar rather than "-j", to get gzip output.
+# Removed the exclude of '*~' (emacs backup files), not needed since we
+# explicitly list exactly what files we want packaged.
 #-----------------------------------------------------------------------------
 
 import os, errno, time, SCons

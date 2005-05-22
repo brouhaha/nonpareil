@@ -32,7 +32,7 @@ images = Split ("""hp35.png hp45.png hp55.png hp80.png
                    hp11c.png hp12c.png hp15c.png hp16c.png""")
 
 env.Alias (target = 'install',
-           source = env.Install (dir = env ['destdir'] + "/lib/nonpareil",
+           source = env.Install (dir = env ['destdir'] + env ['libdir'],
                                  source = images))
 
 #-----------------------------------------------------------------------------
