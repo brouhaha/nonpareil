@@ -31,7 +31,7 @@ asm_objs = [env.Assemble(src) for src in asm_srcs]
 Default (asm_objs)
 
 env.Alias (target = 'install',
-           source = env.Install (dir = env ['prefix'] + "/lib/nonpareil",
+           source = env.Install (dir = env ['destdir'] + "/lib/nonpareil",
                                  source = asm_objs))
 
 #-----------------------------------------------------------------------------

@@ -32,7 +32,7 @@ kmls = Split ("""hp35.kml hp45.kml hp55.kml hp80.kml
                  hp11c.kml hp12c.kml hp15c.kml hp16c.kml""")
 
 env.Alias (target = 'install',
-           source = env.Install (dir = env ['prefix'] + "/lib/nonpareil",
+           source = env.Install (dir = env ['destdir'] + "/lib/nonpareil",
                                  source = kmls))
 
 #-----------------------------------------------------------------------------

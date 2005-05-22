@@ -18,7 +18,7 @@
 # the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
 # Boston, MA 02111, USA.
 
-release = '0.65'  # should get from a file, and use only if a release option
+release = '0.66'  # should get from a file, and use only if a release option
                   # is specified
 
 #-----------------------------------------------------------------------------
@@ -33,15 +33,25 @@ opts.AddOptions (EnumOption ('target',
 			     default = 'native',
 			     ignorecase = 1),
 
+		 # Don't use PathOption, because we don't require the
+		 # prefix directory to preexist.
 		 ('prefix',
 		  'installation path prefix',
 		  '/usr/local'),
 
+		 # Don't use PathOption, because we don't require the
+		 # prefix directory to preexist.
+		 ('destdir',
+		  'destination directory path (for packaging)',
+		  ''),
+
 		 BoolOption ('debug',
 			     help = 'compile for debugging',
-			     default = 1))
+			     default = 1),
 
-opts.AddOptions (BoolOption ('has_debugger_gui',
+		 # Feature switches:
+
+		 BoolOption ('has_debugger_gui',
 			     help = 'enable debugger GUI',
 			     default = 0),
 
@@ -70,6 +80,8 @@ if env ['target'] == 'windows':
 else:
 	build_dir = 'build'
 
+if not env ['destdir']:
+	env ['destdir'] = env ['prefix']
 
 #-----------------------------------------------------------------------------
 # source tar file builder by Paul Davis
