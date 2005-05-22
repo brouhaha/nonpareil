@@ -9,10 +9,6 @@ Bugs and critical features for next release:
 
   Voyager annunciators.
 
-  State restore doesn't seem to update display properly.
-
-  State restore needs to deal with ext_flags, key positions.
-
 
 Build process:
 
@@ -86,9 +82,6 @@ Internals:
   Load ROM using CMD_WRITE_ROM.
 
   New memory API.
-
-  Use glib g_get_user_config_dir(), g_get_system_data_dirs(), etc.
-  from glib 2.6 to locate KML (or ZIP) files, user save files, etc.
 
   Use glib 2.6 commandline option parser (g_option_xxx functions).
 
