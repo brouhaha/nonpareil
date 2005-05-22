@@ -124,7 +124,7 @@ if env ['has_debugger_gui']:
 nonpareil_env.ParseConfig(pkg_config_cmd + nonpareil_packages)
 
 csim_env = nonpareil_env.Copy ()
-csim_env.Append (CPPDEFINES = {'DEFAULT_PATH': env ['prefix'] + "/lib/nonpareil"})
+csim_env.Append (CPPDEFINES = {'DEFAULT_PATH': env ['libdir']})
 
 if env ['target'] == 'windows':
     csim_env.Append (CPPDEFINES = {'SHAPE_DEFAULT': "false"})
