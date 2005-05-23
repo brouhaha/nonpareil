@@ -125,7 +125,7 @@ typedef struct
   uint8_t NumPages;          // the number of pages in this file (0-256, but
                              // normally between 1-6)
   uint8_t HeaderCustom[32];  // for special hardware attributes
-} mod_file_header_t;
+} mod1_file_header_t;
 
 
 // page struct
@@ -153,4 +153,4 @@ typedef struct
   uint8_t FAT;              // 0=no FAT, 1=has FAT
   uint8_t Image [5120];     // the image in packed format (.BIN file format)
   uint8_t PageCustom [32];  // for special hardware attributes
-} mod_file_page_t;
+} mod1_file_page_t;

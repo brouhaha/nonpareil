@@ -287,7 +287,7 @@ void unpack_image (uint16_t *ROM,
 
 
 void output_fat (FILE *outfile,
-		 mod_file_page_t *page,
+		 mod1_file_page_t *page,
 		 uint16_t page_addr,
 		 uint16_t *ROM)
 {
@@ -371,7 +371,7 @@ void output_fat (FILE *outfile,
 
 
 void output_page_info (FILE *outfile,
-		       mod_file_page_t *page,
+		       mod1_file_page_t *page,
 		       bool decode_fat)  // decode fat if it exists
 {
   uint16_t page_addr;
@@ -476,7 +476,7 @@ bool output_mod_info (FILE *outfile,    // output file or set to stdout
   FILE *mod_file = NULL;
   uint8_t *buffer = NULL;
   size_t file_size,size_read;
-  mod_file_header_t *header;
+  mod1_file_header_t *header;
   int i;
 
   // open and read MOD file into a buffer
@@ -491,7 +491,7 @@ bool output_mod_info (FILE *outfile,    // output file or set to stdout
   fseek (mod_file, 0, SEEK_END);
   file_size = ftell (mod_file);
   fseek (mod_file, 0, SEEK_SET);
-  if ((file_size - sizeof (mod_file_header_t)) % sizeof (mod_file_page_t))
+  if ((file_size - sizeof (mod1_file_header_t)) % sizeof (mod1_file_page_t))
     {
       fprintf (stderr, "ERROR: File size invalid: %s\n", fn);
       if (verbose)
@@ -512,9 +512,9 @@ bool output_mod_info (FILE *outfile,    // output file or set to stdout
     }
 
   // check header
-  header = (mod_file_header_t *) buffer;
-  if (file_size != (sizeof (mod_file_header_t) +
-		    (header->NumPages * sizeof(mod_file_page_t))))
+  header = (mod1_file_header_t *) buffer;
+  if (file_size != (sizeof (mod1_file_header_t) +
+		    (header->NumPages * sizeof(mod1_file_page_t))))
     {
       fprintf (stderr, "ERROR: File size invalid: %s\n", fn);
       if (verbose)
@@ -576,11 +576,11 @@ bool output_mod_info (FILE *outfile,    // output file or set to stdout
   // go through each page
   for (i = 0; i < header->NumPages; i++)
     {
-      mod_file_page_t *page;
+      mod1_file_page_t *page;
 
-      page = (mod_file_page_t *) (buffer +
-				  sizeof (mod_file_header_t) +
-				  i * sizeof (mod_file_page_t));
+      page = (mod1_file_page_t *) (buffer +
+				  sizeof (mod1_file_header_t) +
+				  i * sizeof (mod1_file_page_t));
       fprintf (outfile, "\n");
       output_page_info (outfile, page, decode_fat);
     }
@@ -606,7 +606,7 @@ bool extract_roms (char *fn)
   FILE *mod_file = NULL;
   uint8_t *buffer = NULL;
   size_t file_size,size_read;
-  mod_file_header_t *header;
+  mod1_file_header_t *header;
   int i;
 
   // open and read MOD file into a buffer
@@ -616,7 +616,7 @@ bool extract_roms (char *fn)
   fseek (mod_file, 0, SEEK_END);
   file_size = ftell (mod_file);
   fseek (mod_file, 0, SEEK_SET);
-  if ((file_size - sizeof (mod_file_header_t)) % sizeof (mod_file_page_t))
+  if ((file_size - sizeof (mod1_file_header_t)) % sizeof (mod1_file_page_t))
     goto done;
   buffer = alloc (file_size);
   size_read = fread (buffer, 1, file_size, mod_file);
@@ -626,9 +626,9 @@ bool extract_roms (char *fn)
     goto done;
 
   // check header
-  header = (mod_file_header_t *) buffer;
-  if (file_size != (sizeof (mod_file_header_t) +
-		    (header->NumPages * sizeof(mod_file_page_t))))
+  header = (mod1_file_header_t *) buffer;
+  if (file_size != (sizeof (mod1_file_header_t) +
+		    (header->NumPages * sizeof(mod1_file_page_t))))
     goto done;
   if (strcmp (header->FileFormat, MOD_FORMAT) != 0)
     goto done;
@@ -645,12 +645,12 @@ bool extract_roms (char *fn)
   for (i = 0; i < header->NumPages; i++)
     {
       char rom_fn [255];
-      mod_file_page_t *page;
+      mod1_file_page_t *page;
       uint16_t ROM [0x1000];
 
-      page = (mod_file_page_t *) (buffer +
-				  sizeof (mod_file_header_t) +
-				  i * sizeof (mod_file_page_t));
+      page = (mod1_file_page_t *) (buffer +
+				  sizeof (mod1_file_header_t) +
+				  i * sizeof (mod1_file_page_t));
 
       // write the ROM file
       unpack_image (ROM, page->Image);
