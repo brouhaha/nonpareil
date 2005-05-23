@@ -36,6 +36,7 @@ MA 02111, USA.
 #include "model.h"
 #include "proc_int.h"
 #include "glib_async_queue_source.h"
+#include "mod1_file.h"
 
 
 // We try to schedule execution in "jiffies".
@@ -162,6 +163,113 @@ static int storage_size [65] =
 };
 
 
+static bool sim_load_mod1_rom_word (sim_t *sim,
+				    uint8_t bank,
+				    addr_t addr,
+				    rom_word_t data)
+{
+  if (! sim_write_rom (sim, bank, addr, & data))
+    {
+      fprintf (stderr, "Can't load ROM word at bank %d address %o\n", bank, addr);
+      return false;
+    }
+  return true;
+}
+
+
+static bool sim_read_mod1_page (sim_t *sim, FILE *f)
+{
+  mod1_file_page_t page;
+  addr_t addr;
+  int i;
+  bool eof, error;
+
+  if (fread_bytes (f, & page, sizeof (mod1_file_page_t), & eof, & error) !=
+      sizeof (mod1_file_page_t))
+    {
+      fprintf (stderr, "Can't read MOD1 page\n");
+      return false;
+    }
+
+  if (! mod1_validate_page (& page))
+    {
+      fprintf (stderr, "Unrecognized or inconsistent values in MOD1 page\n");
+      return false;
+    }
+
+  if (page.Page > 0x0f)
+    {
+      fprintf (stderr, "Currently only MOD1 pages at fixed page numbers are supported\n");
+      return false;
+    }
+
+  addr = page.Page << 12;
+
+  for (i = 0; i < 5120; i += 5)
+    {
+      rom_word_t data;
+
+      data = (((page.Image [i + 1] & 0x03) << 8) |
+	      (page.Image [i]));
+      if (! sim_load_mod1_rom_word (sim, page.Bank - 1, addr++, data))
+				    
+        return false;
+
+      data = (((page.Image [i + 2] & 0x0f) << 6) |
+	      ((page.Image [i + 1] & 0xfc) >> 2));
+      if (! sim_load_mod1_rom_word (sim, page.Bank - 1, addr++, data))
+				    
+        return false;
+
+      data = (((page.Image [i + 3] & 0x3f) << 4) |
+	      ((page.Image [i + 2] & 0xf0) >> 4));
+      if (! sim_load_mod1_rom_word (sim, page.Bank - 1, addr++, data))
+				    
+        return false;
+
+      data = ((page.Image [i + 4] << 2) |
+	      ((page.Image [i + 3] & 0xc0) >> 6));
+      if (! sim_load_mod1_rom_word (sim, page.Bank - 1, addr++, data))
+				    
+        return false;
+    }
+
+  return true;
+}
+
+
+static bool sim_read_mod1_file (sim_t *sim, FILE *f)
+{
+  mod1_file_header_t header;
+  size_t file_size;
+  int i;
+  bool eof, error;
+
+  fseek (f, 0, SEEK_END);
+  file_size = ftell (f);
+  fseek (f, 0, SEEK_SET);
+
+  if (fread_bytes (f, & header, sizeof (mod1_file_header_t), & eof, & error) !=
+      sizeof (mod1_file_header_t))
+    {
+      fprintf (stderr, "Can't read MOD1 file header\n");
+      return false;
+    }
+
+  if (! mod1_validate_file_header (& header, file_size))
+    {
+      fprintf (stderr, "Unrecognized or inconsistent values in MOD1 file header\n");
+      return false;
+    }
+
+  for (i = 0; i < header.NumPages; i++)
+    if (! sim_read_mod1_page (sim, f))
+      return false;
+
+  return true;
+}
+
+
 bool sim_read_object_file (sim_t *sim, char *fn)
 {
   FILE *f;
@@ -172,8 +280,26 @@ bool sim_read_object_file (sim_t *sim, char *fn)
   rom_word_t old_opcode;
   int count = 0;
   char buf [80];
+  char magic [4];
+  bool eof, error;
 
-  f = fopen (fn, "r");
+  f = fopen (fn, "rb");
+  if (! f)
+    {
+      fprintf (stderr, "error opening object file\n");
+      return (false);
+    }
+
+  if (fread_bytes (f, magic, 4, & eof, & error) != 4)
+    {
+      fprintf (stderr, "error reading object file\n");
+      return (false);
+    }
+
+  if (strcmp (magic, "MOD1") == 0)
+    return sim_read_mod1_file (sim, f);
+
+  f = freopen (NULL, "r", f);  // switch from binary to text mode, and rewind
   if (! f)
     {
       fprintf (stderr, "error opening object file\n");
@@ -215,7 +341,7 @@ bool sim_read_listing_file (sim_t *sim, char *fn)
   int addr;  // should change to addr_t, but will have to change
              // the parse function profiles to match.
   rom_word_t opcode;
-  rom_word_t *obj_opcode;
+  rom_word_t obj_opcode;
   int count = 0;
   char buf [80];
 

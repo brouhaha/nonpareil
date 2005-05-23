@@ -154,3 +154,8 @@ typedef struct
   uint8_t Image [5120];     // the image in packed format (.BIN file format)
   uint8_t PageCustom [32];  // for special hardware attributes
 } mod1_file_page_t;
+
+
+bool mod1_validate_file_header (mod1_file_header_t *header, size_t file_size);
+
+bool mod1_validate_page (mod1_file_page_t *page);

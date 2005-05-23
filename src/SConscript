@@ -100,7 +100,8 @@ nonpareil_srcs = Split ("""proc.c glib_async_queue_source.c
                            platform.c model.c
                            proc_classic.c
                            proc_woodstock.c
-                           proc_nut.c coconut_lcd.c voyager_lcd.c""")
+                           proc_nut.c coconut_lcd.c voyager_lcd.c
+                           mod1_file.c""")
 
 nonpareil_csim_srcs = Split ("""csim.c""")
 

@@ -22,7 +22,7 @@ global
 	author "Eric Smith <eric@brouhaha.com>"
 	hardware "Coconut"
 	model "41CV"
-	rom "hp41cv.obj"
+	rom "hp41cv.mod"
 #	listing "hp41c.lst"
 	image "hp41cv.png"
 	color 0 137 0 6	  # background color, used when transparency is off
