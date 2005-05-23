@@ -12,7 +12,9 @@ Bugs and critical features for next release:
 
 Build process:
 
-  Create an RPM .spec file.
+  Create an RPM .spec file.  "scons dist" should create the nonpareil.spec
+  file from a template, so that "rpmbuild -tb" will work with the release
+  tarball.
 
 
 User interface:
@@ -69,6 +71,13 @@ User interface:
 
 Internals:
 
+  Complete support for -41C .mod files
+
+  Rework -41C microcode storage to use pointers to 4Kword pages:
+      typedef rom_word_t rom_page_t [PAGE_SIZE];
+      rom_page_t *roms [MAX_PAGE][MAX_BANK];
+      rom_page_t *current_bank [MAX_PAGE];
+
   Use glib file handling:
     g_build_filename()
     g_stat()
@@ -78,8 +87,6 @@ Internals:
   Split proc.c into separate GUI thread and simulator thread portions.
 
   Move more of the simulator initialization into the simulator thread.
-
-  Load ROM using CMD_WRITE_ROM.
 
   New memory API.
 
@@ -141,6 +148,8 @@ Debugger:
 
 
 Better model support:
+
+  Add Phineas (timer chip in Time Module/41CX).
 
   Scan images at uniform scale and without JPEG compression.
 
