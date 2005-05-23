@@ -180,10 +180,19 @@ nsim_conv = nsim_conv_env.Program (target = 'nsim_conv',
                                    source = common_objs + state_io_objs + nsim_conv_srcs)
 
 #-----------------------------------------------------------------------------
+# modutil
+#-----------------------------------------------------------------------------
+
+modutil_srcs = Split ("""modutil.c""")
+
+modutil = env.Program (target = 'modutil',
+                       source = modutil_srcs + common_objs)
+
+#-----------------------------------------------------------------------------
 # default targets
 #-----------------------------------------------------------------------------
 
-Default ([nonpareil, uasm])
+Default ([nonpareil, uasm, modutil])
 # omit udis, nsim_conv for now
 
 #-----------------------------------------------------------------------------
@@ -192,7 +201,7 @@ Default ([nonpareil, uasm])
 
 env.Alias (target = 'install',
            source = env.Install (dir = env ['destdir'] + env ['bindir'],
-                                 source = [uasm, nonpareil]))
+                                 source = [uasm, nonpareil, modutil]))
 
 #-----------------------------------------------------------------------------
 # source tarball
@@ -209,7 +218,8 @@ headers = Split ("""util.h
                     about.h
                     display_gtk.h keyboard.h slide_switch.h
                     asm.h symtab.h
-                    nsim_conv.h""")
+                    nsim_conv.h
+                    mod_file.h""")
 
 misc = Split ("""SConscript ChangeLog release.c""")
 
@@ -217,7 +227,8 @@ dist_files = (misc + headers + common_srcs + common_dis_srcs +
               state_io_srcs + uasm_srcs +
               nonpareil_srcs + nonpareil_csim_srcs +
               nonpareil_debugger_gui_srcs +
-              nonpareil_debugger_cli_srcs)
+              nonpareil_debugger_cli_srcs +
+              modutil_srcs)
 
 env.Distribute (source_release_dir, dist_files)
 

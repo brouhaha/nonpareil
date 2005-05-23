@@ -6,7 +6,7 @@ $Id$
 
 News:
 
-Release 0.66 of Nonpareil is an interim development release.
+Release 0.67 of Nonpareil is an interim development release.
 
 In this release, the following calculators are simulated:
 	HP-35, HP-45, HP-55, HP-80
@@ -229,6 +229,9 @@ Timothee Besset.
 Adam Sampson's efforts at constructing GARstop packages of Nonpareil
 convinced me to make various improvements to the SConstruct/SConscript
 files.
+
+Warren Furlow developed the .mod file format, and provided public domain
+code to work with mod files, as part of his V41 source code.
 
 If I've omitted anyone who should be listed here, I appologize, and
 please let me know so I can remedy the omission.

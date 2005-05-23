@@ -37,6 +37,7 @@ static char *credits_people [] =
   "Paul Davis",
   "Steven Elllis",
   "Bernhard Engl",
+  "Warren Furlow",
   "David Hicks",
   "HrastProgrammer",
   "Steven Knight",
@@ -63,7 +64,7 @@ static void add_credits (GtkWidget *widget)
   int row, column, index;
 
   gtk_container_add (GTK_CONTAINER (widget),
-		     gtk_label_new ("The author wishes to acknowledge the assistance of the following people:"));
+		     gtk_label_new ("The Nonpareil project has received assistance and contributions from:"));
 
   count = sizeof (credits_people) / sizeof (char *);
   rows = (count + CREDITS_COLUMNS - 1) / CREDITS_COLUMNS;
@@ -82,6 +83,10 @@ static void add_credits (GtkWidget *widget)
 				   row + 1);
 
   gtk_container_add (GTK_CONTAINER (widget), table);
+
+  gtk_container_add (GTK_CONTAINER (widget),
+		     gtk_label_new ("My apologies if I've forgotten to list anyone!"));
+
 }
 
 
