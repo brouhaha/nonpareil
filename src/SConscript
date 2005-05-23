@@ -219,7 +219,7 @@ headers = Split ("""util.h
                     display_gtk.h keyboard.h slide_switch.h
                     asm.h symtab.h
                     nsim_conv.h
-                    mod_file.h""")
+                    mod1_file.h""")
 
 misc = Split ("""SConscript ChangeLog release.c""")
 

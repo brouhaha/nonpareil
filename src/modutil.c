@@ -51,7 +51,7 @@ used by V41 Release 8.
 
 #include "util.h"
 
-#include "mod_file.h"
+#include "mod1_file.h"
 
 
 static char *category_name [CATEGORY_MAX + 1] =
