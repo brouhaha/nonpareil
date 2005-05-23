@@ -96,7 +96,7 @@ typedef struct
   bool          b;
   uint64_t      cycle_count;
   addr_t        addr;
-  int           arg1;   // keycode, flag number, chip_num, etc.
+  int           arg1;   // keycode, flag number, chip_num, bank etc.
   int           arg2;   // reg_num
   int           arg3;   // index (in read/write register)
   void          *data;  // register value, memory value, etc.
@@ -162,25 +162,6 @@ static int storage_size [65] =
 };
 
 
-/*
- * allocate space for microcode ROM, as well as source code and breakpoints.
- * Set breakpoints at every location so we know if we hit uninitialized ROM.
- */
-static void allocate_ucode (sim_t *sim)
-{
-  int size, i;
-
-  size = sim->proc->max_bank * sim->proc->max_rom;
-
-  sim->ucode      = alloc (size * sizeof (rom_word_t));
-  sim->source     = alloc (size * sizeof (char *));
-  sim->breakpoint = alloc (size * sizeof (bool));
-
-  for (i = 0; i < size; i++)
-    sim->breakpoint [i] = true;
-}
-
-
 bool sim_read_object_file (sim_t *sim, char *fn)
 {
   FILE *f;
@@ -188,6 +169,7 @@ bool sim_read_object_file (sim_t *sim, char *fn)
   int addr;  // should change to addr_t, but will have to change
              // the parse function profiles to match.
   rom_word_t opcode;
+  rom_word_t old_opcode;
   int count = 0;
   char buf [80];
 
@@ -206,15 +188,15 @@ bool sim_read_object_file (sim_t *sim, char *fn)
       if (sim->proc->parse_object_line (buf, & bank, & addr, & opcode))
 	{
 	  i = bank * sim->proc->max_rom + addr;
-	  if (! sim->breakpoint [i])
+	  if (sim_read_rom (sim, bank, addr, & old_opcode))
 	    {
 	      fprintf (stderr, "duplicate object code for bank %d address %o\n",
 		       bank, addr);
 	      // fprintf (stderr, "orig: %s\n", sim->source [i]);
 	      fprintf (stderr, "dup:  %s\n", buf);
 	    }
-	  sim->ucode      [i] = opcode;
-	  sim->breakpoint [i] = 0;
+	  if (! sim_write_rom (sim, bank, addr, & opcode))
+	    fatal (3, "can't load ROM word at bank %d address %o\n", bank, addr);
 	  count++;
 	}
     }
@@ -233,6 +215,7 @@ bool sim_read_listing_file (sim_t *sim, char *fn)
   int addr;  // should change to addr_t, but will have to change
              // the parse function profiles to match.
   rom_word_t opcode;
+  rom_word_t *obj_opcode;
   int count = 0;
   char buf [80];
 
@@ -249,18 +232,18 @@ bool sim_read_listing_file (sim_t *sim, char *fn)
       if (sim->proc->parse_listing_line (buf, & bank, & addr, & opcode))
 	{
 	  i = bank * sim->proc->max_rom + addr;
-	  if (sim->breakpoint [i])
+	  if (sim_read_rom (sim, bank, addr, & obj_opcode))
 	    {
 	      fprintf (stderr, "listing line for which there was no code in object file, bank %d address %o\n",
 		       bank, addr);
 	      fprintf (stderr, "src: %s\n", sim->source [i]);
 	    }
-	  if (sim->ucode [i] != opcode)
+	  if (obj_opcode != opcode)
 	    {
 	      fprintf (stderr, "listing line for which object code does not match object file, bank %d address %o\n",
 		       bank, addr);
 	      fprintf (stderr, "src: %s\n", sim->source [i]);
-	      fprintf (stderr, "object file: %04o\n", sim->ucode [i]);
+	      fprintf (stderr, "object file: %04o\n", obj_opcode);
 	    }
 	  sim->source   [i] = newstr (& buf [0]);
 	  count++;
@@ -378,6 +361,24 @@ static void cmd_write_register (sim_t *sim, sim_msg_t *msg)
 }
 
 
+static void cmd_read_rom (sim_t *sim, sim_msg_t *msg)
+{
+  if (sim->proc->read_rom (sim, msg->arg1, msg->addr, msg->data))
+    msg->reply = OK;
+  else
+    msg->reply = ARG_RANGE_ERROR;
+}
+
+
+static void cmd_write_rom (sim_t *sim, sim_msg_t *msg)
+{
+  if (sim->proc->write_rom (sim, msg->arg1, msg->addr, msg->data))
+    msg->reply = OK;
+  else
+    msg->reply = ARG_RANGE_ERROR;
+}
+
+
 static void cmd_read_ram (sim_t *sim, sim_msg_t *msg)
 {
   if (sim->proc->read_ram (sim, msg->addr, msg->data))
@@ -431,8 +432,10 @@ static void handle_sim_cmd (sim_t *sim, sim_msg_t *msg)
       cmd_write_register (sim, msg);
       break;
     case CMD_READ_ROM:
+      cmd_read_rom (sim, msg);
       break;
     case CMD_WRITE_ROM:
+      cmd_write_rom (sim, msg);
       break;
     case CMD_READ_RAM:
       cmd_read_ram (sim, msg);
@@ -660,8 +663,6 @@ sim_t *sim_init  (int model,
   sim->chip_data = alloc (sim->proc->max_chip_count * sizeof (void *));
 
   sim->proc->new_processor (sim, ram_size);
-
-  allocate_ucode (sim);
 
   sim->char_gen = char_gen;
 
@@ -919,6 +920,38 @@ bool sim_write_register (sim_t   *sim,
   msg.arg3 = index;
   msg.data = val;
   msg.cmd = CMD_WRITE_REGISTER;
+  send_cmd_to_sim_thread (sim, (gpointer) & msg);
+  return (msg.reply == OK);
+}
+
+
+bool sim_read_rom  (sim_t      *sim,
+		    uint8_t    bank,
+		    addr_t     addr,
+		    rom_word_t *val)
+{
+  sim_msg_t msg;
+  memset (& msg, 0, sizeof (sim_msg_t));
+  msg.arg1 = bank;
+  msg.addr = addr;
+  msg.data = val;
+  msg.cmd = CMD_READ_ROM;
+  send_cmd_to_sim_thread (sim, (gpointer) & msg);
+  return (msg.reply == OK);
+}
+
+
+bool sim_write_rom (sim_t      *sim,
+		    uint8_t    bank,
+		    addr_t     addr,
+		    rom_word_t *val)
+{
+  sim_msg_t msg;
+  memset (& msg, 0, sizeof (sim_msg_t));
+  msg.arg1 = bank;
+  msg.addr = addr;
+  msg.data = val;
+  msg.cmd = CMD_WRITE_ROM;
   send_cmd_to_sim_thread (sim, (gpointer) & msg);
   return (msg.reply == OK);
 }

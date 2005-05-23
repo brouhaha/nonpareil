@@ -31,9 +31,16 @@ typedef digit_t reg_t [WSIZE];
 
 #define EXT_FLAG_SIZE 16
 
+#define PAGE_SIZE 1024
+#define MAX_PAGE 4
+#define MAX_BANK 2
+
 #define MAX_CHIP_COUNT 3  // ACT CPU
                           // PIK (HP-91, HP-92, HP-95C, HP-97, HP-19C only)
                           // CRC (HP-67, HP-97 only)
+
+
+typedef uint16_t rom_addr_t;
 
 
 typedef enum
@@ -66,8 +73,6 @@ typedef struct
   bool s [SSIZE];                 // ACT flags (status bits)
   bool ext_flag [EXT_FLAG_SIZE];  // external flags, cause status or CRC
                                      // bits to get set
-
-  bool bank;
 
   uint16_t pc;
 
@@ -102,7 +107,14 @@ typedef struct
 
   void (* op_fcn [1024])(struct sim_t *sim, int opcode);
 
-  // RAM
+  // ROM:
+  uint8_t bank_exists [MAX_PAGE];  // bitmap
+  bool bank;                       // only a single global bank bit
+  rom_word_t *rom;
+  bool *rom_exists;
+  bool *rom_breakpoint;
+
+  // RAM:
   int ram_addr;  /* selected RAM address */
   reg_t *ram;
 } act_reg_t;

@@ -88,6 +88,83 @@ static chip_detail_t woodstock_cpu_chip_detail =
 };
 
 
+static inline uint8_t get_effective_bank (act_reg_t *act_reg, rom_addr_t addr)
+{
+  uint8_t page = addr / PAGE_SIZE;
+  uint8_t bank;
+
+  bank = act_reg->bank;
+  if (! (act_reg->bank_exists [page] & (1 << bank)))
+    bank = 0;
+
+  return bank;
+}
+
+
+static rom_word_t woodstock_get_ucode (act_reg_t *act_reg, rom_addr_t addr)
+{
+  uint8_t bank;
+
+  bank = get_effective_bank (act_reg, addr);
+
+  // $$$ check for non-existent memory?
+
+  return act_reg->rom [bank * (MAX_PAGE * PAGE_SIZE) + addr];
+}
+
+
+static bool woodstock_read_rom (sim_t      *sim,
+				uint8_t    bank,
+				addr_t     addr,
+				rom_word_t *val)
+{
+  act_reg_t *act_reg = sim->chip_data [0];
+  uint8_t page;
+  uint16_t rom_index;
+
+  if (addr >= (MAX_PAGE * PAGE_SIZE))
+    return false;
+
+  page = addr / PAGE_SIZE;
+
+  if (! (act_reg->bank_exists [page] & (1 << bank)))
+    return false;
+
+  rom_index = bank * (MAX_PAGE * PAGE_SIZE) + addr;
+
+  if (! act_reg->rom_exists [rom_index])
+    return false;
+
+  *val = act_reg->rom [rom_index];
+  return true;
+}
+
+
+static bool woodstock_write_rom (sim_t      *sim,
+				 uint8_t    bank,
+				 addr_t     addr,
+				 rom_word_t *val)
+{
+  act_reg_t *act_reg = sim->chip_data [0];
+  uint8_t page;
+  uint16_t rom_index;
+
+  if (addr >= (MAX_PAGE * PAGE_SIZE))
+    return false;
+
+  page = addr / PAGE_SIZE;
+
+  act_reg->bank_exists [page] |= (1 << bank);
+
+  rom_index = bank * (MAX_PAGE * PAGE_SIZE) + addr;
+
+  act_reg->rom_exists [rom_index] = true;
+  act_reg->rom [rom_index] = *val;
+
+  return true;
+}
+
+
 static inline uint8_t arithmetic_base (act_reg_t *act_reg)
 {
   return act_reg->decimal ? 10 : 16;
@@ -95,14 +172,6 @@ static inline uint8_t arithmetic_base (act_reg_t *act_reg)
 
 
 static void woodstock_print_state (sim_t *sim);
-
-
-static inline int woodstock_map_rom_address (sim_t *sim, int addr)
-{
-  act_reg_t *act_reg = sim->chip_data [0];
-
-  return ((act_reg->bank << 12) + addr);
-}
 
 
 static void bad_op (sim_t *sim, int opcode)
@@ -1115,8 +1184,7 @@ static void woodstock_disassemble (sim_t *sim, int addr, char *buf, int len)
 {
   act_reg_t *act_reg = sim->chip_data [0];
 
-  int ma1, ma2;
-  int op1, op2;
+  rom_word_t op1, op2;
 
   if (act_reg->inst_state == branch)  /* second word of conditional branch */
     {
@@ -1124,13 +1192,10 @@ static void woodstock_disassemble (sim_t *sim, int addr, char *buf, int len)
       return;
     }
 
-  ma1 = woodstock_map_rom_address (sim, addr);
-  op1 = sim->ucode [ma1];
+  op1 = woodstock_get_ucode (act_reg, addr);
+  op2 = woodstock_get_ucode (act_reg, addr + 1);
 
-  ma2 = woodstock_map_rom_address (sim, addr + 1);
-  op2 = sim->ucode [ma2];
-
-  woodstock_disassemble_inst (ma1, op1, op2, buf, len);
+  woodstock_disassemble_inst (addr, op1, op2, buf, len);
 }
 
 
@@ -1237,10 +1302,14 @@ static void woodstock_print_state (sim_t *sim)
 {
   act_reg_t *act_reg = sim->chip_data [0];
   int i;
+  uint8_t bank;
   int mapped_addr;
 
-  printf ("pc=%04o  radix=%d  p=%d  f=%x  stat:",
-	  act_reg->prev_pc, arithmetic_base (act_reg), act_reg->p, act_reg->f);
+  bank = get_effective_bank (act_reg, act_reg->prev_pc);
+  mapped_addr = bank * (MAX_PAGE * PAGE_SIZE) + act_reg->prev_pc;
+
+  printf ("pc=%05o  radix=%d  p=%d  f=%x  stat:",
+	  mapped_addr, arithmetic_base (act_reg), act_reg->p, act_reg->f);
   for (i = 0; i < 16; i++)
     if (act_reg->s [i])
       printf (" %d", i);
@@ -1251,7 +1320,6 @@ static void woodstock_print_state (sim_t *sim)
   print_reg ("m1: ", act_reg->m1);
   print_reg ("m2: ", act_reg->m2);
 
-  mapped_addr = woodstock_map_rom_address (sim, act_reg->prev_pc);
   if (sim->source [mapped_addr])
     printf ("%s\n", sim->source [mapped_addr]);
   else
@@ -1267,11 +1335,12 @@ static void woodstock_print_state (sim_t *sim)
 static bool woodstock_execute_cycle (sim_t *sim)
 {
   act_reg_t *act_reg = sim->chip_data [0];
-  int opcode;
+  rom_word_t opcode;
   inst_state_t prev_inst_state;
 
   act_reg->prev_pc = act_reg->pc;
-  opcode = sim->ucode [woodstock_map_rom_address (sim, act_reg->pc)];
+  opcode = woodstock_get_ucode (act_reg, act_reg->pc);
+
   if ((sim->platform != PLATFORM_SPICE) &&
       (act_reg->pc < 02000) &&
       (act_reg->bank == 1))
@@ -1555,17 +1624,41 @@ static void woodstock_reset (sim_t *sim)
 }
 
 
+static void woodstock_new_rom_addr_space (sim_t *sim,
+					  int max_bank,
+					  int max_page,
+					  int page_size)
+{
+  act_reg_t *act_reg = sim->chip_data [0];
+  size_t max_words;
+
+  max_words = max_bank * max_page * page_size;
+
+  act_reg->rom = alloc (max_words * sizeof (rom_word_t));
+  act_reg->rom_exists = alloc (max_words * sizeof (bool));
+  act_reg->rom_breakpoint = alloc (max_words * sizeof (bool));
+}
+
+
+static void woodstock_new_ram_addr_space (sim_t *sim, int max_ram)
+{
+  act_reg_t *act_reg = sim->chip_data [0];
+
+  sim->max_ram = max_ram;
+  act_reg->ram = alloc (max_ram * sizeof (reg_t));
+}
+
+
 static void woodstock_new_processor (sim_t *sim, int ram_size)
 {
   act_reg_t *act_reg;
 
   act_reg = alloc (sizeof (act_reg_t));
 
-  // RAM is contiguous starting from address 0.
-  sim->max_ram = ram_size;
-  act_reg->ram = alloc (ram_size * sizeof (reg_t));
-
   install_chip (sim, 0, & woodstock_cpu_chip_detail, act_reg);
+
+  woodstock_new_rom_addr_space (sim, MAX_BANK, MAX_PAGE, PAGE_SIZE);
+  woodstock_new_ram_addr_space (sim, ram_size);
 
   switch (sim->platform)
     {
@@ -1642,6 +1735,9 @@ processor_dispatch_t woodstock_processor =
     .press_key           = woodstock_press_key,
     .release_key         = woodstock_release_key,
     .set_ext_flag        = woodstock_set_ext_flag,
+
+    .read_rom            = woodstock_read_rom,
+    .write_rom           = woodstock_write_rom,
 
     .read_ram            = woodstock_read_ram,
     .write_ram           = woodstock_write_ram,

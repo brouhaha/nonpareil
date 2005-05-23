@@ -74,6 +74,7 @@ static reg_detail_t nut_cpu_reg_detail [] =
   // key_buf
   {{ "pf_addr",   8,  1, 16 }, OFFSET_OF (nut_reg_t, pf_addr),  NULL, NULL, 0 },
   {{ "ram_addr", 10,  1, 16 }, OFFSET_OF (nut_reg_t, ram_addr), NULL, NULL, 0 },
+  {{ "active_bank", 2, MAX_PAGE, 16 }, OFFSET_OF (nut_reg_t, active_bank), NULL, NULL, 0 },
 };
 
 
@@ -99,6 +100,68 @@ static int tmap [16] =
 /* map from register index to high opcode bits */
 static int itmap [WSIZE] =
 { 0xe, 0xc, 0x8, 0x0, 0x1, 0x2, 0x5, 0xa, 0x4, 0x9, 0x3, 0x6, 0xd, 0xb };
+
+
+static rom_word_t nut_get_ucode (nut_reg_t *nut_reg, rom_addr_t addr)
+{
+  uint8_t page = addr / PAGE_SIZE;
+
+  // $$$ check for non-existent memory?
+
+  return nut_reg->rom [nut_reg->active_bank [page] * (MAX_PAGE * PAGE_SIZE) + addr];
+}
+
+
+static bool nut_read_rom (sim_t      *sim,
+			  uint8_t    bank,
+			  addr_t     addr,
+			  rom_word_t *val)
+{
+  nut_reg_t *nut_reg = sim->chip_data [0];
+  uint8_t page;
+  uint32_t rom_index;
+
+  if (addr >= (MAX_PAGE * PAGE_SIZE))
+    return false;
+
+  page = addr / PAGE_SIZE;
+
+  if (! (nut_reg->bank_exists [page] & (1 << bank)))
+    return false;
+
+  rom_index = bank * (MAX_PAGE * PAGE_SIZE) + addr;
+
+  if (! nut_reg->rom_exists [rom_index])
+    return false;
+
+  *val = nut_reg->rom [rom_index];
+  return true;
+}
+
+
+static bool nut_write_rom (sim_t      *sim,
+			   uint8_t    bank,
+			   addr_t     addr,
+			   rom_word_t *val)
+{
+  nut_reg_t *nut_reg = sim->chip_data [0];
+  uint8_t page;
+  uint32_t rom_index;
+
+  if (addr >= (MAX_PAGE * PAGE_SIZE))
+    return false;
+
+  page = addr / PAGE_SIZE;
+
+  nut_reg->bank_exists [page] |= (1 << bank);
+
+  rom_index = bank * (MAX_PAGE * PAGE_SIZE) + addr;
+
+  nut_reg->rom_exists [rom_index] = true;
+  nut_reg->rom [rom_index] = *val;
+
+  return true;
+}
 
 
 static inline uint8_t arithmetic_base (nut_reg_t *nut_reg)
@@ -533,7 +596,7 @@ static void op_long_branch_word_2 (sim_t *sim, int opcode)
 	{
 	  push (sim, nut_reg->pc);
 	  nut_reg->pc = target;
-	  if (sim->ucode [nut_reg->pc] == 0)
+	  if (nut_get_ucode (nut_reg, nut_reg->pc) == 0)
 	    nut_reg->pc = pop (sim);
 	}
     }
@@ -553,10 +616,22 @@ static void op_goto_c (sim_t *sim, int opcode)
 
 // Bank selection used in 41CX, Advantage ROM, and perhaps others
 
-// static void op_enbank (sim_t *sim, int opcode)
-// {
-//   select_bank (prev_pc, opcode & ? >> ?);
-// }
+static void select_bank (sim_t *sim, rom_addr_t addr, uint8_t bank)
+{
+  nut_reg_t *nut_reg = sim->chip_data [0];
+  uint8_t page = addr / PAGE_SIZE;
+
+  if (nut_reg->bank_exists [page] & (1 << bank))
+    nut_reg->active_bank [page] = bank;
+}
+
+
+static void op_enbank (sim_t *sim, int opcode)
+{
+  nut_reg_t *nut_reg = sim->chip_data [0];
+
+  select_bank (sim, nut_reg->prev_pc, ((opcode >> 6) & 2) + ((opcode >> 7) & 1));
+}
 
 
 /*
@@ -1322,8 +1397,8 @@ static void nut_disassemble (sim_t *sim, int addr, char *buf, int len)
     case norm:          break;
     }
 
-  op1 = sim->ucode [addr];
-  op2 = sim->ucode [addr + 1];
+  op1 = nut_get_ucode (nut_reg, addr);
+  op2 = nut_get_ucode (nut_reg, addr + 1);
 
   nut_disassemble_inst (addr, op1, op2, buf, len);
 }
@@ -1389,7 +1464,7 @@ static bool nut_execute_cycle (sim_t *sim)
   else
     nut_reg->prev_pc = nut_reg->pc;
 
-  opcode = sim->ucode [nut_reg->prev_pc];
+  opcode = nut_get_ucode (nut_reg, nut_reg->prev_pc);
 
 #ifdef HAS_DEBUGGER
   if (sim->debug_flags & (1 << SIM_DEBUG_TRACE))
@@ -1467,7 +1542,9 @@ static bool parse_hex (char *hex, int digits, int *val)
 static bool nut_parse_object_line (char *buf, int *bank, int *addr,
 				   rom_word_t *opcode)
 {
-  int a, o;
+  int b = 0;
+  int a;
+  int o;
 
   if (buf [0] == '#')  /* comment? */
     return (false);
@@ -1493,7 +1570,7 @@ static bool nut_parse_object_line (char *buf, int *bank, int *addr,
       return (false);
     }
 
-  *bank = 0;
+  *bank = b;
   *addr = a;
   *opcode = o;
   return (true);
@@ -1562,6 +1639,9 @@ static void nut_reset (sim_t *sim)
   nut_reg->q = 0;
   nut_reg->q_sel = false;
 
+  for (i = 0; i < MAX_PAGE; i++)
+    nut_reg->active_bank [i] = 0;
+
   /* wake from deep sleep */
   nut_reg->awake = true;
   nut_reg->pc = 0;
@@ -1620,6 +1700,23 @@ static bool nut_write_ram (sim_t *sim, int addr, uint64_t *val)
 }
 
 
+static void nut_new_rom_addr_space (sim_t *sim,
+				    int max_bank,
+				    int max_page,
+				    int page_size)
+{
+  nut_reg_t *nut_reg = sim->chip_data [0];
+  size_t max_words;
+
+  max_words = max_bank * max_page * page_size;
+
+  nut_reg->rom = alloc (max_words * sizeof (rom_word_t));
+  nut_reg->rom_exists = alloc (max_words * sizeof (bool));
+  nut_reg->rom_breakpoint = alloc (max_words * sizeof (bool));
+}
+
+
+
 static void nut_new_pf_addr_space (sim_t *sim, int max_pf)
 {
   nut_reg_t *nut_reg = sim->chip_data [0];
@@ -1661,6 +1758,7 @@ static void nut_new_processor (sim_t *sim, int ram_size)
 
   nut_init_ops (nut_reg);
 
+  nut_new_rom_addr_space (sim, MAX_BANK, MAX_PAGE, PAGE_SIZE);
   nut_new_ram_addr_space (sim, 1024);
   nut_new_pf_addr_space (sim, 256);
 
@@ -1734,8 +1832,8 @@ static void nut_event_fn (sim_t *sim, int chip_num, int event)
 
 processor_dispatch_t nut_processor =
   {
-    .max_rom             = 65536,
-    .max_bank            = 1,
+    .max_rom             = MAX_PAGE * PAGE_SIZE,
+    .max_bank            = MAX_BANK,
 
     .max_chip_count      = MAX_CHIP_COUNT,
 
@@ -1751,6 +1849,9 @@ processor_dispatch_t nut_processor =
     .press_key           = nut_press_key,
     .release_key         = nut_release_key,
     .set_ext_flag        = nut_set_ext_flag,
+
+    .read_rom            = nut_read_rom,
+    .write_rom           = nut_write_rom,
 
     .read_ram            = nut_read_ram,
     .write_ram           = nut_write_ram,

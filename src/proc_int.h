@@ -91,10 +91,20 @@ typedef struct
   void (* release_key)         (sim_t *sim);
   void (* set_ext_flag)        (sim_t *sim, int flag, bool state);
 
-  /* for debugger: */
+  /* memory access: */
+  bool (* read_rom)            (sim_t      *sim,
+				uint8_t    bank,
+				addr_t     addr,
+				rom_word_t *val);
+  bool (* write_rom)           (sim_t      *sim,
+				uint8_t    bank,
+				addr_t     addr,
+				rom_word_t *val);
+
   bool (* read_ram)            (sim_t *sim, int addr, uint64_t *val);
   bool (* write_ram)           (sim_t *sim, int addr, uint64_t *val);
 
+  /* for debugger: */
   void (* disassemble)         (sim_t *sim, int addr, char *buf, int len);
 
   void (* print_state)         (sim_t *sim);
@@ -150,7 +160,6 @@ struct sim_t
   uint16_t   max_ram;
 
   // ROM:
-  rom_word_t *ucode;
   bool       *breakpoint;
   char       **source;
 };

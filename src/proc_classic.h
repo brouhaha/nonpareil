@@ -33,6 +33,19 @@ typedef digit_t reg_t [WSIZE];
 #define MAX_ROM 8
 #define ROM_SIZE 256
 
+#if 1
+  // This was the easiest way to use the existing code:
+  #define MAX_BANK 1
+  #define MAX_PAGE 1
+  #define PAGE_SIZE (MAX_GROUP * MAX_ROM * ROM_SIZE)
+#else
+  // This would somewhat more accurately represent the hardware
+  // behavior, but the current code won't deal with it correctly:
+  #define MAX_BANK (MAX_GROUP * MAX_ROM)
+  #define MAX_PAGE 1
+  #define PAGE_SIZE (ROM_SIZE)
+#endif
+
 #define MAX_CHIP_COUNT 3  // A&R, C&T CPU
                           // program storage (HP-65 only)
                           // CRC (HP-65 only)
@@ -83,6 +96,11 @@ typedef struct
   void (* display_scan_fn) (sim_t *sim);
 
   void (* op_fcn [1024])(struct sim_t *sim, int opcode);
+
+  // ROM:
+  rom_word_t *ucode;  // name "rom" was already taken
+  bool *rom_exists;
+  bool *rom_breakpoint;
 
   // RAM
   int ram_addr;  /* selected RAM address */

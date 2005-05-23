@@ -73,6 +73,42 @@ static chip_detail_t classic_cpu_chip_detail =
 };
 
 
+static bool classic_read_rom (sim_t      *sim,
+			      uint8_t    bank,
+			      addr_t     addr,
+			      rom_word_t *val)
+{
+  classic_cpu_reg_t *cpu_reg = sim->chip_data [0];
+
+  if ((bank >= MAX_BANK) || (addr >= (MAX_PAGE * PAGE_SIZE)))
+    return false;
+
+  if (! cpu_reg->rom_exists [addr])
+    return false;
+
+  *val = cpu_reg->ucode [addr];
+  return true;
+}
+
+
+static bool classic_write_rom (sim_t      *sim,
+			       uint8_t    bank,
+			       addr_t     addr,
+			       rom_word_t *val)
+{
+  classic_cpu_reg_t *cpu_reg = sim->chip_data [0];
+  uint8_t page;
+
+  if ((bank >= MAX_BANK) || (addr > (MAX_PAGE * PAGE_SIZE)))
+    return false;
+
+  cpu_reg->rom_exists [addr] = true;
+  cpu_reg->ucode [addr] = *val;
+
+  return true;
+}
+
+
 static void bad_op (sim_t *sim, int opcode)
 {
   classic_cpu_reg_t *cpu_reg = sim->chip_data [0];
@@ -753,6 +789,7 @@ static void init_ops (classic_cpu_reg_t *cpu_reg)
 
 static void classic_disassemble (sim_t *sim, int addr, char *buf, int len)
 {
+  classic_cpu_reg_t *cpu_reg = sim->chip_data [0];
   int l;
 
   l = snprintf (buf, len, "%02o%03o: ", addr >> 8, addr & 0377);
@@ -761,7 +798,7 @@ static void classic_disassemble (sim_t *sim, int addr, char *buf, int len)
   if (len <= 0)
     return;
 
-  l = snprintf (buf, len, "%04o", sim->ucode [addr]);
+  l = snprintf (buf, len, "%04o", cpu_reg->ucode [addr]);
   buf += l;
   len -= l;
   if (len <= 0)
@@ -861,7 +898,7 @@ bool classic_execute_instruction (sim_t *sim)
 
   addr = (cpu_reg->group << 11) | (cpu_reg->rom << 8) | cpu_reg->pc;
   cpu_reg->prev_pc = addr;
-  opcode = sim->ucode [addr];
+  opcode = cpu_reg->ucode [addr];
 
 #ifdef HAS_DEBUGGER
   if (sim->debug_flags & (1 << SIM_DEBUG_KEY_TRACE))
@@ -1105,17 +1142,45 @@ static bool classic_write_ram (sim_t *sim, int addr, uint64_t *val)
 }
 
 
+static void classic_new_rom_addr_space (sim_t *sim,
+					int max_bank,
+					int max_page,
+					int page_size)
+{
+  classic_cpu_reg_t *cpu_reg = sim->chip_data [0];
+  size_t max_words;
+
+  max_words = max_bank * max_page * page_size;
+
+  cpu_reg->ucode = alloc (max_words * sizeof (rom_word_t));
+  cpu_reg->rom_exists = alloc (max_words * sizeof (bool));
+  cpu_reg->rom_breakpoint = alloc (max_words * sizeof (bool));
+}
+
+
+static void classic_new_ram_addr_space (sim_t *sim, int max_ram)
+{
+  classic_cpu_reg_t *cpu_reg = sim->chip_data [0];
+
+  sim->max_ram = max_ram;
+  cpu_reg->ram = alloc (max_ram * sizeof (reg_t));
+}
+
+
 static void classic_new_processor (sim_t *sim, int ram_size)
 {
   classic_cpu_reg_t *cpu_reg;
 
   cpu_reg = alloc (sizeof (classic_cpu_reg_t));
 
+  install_chip (sim, 0, & classic_cpu_chip_detail, cpu_reg);
+
+  classic_new_rom_addr_space (sim, MAX_BANK, MAX_PAGE, PAGE_SIZE);
+  classic_new_ram_addr_space (sim, ram_size);
+
   // RAM is contiguous starting from address 0.
   sim->max_ram = ram_size;
   cpu_reg->ram = alloc (ram_size * sizeof (reg_t));
-
-  install_chip (sim, 0, & classic_cpu_chip_detail, cpu_reg);
 
   sim->display_digits = MAX_DIGIT_POSITION;
   cpu_reg->display_scan_fn = classic_display_scan;
@@ -1170,6 +1235,9 @@ processor_dispatch_t classic_processor =
     .press_key           = classic_press_key,
     .release_key         = classic_release_key,
     .set_ext_flag        = classic_set_ext_flag,
+
+    .read_rom            = classic_read_rom,
+    .write_rom           = classic_write_rom,
 
     .read_ram            = classic_read_ram,
     .write_ram           = classic_write_ram,

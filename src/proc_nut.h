@@ -29,9 +29,9 @@ typedef digit_t reg_t [WSIZE];
 #define SSIZE 14
 #define STACK_DEPTH 4
 
+#define PAGE_SIZE 4096
+#define MAX_PAGE 16
 #define MAX_BANK 4
-#define MAX_ROM 16
-#define ROM_SIZE 4096
 
 #define MAX_CHIP_COUNT 256
 
@@ -96,6 +96,13 @@ typedef struct nut_reg_t
   bool awake;
 
   void (* op_fcn [1024])(struct sim_t *sim, int opcode);
+
+  // ROM:
+  uint8_t bank_exists [MAX_PAGE];  // bitmap
+  uint8_t active_bank [MAX_PAGE];  // bank number from 0..MAX_BANK-1
+  rom_word_t *rom;
+  bool *rom_exists;
+  bool *rom_breakpoint;
 
   // RAM:
   uint16_t ram_addr;  // selected RAM address

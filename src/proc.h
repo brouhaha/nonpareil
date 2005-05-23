@@ -119,12 +119,15 @@ uint64_t sim_get_cycle_count (sim_t *siim);
 void sim_set_cycle_count (sim_t *sim,
 			  uint64_t count);
 
-void sim_write_rom (sim_t      *sim,
+bool sim_read_rom  (sim_t      *sim,
+		    uint8_t    bank,
 		    addr_t     addr,
-		    rom_word_t val);
+		    rom_word_t *val);
 
-rom_word_t sim_read_rom (sim_t *sim,
-			 addr_t addr);
+bool sim_write_rom (sim_t      *sim,
+		    uint8_t    bank,
+		    addr_t     addr,
+		    rom_word_t *val);
 
 addr_t sim_get_max_ram (sim_t *sim);
 
