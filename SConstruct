@@ -168,7 +168,9 @@ files = Split ("""README COPYING INSTALL DEBUGGING TODO SConstruct""")
 
 source_release_dir = env.Distribute ('nonpareil-' + release, files)
 
-env.AddPreAction (source_release_dir, Delete (source_release_dir))
+# Not only does this preaction not work, it causes the files from the root
+# directory to not get included in the release!
+# env.AddPreAction (source_release_dir, Delete (source_release_dir))
 
 source_release_tarball = env.Tarball ('nonpareil-' + release + '.tar.gz',
                                       source_release_dir)
@@ -185,7 +187,9 @@ snap_date = time.strftime ("%Y.%m.%d")
 
 snapshot_dir = env.Distribute ('nonpareil-' + snap_date, files)
 
-env.AddPreAction (snapshot_dir, Delete (snapshot_dir))
+# Not only does this preaction not work, it causes the files from the root
+# directory to not get included in the snapshot!
+# env.AddPreAction (snapshot_dir, Delete (snapshot_dir))
 
 snapshot_tarball = env.Tarball ('nonpareil-' + snap_date + '.tar.gz',
                                 snapshot_dir)
