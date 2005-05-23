@@ -73,6 +73,26 @@ bool dir_exists (char *fn);
 bool create_dir (char *fn);
 
 
+// The normal stdio fread() and fwrite() may transfer less than the number
+// of requested bytes even in the absence of EOF and error conditions, thus
+// it is necessary to iterate.  These wrapper functions perform the
+// iteration, as well as returning the EOF and error status.  Upon return,
+// either the complete transfer was successful, or there was an EOF or error
+// condition.
+
+size_t fread_bytes  (FILE *stream,
+		     void *ptr,
+		     size_t byte_count,
+		     bool *eof,
+		     bool *error);
+
+size_t fwrite_bytes (FILE *stream,
+		     void *ptr,
+		     size_t byte_count,
+		     bool *eof,
+		     bool *error);
+
+
 // Given a base filename, an optional suffix, and a colon-delimited
 // list of directory paths, try to find a file.  Returns a newly allocated
 // string with the filename if found, or NULL otherwise.

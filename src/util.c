@@ -188,6 +188,80 @@ bool create_dir (char *fn)
 }
 
 
+size_t fread_bytes  (FILE *stream,
+		     void *ptr,
+		     size_t byte_count,
+		     bool *eof,
+		     bool *error)
+{
+  size_t total = 0;
+
+  *eof = false;
+  *error = false;
+
+  while (byte_count)
+    {
+      size_t count;
+
+      count = fread (ptr, 1, byte_count, stream);
+      ptr += count;
+      total += count;
+      byte_count -= count;
+      if (byte_count)
+	{
+	  if (ferror (stream))
+	    {
+              *error = true;
+	      return total;
+	    }
+	  if (feof (stream))
+	    {
+              *eof = true;
+	      return total;
+	    }
+	}
+    }
+  return total;
+}
+
+
+size_t fwrite_bytes (FILE *stream,
+		     void *ptr,
+		     size_t byte_count,
+		     bool *eof,
+		     bool *error)
+{
+  size_t total = 0;
+
+  *eof = false;
+  *error = false;
+
+  while (byte_count)
+    {
+      size_t count;
+
+      count = fwrite (ptr, 1, byte_count, stream);
+      ptr += count;
+      total += count;
+      byte_count -= count;
+      if (byte_count)
+	{
+	  if (ferror (stream))
+	    {
+              *error = true;
+	      return total;
+	    }
+	  if (feof (stream))
+	    {
+              *eof = true;
+	      return total;
+	    }
+	}
+    }
+  return total;
+}
+
+
 // Given a base filename, an optional suffix, and a colon-delimited
 // list of directory paths, try to find a file.
 char *find_file_in_path_list (char *name, char *opt_suffix, char *path_list)
