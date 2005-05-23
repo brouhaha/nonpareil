@@ -21,6 +21,7 @@ MA 02111, USA.
 
 #include <stdbool.h>
 #include <stdint.h>
+#include <stdio.h>
 
 #include <gdk/gdk.h>
 #include <gtk/gtk.h>
