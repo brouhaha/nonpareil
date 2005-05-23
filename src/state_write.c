@@ -159,7 +159,7 @@ static void write_reg (xmlTextWriterPtr writer,
   xml_start_element (writer, "reg");
   xml_write_attribute_string (writer, "name", name);
   if (index >= 0)
-    xml_write_attribute_format (writer, "index", "%d", index);
+    xml_write_attribute_format (writer, "index", "%x", index);
   va_start (ap, format);
   xml_write_attribute_vformat (writer, "data", format, ap);
   va_end (ap);
