@@ -1299,8 +1299,8 @@ static void nut_init_ops (nut_reg_t *nut_reg)
 
   // nut_reg->op_fcn [0x040] = op_write_mldl;
 
-  // nut_reg->op_fcn [0x100] = op_enbank1;
-  // nut_reg->op_fcn [0x180] = op_enbank2;
+  for (i = 0; i < 4; i++)
+     nut_reg->op_fcn [0x100 + i * 0x040] = op_enbank;
 
   // for (i = 0; i < 8; i++)
   //   op_fcn [0x200 + (i << 6)] = op_write_pil;
