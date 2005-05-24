@@ -32,9 +32,9 @@ MA 02111, USA.
 #include "display.h"
 #include "proc.h"
 #include "proc_int.h"
+#include "digit_ops.h"
 #include "proc_woodstock.h"
 #include "dis_woodstock.h"
-
 
 
 /* If defined, print warnings about stack overflow or underflow. */
@@ -182,49 +182,12 @@ static void bad_op (sim_t *sim, int opcode)
 }
 
 
-static digit_t do_add (sim_t *sim, digit_t x, digit_t y)
-{
-  act_reg_t *act_reg = sim->chip_data [0];
-  int res;
-
-  res = x + y + act_reg->carry;
-  if (res >= arithmetic_base (act_reg))
-    {
-      res -= arithmetic_base (act_reg);
-      act_reg->carry = 1;
-    }
-  else
-    act_reg->carry = 0;
-  return (res);
-}
-
-
-static digit_t do_sub (sim_t *sim, digit_t x, digit_t y)
-{
-  act_reg_t *act_reg = sim->chip_data [0];
-  int res;
-
-  res = (x - y) - act_reg->carry;
-  if (res < 0)
-    {
-      res += arithmetic_base (act_reg);
-      act_reg->carry = 1;
-    }
-  else
-    act_reg->carry = 0;
-  return (res);
-}
-
-
 static void op_arith (sim_t *sim, int opcode)
 {
   act_reg_t *act_reg = sim->chip_data [0];
   uint8_t op, field;
   int first = 0;
   int last = 0;
-  int temp;
-  int i;
-  reg_t t;
 
   op = opcode >> 5;
   field = (opcode >> 2) & 7;
@@ -257,183 +220,146 @@ static void op_arith (sim_t *sim, int opcode)
     case 7:  /* ms */  first =  3; last = 13; break;
     }
 
+  act_reg->carry = 0;
+
   switch (op)
     {
     case 0x00:  /* 0 -> a[f] */
-      for (i = first; i <= last; i++)
-	act_reg->a [i] = 0;
-      act_reg->carry = 0;
+      reg_zero (act_reg->a, first, last);
       break;
     case 0x01:  /* 0 -> b[f] */
-      for (i = first; i <= last; i++)
-	act_reg->b [i] = 0;
-      act_reg->carry = 0;
+      reg_zero (act_reg->a, first, last);
       break;
     case 0x02:  /* a exchange b[f] */
-      for (i = first; i <= last; i++)
-	{
-	  temp = act_reg->a[i];
-	  act_reg->a [i] = act_reg->b [i];
-	  act_reg->b [i] = temp; 
-	}
-      act_reg->carry = 0;
+      reg_exch (act_reg->a, act_reg->b, first, last);
       break;
     case 0x03:  /* a -> b[f] */
-      for (i = first; i <= last; i++)
-	act_reg->b [i] = act_reg->a [i];
-      act_reg->carry = 0;
+      reg_copy (act_reg->b, act_reg->a, first, last);
       break;
     case 0x04:  /* a exchange c[f] */
-      for (i = first; i <= last; i++)
-	{
-	  temp = act_reg->a [i];
-	  act_reg->a [i] = act_reg->c [i];
-	  act_reg->c [i] = temp;
-	}
-      act_reg->carry = 0;
+      reg_exch (act_reg->a, act_reg->c, first, last);
       break;
     case 0x05:  /* c -> a[f] */
-      for (i = first; i <= last; i++)
-	act_reg->a [i] = act_reg->c [i];
-      act_reg->carry = 0;
+      reg_copy (act_reg->c, act_reg->a, first, last);
       break;
     case 0x06:  /* b -> c[f] */
-      for (i = first; i <= last; i++)
-	act_reg->c [i] = act_reg->b [i];
-      act_reg->carry = 0;
+      reg_copy (act_reg->c, act_reg->b, first, last);
       break;
     case 0x07:  /* b exchange c[f] */
-      for (i = first; i <= last; i++)
-	{
-	  temp = act_reg->b[i];
-	  act_reg->b [i] = act_reg->c [i];
-	  act_reg->c [i] = temp;
-	}
-      act_reg->carry = 0;
+      reg_exch (act_reg->b, act_reg->c, first, last);
       break;
     case 0x08:  /* 0 -> c[f] */
-      for (i = first; i <= last; i++)
-	act_reg->c [i] = 0;
-      act_reg->carry = 0;
+      reg_zero (act_reg->c, first, last);
       break;
     case 0x09:  /* a + b -> a[f] */
-      act_reg->carry = 0;
-      for (i = first; i <= last; i++)
-	act_reg->a [i] = do_add (sim, act_reg->a [i], act_reg->b [i]);
+      reg_add (act_reg->a, act_reg->a, act_reg->b,
+	       first, last,
+	       & act_reg->carry, arithmetic_base (act_reg));
       break;
     case 0x0a:  /* a + c -> a[f] */
-      act_reg->carry = 0;
-      for (i = first; i <= last; i++)
-	act_reg->a [i] = do_add (sim, act_reg->a [i], act_reg->c [i]);
+      reg_add (act_reg->a, act_reg->a, act_reg->c,
+	       first, last,
+	       & act_reg->carry, arithmetic_base (act_reg));
       break;
     case 0x0b:  /* c + c -> c[f] */
-      act_reg->carry = 0;
-      for (i = first; i <= last; i++)
-	act_reg->c [i] = do_add (sim, act_reg->c [i], act_reg->c [i]);
+      reg_add (act_reg->c, act_reg->c, act_reg->c,
+	       first, last,
+	       & act_reg->carry, arithmetic_base (act_reg));
       break;
     case 0x0c:  /* a + c -> c[f] */
-      act_reg->carry = 0;
-      for (i = first; i <= last; i++)
-	act_reg->c [i] = do_add (sim, act_reg->a [i], act_reg->c [i]);
+      reg_add (act_reg->a, act_reg->c, act_reg->c,
+	       first, last,
+	       & act_reg->carry, arithmetic_base (act_reg));
       break;
     case 0x0d:  /* a + 1 -> a[f] */
       act_reg->carry = 1;
-      for (i = first; i <= last; i++)
-	act_reg->a [i] = do_add (sim, act_reg->a [i], 0);
+      reg_add (act_reg->a, act_reg->a, NULL,
+	       first, last,
+	       & act_reg->carry, arithmetic_base (act_reg));
       break;
     case 0x0e:  /* shift left a[f] */
-      for (i = last; i >= first; i--)
-	act_reg->a [i] = (i == first) ? 0 : act_reg->a [i-1];
-      act_reg->carry = 0;
+      reg_shift_left (act_reg->a, first, last);
       break;
     case 0x0f:  /* c + 1 -> c[f] */
       act_reg->carry = 1;
-      for (i = first; i <= last; i++)
-	act_reg->c [i] = do_add (sim, act_reg->c [i], 0);
+      reg_add (act_reg->c, act_reg->c, NULL,
+	       first, last,
+	       & act_reg->carry, arithmetic_base (act_reg));
       break;
     case 0x10:  /* a - b -> a[f] */
-      act_reg->carry = 0;
-      for (i = first; i <= last; i++)
-	act_reg->a [i] = do_sub (sim, act_reg->a [i], act_reg->b [i]);
+      reg_sub (act_reg->a, act_reg->a, act_reg->b,
+	       first, last,
+	       & act_reg->carry, arithmetic_base (act_reg));
       break;
     case 0x11:  /* a - c -> c[f] */
-      act_reg->carry = 0;
-      for (i = first; i <= last; i++)
-	act_reg->c [i] = do_sub (sim, act_reg->a [i], act_reg->c [i]);
+      reg_sub (act_reg->c, act_reg->a, act_reg->c,
+	       first, last,
+	       & act_reg->carry, arithmetic_base (act_reg));
       break;
     case 0x12:  /* a - 1 -> a[f] */
       act_reg->carry = 1;
-      for (i = first; i <= last; i++)
-	act_reg->a [i] = do_sub (sim, act_reg->a [i], 0);
+      reg_sub (act_reg->a, act_reg->a, NULL,
+	       first, last,
+	       & act_reg->carry, arithmetic_base (act_reg));
       break;
     case 0x13:  /* c - 1 -> c[f] */
       act_reg->carry = 1;
-      for (i = first; i <= last; i++)
-	act_reg->c [i] = do_sub (sim, act_reg->c [i], 0);
+      reg_sub (act_reg->c, act_reg->c, NULL,
+	       first, last,
+	       & act_reg->carry, arithmetic_base (act_reg));
       break;
     case 0x14:  /* 0 - c -> c[f] */
-      act_reg->carry = 0;
-      for (i = first; i <= last; i++)
-	act_reg->c [i] = do_sub (sim, 0, act_reg->c [i]);
+      reg_sub (act_reg->c, NULL, act_reg->c,
+	       first, last,
+	       & act_reg->carry, arithmetic_base (act_reg));
       break;
     case 0x15:  /* 0 - c - 1 -> c[f] */
       act_reg->carry = 1;
-      for (i = first; i <= last; i++)
-	act_reg->c [i] = do_sub (sim, 0, act_reg->c [i]);
+      reg_sub (act_reg->c, NULL, act_reg->c,
+	       first, last,
+	       & act_reg->carry, arithmetic_base (act_reg));
       break;
     case 0x16:  /* if b[f] = 0 */
       act_reg->inst_state = branch;
-      for (i = first; i <= last; i++)
-	act_reg->carry |= (act_reg->b [i] != 0);
+      reg_test_nonequal (act_reg->b, NULL, first, last, & act_reg->carry);
       break;
     case 0x17:  /* if c[f] = 0 */
       act_reg->inst_state = branch;
-      for (i = first; i <= last; i++)
-	act_reg->carry |= (act_reg->c [i] != 0);
+      reg_test_nonequal (act_reg->c, NULL, first, last, & act_reg->carry);
       break;
     case 0x18:  /* if a >= c[f] */
       act_reg->inst_state = branch;
-      act_reg->carry = 0;
-      for (i = first; i <= last; i++)
-	t [i] = do_sub (sim, act_reg->a [i], act_reg->c [i]);
+      reg_sub (NULL, act_reg->a, act_reg->c,
+	       first, last,
+	       & act_reg->carry, arithmetic_base (act_reg));
       break;
     case 0x19:  /* if a >= b[f] */
       act_reg->inst_state = branch;
-      act_reg->carry = 0;
-      for (i = first; i <= last; i++)
-	t [i] = do_sub (sim, act_reg->a [i], act_reg->b [i]);
+      reg_sub (NULL, act_reg->a, act_reg->b,
+	       first, last,
+	       & act_reg->carry, arithmetic_base (act_reg));
       break;
     case 0x1a:  /* if a[f] # 0 */
       act_reg->inst_state = branch;
-      act_reg->carry = 1;
-      for (i = first; i <= last; i++)
-	act_reg->carry &= (act_reg->a [i] == 0);
+      reg_test_equal (act_reg->a, NULL, first, last, & act_reg->carry);
       break;
     case 0x1b:  /* if c[f] # 0 */
       act_reg->inst_state = branch;
-      act_reg->carry = 1;
-      for (i = first; i <= last; i++)
-	act_reg->carry &= (act_reg->c [i] == 0);
+      reg_test_equal (act_reg->c, NULL, first, last, & act_reg->carry);
       break;
     case 0x1c:  /* a - c -> a[f] */
-      act_reg->carry = 0;
-      for (i = first; i <= last; i++)
-        act_reg->a [i] = do_sub (sim, act_reg->a [i], act_reg->c [i]);
+      reg_sub (act_reg->a, act_reg->a, act_reg->c,
+	       first, last,
+	       & act_reg->carry, arithmetic_base (act_reg));
       break;
     case 0x1d:  /* shift right a[f] */
-      for (i = first; i <= last; i++)
-	act_reg->a [i] = (i == last) ? 0 : act_reg->a [i+1];
-      act_reg->carry = 0;
+      reg_shift_right (act_reg->a, first, last);
       break;
     case 0x1e:  /* shift right b[f] */
-      for (i = first; i <= last; i++)
-	act_reg->b [i] = (i == last) ? 0 : act_reg->b [i+1];
-      act_reg->carry = 0;
+      reg_shift_right (act_reg->b, first, last);
       break;
     case 0x1f:  /* shift right c[f] */
-      for (i = first; i <= last; i++)
-	act_reg->c [i] = (i == last) ? 0 : act_reg->c [i+1];
-      act_reg->carry = 0;
+      reg_shift_right (act_reg->c, first, last);
       break;
     }
 }
@@ -554,48 +480,32 @@ static void op_clear_s (sim_t *sim, int opcode)
 static void op_m1_exch_c (sim_t *sim, int opcode)
 {
   act_reg_t *act_reg = sim->chip_data [0];
-  int i, t;
 
-  for (i = 0; i < WSIZE; i++)
-    {
-      t = act_reg->c [i];
-      act_reg->c [i] = act_reg->m1 [i];
-      act_reg->m1 [i] = t;
-    }
+  reg_exch (act_reg->c, act_reg->m1, 0, WSIZE - 1);
 }
 
 
 static void op_m1_to_c (sim_t *sim, int opcode)
 {
   act_reg_t *act_reg = sim->chip_data [0];
-  int i;
 
-  for (i = 0; i < WSIZE; i++)
-    act_reg->c [i] = act_reg->m1 [i];
+  reg_copy (act_reg->c, act_reg->m1, 0, WSIZE - 1);
 }
 
 
 static void op_m2_exch_c (sim_t *sim, int opcode)
 {
   act_reg_t *act_reg = sim->chip_data [0];
-  int i, t;
 
-  for (i = 0; i < WSIZE; i++)
-    {
-      t = act_reg->c [i];
-      act_reg->c [i] = act_reg->m2 [i];
-      act_reg->m2 [i] = t;
-    }
+  reg_exch (act_reg->c, act_reg->m2, 0, WSIZE - 1);
 }
 
 
 static void op_m2_to_c (sim_t *sim, int opcode)
 {
   act_reg_t *act_reg = sim->chip_data [0];
-  int i;
 
-  for (i = 0; i < WSIZE; i++)
-    act_reg->c [i] = act_reg->m2 [i];
+  reg_copy (act_reg->c, act_reg->m2, 0, WSIZE - 1);
 }
 
 
