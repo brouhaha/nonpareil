@@ -98,6 +98,7 @@ nonpareil_srcs = Split ("""proc.c glib_async_queue_source.c
                            display.c keyboard.c slide_switch.c
 			   kmll.l kmly.y kml.c
                            platform.c model.c
+                           digit_ops.c
                            proc_classic.c
                            proc_woodstock.c
                            proc_nut.c coconut_lcd.c voyager_lcd.c
@@ -211,6 +212,7 @@ env.Alias (target = 'install',
 headers = Split ("""util.h
                     arch.h model.h platform.h kml.h
                     proc.h proc_int.h glib_async_queue_source.h
+                    digit_ops.h
                     proc_classic.h proc_nut.h proc_woodstock.h
                     state_io.h
                     debugger_gui.h debugger_cli.h

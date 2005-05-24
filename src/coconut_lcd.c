@@ -28,6 +28,7 @@ MA 02111, USA.
 #include "util.h"
 #include "display.h"
 #include "proc.h"
+#include "digit_ops.h"
 #include "coconut_lcd.h"
 #include "proc_int.h"
 #include "proc_nut.h"

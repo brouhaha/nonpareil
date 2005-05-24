@@ -32,6 +32,7 @@ MA 02111, USA.
 #include "display.h"
 #include "proc.h"
 #include "proc_int.h"
+#include "digit_ops.h"
 #include "coconut_lcd.h"
 #include "voyager_lcd.h"
 #include "proc_nut.h"
@@ -187,128 +188,6 @@ static void bad_op (sim_t *sim, int opcode)
 }
 
 
-static void reg_zero (digit_t *dest, int first, int last)
-{
-  int i;
-  for (i = first; i <= last; i++)
-    dest [i] = 0;
-}
-
-
-static void reg_copy (digit_t *dest, digit_t *src, int first, int last)
-{
-  int i;
-  for (i = first; i <= last; i++)
-    dest [i] = src [i];
-}
-
-
-static void reg_exch (digit_t *dest, digit_t *src, int first, int last)
-{
-  int i, t;
-  for (i = first; i <= last; i++)
-    {
-      t = dest [i];
-      dest [i] = src [i];
-      src [i] = t;
-    }
-}
-
-
-static digit_t do_add (sim_t *sim, digit_t x, digit_t y)
-{
-  nut_reg_t *nut_reg = sim->chip_data [0];
-  int res;
-
-  res = x + y + nut_reg->carry;
-  if (res >= arithmetic_base (nut_reg))
-    {
-      res -= arithmetic_base (nut_reg);
-      nut_reg->carry = 1;
-    }
-  else
-    nut_reg->carry = 0;
-  return (res);
-}
-
-
-static digit_t do_sub (sim_t *sim, digit_t x, digit_t y)
-{
-  nut_reg_t *nut_reg = sim->chip_data [0];
-  int res;
-
-  res = (x - y) - nut_reg->carry;
-  if (res < 0)
-    {
-      res += arithmetic_base (nut_reg);
-      nut_reg->carry = 1;
-    }
-  else
-    nut_reg->carry = 0;
-  return (res);
-}
-
-
-static void reg_add (sim_t *sim, digit_t *dest, digit_t *src1, digit_t *src2,
-		     int first, int last)
-{
-  int i;
-
-  for (i = first; i <= last; i++)
-    {
-      int s2 = src2 ? src2 [i] : 0;
-      dest [i] = do_add (sim, src1 [i], s2);
-    }
-}
-
-
-static void reg_sub (sim_t *sim, digit_t *dest, digit_t *src1, digit_t *src2,
-		     int first, int last)
-{
-  int i;
-
-  for (i = first; i <= last; i++)
-    {
-      int s1 = src1 ? src1 [i] : 0;
-      int s2 = src2 ? src2 [i] : 0;
-      int d = do_sub (sim, s1, s2);
-      if (dest)
-	dest [i] = d;
-    }
-}
-
-
-static void reg_test_nonequal (sim_t *sim, digit_t *src1, digit_t *src2,
-			       int first, int last)
-{
-  nut_reg_t *nut_reg = sim->chip_data [0];
-  int i;
-
-  for (i = first; i <= last; i++)
-    {
-      int s2 = src2 ? src2 [i] : 0;
-      nut_reg->carry |= (src1 [i] != s2);
-    }
-}
-
-
-static void reg_shift_right (digit_t *reg, int first, int last)
-{
-  int i;
-
-  for (i = first; i <= last; i++)
-    reg [i] = (i == last) ? 0 : reg [i+1];
-}
-
-
-static void reg_shift_left (digit_t *reg, int first, int last)
-{
-  int i;
-
-  for (i = last; i >= first; i--)
-    reg [i] = (i == first) ? 0 : reg [i-1];
-}
-
 static void op_arith (sim_t *sim, int opcode)
 {
   nut_reg_t *nut_reg = sim->chip_data [0];
@@ -374,84 +253,122 @@ static void op_arith (sim_t *sim, int opcode)
       break;
 
     case 0x09:  /* a=a+b */
-      reg_add (sim, nut_reg->a, nut_reg->a, nut_reg->b, first, last);
+      reg_add (nut_reg->a, nut_reg->a, nut_reg->b,
+	       first, last,
+	       & nut_reg->carry, arithmetic_base (nut_reg));
       break;
 
     case 0x0a:  /* a=a+c */
-      reg_add (sim, nut_reg->a, nut_reg->a, nut_reg->c, first, last);
+      reg_add (nut_reg->a, nut_reg->a, nut_reg->c,
+	       first, last,
+	       & nut_reg->carry, arithmetic_base (nut_reg));
       break;
 
     case 0x0b:    /* a=a+1 */
       nut_reg->carry = 1;
-      reg_add (sim, nut_reg->a, nut_reg->a, NULL, first, last);
+      reg_add (nut_reg->a, nut_reg->a, NULL,
+	       first, last,
+	       & nut_reg->carry, arithmetic_base (nut_reg));
       break;
 
     case 0x0c:  /* a=a-b */
-      reg_sub (sim, nut_reg->a, nut_reg->a, nut_reg->b, first, last);
+      reg_sub (nut_reg->a, nut_reg->a, nut_reg->b,
+	       first, last,
+	       & nut_reg->carry, arithmetic_base (nut_reg));
       break;
 
     case 0x0d:  /* a=a-1 */
       nut_reg->carry = 1;
-      reg_sub (sim, nut_reg->a, nut_reg->a, NULL, first, last);
+      reg_sub (nut_reg->a, nut_reg->a, NULL,
+	       first, last,
+	       & nut_reg->carry, arithmetic_base (nut_reg));
       break;
 
     case 0x0e:  /* a=a-c */
-      reg_sub (sim, nut_reg->a, nut_reg->a, nut_reg->c, first, last);
+      reg_sub (nut_reg->a, nut_reg->a, nut_reg->c,
+	       first, last,
+	       & nut_reg->carry, arithmetic_base (nut_reg));
       break;
 
     case 0x0f:  /* c=c+c */
-      reg_add (sim, nut_reg->c, nut_reg->c, nut_reg->c, first, last);
+      reg_add (nut_reg->c, nut_reg->c, nut_reg->c,
+	       first, last,
+	       & nut_reg->carry, arithmetic_base (nut_reg));
       break;
 
     case 0x10:  /* c=a+c */
-      reg_add (sim, nut_reg->c, nut_reg->a, nut_reg->c, first, last);
+      reg_add (nut_reg->c, nut_reg->a, nut_reg->c,
+	       first, last,
+	       & nut_reg->carry, arithmetic_base (nut_reg));
       break;
 
     case 0x11:  /* c=c+1 */
       nut_reg->carry = 1;
-      reg_add (sim, nut_reg->c, nut_reg->c, NULL, first, last);
+      reg_add (nut_reg->c, nut_reg->c, NULL,
+	       first, last,
+	       & nut_reg->carry, arithmetic_base (nut_reg));
       break;
 
     case 0x12:  /* c=a-c */
-      reg_sub (sim, nut_reg->c, nut_reg->a, nut_reg->c, first, last);
+      reg_sub (nut_reg->c, nut_reg->a, nut_reg->c,
+	       first, last,
+	       & nut_reg->carry, arithmetic_base (nut_reg));
       break;
 
     case 0x13:  /* c=c-1 */
       nut_reg->carry = 1;
-      reg_sub (sim, nut_reg->c, nut_reg->c, NULL, first, last);
+      reg_sub (nut_reg->c, nut_reg->c, NULL,
+	       first, last,
+	       & nut_reg->carry, arithmetic_base (nut_reg));
       break;
 
     case 0x14:  /* c=-c */
-      reg_sub (sim, nut_reg->c, NULL, nut_reg->c, first, last);
+      reg_sub (nut_reg->c, NULL, nut_reg->c,
+	       first, last,
+	       & nut_reg->carry, arithmetic_base (nut_reg));
       break;
 
     case 0x15:  /* c=-c-1 */
       nut_reg->carry = 1;
-      reg_sub (sim, nut_reg->c, NULL, nut_reg->c, first, last);
+      reg_sub (nut_reg->c, NULL, nut_reg->c,
+	       first, last,
+	       & nut_reg->carry, arithmetic_base (nut_reg));
       break;
 
     case 0x16:  /* ? b<>0 */
-      reg_test_nonequal (sim, nut_reg->b, NULL, first, last);
+      reg_test_nonequal (nut_reg->b, NULL,
+			 first, last,
+			 & nut_reg->carry);
       break;
 
     case 0x17:  /* ? c<>0 */
-      reg_test_nonequal (sim, nut_reg->c, NULL, first, last);
+      reg_test_nonequal (nut_reg->c, NULL,
+			 first, last,
+			 & nut_reg->carry);
       break;
 
     case 0x18:  /* ? a<c */
-      reg_sub (sim, NULL, nut_reg->a, nut_reg->c, first, last);
+      reg_sub (NULL, nut_reg->a, nut_reg->c,
+	       first, last,
+	       & nut_reg->carry, arithmetic_base (nut_reg));
       break;
 
     case 0x19:  /* ? a<b */
-      reg_sub (sim, NULL, nut_reg->a, nut_reg->b, first, last);
+      reg_sub (NULL, nut_reg->a, nut_reg->b,
+	       first, last,
+	       & nut_reg->carry, arithmetic_base (nut_reg));
       break;
 
     case 0x1a:  /* ? a<>0 */
-      reg_test_nonequal (sim, nut_reg->a, NULL, first, last);
+      reg_test_nonequal (nut_reg->a, NULL,
+			 first, last,
+			 & nut_reg->carry);
       break;
 
     case 0x1b:  /* ? a<>c */
-      reg_test_nonequal (sim, nut_reg->a, nut_reg->c, first, last);
+      reg_test_nonequal (nut_reg->a, nut_reg->c,
+			 first, last,
+			 & nut_reg->carry);
       break;
 
     case 0x1c:  /* a sr */
