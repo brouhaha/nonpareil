@@ -788,6 +788,8 @@ sim_t *sim_init  (int model,
   sim->chip_detail = alloc (sim->proc->max_chip_count * sizeof (chip_detail_t *));
   sim->chip_data = alloc (sim->proc->max_chip_count * sizeof (void *));
 
+  sim->source = alloc (sim->proc->max_bank * sim->proc->max_rom * sizeof (char *));
+
   sim->proc->new_processor (sim, ram_size);
 
   sim->char_gen = char_gen;
