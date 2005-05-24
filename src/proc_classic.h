@@ -22,7 +22,6 @@ MA 02111, USA.
 
 #define WSIZE 14
 
-typedef uint8_t digit_t;
 typedef digit_t reg_t [WSIZE];
 
 
@@ -63,7 +62,7 @@ typedef struct
 
   digit_t p;
 
-  uint8_t carry, prev_carry;
+  bool carry, prev_carry;
 
   bool s [SSIZE];
 

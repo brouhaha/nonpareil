@@ -30,6 +30,7 @@ MA 02111, USA.
 #include "display.h"
 #include "proc.h"
 #include "proc_int.h"
+#include "digit_ops.h"
 #include "proc_classic.h"
 
 
@@ -97,7 +98,6 @@ static bool classic_write_rom (sim_t      *sim,
 			       rom_word_t *val)
 {
   classic_cpu_reg_t *cpu_reg = sim->chip_data [0];
-  uint8_t page;
 
   if ((bank >= MAX_BANK) || (addr > (MAX_PAGE * PAGE_SIZE)))
     return false;
@@ -109,46 +109,18 @@ static bool classic_write_rom (sim_t      *sim,
 }
 
 
+static inline uint8_t arithmetic_base (classic_cpu_reg_t *cpu_reg)
+{
+  return 10;  // no binary (hex) mode on Classic
+}
+
+
 static void bad_op (sim_t *sim, int opcode)
 {
   classic_cpu_reg_t *cpu_reg = sim->chip_data [0];
 
   printf ("illegal opcode %04o at %02o%03o\n", opcode,
 	  cpu_reg->prev_pc >> 8, cpu_reg->prev_pc & 0377);
-}
-
-
-static digit_t do_add (sim_t *sim, digit_t x, digit_t y)
-{
-  classic_cpu_reg_t *cpu_reg = sim->chip_data [0];
-  int res;
-
-  res = x + y + cpu_reg->carry;
-  if (res > 9)
-    {
-      res -= 10;
-      cpu_reg->carry = 1;
-    }
-  else
-    cpu_reg->carry = 0;
-  return (res);
-}
-
-
-static digit_t do_sub (sim_t *sim, digit_t x, digit_t y)
-{
-  classic_cpu_reg_t *cpu_reg = sim->chip_data [0];
-  int res;
-
-  res = (x - y) - cpu_reg->carry;
-  if (res < 0)
-    {
-      res += 10;
-      cpu_reg->carry = 1;
-    }
-  else
-    cpu_reg->carry = 0;
-  return (res);
 }
 
 
@@ -193,177 +165,140 @@ static void op_arith (sim_t *sim, int opcode)
     case 7:  /* s  */  first =  13; last = 13; break;
     }
 
+  // Note: carry was set to 0 by classic_execute_instruction before
+  // we're called.
   switch (op)
     {
     case 0x00:  /* if b[f] = 0 */
-      for (i = first; i <= last; i++)
-	cpu_reg->carry |= (cpu_reg->b [i] != 0);
+      reg_test_nonequal (cpu_reg->b, NULL, first, last, & cpu_reg->carry);
       break;
     case 0x01:  /* 0 -> b[f] */
-      for (i = first; i <= last; i++)
-	cpu_reg->b [i] = 0;
-      cpu_reg->carry = 0;
+      reg_zero (cpu_reg->b, first, last);
       break;
     case 0x02:  /* if a >= c[f] */
-      cpu_reg->carry = 0;
-      for (i = first; i <= last; i++)
-	t [i] = do_sub (sim, cpu_reg->a [i], cpu_reg->c [i]);
+      reg_sub (NULL, cpu_reg->a, cpu_reg->c,
+	       first, last,
+	       & cpu_reg->carry, arithmetic_base (cpu_reg));
       break;
     case 0x03:  /* if c[f] >= 1 */
-      cpu_reg->carry = 1;
-      for (i = first; i <= last; i++)
-	cpu_reg->carry &= (cpu_reg->c [i] == 0);
+      reg_test_equal (cpu_reg->c, NULL, first, last, & cpu_reg->carry);
       break;
     case 0x04:  /* b -> c[f] */
-      for (i = first; i <= last; i++)
-	cpu_reg->c [i] = cpu_reg->b [i];
-      cpu_reg->carry = 0;
+      reg_copy (cpu_reg->c, cpu_reg->b, first, last);
       break;
     case 0x05:  /* 0 - c -> c[f] */
-      cpu_reg->carry = 0;
-      for (i = first; i <= last; i++)
-	cpu_reg->c [i] = do_sub (sim, 0, cpu_reg->c [i]);
+      reg_sub (cpu_reg->c, NULL, cpu_reg->c,
+	       first, last,
+	       & cpu_reg->carry, arithmetic_base (cpu_reg));
       break;
     case 0x06:  /* 0 -> c[f] */
-      for (i = first; i <= last; i++)
-	cpu_reg->c [i] = 0;
-      cpu_reg->carry = 0;
+      reg_zero (cpu_reg->c, first, last);
       break;
     case 0x07:  /* 0 - c - 1 -> c[f] */
       cpu_reg->carry = 1;
-      for (i = first; i <= last; i++)
-	cpu_reg->c [i] = do_sub (sim, 0, cpu_reg->c [i]);
+      reg_sub (cpu_reg->c, NULL, cpu_reg->c,
+	       first, last,
+	       & cpu_reg->carry, arithmetic_base (cpu_reg));
       break;
     case 0x08:  /* shift left a[f] */
-      for (i = last; i >= first; i--)
-	cpu_reg->a [i] = (i == first) ? 0 : cpu_reg->a [i-1];
-      cpu_reg->carry = 0;
+      reg_shift_left (cpu_reg->a, first, last);
       break;
     case 0x09:  /* a -> b[f] */
-      for (i = first; i <= last; i++)
-	cpu_reg->b [i] = cpu_reg->a [i];
-      cpu_reg->carry = 0;
+      reg_copy (cpu_reg->b, cpu_reg->a, first, last);
       break;
     case 0x0a:  /* a - c -> c[f] */
-      cpu_reg->carry = 0;
-      for (i = first; i <= last; i++)
-	cpu_reg->c [i] = do_sub (sim, cpu_reg->a [i], cpu_reg->c [i]);
+      reg_sub (cpu_reg->c, cpu_reg->a, cpu_reg->c,
+	       first, last,
+	       & cpu_reg->carry, arithmetic_base (cpu_reg));
       break;
     case 0x0b:  /* c - 1 -> c[f] */
       cpu_reg->carry = 1;
-      for (i = first; i <= last; i++)
-	cpu_reg->c [i] = do_sub (sim, cpu_reg->c [i], 0);
+      reg_sub (cpu_reg->c, cpu_reg->c, NULL,
+	       first, last,
+	       & cpu_reg->carry, arithmetic_base (cpu_reg));
       break;
     case 0x0c:  /* c -> a[f] */
-      for (i = first; i <= last; i++)
-	cpu_reg->a [i] = cpu_reg->c [i];
-      cpu_reg->carry = 0;
+      reg_copy (cpu_reg->a, cpu_reg->c, first, last);
       break;
     case 0x0d:  /* if c[f] = 0 */
-      for (i = first; i <= last; i++)
-	cpu_reg->carry |= (cpu_reg->c [i] != 0);
+      reg_test_nonequal (cpu_reg->c, NULL, first, last, & cpu_reg->carry);
       break;
     case 0x0e:  /* a + c -> c[f] */
-      cpu_reg->carry = 0;
-      for (i = first; i <= last; i++)
-	cpu_reg->c [i] = do_add (sim, cpu_reg->a [i], cpu_reg->c [i]);
+      reg_add (cpu_reg->a, cpu_reg->c, cpu_reg->c,
+	       first, last,
+	       & cpu_reg->carry, arithmetic_base (cpu_reg));
       break;
     case 0x0f:  /* c + 1 -> c[f] */
       cpu_reg->carry = 1;
-      for (i = first; i <= last; i++)
-	cpu_reg->c [i] = do_add (sim, cpu_reg->c [i], 0);
+      reg_add (cpu_reg->c, cpu_reg->c, NULL,
+	       first, last,
+	       & cpu_reg->carry, arithmetic_base (cpu_reg));
       break;
     case 0x10:  /* if a >= b[f] */
-      cpu_reg->carry = 0;
-      for (i = first; i <= last; i++)
-	t [i] = do_sub (sim, cpu_reg->a [i], cpu_reg->b [i]);
+      reg_sub (NULL, cpu_reg->a, cpu_reg->b,
+	       first, last,
+	       & cpu_reg->carry, arithmetic_base (cpu_reg));
       break;
     case 0x11:  /* b exchange c[f] */
-      for (i = first; i <= last; i++)
-	{
-	  temp = cpu_reg->b[i];
-	  cpu_reg->b [i] = cpu_reg->c [i];
-	  cpu_reg->c [i] = temp;
-	}
-      cpu_reg->carry = 0;
+      reg_exch (cpu_reg->b, cpu_reg->c, first, last);
       break;
     case 0x12:  /* shift right c[f] */
-      for (i = first; i <= last; i++)
-	cpu_reg->c [i] = (i == last) ? 0 : cpu_reg->c [i+1];
-      cpu_reg->carry = 0;
+      reg_shift_right (cpu_reg->c, first, last);
       break;
     case 0x13:  /* if a[f] >= 1 */
-      cpu_reg->carry = 1;
-      for (i = first; i <= last; i++)
-	cpu_reg->carry &= (cpu_reg->a [i] == 0);
+      reg_test_equal (cpu_reg->a, NULL, first, last, & cpu_reg->carry);
       break;
     case 0x14:  /* shift right b[f] */
-      for (i = first; i <= last; i++)
-	cpu_reg->b [i] = (i == last) ? 0 : cpu_reg->b [i+1];
-      cpu_reg->carry = 0;
+      reg_shift_right (cpu_reg->b, first, last);
       break;
     case 0x15:  /* c + c -> c[f] */
-      cpu_reg->carry = 0;
-      for (i = first; i <= last; i++)
-	cpu_reg->c [i] = do_add (sim, cpu_reg->c [i], cpu_reg->c [i]);
+      reg_add (cpu_reg->c, cpu_reg->c, cpu_reg->c,
+	       first, last,
+	       & cpu_reg->carry, arithmetic_base (cpu_reg));
       break;
     case 0x16:  /* shift right a[f] */
-      for (i = first; i <= last; i++)
-	cpu_reg->a [i] = (i == last) ? 0 : cpu_reg->a [i+1];
-      cpu_reg->carry = 0;
+      reg_shift_right (cpu_reg->a, first, last);
       break;
     case 0x17:  /* 0 -> a[f] */
-      for (i = first; i <= last; i++)
-	cpu_reg->a [i] = 0;
-      cpu_reg->carry = 0;
+      reg_zero (cpu_reg->a, first, last);
       break;
     case 0x18:  /* a - b -> a[f] */
-      cpu_reg->carry = 0;
-      for (i = first; i <= last; i++)
-	cpu_reg->a [i] = do_sub (sim, cpu_reg->a [i], cpu_reg->b [i]);
+      reg_sub (cpu_reg->a, cpu_reg->a, cpu_reg->b,
+	       first, last,
+	       & cpu_reg->carry, arithmetic_base (cpu_reg));
       break;
     case 0x19:  /* a exchange b[f] */
-      for (i = first; i <= last; i++)
-	{
-	  temp = cpu_reg->a[i];
-	  cpu_reg->a [i] = cpu_reg->b [i];
-	  cpu_reg->b [i] = temp; 
-	}
-      cpu_reg->carry = 0;
+      reg_exch (cpu_reg->a, cpu_reg->b, first, last);
       break;
     case 0x1a:  /* a - c -> a[f] */
-      cpu_reg->carry = 0;
-      for (i = first; i <= last; i++)
-        cpu_reg->a [i] = do_sub (sim, cpu_reg->a [i], cpu_reg->c [i]);
+      reg_sub (cpu_reg->a, cpu_reg->a, cpu_reg->c,
+	       first, last,
+	       & cpu_reg->carry, arithmetic_base (cpu_reg));
       break;
     case 0x1b:  /* a - 1 -> a[f] */
       cpu_reg->carry = 1;
-      for (i = first; i <= last; i++)
-	cpu_reg->a [i] = do_sub (sim, cpu_reg->a [i], 0);
+      reg_sub (cpu_reg->a, cpu_reg->a, NULL,
+	       first, last,
+	       & cpu_reg->carry, arithmetic_base (cpu_reg));
       break;
     case 0x1c:  /* a + b -> a[f] */
-      cpu_reg->carry = 0;
-      for (i = first; i <= last; i++)
-	cpu_reg->a [i] = do_add (sim, cpu_reg->a [i], cpu_reg->b [i]);
+      reg_add (cpu_reg->a, cpu_reg->a, cpu_reg->b,
+	       first, last,
+	       & cpu_reg->carry, arithmetic_base (cpu_reg));
       break;
     case 0x1d:  /* a exchange c[f] */
-      for (i = first; i <= last; i++)
-	{
-	  temp = cpu_reg->a [i];
-	  cpu_reg->a [i] = cpu_reg->c [i];
-	  cpu_reg->c [i] = temp;
-	}
-      cpu_reg->carry = 0;
+      reg_exch (cpu_reg->a, cpu_reg->b, first, last);
       break;
     case 0x1e:  /* a + c -> a[f] */
-      cpu_reg->carry = 0;
-      for (i = first; i <= last; i++)
-	cpu_reg->a [i] = do_add (sim, cpu_reg->a [i], cpu_reg->c [i]);
+      reg_add (cpu_reg->a, cpu_reg->a, cpu_reg->c,
+	       first, last,
+	       & cpu_reg->carry, arithmetic_base (cpu_reg));
       break;
     case 0x1f:  /* a + 1 -> a[f] */
       cpu_reg->carry = 1;
-      for (i = first; i <= last; i++)
-	cpu_reg->a [i] = do_add (sim, cpu_reg->a [i], 0);
+      reg_add (cpu_reg->a, cpu_reg->a, NULL,
+	       first, last,
+	       & cpu_reg->carry, arithmetic_base (cpu_reg));
       break;
     }
 }
