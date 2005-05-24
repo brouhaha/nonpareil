@@ -228,7 +228,7 @@ static void op_arith (sim_t *sim, int opcode)
       reg_zero (act_reg->a, first, last);
       break;
     case 0x01:  /* 0 -> b[f] */
-      reg_zero (act_reg->a, first, last);
+      reg_zero (act_reg->b, first, last);
       break;
     case 0x02:  /* a exchange b[f] */
       reg_exch (act_reg->a, act_reg->b, first, last);
@@ -240,7 +240,7 @@ static void op_arith (sim_t *sim, int opcode)
       reg_exch (act_reg->a, act_reg->c, first, last);
       break;
     case 0x05:  /* c -> a[f] */
-      reg_copy (act_reg->c, act_reg->a, first, last);
+      reg_copy (act_reg->a, act_reg->c, first, last);
       break;
     case 0x06:  /* b -> c[f] */
       reg_copy (act_reg->c, act_reg->b, first, last);
@@ -267,7 +267,7 @@ static void op_arith (sim_t *sim, int opcode)
 	       & act_reg->carry, arithmetic_base (act_reg));
       break;
     case 0x0c:  /* a + c -> c[f] */
-      reg_add (act_reg->a, act_reg->c, act_reg->c,
+      reg_add (act_reg->c, act_reg->a, act_reg->c,
 	       first, last,
 	       & act_reg->carry, arithmetic_base (act_reg));
       break;
