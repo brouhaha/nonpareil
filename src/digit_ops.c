@@ -118,12 +118,29 @@ void reg_sub (digit_t *dest, digit_t *src1, digit_t *src2,
 
 
 // $$$ if in decimal mode, do illegal digits get normalized?
+void reg_test_equal    (digit_t *src1, digit_t *src2,
+			int first, int last,
+			bool *carry)
+{
+  int i;
+
+  *carry = true;
+  for (i = first; i <= last; i++)
+    {
+      int s2 = src2 ? src2 [i] : 0;
+      (*carry) &= (src1 [i] == s2);
+    }
+}
+
+
+// $$$ if in decimal mode, do illegal digits get normalized?
 void reg_test_nonequal (digit_t *src1, digit_t *src2,
 			int first, int last,
 			bool *carry)
 {
   int i;
 
+  *carry = false;
   for (i = first; i <= last; i++)
     {
       int s2 = src2 ? src2 [i] : 0;
