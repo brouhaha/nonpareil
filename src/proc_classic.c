@@ -140,7 +140,7 @@ static void op_arith (sim_t *sim, int opcode)
       first =  cpu_reg->p; last =  cpu_reg->p;
       if (cpu_reg->p >= WSIZE)
 	{
-	  printf ("Warning! p > WSIZE at %02o%03o\n",
+	  printf ("Warning! p >= WSIZE at %02o%03o\n",
 		  cpu_reg->prev_pc >> 8, cpu_reg->prev_pc & 0377);
 	  last = 0;  /* don't do anything */
 	}
@@ -150,11 +150,11 @@ static void op_arith (sim_t *sim, int opcode)
     case 3:  /* w  */  first = 0;            last = WSIZE - 1;   break;
     case 4:  /* wp */
       first =  0; last =  cpu_reg->p;
-      if (cpu_reg->p > 13)
+      if (cpu_reg->p >= WSIZE)
 	{
 	  printf ("Warning! p >= WSIZE at %02o%03o\n",
 		  cpu_reg->prev_pc >> 8, cpu_reg->prev_pc & 0377);
-	  last = 13;
+	  last = WSIZE - 1;
 	}
       break;
     case 5:  /* ms */  first =  EXPSIZE;     last = WSIZE - 1;   break;
@@ -788,7 +788,7 @@ static void print_reg (char *label, reg_t reg)
 {
   int i;
   printf ("%s", label);
-  for (i = 13; i >= 0; i--)
+  for (i = WSIZE - 1; i >= 0; i--)
     printf ("%x", reg [i]);
   printf ("\n");
 }

@@ -209,7 +209,7 @@ static void op_arith (sim_t *sim, int opcode)
 	{
 	  printf ("Warning! p >= WSIZE at %05o\n", act_reg->prev_pc);
 	  woodstock_print_state (sim);
-	  last = 13;
+	  last = WSIZE - 1;
 	}
       break;
     case 2:  /* xs */  first = EXPSIZE - 1; last = EXPSIZE - 1; break;
@@ -871,7 +871,7 @@ static void op_set_p (sim_t *sim, int opcode)
   act_reg_t *act_reg = sim->chip_data [0];
 
   act_reg->p = p_set_map [opcode >> 6];
-  if (act_reg->p >= 14)
+  if (act_reg->p >= WSIZE)
     printf ("invalid set p, operand encoding is %02o\n", opcode > 6);
 }
 
@@ -1203,7 +1203,7 @@ static void print_reg (char *label, reg_t reg)
 {
   int i;
   printf ("%s", label);
-  for (i = 13; i >= 0; i--)
+  for (i = WSIZE - 1; i >= 0; i--)
     printf ("%x", reg [i]);
   printf ("\n");
 }
