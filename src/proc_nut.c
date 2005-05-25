@@ -199,17 +199,17 @@ static void op_arith (sim_t *sim, int opcode)
 
   switch (field)
     {
-    case 0:  /* p  */  first = *pt (nut_reg);  last = *pt (nut_reg);   break;
-    case 1:  /* x  */  first = 0;               last = 2;                break;
-    case 2:  /* wp */  first = 0;               last = *pt (nut_reg);   break;
-    case 3:  /* w  */  first = 0;               last = WSIZE - 1;        break;
+    case 0:  /* p  */  first = *pt (nut_reg);  last = *pt (nut_reg);  break;
+    case 1:  /* x  */  first = 0;              last = EXPSIZE - 1;    break;
+    case 2:  /* wp */  first = 0;              last = *pt (nut_reg);  break;
+    case 3:  /* w  */  first = 0;              last = WSIZE - 1;      break;
     case 4:  /* pq */  first = nut_reg->p;     last = nut_reg->q;
       if (first > last)
 	last = WSIZE - 1;
       break;
-    case 5:  /* xs */  first = 2;               last =  2;              break;
-    case 6:  /* m  */  first = 3;               last = WSIZE - 2;       break;
-    case 7:  /* s  */  first = WSIZE - 1;       last = WSIZE - 1;       break;
+    case 5:  /* xs */  first = EXPSIZE - 1;    last = EXPSIZE - 1;    break;
+    case 6:  /* m  */  first = EXPSIZE;        last = WSIZE - 2;      break;
+    case 7:  /* s  */  first = WSIZE - 1;      last = WSIZE - 1;      break;
     }
 
   nut_reg->prev_tef_last = last;

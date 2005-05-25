@@ -145,9 +145,9 @@ static void op_arith (sim_t *sim, int opcode)
 	  last = 0;  /* don't do anything */
 	}
       break;
-    case 1:  /* m  */  first =  3; last = 12; break;
-    case 2:  /* x  */  first =  0; last =  2; break;
-    case 3:  /* w  */  first =  0; last = 13; break;
+    case 1:  /* m  */  first = EXPSIZE;      last = WSIZE - 2;   break;
+    case 2:  /* x  */  first = 0;            last = EXPSIZE - 1; break;
+    case 3:  /* w  */  first = 0;            last = WSIZE - 1;   break;
     case 4:  /* wp */
       first =  0; last =  cpu_reg->p;
       if (cpu_reg->p > 13)
@@ -157,9 +157,9 @@ static void op_arith (sim_t *sim, int opcode)
 	  last = 13;
 	}
       break;
-    case 5:  /* ms */  first =   3; last = 13; break;
-    case 6:  /* xs */  first =   2; last =  2; break;
-    case 7:  /* s  */  first =  13; last = 13; break;
+    case 5:  /* ms */  first =  EXPSIZE;     last = WSIZE - 1;   break;
+    case 6:  /* xs */  first =  EXPSIZE - 1; last = EXPSIZE - 1; break;
+    case 7:  /* s  */  first =  WSIZE - 1;   last = WSIZE - 1;   break;
     }
 
   // Note: carry was set to 0 by classic_execute_instruction before

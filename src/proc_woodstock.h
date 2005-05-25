@@ -21,6 +21,7 @@ MA 02111, USA.
 
 
 #define WSIZE 14
+#define EXPSIZE 3  // two exponent and one exponent sign digit
 
 typedef digit_t reg_t [WSIZE];
 

@@ -195,7 +195,7 @@ static void op_arith (sim_t *sim, int opcode)
   switch (field)
     {
     case 0:  /* p  */
-      first =  act_reg->p; last =  act_reg->p;
+      first = act_reg->p; last = act_reg->p;
       if (act_reg->p >= WSIZE)
 	{
 	  printf ("Warning! p >= WSIZE at %05o\n", act_reg->prev_pc);
@@ -204,20 +204,20 @@ static void op_arith (sim_t *sim, int opcode)
 	}
       break;
     case 1:  /* wp */
-      first =  0; last =  act_reg->p;
-      if (act_reg->p > 13)
+      first = 0; last = act_reg->p;
+      if (act_reg->p >= WSIZE)
 	{
 	  printf ("Warning! p >= WSIZE at %05o\n", act_reg->prev_pc);
 	  woodstock_print_state (sim);
 	  last = 13;
 	}
       break;
-    case 2:  /* xs */  first =  2; last =  2; break;
-    case 3:  /* x  */  first =  0; last =  2; break;
-    case 4:  /* s  */  first = 13; last = 13; break;
-    case 5:  /* m  */  first =  3; last = 12; break;
-    case 6:  /* w  */  first =  0; last = 13; break;
-    case 7:  /* ms */  first =  3; last = 13; break;
+    case 2:  /* xs */  first = EXPSIZE - 1; last = EXPSIZE - 1; break;
+    case 3:  /* x  */  first = 0;           last = EXPSIZE - 1; break;
+    case 4:  /* s  */  first = WSIZE - 1;   last = WSIZE - 1;   break;
+    case 5:  /* m  */  first = EXPSIZE;     last = WSIZE - 2;   break;
+    case 6:  /* w  */  first = 0;           last = WSIZE - 1;   break;
+    case 7:  /* ms */  first = EXPSIZE;     last = WSIZE - 1;   break;
     }
 
   act_reg->carry = 0;
