@@ -75,7 +75,7 @@ static reg_detail_t nut_cpu_reg_detail [] =
   // key_buf
   {{ "pf_addr",   8,  1, 16 }, OFFSET_OF (nut_reg_t, pf_addr),  NULL, NULL, 0 },
   {{ "ram_addr", 10,  1, 16 }, OFFSET_OF (nut_reg_t, ram_addr), NULL, NULL, 0 },
-  {{ "active_bank", 2, MAX_PAGE, 16 }, OFFSET_OF (nut_reg_t, active_bank), NULL, NULL, 0 },
+  {{ "active_bank", 2, MAX_PAGE, 16 }, OFFSET_OF (nut_reg_t, active_bank_number), NULL, NULL, 0 },
 };
 
 
@@ -106,10 +106,35 @@ static int itmap [WSIZE] =
 static rom_word_t nut_get_ucode (nut_reg_t *nut_reg, rom_addr_t addr)
 {
   uint8_t page = addr / PAGE_SIZE;
+  uint8_t bank = nut_reg->active_bank_number [page];
+  uint16_t offset = addr & (PAGE_SIZE - 1);
 
-  // $$$ check for non-existent memory?
+  if (nut_reg->rom [page][bank])
+    return nut_reg->rom [page][bank][offset];
+  else
+     return 0;  // non-existent memory
+}
 
-  return nut_reg->rom [nut_reg->active_bank [page] * (MAX_PAGE * PAGE_SIZE) + addr];
+
+static void nut_set_ucode (nut_reg_t *nut_reg,
+			   rom_addr_t addr,
+			   rom_word_t data)
+{
+  uint8_t page = addr / PAGE_SIZE;
+  uint8_t bank = nut_reg->active_bank_number [page];
+  uint16_t offset = addr & (PAGE_SIZE - 1);
+
+  if (! nut_reg->rom [page][bank])
+    {
+      fprintf (stderr, "write to nonexistent ROM location %04x (bank %d)\n", addr, bank);
+      return;
+    }
+  if (! nut_reg->rom_writeable [page][bank])
+    {
+      fprintf (stderr, "write to non-writeable ROM location %04x (bank %d)\n", addr, bank);
+      return;
+    }
+  nut_reg->rom [page][bank][offset] = data;
 }
 
 
@@ -120,22 +145,18 @@ static bool nut_read_rom (sim_t      *sim,
 {
   nut_reg_t *nut_reg = sim->chip_data [0];
   uint8_t page;
-  uint32_t rom_index;
+  uint16_t offset;
 
-  if (addr >= (MAX_PAGE * PAGE_SIZE))
+  if ((addr >= (MAX_PAGE * PAGE_SIZE)) || (bank > MAX_BANK))
     return false;
 
   page = addr / PAGE_SIZE;
+  offset = addr & (PAGE_SIZE - 1);
 
-  if (! (nut_reg->bank_exists [page] & (1 << bank)))
+  if (! nut_reg->rom [page][bank])
     return false;
 
-  rom_index = bank * (MAX_PAGE * PAGE_SIZE) + addr;
-
-  if (! nut_reg->rom_exists [rom_index])
-    return false;
-
-  *val = nut_reg->rom [rom_index];
+  *val = nut_reg->rom [page][bank][offset];
   return true;
 }
 
@@ -147,20 +168,22 @@ static bool nut_write_rom (sim_t      *sim,
 {
   nut_reg_t *nut_reg = sim->chip_data [0];
   uint8_t page;
-  uint32_t rom_index;
+  uint16_t offset;
 
-  if (addr >= (MAX_PAGE * PAGE_SIZE))
+  if ((addr >= (MAX_PAGE * PAGE_SIZE)) || (bank > MAX_BANK))
     return false;
 
   page = addr / PAGE_SIZE;
+  offset = addr & (PAGE_SIZE - 1);
 
-  nut_reg->bank_exists [page] |= (1 << bank);
+  if (! nut_reg->rom [page][bank])  // does the page/bank exist?
+    {
+      // no, allocate a new page
+      nut_reg->rom [page][bank] = alloc (PAGE_SIZE * sizeof (rom_word_t));
+      nut_reg->rom_breakpoint [page][bank] = alloc (PAGE_SIZE * sizeof (bool));
+    }
 
-  rom_index = bank * (MAX_PAGE * PAGE_SIZE) + addr;
-
-  nut_reg->rom_exists [rom_index] = true;
-  nut_reg->rom [rom_index] = *val;
-
+  nut_reg->rom [page][bank][offset] = *val;
   return true;
 }
 
@@ -538,8 +561,8 @@ static void select_bank (sim_t *sim, rom_addr_t addr, uint8_t bank)
   nut_reg_t *nut_reg = sim->chip_data [0];
   uint8_t page = addr / PAGE_SIZE;
 
-  if (nut_reg->bank_exists [page] & (1 << bank))
-    nut_reg->active_bank [page] = bank;
+  if (nut_reg->rom [page][bank])
+    nut_reg->active_bank_number [page] = bank;
 }
 
 
@@ -1557,7 +1580,7 @@ static void nut_reset (sim_t *sim)
   nut_reg->q_sel = false;
 
   for (i = 0; i < MAX_PAGE; i++)
-    nut_reg->active_bank [i] = 0;
+    nut_reg->active_bank_number [i] = 0;
 
   /* wake from deep sleep */
   nut_reg->awake = true;
@@ -1622,14 +1645,7 @@ static void nut_new_rom_addr_space (sim_t *sim,
 				    int max_page,
 				    int page_size)
 {
-  nut_reg_t *nut_reg = sim->chip_data [0];
-  size_t max_words;
-
-  max_words = max_bank * max_page * page_size;
-
-  nut_reg->rom = alloc (max_words * sizeof (rom_word_t));
-  nut_reg->rom_exists = alloc (max_words * sizeof (bool));
-  nut_reg->rom_breakpoint = alloc (max_words * sizeof (bool));
+  ;
 }
 
 

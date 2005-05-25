@@ -273,11 +273,10 @@ static bool sim_read_mod1_file (sim_t *sim, FILE *f)
 bool sim_read_object_file (sim_t *sim, char *fn)
 {
   FILE *f;
-  int bank, i;
+  int bank;
   int addr;  // should change to addr_t, but will have to change
              // the parse function profiles to match.
   rom_word_t opcode;
-  rom_word_t old_opcode;
   int count = 0;
   char buf [80];
   char magic [4];
@@ -313,14 +312,6 @@ bool sim_read_object_file (sim_t *sim, char *fn)
 	continue;
       if (sim->proc->parse_object_line (buf, & bank, & addr, & opcode))
 	{
-	  i = bank * sim->proc->max_rom + addr;
-	  if (sim_read_rom (sim, bank, addr, & old_opcode))
-	    {
-	      fprintf (stderr, "duplicate object code for bank %d address %o\n",
-		       bank, addr);
-	      // fprintf (stderr, "orig: %s\n", sim->source [i]);
-	      fprintf (stderr, "dup:  %s\n", buf);
-	    }
 	  if (! sim_write_rom (sim, bank, addr, & opcode))
 	    fatal (3, "can't load ROM word at bank %d address %o\n", bank, addr);
 	  count++;

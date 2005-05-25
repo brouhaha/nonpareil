@@ -98,11 +98,11 @@ typedef struct nut_reg_t
   void (* op_fcn [1024])(struct sim_t *sim, int opcode);
 
   // ROM:
-  uint8_t bank_exists [MAX_PAGE];  // bitmap
-  uint8_t active_bank [MAX_PAGE];  // bank number from 0..MAX_BANK-1
-  rom_word_t *rom;
-  bool *rom_exists;
-  bool *rom_breakpoint;
+  uint8_t active_bank_number [MAX_PAGE];  // bank number from 0..MAX_BANK-1
+  bool rom_writeable [MAX_PAGE][MAX_BANK];
+  rom_word_t *rom [MAX_PAGE][MAX_BANK];
+  bool *rom_breakpoint [MAX_PAGE][MAX_BANK];
+  // source_code_line_info_t *source_code_line_info [MAX_PAGE][MAX_BANK];
 
   // RAM:
   uint16_t ram_addr;  // selected RAM address
