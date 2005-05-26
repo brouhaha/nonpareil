@@ -18,7 +18,7 @@
 # Boston, MA 02111, USA.
 
 global
-	title "HP-41C Programmable Scientific Calculator"
+	title "HP-41CV Programmable Scientific Calculator"
 	author "Eric Smith <eric@brouhaha.com>"
 	hardware "Coconut"
 	model "41CV"
