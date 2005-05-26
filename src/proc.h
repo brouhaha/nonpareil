@@ -163,9 +163,9 @@ int sim_find_register (sim_t *sim,
 
 
 // returns NULL if reg_num out of range
-reg_info_t *sim_get_register_info (sim_t *sim,
-				   int   chip_num,
-				   int   reg_num);  // 0 and up
+const reg_info_t *sim_get_register_info (sim_t *sim,
+					 int   chip_num,
+					 int   reg_num);  // 0 and up
 
 // returns false if reg_num or index out of range
 bool sim_read_register (sim_t   *sim,

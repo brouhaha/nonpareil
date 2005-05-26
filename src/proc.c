@@ -388,8 +388,8 @@ static void send_cmd_to_sim_thread (sim_t *sim, gpointer msg)
 
 static void cmd_read_register (sim_t *sim, sim_msg_t *msg)
 {
-  chip_detail_t *chip_detail;
-  reg_detail_t *reg_detail;
+  const chip_detail_t *chip_detail;
+  const reg_detail_t *reg_detail;
   size_t size;
   uint8_t *addr;
   uint64_t *result_val;
@@ -434,8 +434,8 @@ static void cmd_read_register (sim_t *sim, sim_msg_t *msg)
 
 static void cmd_write_register (sim_t *sim, sim_msg_t *msg)
 {
-  chip_detail_t *chip_detail;
-  reg_detail_t *reg_detail;
+  const chip_detail_t *chip_detail;
+  const reg_detail_t *reg_detail;
   size_t size;
   uint8_t *addr;
   uint64_t *source_val;
@@ -914,7 +914,7 @@ int sim_get_max_chip_count (sim_t *sim)
 chip_info_t *sim_get_chip_info (sim_t *sim,
 				int   chip_num)
 {
-  chip_detail_t *chip_detail;
+  const chip_detail_t *chip_detail;
 
   if (chip_num >= sim->proc->max_chip_count)
     return NULL;
@@ -927,7 +927,7 @@ chip_info_t *sim_get_chip_info (sim_t *sim,
 
 int sim_get_reg_count (sim_t *sim, int chip_num)
 {
-  chip_detail_t *chip_detail;
+  const chip_detail_t *chip_detail;
 
   if (chip_num >= sim->proc->max_chip_count)
     return 0;
@@ -945,7 +945,7 @@ int sim_find_register (sim_t *sim,
 		       char  *name)
 {
   int reg_num;
-  chip_detail_t *chip_detail;
+  const chip_detail_t *chip_detail;
 
   if (chip_num >= sim->proc->max_chip_count)
     return -1;
@@ -964,11 +964,11 @@ int sim_find_register (sim_t *sim,
 }
 
 
-reg_info_t *sim_get_register_info (sim_t *sim,
-				   int   chip_num,
-				   int   reg_num)
+const reg_info_t *sim_get_register_info (sim_t *sim,
+					 int   chip_num,
+					 int   reg_num)
 {
-  chip_detail_t *chip_detail;
+  const chip_detail_t *chip_detail;
 
   if (chip_num >= sim->proc->max_chip_count)
     return 0;
@@ -991,7 +991,7 @@ bool sim_read_register (sim_t   *sim,
 			uint64_t *val)
 {
   sim_msg_t msg;
-  chip_detail_t *chip_detail;
+  const chip_detail_t *chip_detail;
 
   if (chip_num >= sim->proc->max_chip_count)
     return false;
@@ -1021,7 +1021,7 @@ bool sim_write_register (sim_t   *sim,
 			 uint64_t *val)
 {
   sim_msg_t msg;
-  chip_detail_t *chip_detail;
+  const chip_detail_t *chip_detail;
 
   if (chip_num >= sim->proc->max_chip_count)
     return false;
@@ -1310,7 +1310,7 @@ bool set_bools (void *data, uint64_t *p, int arg)
 
 int install_chip (sim_t *sim,
 		  int chip_num,
-		  chip_detail_t *chip_detail,
+		  const chip_detail_t *chip_detail,
 		  void *chip_data)
 {
   if (chip_num < 0)

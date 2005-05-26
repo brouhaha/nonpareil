@@ -58,7 +58,7 @@ typedef struct chip_detail_t
 {
   chip_info_t          info;
   int                  reg_count;
-  reg_detail_t         *reg_detail;
+  const reg_detail_t   *reg_detail;
   chip_event_fn_t      *chip_event_fn;
 } chip_detail_t;
 
@@ -121,7 +121,7 @@ typedef struct sim_thread_vars_t sim_thread_vars_t;
 
 struct sim_t
 {
-  chip_detail_t **chip_detail;   // array [max_chip_count]
+  const chip_detail_t **chip_detail;   // array [max_chip_count]
   void **chip_data;         // array [max_chip_count]
 
   bool quit_flag;
@@ -169,7 +169,7 @@ struct sim_t
 // Return value is actual chip_num, or negative if error.
 int install_chip (sim_t *sim,
 		  int chip_num,
-		  chip_detail_t *chip_detail,
+		  const chip_detail_t *chip_detail,
 		  void *chip_data);
 
 bool remove_chip (sim_t *sim,

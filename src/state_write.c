@@ -172,7 +172,7 @@ static void write_registers (sim_t *sim, int chip, xmlTextWriterPtr writer)
   int reg_count;
   int reg_num;
   int index;
-  reg_info_t *reg_info;
+  const reg_info_t *reg_info;
   uint64_t val;
   int digits;
 
