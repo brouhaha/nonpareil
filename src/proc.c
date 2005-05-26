@@ -911,8 +911,8 @@ int sim_get_max_chip_count (sim_t *sim)
 }
 
 
-chip_info_t *sim_get_chip_info (sim_t *sim,
-				int   chip_num)
+const chip_info_t *sim_get_chip_info (sim_t *sim,
+				      int   chip_num)
 {
   const chip_detail_t *chip_detail;
 
@@ -1336,7 +1336,6 @@ bool remove_chip (sim_t *sim,
   if (! sim->chip_detail [chip_num])
     return false;
 
-  free (sim->chip_detail [chip_num]);
   sim->chip_detail [chip_num] = NULL;
 
   free (sim->chip_data [chip_num]);

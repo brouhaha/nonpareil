@@ -147,8 +147,8 @@ int sim_get_max_chip_count (sim_t *sim);
 
 
 // Returns NULL if specified chip_num doesn't exist.
-chip_info_t *sim_get_chip_info (sim_t *sim,
-				int   chip_num);
+const chip_info_t *sim_get_chip_info (sim_t *sim,
+				      int   chip_num);
 
 
 
