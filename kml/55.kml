@@ -1,5 +1,5 @@
 # $Id$
-# Copyright 2004 Eric L. Smith <eric@brouhaha.com>
+# Copyright 2004, 2005 Eric L. Smith <eric@brouhaha.com>
 
 # Nonpareil is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License version 2 as
@@ -18,13 +18,13 @@
 # Boston, MA 02111, USA.
 
 global
-	title "HP-55 Programmable Scientific Calculator"
+	title "55 Programmable Scientific Calculator"
 	author "Eric Smith <eric@brouhaha.com>"
 	hardware "Classic"
 	model "55"
-	rom "hp55.obj"
-	listing "hp55.lst"
-	image "hp55.png"
+	rom "55.obj"
+	listing "55.lst"
+	image "55.png"
 	color 0 81 21 109	  # background color, used when transparency is off
 	transparency 128
 end

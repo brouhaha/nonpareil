@@ -18,12 +18,12 @@
 # Boston, MA 02111, USA.
 
 global
-	title "HP-15C Scientific Calculator"
+	title "15C Scientific Calculator"
 	author "Eric Smith <eric@brouhaha.com>"
 	hardware "Voyager"
-	model "15C"
-	rom "hp15c.obj"
-	image "hp15c.png"
+	model "15c"
+	rom "15c.obj"
+	image "15c.png"
 	color 0 137 0 6	  # background color, used when transparency is off
 	# transparency 128
 end

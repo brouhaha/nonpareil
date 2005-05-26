@@ -1,7 +1,7 @@
 # $Id$
 # Copyright 2005 Eric L. Smith <eric@brouhaha.com>
 
-# Contents of HP-67 ROM part numbers:
+# Contents of 67 ROM part numbers:
 #     1818-0268 (addresses 0000-1777) ROM/anode driver - replaced 1818-0227
 #     1818-0228 (addresses 2000-3777 bank 0) ROM/RAM - replaced by 1818-0550
 #     1818-0231 (addresses 2000-3777 bank 1) ROM/RAM

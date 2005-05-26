@@ -18,13 +18,13 @@
 # Boston, MA 02111, USA.
 
 global
-	title "HP-41CV Programmable Scientific Calculator"
+	title "41CV Programmable Scientific Calculator"
 	author "Eric Smith <eric@brouhaha.com>"
 	hardware "Coconut"
-	model "41CV"
-	rom "hp41cv.mod"
-#	listing "hp41c.lst"
-	image "hp41cv.png"
+	model "41cv"
+	rom "41cv.mod"
+#	listing "41c.lst"
+	image "41cv.png"
 	color 0 137 0 6	  # background color, used when transparency is off
 end
 

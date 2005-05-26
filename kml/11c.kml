@@ -1,4 +1,4 @@
-# $Id$ hp15c.kml 604 2005-05-13 19:57:56Z eric $
+# $Id$
 # Copyright 2004, 2005 Eric L. Smith <eric@brouhaha.com>
 
 # Nonpareil is free software; you can redistribute it and/or modify it
@@ -18,12 +18,12 @@
 # Boston, MA 02111, USA.
 
 global
-	title "HP-11C Scientific Calculator"
+	title "11C Scientific Calculator"
 	author "Eric Smith <eric@brouhaha.com>"
 	hardware "Voyager"
-	model "11C"
-	rom "hp11c.obj"
-	image "hp11c.png"
+	model "11c"
+	rom "11c.obj"
+	image "11c.png"
 	color 0 137 0 6	  # background color, used when transparency is off
 	# transparency 128
 end

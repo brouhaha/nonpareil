@@ -18,13 +18,13 @@
 # Boston, MA 02111, USA.
 
 global
-	title "HP-41CX Programmable Scientific Calculator"
+	title "41CX Programmable Scientific Calculator"
 	author "Eric Smith <eric@brouhaha.com>"
 	hardware "Coconut"
-	model "41CX"
-	rom "hp41cx.mod"
-#	listing "hp41c.lst"
-	image "hp41cv.png"
+	model "41cx"
+	rom "41cx.mod"
+#	listing "41cx.lst"
+	image "41cv.png"
 	color 0 137 0 6	  # background color, used when transparency is off
 end
 

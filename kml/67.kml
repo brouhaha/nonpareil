@@ -18,12 +18,12 @@
 # Boston, MA 02111, USA.
 
 global
-	title "HP-67 Magnetic Card Programmable Scientific Calculator"
+	title "67 Magnetic Card Programmable Scientific Calculator"
 	author "Eric Smith <eric@brouhaha.com>"
 	hardware "Woodstock"
 	model "67"
-	rom "hp67.obj"
-	image "hp67.png"
+	rom "67.obj"
+	image "67.png"
 	color 0 81 21 109	  # background color, used when transparency is off
 #	transparency 128
 end

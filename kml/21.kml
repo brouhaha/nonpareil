@@ -18,12 +18,12 @@
 # Boston, MA 02111, USA.
 
 global
-	title "HP-21 Scientific Calculator"
+	title "21 Scientific Calculator"
 	author "Eric Smith <eric@brouhaha.com>"
 	hardware "Woodstock"
 	model "21"
-	rom "hp21.obj"
-	image "hp21.png"
+	rom "21.obj"
+	image "21.png"
 	color 0 87 127 152  # background color, used when transparency is off
 	transparency 128
 end

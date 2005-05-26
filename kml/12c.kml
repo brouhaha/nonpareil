@@ -18,12 +18,12 @@
 # Boston, MA 02111, USA.
 
 global
-	title "HP-12C Financial Calculator"
+	title "12C Financial Calculator"
 	author "Eric Smith <eric@brouhaha.com>"
 	hardware "Voyager"
-	model "12C"
-	rom "hp12c.obj"
-	image "hp12c.png"
+	model "12c"
+	rom "12c.obj"
+	image "12c.png"
 	color 0 137 0 6	  # background color, used when transparency is off
 	# transparency 128
 end

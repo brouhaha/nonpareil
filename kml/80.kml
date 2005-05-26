@@ -1,5 +1,5 @@
 # $Id$
-# Copyright 2004 Eric L. Smith <eric@brouhaha.com>
+# Copyright 2004, 2005 Eric L. Smith <eric@brouhaha.com>
 
 # Nonpareil is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License version 2 as
@@ -18,13 +18,13 @@
 # Boston, MA 02111, USA.
 
 global
-	title "HP-80 Business Calculator"
+	title "80 Business Calculator"
 	author "Eric Smith <eric@brouhaha.com>"
 	hardware "Classic"
 	model "80"
-	rom "hp80.obj"
-	listing "hp80.lst"
-	image "hp80.png"
+	rom "80.obj"
+	listing "80.lst"
+	image "80.png"
 	color 0 67 33 119	  # background color, used when transparency is off
 	transparency 128
 end

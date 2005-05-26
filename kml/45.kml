@@ -1,5 +1,5 @@
 # $Id$
-# Copyright 2004 Eric L. Smith <eric@brouhaha.com>
+# Copyright 2004, 2005 Eric L. Smith <eric@brouhaha.com>
 
 # Nonpareil is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License version 2 as
@@ -18,13 +18,13 @@
 # Boston, MA 02111, USA.
 
 global
-	title "HP-45 Advanced Scientific Calculator"
+	title "45 Advanced Scientific Calculator"
 	author "Eric Smith <eric@brouhaha.com>"
 	hardware "Classic"
 	model "45"
-	rom "hp45.obj"
-	listing "hp45.lst"
-	image "hp45.png"
+	rom "45.obj"
+	listing "45.lst"
+	image "45.png"
 	color 0 137 0 6	  # background color, used when transparency is off
 	transparency 128
 end
@@ -90,7 +90,7 @@ button 34  type 0  size 32 24  offset 176 248  down 2 8  keycode 012  end
 button 35  type 0  size 32 24  offset 219 248  down 2 8  keycode 010  end
 
 # Button 41 normally generates the keycode 076.  If the keycode is changed
-# to 074, the undocumented HP-45 timer mode may be used by pressing the
+# to 074, the undocumented timer mode may be used by pressing the
 # sequence RCL ENTER^.
 button 41  type 0  size 74 24  offset  48 293  down 2 8  keycode 076  end
 button 42  type 0  size 32 24  offset 134 293  down 2 8  keycode 073  end
