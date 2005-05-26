@@ -33,8 +33,6 @@ typedef digit_t reg_t [WSIZE];
 #define MAX_PAGE 16
 #define MAX_BANK 4
 
-#define MAX_CHIP_COUNT 256
-
 
 typedef uint16_t rom_addr_t;
 
@@ -119,4 +117,7 @@ typedef struct nut_reg_t
   void (* rd_n_fcn [256])(struct sim_t *sim, int n);
   void (* wr_n_fcn [256])(struct sim_t *sim, int n);
   void (* wr_fcn   [256])(struct sim_t *sim);
+
+  chip_handle_t *display_chip;  // opaque
+  chip_handle_t *phineas_chip;  // opaque
 } nut_reg_t;

@@ -36,6 +36,9 @@ MA 02111, USA.
 
 typedef struct
 {
+  uint8_t pfaddr;
+  uint8_t pfaddr_halfnut;
+
   bool enable;
   int count;
 
@@ -82,7 +85,8 @@ static reg_detail_t coconut_display_reg_detail [] =
 
 static void coconut_op_display_off (sim_t *sim, int opcode)
 {
-  coconut_display_reg_t *display = sim->chip_data [PFADDR_LCD_DISPLAY];
+  nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
+  coconut_display_reg_t *display = get_chip_data (nut_reg->display_chip);
 
   display->enable = false;
   display->count = 2;
@@ -93,7 +97,8 @@ static void coconut_op_display_off (sim_t *sim, int opcode)
 
 static void coconut_op_display_toggle (sim_t *sim, int opcode)
 {
-  coconut_display_reg_t *display = sim->chip_data [PFADDR_LCD_DISPLAY];
+  nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
+  coconut_display_reg_t *display = get_chip_data (nut_reg->display_chip);
 
   display->enable = ! display->enable;
   display->count = 0;  // force immediate display update
@@ -216,8 +221,8 @@ static void coconut_lcd_wr_ann (nut_reg_t *nut_reg, coconut_display_reg_t *displ
 
 static void coconut_lcd_rd_n (sim_t *sim, int n)
 {
-  nut_reg_t *nut_reg = sim->chip_data [0];
-  coconut_display_reg_t *display = sim->chip_data [PFADDR_LCD_DISPLAY];
+  nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
+  coconut_display_reg_t *display = get_chip_data (nut_reg->display_chip);
 
   switch (n)
     {
@@ -242,8 +247,8 @@ static void coconut_lcd_rd_n (sim_t *sim, int n)
 
 static void coconut_lcd_wr_n (sim_t *sim, int n)
 {
-  nut_reg_t *nut_reg = sim->chip_data [0];
-  coconut_display_reg_t *display = sim->chip_data [PFADDR_LCD_DISPLAY];
+  nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
+  coconut_display_reg_t *display = get_chip_data (nut_reg->display_chip);
 
   switch (n)
     {
@@ -268,8 +273,8 @@ static void coconut_lcd_wr_n (sim_t *sim, int n)
 
 static void coconut_lcd_wr (sim_t *sim)
 {
-  nut_reg_t *nut_reg = sim->chip_data [0];
-  coconut_display_reg_t *display = sim->chip_data [PFADDR_LCD_DISPLAY];
+  nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
+  coconut_display_reg_t *display = get_chip_data (nut_reg->display_chip);
 
   coconut_lcd_wr_ann (nut_reg, display);
 }
@@ -289,7 +294,8 @@ static void halfnut_lcd_wr (sim_t *sim)
 
 static void coconut_display_init_ops (sim_t *sim)
 {
-  nut_reg_t *nut_reg = sim->chip_data [0];
+  nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
+
   sim->display_digits = COCONUT_DISPLAY_DIGITS;
   nut_reg->op_fcn [0x2e0] = coconut_op_display_off;
   nut_reg->op_fcn [0x320] = coconut_op_display_toggle;
@@ -304,7 +310,7 @@ static chip_detail_t coconut_display_chip_detail =
 {
   {
     "Coconut LCD",
-    PFADDR_LCD_DISPLAY
+    false  // There can only be one set of LCD drivers on the bus.
   },
   sizeof (coconut_display_reg_detail) / sizeof (reg_detail_t),
   coconut_display_reg_detail,
@@ -312,9 +318,8 @@ static chip_detail_t coconut_display_chip_detail =
 };
 
 
-static void coconut_display_reset (sim_t *sim)
+static void coconut_display_reset (coconut_display_reg_t *display)
 {
-  coconut_display_reg_t *display = sim->chip_data [PFADDR_LCD_DISPLAY];
   int i;
 
   display->enable = false;
@@ -331,9 +336,9 @@ static void coconut_display_reset (sim_t *sim)
 }
 
 
-static void coconut_display_update (sim_t *sim)
+static void coconut_display_update (sim_t *sim,
+				    coconut_display_reg_t *display)
 {
-  coconut_display_reg_t *display = sim->chip_data [PFADDR_LCD_DISPLAY];
   int i;
   int j = 0;
 
@@ -362,20 +367,20 @@ static void coconut_display_update (sim_t *sim)
 }
 
 
-static void coconut_display_event_fn (sim_t *sim, int chip_num, int event)
+static void coconut_display_event_fn (sim_t *sim, chip_handle_t *chip_handle, int event)
 {
-  nut_reg_t *nut_reg = sim->chip_data [0];
-  coconut_display_reg_t *display = sim->chip_data [PFADDR_LCD_DISPLAY];
+  nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
+  coconut_display_reg_t *display = get_chip_data (nut_reg->display_chip);
 
   switch (event)
     {
     case event_reset:
-       coconut_display_reset (sim);
+       coconut_display_reset (display);
        break;
     case event_cycle:
       if (display->count == 0)
 	{
-	  coconut_display_update (sim);
+	  coconut_display_update (sim, display);
 	  gui_display_update (sim);
 	  display->count = 15;
 	}
@@ -384,7 +389,7 @@ static void coconut_display_event_fn (sim_t *sim, int chip_num, int event)
       break;
     case event_sleep:
       // force display update
-      coconut_display_update (sim);
+      coconut_display_update (sim, display);
       gui_display_update (sim);
       display->count = 15;
 
@@ -404,7 +409,7 @@ static void coconut_display_event_fn (sim_t *sim, int chip_num, int event)
     case event_wake:
     case event_restore_completed:
       // force display update
-      coconut_display_update (sim);
+      coconut_display_update (sim, display);
       gui_display_update (sim);
       display->count = 15;
       break;
@@ -417,24 +422,27 @@ static void coconut_display_event_fn (sim_t *sim, int chip_num, int event)
 
 void coconut_display_init (sim_t *sim)
 {
-  nut_reg_t *nut_reg = sim->chip_data [0];
+  nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
   coconut_display_reg_t *display;
 
   coconut_display_init_ops (sim);
 
   display = alloc (sizeof (coconut_display_reg_t));
-  nut_reg->pf_exists [PFADDR_LCD_DISPLAY] = 1;
-  nut_reg->rd_n_fcn  [PFADDR_LCD_DISPLAY] = & coconut_lcd_rd_n;
-  nut_reg->wr_n_fcn  [PFADDR_LCD_DISPLAY] = & coconut_lcd_wr_n;
-  nut_reg->wr_fcn    [PFADDR_LCD_DISPLAY] = & coconut_lcd_wr;
 
-  install_chip (sim,
-		PFADDR_LCD_DISPLAY, 
-		& coconut_display_chip_detail,
-		display);
+  display->pfaddr         = PFADDR_LCD_DISPLAY;
+  display->pfaddr_halfnut = PFADDR_HALFNUT;
 
-  nut_reg->pf_exists [PFADDR_HALFNUT] = 1;
-  nut_reg->rd_n_fcn  [PFADDR_HALFNUT] = & halfnut_lcd_rd_n;
-  nut_reg->wr_n_fcn  [PFADDR_HALFNUT] = & halfnut_lcd_wr_n;
-  nut_reg->wr_fcn    [PFADDR_HALFNUT] = & halfnut_lcd_wr;
+  nut_reg->pf_exists [display->pfaddr] = 1;
+  nut_reg->rd_n_fcn  [display->pfaddr] = & coconut_lcd_rd_n;
+  nut_reg->wr_n_fcn  [display->pfaddr] = & coconut_lcd_wr_n;
+  nut_reg->wr_fcn    [display->pfaddr] = & coconut_lcd_wr;
+
+  nut_reg->display_chip = install_chip (sim,
+					& coconut_display_chip_detail,
+					display);
+
+  nut_reg->pf_exists [display->pfaddr_halfnut] = 1;
+  nut_reg->rd_n_fcn  [display->pfaddr_halfnut] = & halfnut_lcd_rd_n;
+  nut_reg->wr_n_fcn  [display->pfaddr_halfnut] = & halfnut_lcd_wr_n;
+  nut_reg->wr_fcn    [display->pfaddr_halfnut] = & halfnut_lcd_wr;
 }

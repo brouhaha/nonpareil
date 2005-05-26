@@ -167,26 +167,26 @@ static void write_reg (xmlTextWriterPtr writer,
 }
 
 
-static void write_registers (sim_t *sim, int chip, xmlTextWriterPtr writer)
+static void write_registers (sim_t *sim,
+			     int chip,
+			     int first_reg,
+			     int last_reg,
+			     xmlTextWriterPtr writer)
 {
-  int reg_count;
   int reg_num;
-  int index;
-  const reg_info_t *reg_info;
-  uint64_t val;
-  int digits;
-
-  reg_count = sim_get_reg_count (sim, chip);
-  if (! reg_count)
-    return;
 
   xml_start_element (writer, "registers");
 
-  for (reg_num = 0; reg_num < reg_count; reg_num++)
+  for (reg_num = first_reg; reg_num <= last_reg; reg_num++)
     {
-      reg_info = sim_get_register_info (sim, chip, reg_num);
+      int index;
+      const reg_info_t *reg_info = sim_get_register_info (sim, chip, reg_num);
+
       for (index = 0; index < reg_info->array_element_count; index++)
 	{
+	  uint64_t val;
+	  int digits;
+
 	  if (! sim_read_register (sim, chip, reg_num, index, & val))
 	    fatal (3, "error reading register from sim\n");
 	  digits = (reg_info->element_bits + 3) / 4;
@@ -203,27 +203,57 @@ static void write_registers (sim_t *sim, int chip, xmlTextWriterPtr writer)
 }
 
 
+static void write_chip_address (sim_t *sim,
+				int chip_num,
+				xmlTextWriterPtr writer)
+{
+  const reg_info_t *reg_info;
+  uint64_t val;
+  int digits;
+
+  reg_info = sim_get_register_info (sim, chip_num, 0);
+  if (! reg_info)
+    fatal (3, "error getting chip address from sim\n");
+
+  if (! sim_read_register (sim, chip_num, 0, 0, & val))
+    fatal (3, "error getting chip address from sim\n");
+
+  digits = (reg_info->element_bits + 3) / 4;
+
+  xml_write_attribute_format (writer, "addr", "%0*" PRIx64, digits, val);
+}
+
+
 static void write_chips (sim_t *sim, xmlTextWriterPtr writer)
 {
-  int chip_count;
-  int register_count;
   int chip_num;
 
-  chip_count = sim_get_max_chip_count (sim);
-
-  for (chip_num = 0; chip_num < chip_count; chip_num++)
+  for (chip_num = 0; true; chip_num++)
     {
-      chip_info_t *chip_info;
+      int first_reg = 0;
+      int register_count;
+      const chip_info_t *chip_info;
+
       chip_info = sim_get_chip_info (sim, chip_num);
-      register_count = sim_get_reg_count (sim, chip_num);
-      if (chip_info && register_count)
+      if (! chip_info)
+	break;
+      xml_start_element (writer, "chip");
+      xml_write_attribute_string (writer, "name", chip_info->name);
+
+      if (chip_info->multiple)
 	{
-	  xml_start_element (writer, "chip");
-	  xml_write_attribute_string (writer, "name", chip_info->name);
-	  xml_write_attribute_format (writer, "addr", "%02x", chip_num);
-	  write_registers (sim, chip_num, writer);
-	  xml_end_element (writer);  // chip
+	  write_chip_address (sim, chip_num, writer);
+	  first_reg = 1;
 	}
+
+      register_count = sim_get_reg_count (sim, chip_num);
+      if (register_count)
+	write_registers (sim,
+			 chip_num,
+			 first_reg,
+			 register_count - 1,  // last_reg
+			 writer);
+      xml_end_element (writer);  // chip
     }
 }
 

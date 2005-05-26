@@ -106,7 +106,7 @@ static chip_detail_t woodstock_cpu_chip_detail =
 {
   {
     "ACT",
-    0
+    false  // There can only be one ACT in the calculator.
   },
   sizeof (woodstock_cpu_reg_detail) / sizeof (reg_detail_t),
   woodstock_cpu_reg_detail,
@@ -144,7 +144,7 @@ static bool woodstock_read_rom (sim_t      *sim,
 				addr_t     addr,
 				rom_word_t *val)
 {
-  act_reg_t *act_reg = sim->chip_data [0];
+  act_reg_t *act_reg = get_chip_data (sim->first_chip);
   uint8_t page;
   uint16_t rom_index;
 
@@ -171,7 +171,7 @@ static bool woodstock_write_rom (sim_t      *sim,
 				 addr_t     addr,
 				 rom_word_t *val)
 {
-  act_reg_t *act_reg = sim->chip_data [0];
+  act_reg_t *act_reg = get_chip_data (sim->first_chip);
   uint8_t page;
   uint16_t rom_index;
 
@@ -202,7 +202,7 @@ static void woodstock_print_state (sim_t *sim);
 
 static void bad_op (sim_t *sim, int opcode)
 {
-  act_reg_t *act_reg = sim->chip_data [0];
+  act_reg_t *act_reg = get_chip_data (sim->first_chip);
 
   printf ("illegal opcode %04o at %05o\n", opcode, act_reg->prev_pc);
 }
@@ -210,7 +210,7 @@ static void bad_op (sim_t *sim, int opcode)
 
 static void op_arith (sim_t *sim, int opcode)
 {
-  act_reg_t *act_reg = sim->chip_data [0];
+  act_reg_t *act_reg = get_chip_data (sim->first_chip);
   uint8_t op, field;
   int first = 0;
   int last = 0;
@@ -403,7 +403,7 @@ static void handle_del_rom (act_reg_t *act_reg)
 
 static void op_goto (sim_t *sim, int opcode)
 {
-  act_reg_t *act_reg = sim->chip_data [0];
+  act_reg_t *act_reg = get_chip_data (sim->first_chip);
 
   if (! act_reg->prev_carry)
     {
@@ -415,7 +415,7 @@ static void op_goto (sim_t *sim, int opcode)
 
 static void op_jsb (sim_t *sim, int opcode)
 {
-  act_reg_t *act_reg = sim->chip_data [0];
+  act_reg_t *act_reg = get_chip_data (sim->first_chip);
 
   act_reg->stack [act_reg->sp] = act_reg->pc;
   act_reg->sp++;
@@ -433,7 +433,7 @@ static void op_jsb (sim_t *sim, int opcode)
 
 static void op_return (sim_t *sim, int opcode)
 {
-  act_reg_t *act_reg = sim->chip_data [0];
+  act_reg_t *act_reg = get_chip_data (sim->first_chip);
 
   act_reg->sp--;
   if (act_reg->sp < 0)
@@ -454,7 +454,7 @@ static void op_nop (sim_t *sim, int opcode)
 
 static void op_binary (sim_t *sim, int opcode)
 {
-  act_reg_t *act_reg = sim->chip_data [0];
+  act_reg_t *act_reg = get_chip_data (sim->first_chip);
 
   act_reg->decimal = false;
 }
@@ -462,7 +462,7 @@ static void op_binary (sim_t *sim, int opcode)
 
 static void op_decimal (sim_t *sim, int opcode)
 {
-  act_reg_t *act_reg = sim->chip_data [0];
+  act_reg_t *act_reg = get_chip_data (sim->first_chip);
 
   act_reg->decimal = true;
 }
@@ -473,7 +473,7 @@ static void op_decimal (sim_t *sim, int opcode)
 
 static void op_dec_p (sim_t *sim, int opcode)
 {
-  act_reg_t *act_reg = sim->chip_data [0];
+  act_reg_t *act_reg = get_chip_data (sim->first_chip);
 
   if (act_reg->p)
     act_reg->p--;
@@ -484,7 +484,7 @@ static void op_dec_p (sim_t *sim, int opcode)
 
 static void op_inc_p (sim_t *sim, int opcode)
 {
-  act_reg_t *act_reg = sim->chip_data [0];
+  act_reg_t *act_reg = get_chip_data (sim->first_chip);
 
   act_reg->p++;
   if (act_reg->p >= WSIZE)
@@ -494,7 +494,7 @@ static void op_inc_p (sim_t *sim, int opcode)
 
 static void op_clear_s (sim_t *sim, int opcode)
 {
-  act_reg_t *act_reg = sim->chip_data [0];
+  act_reg_t *act_reg = get_chip_data (sim->first_chip);
   int i;
 
   for (i = 0; i < SSIZE; i++)
@@ -505,7 +505,7 @@ static void op_clear_s (sim_t *sim, int opcode)
 
 static void op_m1_exch_c (sim_t *sim, int opcode)
 {
-  act_reg_t *act_reg = sim->chip_data [0];
+  act_reg_t *act_reg = get_chip_data (sim->first_chip);
 
   reg_exch (act_reg->c, act_reg->m1, 0, WSIZE - 1);
 }
@@ -513,7 +513,7 @@ static void op_m1_exch_c (sim_t *sim, int opcode)
 
 static void op_m1_to_c (sim_t *sim, int opcode)
 {
-  act_reg_t *act_reg = sim->chip_data [0];
+  act_reg_t *act_reg = get_chip_data (sim->first_chip);
 
   reg_copy (act_reg->c, act_reg->m1, 0, WSIZE - 1);
 }
@@ -521,7 +521,7 @@ static void op_m1_to_c (sim_t *sim, int opcode)
 
 static void op_m2_exch_c (sim_t *sim, int opcode)
 {
-  act_reg_t *act_reg = sim->chip_data [0];
+  act_reg_t *act_reg = get_chip_data (sim->first_chip);
 
   reg_exch (act_reg->c, act_reg->m2, 0, WSIZE - 1);
 }
@@ -529,7 +529,7 @@ static void op_m2_exch_c (sim_t *sim, int opcode)
 
 static void op_m2_to_c (sim_t *sim, int opcode)
 {
-  act_reg_t *act_reg = sim->chip_data [0];
+  act_reg_t *act_reg = get_chip_data (sim->first_chip);
 
   reg_copy (act_reg->c, act_reg->m2, 0, WSIZE - 1);
 }
@@ -537,7 +537,7 @@ static void op_m2_to_c (sim_t *sim, int opcode)
 
 static void op_f_to_a (sim_t *sim, int opcode)
 {
-  act_reg_t *act_reg = sim->chip_data [0];
+  act_reg_t *act_reg = get_chip_data (sim->first_chip);
 
   act_reg->a [0] = act_reg->f;
 }
@@ -545,7 +545,7 @@ static void op_f_to_a (sim_t *sim, int opcode)
 
 static void op_f_exch_a (sim_t *sim, int opcode)
 {
-  act_reg_t *act_reg = sim->chip_data [0];
+  act_reg_t *act_reg = get_chip_data (sim->first_chip);
   int t;
 
   t = act_reg->a [0];
@@ -556,7 +556,7 @@ static void op_f_exch_a (sim_t *sim, int opcode)
 
 static void op_circulate_a_left (sim_t *sim, int opcode)
 {
-  act_reg_t *act_reg = sim->chip_data [0];
+  act_reg_t *act_reg = get_chip_data (sim->first_chip);
   int i, t;
 
   t = act_reg->a [WSIZE - 1];
@@ -568,7 +568,7 @@ static void op_circulate_a_left (sim_t *sim, int opcode)
 
 static void op_bank_switch (sim_t *sim, int opcode)
 {
-  act_reg_t *act_reg = sim->chip_data [0];
+  act_reg_t *act_reg = get_chip_data (sim->first_chip);
 
   act_reg->bank ^= 1;
 #ifdef DEBUG_BANK_SWITCH
@@ -580,7 +580,7 @@ static void op_bank_switch (sim_t *sim, int opcode)
 
 static void op_rom_selftest (sim_t *sim, int opcode)
 {
-  act_reg_t *act_reg = sim->chip_data [0];
+  act_reg_t *act_reg = get_chip_data (sim->first_chip);
 
   act_reg->crc = 01777;
   act_reg->inst_state = selftest;
@@ -591,7 +591,7 @@ static void op_rom_selftest (sim_t *sim, int opcode)
 
 static void rom_selftest_done (sim_t *sim)
 {
-  act_reg_t *act_reg = sim->chip_data [0];
+  act_reg_t *act_reg = get_chip_data (sim->first_chip);
 
   // ROM self-test completed, return and set S5 if error
   printf ("ROM CRC done, crc = %03x: %s\n", act_reg->crc,
@@ -605,7 +605,7 @@ static void rom_selftest_done (sim_t *sim)
 
 static void crc_update (sim_t *sim, int word)
 {
-  act_reg_t *act_reg = sim->chip_data [0];
+  act_reg_t *act_reg = get_chip_data (sim->first_chip);
   int i;
   int b;
 
@@ -622,7 +622,7 @@ static void crc_update (sim_t *sim, int word)
 
 static void op_c_to_addr (sim_t *sim, int opcode)
 {
-  act_reg_t *act_reg = sim->chip_data [0];
+  act_reg_t *act_reg = get_chip_data (sim->first_chip);
 
   act_reg->ram_addr = (act_reg->c [1] << 4) + act_reg->c [0];
 #ifdef HAS_DEBUGGER
@@ -636,7 +636,7 @@ static void op_c_to_addr (sim_t *sim, int opcode)
 
 static void op_c_to_data (sim_t *sim, int opcode)
 {
-  act_reg_t *act_reg = sim->chip_data [0];
+  act_reg_t *act_reg = get_chip_data (sim->first_chip);
   int i;
 
   if (act_reg->ram_addr >= sim->max_ram)
@@ -660,7 +660,7 @@ static void op_c_to_data (sim_t *sim, int opcode)
 
 static void op_data_to_c (sim_t *sim, int opcode)
 {
-  act_reg_t *act_reg = sim->chip_data [0];
+  act_reg_t *act_reg = get_chip_data (sim->first_chip);
   int i;
 
   if (act_reg->ram_addr >= sim->max_ram)
@@ -686,7 +686,7 @@ static void op_data_to_c (sim_t *sim, int opcode)
 
 static void op_c_to_register (sim_t *sim, int opcode)
 {
-  act_reg_t *act_reg = sim->chip_data [0];
+  act_reg_t *act_reg = get_chip_data (sim->first_chip);
   int i;
 
   act_reg->ram_addr &= ~017;
@@ -713,7 +713,7 @@ static void op_c_to_register (sim_t *sim, int opcode)
 
 static void op_register_to_c (sim_t *sim, int opcode)
 {
-  act_reg_t *act_reg = sim->chip_data [0];
+  act_reg_t *act_reg = get_chip_data (sim->first_chip);
   int i;
 
   act_reg->ram_addr &= ~017;
@@ -742,7 +742,7 @@ static void op_register_to_c (sim_t *sim, int opcode)
 
 static void op_clear_data_regs (sim_t *sim, int opcode)
 {
-  act_reg_t *act_reg = sim->chip_data [0];
+  act_reg_t *act_reg = get_chip_data (sim->first_chip);
   int base;
   int i, j;
 
@@ -759,7 +759,7 @@ static void op_clear_data_regs (sim_t *sim, int opcode)
 
 static void op_c_to_stack (sim_t *sim, int opcode)
 {
-  act_reg_t *act_reg = sim->chip_data [0];
+  act_reg_t *act_reg = get_chip_data (sim->first_chip);
   int i;
 
   for (i = 0; i < WSIZE; i++)
@@ -773,7 +773,7 @@ static void op_c_to_stack (sim_t *sim, int opcode)
 
 static void op_stack_to_a (sim_t *sim, int opcode)
 {
-  act_reg_t *act_reg = sim->chip_data [0];
+  act_reg_t *act_reg = get_chip_data (sim->first_chip);
   int i;
 
   for (i = 0; i < WSIZE; i++)
@@ -787,7 +787,7 @@ static void op_stack_to_a (sim_t *sim, int opcode)
 
 static void op_y_to_a (sim_t *sim, int opcode)
 {
-  act_reg_t *act_reg = sim->chip_data [0];
+  act_reg_t *act_reg = get_chip_data (sim->first_chip);
   int i;
 
   for (i = 0; i < WSIZE; i++)
@@ -799,7 +799,7 @@ static void op_y_to_a (sim_t *sim, int opcode)
 
 static void op_down_rotate (sim_t *sim, int opcode)
 {
-  act_reg_t *act_reg = sim->chip_data [0];
+  act_reg_t *act_reg = get_chip_data (sim->first_chip);
   int i, t;
 
   for (i = 0; i < WSIZE; i++)
@@ -815,7 +815,7 @@ static void op_down_rotate (sim_t *sim, int opcode)
 
 static void op_clear_reg (sim_t *sim, int opcode)
 {
-  act_reg_t *act_reg = sim->chip_data [0];
+  act_reg_t *act_reg = get_chip_data (sim->first_chip);
   int i;
 
   for (i = 0; i < WSIZE; i++)
@@ -829,7 +829,7 @@ static void op_clear_reg (sim_t *sim, int opcode)
 
 static void op_load_constant (sim_t *sim, int opcode)
 {
-  act_reg_t *act_reg = sim->chip_data [0];
+  act_reg_t *act_reg = get_chip_data (sim->first_chip);
 
   if (act_reg->p >= WSIZE)
     {
@@ -847,7 +847,7 @@ static void op_load_constant (sim_t *sim, int opcode)
 
 static void op_set_s (sim_t *sim, int opcode)
 {
-  act_reg_t *act_reg = sim->chip_data [0];
+  act_reg_t *act_reg = get_chip_data (sim->first_chip);
 
   if ((opcode >> 6) >= SSIZE)
     printf ("stat >= SSIZE at %05o\n", act_reg->prev_pc);
@@ -858,7 +858,7 @@ static void op_set_s (sim_t *sim, int opcode)
 
 static void op_clr_s (sim_t *sim, int opcode)
 {
-  act_reg_t *act_reg = sim->chip_data [0];
+  act_reg_t *act_reg = get_chip_data (sim->first_chip);
 
   if ((opcode >> 6) >= SSIZE)
     printf ("stat >= SSIZE at %05o\n", act_reg->prev_pc);
@@ -869,7 +869,7 @@ static void op_clr_s (sim_t *sim, int opcode)
 
 static void op_test_s_eq_0 (sim_t *sim, int opcode)
 {
-  act_reg_t *act_reg = sim->chip_data [0];
+  act_reg_t *act_reg = get_chip_data (sim->first_chip);
 
   act_reg->inst_state = branch;
   act_reg->carry = act_reg->s [opcode >> 6];
@@ -878,7 +878,7 @@ static void op_test_s_eq_0 (sim_t *sim, int opcode)
 
 static void op_test_s_eq_1 (sim_t *sim, int opcode)
 {
-  act_reg_t *act_reg = sim->chip_data [0];
+  act_reg_t *act_reg = get_chip_data (sim->first_chip);
 
   act_reg->inst_state = branch;
   act_reg->carry = ! act_reg->s [opcode >> 6];
@@ -894,7 +894,7 @@ static uint8_t p_test_map [16] =
 
 static void op_set_p (sim_t *sim, int opcode)
 {
-  act_reg_t *act_reg = sim->chip_data [0];
+  act_reg_t *act_reg = get_chip_data (sim->first_chip);
 
   act_reg->p = p_set_map [opcode >> 6];
   if (act_reg->p >= WSIZE)
@@ -904,7 +904,7 @@ static void op_set_p (sim_t *sim, int opcode)
 
 static void op_test_p_eq (sim_t *sim, int opcode)
 {
-  act_reg_t *act_reg = sim->chip_data [0];
+  act_reg_t *act_reg = get_chip_data (sim->first_chip);
 
   act_reg->inst_state = branch;
   act_reg->carry = ! (act_reg->p == p_test_map [opcode >> 6]);
@@ -913,7 +913,7 @@ static void op_test_p_eq (sim_t *sim, int opcode)
 
 static void op_test_p_ne (sim_t *sim, int opcode)
 {
-  act_reg_t *act_reg = sim->chip_data [0];
+  act_reg_t *act_reg = get_chip_data (sim->first_chip);
 
   act_reg->inst_state = branch;
   act_reg->carry = ! (act_reg->p != p_test_map [opcode >> 6]);
@@ -922,7 +922,7 @@ static void op_test_p_ne (sim_t *sim, int opcode)
 
 static void op_sel_rom (sim_t *sim, int opcode)
 {
-  act_reg_t *act_reg = sim->chip_data [0];
+  act_reg_t *act_reg = get_chip_data (sim->first_chip);
 
   act_reg->pc = ((opcode & 01700) << 2) + (act_reg->pc & 0377);
 }
@@ -930,7 +930,7 @@ static void op_sel_rom (sim_t *sim, int opcode)
 
 static void op_del_sel_rom (sim_t *sim, int opcode)
 {
-  act_reg_t *act_reg = sim->chip_data [0];
+  act_reg_t *act_reg = get_chip_data (sim->first_chip);
 
   act_reg->del_rom = opcode >> 6;
   act_reg->del_rom_flag = 1;
@@ -939,7 +939,7 @@ static void op_del_sel_rom (sim_t *sim, int opcode)
 
 static void op_keys_to_rom_addr (sim_t *sim, int opcode)
 {
-  act_reg_t *act_reg = sim->chip_data [0];
+  act_reg_t *act_reg = get_chip_data (sim->first_chip);
 
   act_reg->pc = act_reg->pc & ~0377;
   handle_del_rom (act_reg);
@@ -954,7 +954,7 @@ static void op_keys_to_rom_addr (sim_t *sim, int opcode)
 
 static void op_keys_to_a (sim_t *sim, int opcode)
 {
-  act_reg_t *act_reg = sim->chip_data [0];
+  act_reg_t *act_reg = get_chip_data (sim->first_chip);
 
   if (act_reg->key_buf < 0)
     {
@@ -970,7 +970,7 @@ static void op_keys_to_a (sim_t *sim, int opcode)
 
 static void op_a_to_rom_addr (sim_t *sim, int opcode)
 {
-  act_reg_t *act_reg = sim->chip_data [0];
+  act_reg_t *act_reg = get_chip_data (sim->first_chip);
 
   act_reg->pc = act_reg->pc & ~0377;
   handle_del_rom (act_reg);
@@ -980,7 +980,7 @@ static void op_a_to_rom_addr (sim_t *sim, int opcode)
 
 static void op_display_off (sim_t *sim, int opcode)
 {
-  act_reg_t *act_reg = sim->chip_data [0];
+  act_reg_t *act_reg = get_chip_data (sim->first_chip);
 
   act_reg->display_enable = 0;
 }
@@ -988,7 +988,7 @@ static void op_display_off (sim_t *sim, int opcode)
 
 static void op_display_toggle (sim_t *sim, int opcode)
 {
-  act_reg_t *act_reg = sim->chip_data [0];
+  act_reg_t *act_reg = get_chip_data (sim->first_chip);
 
   act_reg->display_enable = ! act_reg->display_enable;
 }
@@ -996,7 +996,7 @@ static void op_display_toggle (sim_t *sim, int opcode)
 
 static void op_display_reset_twf (sim_t *sim, int opcode)
 {
-  act_reg_t *act_reg = sim->chip_data [0];
+  act_reg_t *act_reg = get_chip_data (sim->first_chip);
 
   act_reg->display_14_digit = true;
   act_reg->right_scan = 0;
@@ -1013,7 +1013,7 @@ static void op_crc_clear_f1 (sim_t *sim, int opcode)
 
 static void op_crc_test_f1 (sim_t *sim, int opcode)
 {
-  act_reg_t *act_reg = sim->chip_data [0];
+  act_reg_t *act_reg = get_chip_data (sim->first_chip);
 
   if (act_reg->ext_flag [1])
     act_reg->s [3] = 1;
@@ -1118,7 +1118,7 @@ static void init_ops (act_reg_t *act_reg)
 
 static void woodstock_disassemble (sim_t *sim, int addr, char *buf, int len)
 {
-  act_reg_t *act_reg = sim->chip_data [0];
+  act_reg_t *act_reg = get_chip_data (sim->first_chip);
 
   rom_word_t op1, op2;
 
@@ -1137,7 +1137,7 @@ static void woodstock_disassemble (sim_t *sim, int addr, char *buf, int len)
 
 static void display_scan_advance (sim_t *sim)
 {
-  act_reg_t *act_reg = sim->chip_data [0];
+  act_reg_t *act_reg = get_chip_data (sim->first_chip);
 
   if ((--act_reg->display_scan_position) < act_reg->right_scan)
     {
@@ -1154,7 +1154,7 @@ static void display_scan_advance (sim_t *sim)
 
 static void woodstock_display_scan (sim_t *sim)
 {
-  act_reg_t *act_reg = sim->chip_data [0];
+  act_reg_t *act_reg = get_chip_data (sim->first_chip);
 
   int a = act_reg->a [act_reg->display_scan_position];
   int b = act_reg->b [act_reg->display_scan_position];
@@ -1195,7 +1195,7 @@ static void woodstock_display_scan (sim_t *sim)
 
 static void spice_display_scan (sim_t *sim)
 {
-  act_reg_t *act_reg = sim->chip_data [0];
+  act_reg_t *act_reg = get_chip_data (sim->first_chip);
 
   int a = act_reg->a [act_reg->display_scan_position];
   int b = act_reg->b [act_reg->display_scan_position];
@@ -1236,7 +1236,7 @@ static void print_reg (char *label, reg_t reg)
 
 static void woodstock_print_state (sim_t *sim)
 {
-  act_reg_t *act_reg = sim->chip_data [0];
+  act_reg_t *act_reg = get_chip_data (sim->first_chip);
   int i;
   uint8_t bank;
   int mapped_addr;
@@ -1270,7 +1270,7 @@ static void woodstock_print_state (sim_t *sim)
 
 static bool woodstock_execute_cycle (sim_t *sim)
 {
-  act_reg_t *act_reg = sim->chip_data [0];
+  act_reg_t *act_reg = get_chip_data (sim->first_chip);
   rom_word_t opcode;
   inst_state_t prev_inst_state;
 
@@ -1350,7 +1350,7 @@ static bool woodstock_execute_cycle (sim_t *sim)
 
 static bool woodstock_execute_instruction (sim_t *sim)
 {
-  act_reg_t *act_reg = sim->chip_data [0];
+  act_reg_t *act_reg = get_chip_data (sim->first_chip);
 
   do
     {
@@ -1453,7 +1453,7 @@ static bool woodstock_parse_listing_line (char *buf, int *bank, int *addr,
 
 static void woodstock_press_key (sim_t *sim, int keycode)
 {
-  act_reg_t *act_reg = sim->chip_data [0];
+  act_reg_t *act_reg = get_chip_data (sim->first_chip);
 
   act_reg->key_buf = keycode;
   act_reg->key_flag = true;
@@ -1461,14 +1461,14 @@ static void woodstock_press_key (sim_t *sim, int keycode)
 
 static void woodstock_release_key (sim_t *sim)
 {
-  act_reg_t *act_reg = sim->chip_data [0];
+  act_reg_t *act_reg = get_chip_data (sim->first_chip);
 
   act_reg->key_flag = false;
 }
 
 static void woodstock_set_ext_flag (sim_t *sim, int flag, bool state)
 {
-  act_reg_t *act_reg = sim->chip_data [0];
+  act_reg_t *act_reg = get_chip_data (sim->first_chip);
 
   act_reg->ext_flag [flag] = state;
 }
@@ -1477,7 +1477,7 @@ static void woodstock_set_ext_flag (sim_t *sim, int flag, bool state)
 
 static bool woodstock_read_ram (sim_t *sim, int addr, uint64_t *val)
 {
-  act_reg_t *act_reg = sim->chip_data [0];
+  act_reg_t *act_reg = get_chip_data (sim->first_chip);
   uint64_t data = 0;
   int i;
   bool status;
@@ -1506,7 +1506,7 @@ static bool woodstock_read_ram (sim_t *sim, int addr, uint64_t *val)
 
 static bool woodstock_write_ram (sim_t *sim, int addr, uint64_t *val)
 {
-  act_reg_t *act_reg = sim->chip_data [0];
+  act_reg_t *act_reg = get_chip_data (sim->first_chip);
   uint64_t data;
   int i;
 
@@ -1531,7 +1531,7 @@ static bool woodstock_write_ram (sim_t *sim, int addr, uint64_t *val)
 
 static void woodstock_reset (sim_t *sim)
 {
-  act_reg_t *act_reg = sim->chip_data [0];
+  act_reg_t *act_reg = get_chip_data (sim->first_chip);
 
   sim->cycle_count = 0;
 
@@ -1565,7 +1565,7 @@ static void woodstock_new_rom_addr_space (sim_t *sim,
 					  int max_page,
 					  int page_size)
 {
-  act_reg_t *act_reg = sim->chip_data [0];
+  act_reg_t *act_reg = get_chip_data (sim->first_chip);
   size_t max_words;
 
   max_words = max_bank * max_page * page_size;
@@ -1578,7 +1578,7 @@ static void woodstock_new_rom_addr_space (sim_t *sim,
 
 static void woodstock_new_ram_addr_space (sim_t *sim, int max_ram)
 {
-  act_reg_t *act_reg = sim->chip_data [0];
+  act_reg_t *act_reg = get_chip_data (sim->first_chip);
 
   sim->max_ram = max_ram;
   act_reg->ram = alloc (max_ram * sizeof (reg_t));
@@ -1591,7 +1591,7 @@ static void woodstock_new_processor (sim_t *sim, int ram_size)
 
   act_reg = alloc (sizeof (act_reg_t));
 
-  install_chip (sim, 0, & woodstock_cpu_chip_detail, act_reg);
+  install_chip (sim, & woodstock_cpu_chip_detail, act_reg);
 
   woodstock_new_rom_addr_space (sim, MAX_BANK, MAX_PAGE, PAGE_SIZE);
   woodstock_new_ram_addr_space (sim, ram_size);
@@ -1629,13 +1629,13 @@ static void woodstock_new_processor (sim_t *sim, int ram_size)
 
 static void woodstock_free_processor (sim_t *sim)
 {
-  remove_chip (sim, 0);
+  remove_chip (sim->first_chip);
 }
 
 
-static void woodstock_event_fn (sim_t *sim, int chip_num, int event)
+static void woodstock_event_fn (sim_t *sim, chip_handle_t *chip_handle, int event)
 {
-  // act_reg_t *act_reg = sim->chip_data [0];
+  // act_reg_t *act_reg = get_chip_data (sim->first_chip);
 
   switch (event)
     {
@@ -1656,8 +1656,6 @@ processor_dispatch_t woodstock_processor =
   {
     .max_rom             = 4096,
     .max_bank            = 2, 
-
-    .max_chip_count      = MAX_CHIP_COUNT,
 
     .new_processor       = woodstock_new_processor,
     .free_processor      = woodstock_free_processor,

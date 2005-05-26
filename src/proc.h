@@ -55,7 +55,9 @@ typedef struct sim_t sim_t;
 typedef struct
 {
   char *name;
-  addr_t addr;
+  bool multiple;  // True if there might be more than one chip of this kind,
+                  // in which case register #0 should contain the necessary
+                  // distinguishing information (e.g., address)
 } chip_info_t;
 
 
@@ -138,12 +140,6 @@ bool sim_read_ram (sim_t *sim,
 bool sim_write_ram (sim_t *sim,
 		    addr_t addr,
 		    uint64_t *val);
-
-
-// Returns n where valid chip numbers may be in the range 0 .. n-1.
-// Note that not all chips in the range will necessarily exist, and
-// that chips don't necessarily have consecutive numbers.
-int sim_get_max_chip_count (sim_t *sim);
 
 
 // Returns NULL if specified chip_num doesn't exist.

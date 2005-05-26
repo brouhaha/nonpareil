@@ -50,6 +50,18 @@ MA 02111, USA.
 #define MAX_INST_BURST 5000
 
 
+struct chip_handle_t
+{
+  chip_handle_t *next;
+  chip_handle_t *prev;
+
+  sim_t *sim;
+
+  const chip_detail_t *chip_detail;
+  void *chip_data;
+};
+
+
 // Messages sent from GUI thread to simulator thread, and
 // sent back as replies.
 
@@ -369,8 +381,23 @@ static void send_cmd_to_sim_thread (sim_t *sim, gpointer msg)
 }
 
 
+static chip_handle_t *get_chip_handle (sim_t *sim, int chip_num)
+{
+  chip_handle_t *chip_handle = sim->first_chip;
+
+  while (chip_num--)
+    {
+      if (! chip_handle->next)
+	return NULL;
+      chip_handle = chip_handle->next;
+    }
+  return chip_handle;
+}
+
+
 static void cmd_read_register (sim_t *sim, sim_msg_t *msg)
 {
+  chip_handle_t *chip_handle;
   const chip_detail_t *chip_detail;
   const reg_detail_t *reg_detail;
   uint8_t *addr;
@@ -378,18 +405,18 @@ static void cmd_read_register (sim_t *sim, sim_msg_t *msg)
 
   msg->reply = ARG_RANGE_ERROR;
 
-  if (msg->arg1 >= sim->proc->max_chip_count)
+  chip_handle = get_chip_handle (sim, msg->arg1);
+  if (! chip_handle)
     return;
-  chip_detail = sim->chip_detail [msg->arg1];
-  if (! chip_detail)
-    return;
+  chip_detail = chip_handle->chip_detail;
+
   if (msg->arg2 >= chip_detail->reg_count)
     return;
   reg_detail = & chip_detail->reg_detail [msg->arg2];
   if (msg->arg3 >= reg_detail->info.array_element_count)
     return;
 
-  addr = (((uint8_t *) sim->chip_data [msg->arg1]) +
+  addr = (((uint8_t *) chip_handle->chip_data) +
 	  reg_detail->offset + msg->arg3 * reg_detail->size);
   result_val = msg->data;
 
@@ -416,6 +443,7 @@ static void cmd_read_register (sim_t *sim, sim_msg_t *msg)
 
 static void cmd_write_register (sim_t *sim, sim_msg_t *msg)
 {
+  chip_handle_t *chip_handle;
   const chip_detail_t *chip_detail;
   const reg_detail_t *reg_detail;
   uint8_t *addr;
@@ -423,18 +451,18 @@ static void cmd_write_register (sim_t *sim, sim_msg_t *msg)
 
   msg->reply = ARG_RANGE_ERROR;
 
-  if (msg->arg1 >= sim->proc->max_chip_count)
+  chip_handle = get_chip_handle (sim, msg->arg1);
+  if (! chip_handle)
     return;
-  chip_detail = sim->chip_detail [msg->arg1];
-  if (! chip_detail)
-    return;
+  chip_detail = chip_handle->chip_detail;
+
   if (msg->arg2 >= chip_detail->reg_count)
     return;
   reg_detail = & chip_detail->reg_detail [msg->arg2];
   if (msg->arg3 >= reg_detail->info.array_element_count)
     return;
 
-  addr = (((uint8_t *) sim->chip_data [msg->arg1]) +
+  addr = (((uint8_t *) chip_handle->chip_data) +
 	  reg_detail->offset + msg->arg3 * reg_detail->size);
   source_val = msg->data;
 
@@ -757,9 +785,6 @@ sim_t *sim_init  (int model,
 								 NULL,  // use main context
 								 gui_cmd_callback);
 
-  sim->chip_detail = alloc (sim->proc->max_chip_count * sizeof (chip_detail_t *));
-  sim->chip_data = alloc (sim->proc->max_chip_count * sizeof (void *));
-
   sim->source = alloc (sim->proc->max_bank * sim->proc->max_rom * sizeof (char *));
 
   sim->proc->new_processor (sim, ram_size);
@@ -799,12 +824,12 @@ void sim_quit (sim_t *sim)
   msg.cmd = CMD_QUIT;
   send_cmd_to_sim_thread (sim, (gpointer) & msg);
 
+  // $$$ should remove all chip
+
   // $$$ should wait for thread exit here
 
   sim->proc->free_processor (sim);
 
-  free (sim->chip_detail);
-  free (sim->chip_data);
   free (sim);
 }
 
@@ -886,38 +911,26 @@ bool sim_get_io_pause_flag (sim_t *sim)
 }
 
 
-int sim_get_max_chip_count (sim_t *sim)
-{
-  return sim->proc->max_chip_count;
-}
-
-
 const chip_info_t *sim_get_chip_info (sim_t *sim,
 				      int   chip_num)
 {
-  const chip_detail_t *chip_detail;
+  chip_handle_t *chip_handle;
 
-  if (chip_num >= sim->proc->max_chip_count)
+  chip_handle = get_chip_handle (sim, chip_num);
+  if (! chip_handle)
     return NULL;
-  chip_detail = sim->chip_detail [chip_num];
-  if (! chip_detail)
-    return NULL;
-  return & chip_detail->info;
+  return & chip_handle->chip_detail->info;
 }
 
 
 int sim_get_reg_count (sim_t *sim, int chip_num)
 {
-  const chip_detail_t *chip_detail;
+  chip_handle_t *chip_handle;
 
-  if (chip_num >= sim->proc->max_chip_count)
+  chip_handle = get_chip_handle (sim, chip_num);
+  if (! chip_handle)
     return 0;
-
-  chip_detail = sim->chip_detail [chip_num];
-  if (! chip_detail)
-    return 0;
-
-  return chip_detail->reg_count;
+  return chip_handle->chip_detail->reg_count;
 }
 
 
@@ -925,15 +938,14 @@ int sim_find_register (sim_t *sim,
 		       int   chip_num,
 		       char  *name)
 {
+  chip_handle_t *chip_handle;
   int reg_num;
   const chip_detail_t *chip_detail;
 
-  if (chip_num >= sim->proc->max_chip_count)
+  chip_handle = get_chip_handle (sim, chip_num);
+  if (! chip_handle)
     return -1;
-
-  chip_detail = sim->chip_detail [chip_num];
-  if (! chip_detail)
-    return -1;
+  chip_detail = chip_handle->chip_detail;
 
   for (reg_num = 0; reg_num < chip_detail->reg_count; reg_num++)
     {
@@ -949,14 +961,15 @@ const reg_info_t *sim_get_register_info (sim_t *sim,
 					 int   chip_num,
 					 int   reg_num)
 {
+  chip_handle_t *chip_handle;
   const chip_detail_t *chip_detail;
 
-  if (chip_num >= sim->proc->max_chip_count)
-    return 0;
+  chip_handle = get_chip_handle (sim, chip_num);
+  if (! chip_handle)
+    return NULL;
+  chip_detail = chip_handle->chip_detail;
 
-  chip_detail = sim->chip_detail [chip_num];
-  if (! chip_detail)
-    return 0;
+  chip_detail = chip_handle->chip_detail;
 
   if (reg_num >= chip_detail->reg_count)
     return NULL;
@@ -971,15 +984,14 @@ bool sim_read_register (sim_t   *sim,
 			int     index,
 			uint64_t *val)
 {
+  chip_handle_t *chip_handle;
   sim_msg_t msg;
   const chip_detail_t *chip_detail;
 
-  if (chip_num >= sim->proc->max_chip_count)
+  chip_handle = get_chip_handle (sim, chip_num);
+  if (! chip_handle)
     return false;
-
-  chip_detail = sim->chip_detail [chip_num];
-  if (! chip_detail)
-    return false;
+  chip_detail = chip_handle->chip_detail;
 
   if (reg_num >= chip_detail->reg_count)
     return false;
@@ -1003,15 +1015,14 @@ bool sim_write_register (sim_t   *sim,
 			 int     index,
 			 uint64_t *val)
 {
+  chip_handle_t *chip_handle;
   sim_msg_t msg;
   const chip_detail_t *chip_detail;
 
-  if (chip_num >= sim->proc->max_chip_count)
+  chip_handle = get_chip_handle (sim, chip_num);
+  if (! chip_handle)
     return false;
-
-  chip_detail = sim->chip_detail [chip_num];
-  if (! chip_detail)
-    return false;
+  chip_detail = chip_handle->chip_detail;
 
   if (reg_num >= chip_detail->reg_count)
     return false;
@@ -1291,48 +1302,70 @@ bool set_bools (void *data, uint64_t *p, int arg)
 }
 
 
-int install_chip (sim_t *sim,
-		  int chip_num,
-		  const chip_detail_t *chip_detail,
-		  void *chip_data)
+chip_handle_t *install_chip (sim_t *sim,
+			     const chip_detail_t *chip_detail,
+			     void *chip_data)
 {
-  if (chip_num < 0)
+  chip_handle_t *chip_handle;
+
+  chip_handle = alloc (sizeof (chip_handle_t));
+
+  chip_handle->sim = sim;
+
+  chip_handle->chip_detail   = chip_detail;
+  chip_handle->chip_data     = chip_data;
+
+  // add chip at tail of list
+  if (sim->last_chip)
     {
-      for (chip_num = 0; chip_num < sim->proc->max_chip_count; chip_num++)
-	if (! sim->chip_detail [chip_num])
-	  break;
+      chip_handle->prev = sim->last_chip;
+      sim->last_chip->next = chip_handle;
     }
+  else
+    sim->first_chip = chip_handle;
 
-  if ((chip_num >= sim->proc->max_chip_count) || sim->chip_detail [chip_num])
-    return -1;
+  sim->last_chip = chip_handle;
 
-  sim->chip_detail [chip_num] = chip_detail;
-  sim->chip_data   [chip_num] = chip_data;
-
-  return chip_num;
+  return chip_handle;
 }
 
 
-bool remove_chip (sim_t *sim,
-		  int chip_num)
+void remove_chip (chip_handle_t *chip_handle)
 {
-  if (! sim->chip_detail [chip_num])
-    return false;
+  if (chip_handle->prev)
+    chip_handle->prev->next = chip_handle->next;
+  else
+    chip_handle->sim->first_chip = chip_handle->next;
 
-  sim->chip_detail [chip_num] = NULL;
+  if (chip_handle->next)
+    chip_handle->next->prev = chip_handle->prev;
+  else
+    chip_handle->sim->last_chip = chip_handle->prev;
 
-  free (sim->chip_data [chip_num]);
-  sim->chip_data [chip_num] = NULL;
+  // $$$ maybe should call a function via the chip_detail to do this?
+  free (chip_handle->chip_data);
 
-  return true;
+  free (chip_handle);
 }
 
 
 void chip_event (sim_t *sim, int event)
 {
-  int chip_num;
+  chip_handle_t *chip_handle;
 
-  for (chip_num = 0; chip_num < sim->proc->max_chip_count; chip_num++)
-    if (sim->chip_detail [chip_num] && sim->chip_detail [chip_num]->chip_event_fn)
-      sim->chip_detail [chip_num]->chip_event_fn (sim, chip_num, event);
+  for (chip_handle = sim->first_chip; chip_handle; chip_handle = chip_handle->next)
+    if (chip_handle->chip_detail->chip_event_fn)
+      chip_handle->chip_detail->chip_event_fn (sim, chip_handle, event);
+}
+
+
+const chip_detail_t *get_chip_detail (chip_handle_t *chip_handle)
+{
+  return chip_handle->chip_detail;
+}
+
+
+void *get_chip_data (chip_handle_t *chip_handle)
+{
+  return chip_handle->chip_data;
 }

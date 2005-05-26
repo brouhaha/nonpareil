@@ -35,10 +35,6 @@ typedef digit_t reg_t [WSIZE];
 #define MAX_PAGE 4
 #define MAX_BANK 2
 
-#define MAX_CHIP_COUNT 3  // ACT CPU
-                          // PIK (HP-91, HP-92, HP-95C, HP-97, HP-19C only)
-                          // CRC (HP-67, HP-97 only)
-
 
 typedef uint16_t rom_addr_t;
 

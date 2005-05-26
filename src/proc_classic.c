@@ -85,7 +85,7 @@ static chip_detail_t classic_cpu_chip_detail =
 {
   {
     "AC/CT",
-    0
+    false  // There can only be one processor in the calculator.
   },
   sizeof (classic_cpu_reg_detail) / sizeof (reg_detail_t),
   classic_cpu_reg_detail,
@@ -98,7 +98,7 @@ static bool classic_read_rom (sim_t      *sim,
 			      addr_t     addr,
 			      rom_word_t *val)
 {
-  classic_cpu_reg_t *cpu_reg = sim->chip_data [0];
+  classic_cpu_reg_t *cpu_reg = get_chip_data (sim->first_chip);
 
   if ((bank >= MAX_BANK) || (addr >= (MAX_PAGE * PAGE_SIZE)))
     return false;
@@ -116,7 +116,7 @@ static bool classic_write_rom (sim_t      *sim,
 			       addr_t     addr,
 			       rom_word_t *val)
 {
-  classic_cpu_reg_t *cpu_reg = sim->chip_data [0];
+  classic_cpu_reg_t *cpu_reg = get_chip_data (sim->first_chip);
 
   if ((bank >= MAX_BANK) || (addr > (MAX_PAGE * PAGE_SIZE)))
     return false;
@@ -136,7 +136,7 @@ static inline uint8_t arithmetic_base (classic_cpu_reg_t *cpu_reg)
 
 static void bad_op (sim_t *sim, int opcode)
 {
-  classic_cpu_reg_t *cpu_reg = sim->chip_data [0];
+  classic_cpu_reg_t *cpu_reg = get_chip_data (sim->first_chip);
 
   printf ("illegal opcode %04o at %02o%03o\n", opcode,
 	  cpu_reg->prev_pc >> 8, cpu_reg->prev_pc & 0377);
@@ -145,7 +145,7 @@ static void bad_op (sim_t *sim, int opcode)
 
 static void op_arith (sim_t *sim, int opcode)
 {
-  classic_cpu_reg_t *cpu_reg = sim->chip_data [0];
+  classic_cpu_reg_t *cpu_reg = get_chip_data (sim->first_chip);
   uint8_t op, field;
   int first = 0;
   int last = 0;
@@ -322,7 +322,7 @@ static void op_arith (sim_t *sim, int opcode)
 
 static void op_goto (sim_t *sim, int opcode)
 {
-  classic_cpu_reg_t *cpu_reg = sim->chip_data [0];
+  classic_cpu_reg_t *cpu_reg = get_chip_data (sim->first_chip);
 
   if (! cpu_reg->prev_carry)
     {
@@ -335,7 +335,7 @@ static void op_goto (sim_t *sim, int opcode)
 
 static void op_jsb (sim_t *sim, int opcode)
 {
-  classic_cpu_reg_t *cpu_reg = sim->chip_data [0];
+  classic_cpu_reg_t *cpu_reg = get_chip_data (sim->first_chip);
 
   cpu_reg->ret_pc = cpu_reg->pc;
   cpu_reg->pc = opcode >> 2;
@@ -346,7 +346,7 @@ static void op_jsb (sim_t *sim, int opcode)
 
 static void op_return (sim_t *sim, int opcode)
 {
-  classic_cpu_reg_t *cpu_reg = sim->chip_data [0];
+  classic_cpu_reg_t *cpu_reg = get_chip_data (sim->first_chip);
 
   cpu_reg->pc = cpu_reg->ret_pc;
 }
@@ -359,7 +359,7 @@ static void op_nop (sim_t *sim, int opcode)
 
 static void op_dec_p (sim_t *sim, int opcode)
 {
-  classic_cpu_reg_t *cpu_reg = sim->chip_data [0];
+  classic_cpu_reg_t *cpu_reg = get_chip_data (sim->first_chip);
 
   cpu_reg->p = (cpu_reg->p - 1) & 0xf;
   /* On the ACT (Woodstock) if P=0 before a decrement, it will be
@@ -369,7 +369,7 @@ static void op_dec_p (sim_t *sim, int opcode)
 
 static void op_inc_p (sim_t *sim, int opcode)
 {
-  classic_cpu_reg_t *cpu_reg = sim->chip_data [0];
+  classic_cpu_reg_t *cpu_reg = get_chip_data (sim->first_chip);
 
   cpu_reg->p = (cpu_reg->p + 1) & 0xf;
   /* On the ACT (Woodstock) if P=13 before an increment, it will be
@@ -379,7 +379,7 @@ static void op_inc_p (sim_t *sim, int opcode)
 
 static void op_clear_s (sim_t *sim, int opcode)
 {
-  classic_cpu_reg_t *cpu_reg = sim->chip_data [0];
+  classic_cpu_reg_t *cpu_reg = get_chip_data (sim->first_chip);
   int i;
 
   for (i = 0; i < SSIZE; i++)
@@ -389,7 +389,7 @@ static void op_clear_s (sim_t *sim, int opcode)
 
 static void op_c_exch_m (sim_t *sim, int opcode)
 {
-  classic_cpu_reg_t *cpu_reg = sim->chip_data [0];
+  classic_cpu_reg_t *cpu_reg = get_chip_data (sim->first_chip);
   int i, t;
 
   for (i = 0; i < WSIZE; i++)
@@ -403,7 +403,7 @@ static void op_c_exch_m (sim_t *sim, int opcode)
 
 static void op_m_to_c (sim_t *sim, int opcode)
 {
-  classic_cpu_reg_t *cpu_reg = sim->chip_data [0];
+  classic_cpu_reg_t *cpu_reg = get_chip_data (sim->first_chip);
   int i;
 
   for (i = 0; i < WSIZE; i++)
@@ -413,7 +413,7 @@ static void op_m_to_c (sim_t *sim, int opcode)
 
 static void op_c_to_addr (sim_t *sim, int opcode)
 {
-  classic_cpu_reg_t *cpu_reg = sim->chip_data [0];
+  classic_cpu_reg_t *cpu_reg = get_chip_data (sim->first_chip);
 
   if (sim->max_ram > 10)
     cpu_reg->ram_addr = cpu_reg->c [12] * 10 + cpu_reg->c [11];
@@ -426,7 +426,7 @@ static void op_c_to_addr (sim_t *sim, int opcode)
 
 static void op_c_to_data (sim_t *sim, int opcode)
 {
-  classic_cpu_reg_t *cpu_reg = sim->chip_data [0];
+  classic_cpu_reg_t *cpu_reg = get_chip_data (sim->first_chip);
   int i;
 
   if (cpu_reg->ram_addr >= sim->max_ram)
@@ -441,7 +441,7 @@ static void op_c_to_data (sim_t *sim, int opcode)
 
 static void op_data_to_c (sim_t *sim, int opcode)
 {
-  classic_cpu_reg_t *cpu_reg = sim->chip_data [0];
+  classic_cpu_reg_t *cpu_reg = get_chip_data (sim->first_chip);
   int i;
 
   if (cpu_reg->ram_addr >= sim->max_ram)
@@ -458,7 +458,7 @@ static void op_data_to_c (sim_t *sim, int opcode)
 
 static void op_c_to_stack (sim_t *sim, int opcode)
 {
-  classic_cpu_reg_t *cpu_reg = sim->chip_data [0];
+  classic_cpu_reg_t *cpu_reg = get_chip_data (sim->first_chip);
   int i;
 
   for (i = 0; i < WSIZE; i++)
@@ -472,7 +472,7 @@ static void op_c_to_stack (sim_t *sim, int opcode)
 
 static void op_stack_to_a (sim_t *sim, int opcode)
 {
-  classic_cpu_reg_t *cpu_reg = sim->chip_data [0];
+  classic_cpu_reg_t *cpu_reg = get_chip_data (sim->first_chip);
   int i;
 
   for (i = 0; i < WSIZE; i++)
@@ -486,7 +486,7 @@ static void op_stack_to_a (sim_t *sim, int opcode)
 
 static void op_down_rotate (sim_t *sim, int opcode)
 {
-  classic_cpu_reg_t *cpu_reg = sim->chip_data [0];
+  classic_cpu_reg_t *cpu_reg = get_chip_data (sim->first_chip);
   int i, t;
 
   for (i = 0; i < WSIZE; i++)
@@ -502,7 +502,7 @@ static void op_down_rotate (sim_t *sim, int opcode)
 
 static void op_clear_reg (sim_t *sim, int opcode)
 {
-  classic_cpu_reg_t *cpu_reg = sim->chip_data [0];
+  classic_cpu_reg_t *cpu_reg = get_chip_data (sim->first_chip);
   int i;
 
   for (i = 0; i < WSIZE; i++)
@@ -513,7 +513,7 @@ static void op_clear_reg (sim_t *sim, int opcode)
 
 static void op_load_constant (sim_t *sim, int opcode)
 {
-  classic_cpu_reg_t *cpu_reg = sim->chip_data [0];
+  classic_cpu_reg_t *cpu_reg = get_chip_data (sim->first_chip);
 
   if (cpu_reg->p >= WSIZE)
     {
@@ -536,7 +536,7 @@ static void op_load_constant (sim_t *sim, int opcode)
 
 static void op_set_s (sim_t *sim, int opcode)
 {
-  classic_cpu_reg_t *cpu_reg = sim->chip_data [0];
+  classic_cpu_reg_t *cpu_reg = get_chip_data (sim->first_chip);
 
   if ((opcode >> 6) >= SSIZE)
     printf ("stat >= SSIZE at %02o%03o\n",
@@ -548,7 +548,7 @@ static void op_set_s (sim_t *sim, int opcode)
 
 static void op_clr_s (sim_t *sim, int opcode)
 {
-  classic_cpu_reg_t *cpu_reg = sim->chip_data [0];
+  classic_cpu_reg_t *cpu_reg = get_chip_data (sim->first_chip);
 
   if ((opcode >> 6) >= SSIZE)
     printf ("stat >= SSIZE at %02o%03o\n",
@@ -560,7 +560,7 @@ static void op_clr_s (sim_t *sim, int opcode)
 
 static void op_test_s (sim_t *sim, int opcode)
 {
-  classic_cpu_reg_t *cpu_reg = sim->chip_data [0];
+  classic_cpu_reg_t *cpu_reg = get_chip_data (sim->first_chip);
 
   if ((opcode >> 6) >= SSIZE)
     printf ("stat >= SSIZE at %02o%03o\n",
@@ -572,7 +572,7 @@ static void op_test_s (sim_t *sim, int opcode)
 
 static void op_set_p (sim_t *sim, int opcode)
 {
-  classic_cpu_reg_t *cpu_reg = sim->chip_data [0];
+  classic_cpu_reg_t *cpu_reg = get_chip_data (sim->first_chip);
 
   cpu_reg->p = opcode >> 6;
 }
@@ -580,7 +580,7 @@ static void op_set_p (sim_t *sim, int opcode)
 
 static void op_test_p (sim_t *sim, int opcode)
 {
-  classic_cpu_reg_t *cpu_reg = sim->chip_data [0];
+  classic_cpu_reg_t *cpu_reg = get_chip_data (sim->first_chip);
 
   cpu_reg->carry = (cpu_reg->p == (opcode >> 6));
 }
@@ -588,7 +588,7 @@ static void op_test_p (sim_t *sim, int opcode)
 
 static void op_sel_rom (sim_t *sim, int opcode)
 {
-  classic_cpu_reg_t *cpu_reg = sim->chip_data [0];
+  classic_cpu_reg_t *cpu_reg = get_chip_data (sim->first_chip);
 
   cpu_reg->rom = opcode >> 7;
   cpu_reg->group = cpu_reg->del_grp;
@@ -599,7 +599,7 @@ static void op_sel_rom (sim_t *sim, int opcode)
 
 static void op_del_sel_rom (sim_t *sim, int opcode)
 {
-  classic_cpu_reg_t *cpu_reg = sim->chip_data [0];
+  classic_cpu_reg_t *cpu_reg = get_chip_data (sim->first_chip);
 
   cpu_reg->del_rom = opcode >> 7;
 }
@@ -607,7 +607,7 @@ static void op_del_sel_rom (sim_t *sim, int opcode)
 
 static void op_del_sel_grp (sim_t *sim, int opcode)
 {
-  classic_cpu_reg_t *cpu_reg = sim->chip_data [0];
+  classic_cpu_reg_t *cpu_reg = get_chip_data (sim->first_chip);
 
   cpu_reg->del_grp = (opcode >> 7) & 1;
 }
@@ -615,7 +615,7 @@ static void op_del_sel_grp (sim_t *sim, int opcode)
 
 static void op_keys_to_rom_addr (sim_t *sim, int opcode)
 {
-  classic_cpu_reg_t *cpu_reg = sim->chip_data [0];
+  classic_cpu_reg_t *cpu_reg = get_chip_data (sim->first_chip);
 
   if (cpu_reg->key_buf < 0)
     {
@@ -638,7 +638,7 @@ static void op_rom_addr_to_buf (sim_t *sim, int opcode)
 
 static void op_display_off (sim_t *sim, int opcode)
 {
-  classic_cpu_reg_t *cpu_reg = sim->chip_data [0];
+  classic_cpu_reg_t *cpu_reg = get_chip_data (sim->first_chip);
 
   cpu_reg->display_enable = 0;
 }
@@ -646,7 +646,7 @@ static void op_display_off (sim_t *sim, int opcode)
 
 static void op_display_toggle (sim_t *sim, int opcode)
 {
-  classic_cpu_reg_t *cpu_reg = sim->chip_data [0];
+  classic_cpu_reg_t *cpu_reg = get_chip_data (sim->first_chip);
 
   cpu_reg->display_enable = ! cpu_reg->display_enable;
 }
@@ -740,7 +740,7 @@ static void init_ops (classic_cpu_reg_t *cpu_reg)
 
 static void classic_disassemble (sim_t *sim, int addr, char *buf, int len)
 {
-  classic_cpu_reg_t *cpu_reg = sim->chip_data [0];
+  classic_cpu_reg_t *cpu_reg = get_chip_data (sim->first_chip);
   int l;
 
   l = snprintf (buf, len, "%02o%03o: ", addr >> 8, addr & 0377);
@@ -761,7 +761,7 @@ static void classic_disassemble (sim_t *sim, int addr, char *buf, int len)
 
 static void classic_display_scan (sim_t *sim)
 {
-  classic_cpu_reg_t *cpu_reg = sim->chip_data [0];
+  classic_cpu_reg_t *cpu_reg = get_chip_data (sim->first_chip);
   int a = cpu_reg->a [cpu_reg->display_scan_position];
   int b = cpu_reg->b [cpu_reg->display_scan_position];
 
@@ -814,7 +814,7 @@ static void print_reg (char *label, reg_t reg)
 
 static void classic_print_state (sim_t *sim)
 {
-  classic_cpu_reg_t *cpu_reg = sim->chip_data [0];
+  classic_cpu_reg_t *cpu_reg = get_chip_data (sim->first_chip);
 
   int i;
   printf ("pc=%05o  p=%d  stat:",
@@ -842,7 +842,7 @@ static void classic_print_state (sim_t *sim)
 
 bool classic_execute_instruction (sim_t *sim)
 {
-  classic_cpu_reg_t *cpu_reg = sim->chip_data [0];
+  classic_cpu_reg_t *cpu_reg = get_chip_data (sim->first_chip);
   int addr;
   int i;
   int opcode;
@@ -994,7 +994,7 @@ static bool classic_parse_listing_line (char *buf, int *bank, int *addr,
 
 static void classic_press_key (sim_t *sim, int keycode)
 {
-  classic_cpu_reg_t *cpu_reg = sim->chip_data [0];
+  classic_cpu_reg_t *cpu_reg = get_chip_data (sim->first_chip);
 
   cpu_reg->key_buf = keycode;
   cpu_reg->key_flag = true;
@@ -1002,14 +1002,14 @@ static void classic_press_key (sim_t *sim, int keycode)
 
 static void classic_release_key (sim_t *sim)
 {
-  classic_cpu_reg_t *cpu_reg = sim->chip_data [0];
+  classic_cpu_reg_t *cpu_reg = get_chip_data (sim->first_chip);
 
   cpu_reg->key_flag = false;
 }
 
 static void classic_set_ext_flag (sim_t *sim, int flag, bool state)
 {
-  classic_cpu_reg_t *cpu_reg = sim->chip_data [0];
+  classic_cpu_reg_t *cpu_reg = get_chip_data (sim->first_chip);
 
   cpu_reg->ext_flag [flag] = state;
 }
@@ -1017,7 +1017,7 @@ static void classic_set_ext_flag (sim_t *sim, int flag, bool state)
 
 static void classic_reset (sim_t *sim)
 {
-  classic_cpu_reg_t *cpu_reg = sim->chip_data [0];
+  classic_cpu_reg_t *cpu_reg = get_chip_data (sim->first_chip);
 
   sim->cycle_count = 0;
 
@@ -1041,7 +1041,7 @@ static void classic_reset (sim_t *sim)
 
 static bool classic_read_ram (sim_t *sim, int addr, uint64_t *val)
 {
-  classic_cpu_reg_t *cpu_reg = sim->chip_data [0];
+  classic_cpu_reg_t *cpu_reg = get_chip_data (sim->first_chip);
   uint64_t data = 0;
   int i;
   bool status;
@@ -1070,7 +1070,7 @@ static bool classic_read_ram (sim_t *sim, int addr, uint64_t *val)
 
 static bool classic_write_ram (sim_t *sim, int addr, uint64_t *val)
 {
-  classic_cpu_reg_t *cpu_reg = sim->chip_data [0];
+  classic_cpu_reg_t *cpu_reg = get_chip_data (sim->first_chip);
   uint64_t data;
   int i;
 
@@ -1098,7 +1098,7 @@ static void classic_new_rom_addr_space (sim_t *sim,
 					int max_page,
 					int page_size)
 {
-  classic_cpu_reg_t *cpu_reg = sim->chip_data [0];
+  classic_cpu_reg_t *cpu_reg = get_chip_data (sim->first_chip);
   size_t max_words;
 
   max_words = max_bank * max_page * page_size;
@@ -1111,7 +1111,7 @@ static void classic_new_rom_addr_space (sim_t *sim,
 
 static void classic_new_ram_addr_space (sim_t *sim, int max_ram)
 {
-  classic_cpu_reg_t *cpu_reg = sim->chip_data [0];
+  classic_cpu_reg_t *cpu_reg = get_chip_data (sim->first_chip);
 
   sim->max_ram = max_ram;
   cpu_reg->ram = alloc (max_ram * sizeof (reg_t));
@@ -1124,7 +1124,7 @@ static void classic_new_processor (sim_t *sim, int ram_size)
 
   cpu_reg = alloc (sizeof (classic_cpu_reg_t));
 
-  install_chip (sim, 0, & classic_cpu_chip_detail, cpu_reg);
+  install_chip (sim, & classic_cpu_chip_detail, cpu_reg);
 
   classic_new_rom_addr_space (sim, MAX_BANK, MAX_PAGE, PAGE_SIZE);
   classic_new_ram_addr_space (sim, ram_size);
@@ -1146,13 +1146,13 @@ static void classic_new_processor (sim_t *sim, int ram_size)
 
 static void classic_free_processor (sim_t *sim)
 {
-  remove_chip (sim, 0);
+  remove_chip (sim->first_chip);
 }
 
 
-static void classic_event_fn (sim_t *sim, int chip_num, int event)
+static void classic_event_fn (sim_t *sim, chip_handle_t *chip_handle, int event)
 {
-  // classic_cpu_reg_t *cpu_reg = sim->chip_data [0];
+  // classic_cpu_reg_t *cpu_reg = get_chip_data (sim->first_chip);
 
   switch (event)
     {
@@ -1170,8 +1170,6 @@ processor_dispatch_t classic_processor =
   {
     .max_rom             = 4096,
     .max_bank            = 1,
-
-    .max_chip_count      = MAX_CHIP_COUNT,
 
     .new_processor       = classic_new_processor,
     .free_processor      = classic_free_processor,

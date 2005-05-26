@@ -138,7 +138,7 @@ static const chip_detail_t phineas_chip_detail =
 {
   {
     "Phineas clock",
-    PFADDR_PHINEAS
+    false  // There can only be one Phineas on the bus.
   },
   sizeof (phineas_reg_detail) / sizeof (reg_detail_t),
   phineas_reg_detail,
@@ -171,8 +171,8 @@ static void phineas_set_status_bit (phineas_reg_t *phineas, int bit, bool val)
 
 static void phineas_rd_n (sim_t *sim, int n)
 {
-  nut_reg_t *nut_reg = sim->chip_data [0];
-  phineas_reg_t *phineas = sim->chip_data [PFADDR_PHINEAS];
+  nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
+  phineas_reg_t *phineas = get_chip_data (nut_reg->phineas_chip);
 
   reg_zero (nut_reg->c, 0, WSIZE - 1);
 
@@ -222,8 +222,8 @@ static void phineas_rd_n (sim_t *sim, int n)
 
 static void phineas_wr_n (sim_t *sim, int n)
 {
-  nut_reg_t *nut_reg = sim->chip_data [0];
-  phineas_reg_t *phineas = sim->chip_data [PFADDR_PHINEAS];
+  nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
+  phineas_reg_t *phineas = get_chip_data (nut_reg->phineas_chip);
 
   switch (n)
     {
@@ -304,9 +304,12 @@ static void phineas_update (sim_t *sim)
 }
 
 
-static void phineas_event_fn (sim_t *sim, int chip_num, int event)
+static void phineas_event_fn (sim_t *sim,
+			      chip_handle_t *chip_handle,
+			      int event)
 {
-  phineas_reg_t *clock = sim->chip_data [chip_num];
+  nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
+  phineas_reg_t *phineas = get_chip_data (nut_reg->phineas_chip);
 
   switch (event)
     {
@@ -314,21 +317,21 @@ static void phineas_event_fn (sim_t *sim, int chip_num, int event)
       // phineas_reset (sim);
       break;
     case event_cycle:
-      if (clock->update_counter < 0)
+      if (phineas->update_counter < 0)
 	{
 	  phineas_update (sim);
-	  clock->update_counter = PHINEAS_UPDATE_CYCLES;
+	  phineas->update_counter = PHINEAS_UPDATE_CYCLES;
 	}
       else
-	clock->update_counter--;
+	phineas->update_counter--;
       break;
     case event_sleep:
-      clock->update_counter = PHINEAS_UPDATE_CYCLES;
+      phineas->update_counter = PHINEAS_UPDATE_CYCLES;
       break;
     case event_wake:
     case event_restore_completed:
       phineas_update (sim);
-      clock->update_counter = PHINEAS_UPDATE_CYCLES;
+      phineas->update_counter = PHINEAS_UPDATE_CYCLES;
       break;
     default:
       // warning ("phineas: unknown event %d\n", event);
@@ -344,7 +347,7 @@ static void phineas_init_ops (sim_t *sim)
 
 void phineas_init (sim_t *sim)
 {
-  nut_reg_t *nut_reg = sim->chip_data [0];
+  nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
   phineas_reg_t *clock;
 
   clock = alloc (sizeof (phineas_reg_t));
@@ -354,10 +357,9 @@ void phineas_init (sim_t *sim)
   nut_reg->wr_n_fcn  [PFADDR_PHINEAS] = & phineas_wr_n;
   nut_reg->wr_fcn    [PFADDR_PHINEAS] = & phineas_wr;
 
-  install_chip (sim,
-		PFADDR_PHINEAS,
-		& phineas_chip_detail,
-		clock);
+  nut_reg->phineas_chip = install_chip (sim,
+					& phineas_chip_detail,
+					clock);
 
   phineas_init_ops (sim);
 }

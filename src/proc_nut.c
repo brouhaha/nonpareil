@@ -35,6 +35,7 @@ MA 02111, USA.
 #include "digit_ops.h"
 #include "coconut_lcd.h"
 #include "voyager_lcd.h"
+#include "phineas.h"
 #include "proc_nut.h"
 #include "dis_nut.h"
 
@@ -110,7 +111,7 @@ static chip_detail_t nut_cpu_chip_detail =
 {
   {
     "Nut",
-    0
+    false  // There can only be one Nut processor in the calculator.
   },
   sizeof (nut_cpu_reg_detail) / sizeof (reg_detail_t),
   nut_cpu_reg_detail,
@@ -167,7 +168,7 @@ static bool nut_read_rom (sim_t      *sim,
 			  addr_t     addr,
 			  rom_word_t *val)
 {
-  nut_reg_t *nut_reg = sim->chip_data [0];
+  nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
   uint8_t page;
   uint16_t offset;
 
@@ -190,7 +191,7 @@ static bool nut_write_rom (sim_t      *sim,
 			   addr_t     addr,
 			   rom_word_t *val)
 {
-  nut_reg_t *nut_reg = sim->chip_data [0];
+  nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
   uint8_t page;
   uint16_t offset;
 
@@ -229,7 +230,7 @@ static void nut_print_state (sim_t *sim);
 
 static void bad_op (sim_t *sim, int opcode)
 {
-  nut_reg_t *nut_reg = sim->chip_data [0];
+  nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
 
   printf ("illegal opcode %03x at %04x\n", opcode, nut_reg->prev_pc);
 }
@@ -237,7 +238,7 @@ static void bad_op (sim_t *sim, int opcode)
 
 static void op_arith (sim_t *sim, int opcode)
 {
-  nut_reg_t *nut_reg = sim->chip_data [0];
+  nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
   int op, field;
   int first, last;
 
@@ -443,7 +444,7 @@ static void op_arith (sim_t *sim, int opcode)
 
 static rom_addr_t pop (sim_t *sim)
 {
-  nut_reg_t *nut_reg = sim->chip_data [0];
+  nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
   int i;
   rom_addr_t ret;
 
@@ -456,7 +457,7 @@ static rom_addr_t pop (sim_t *sim)
 
 static void push (sim_t *sim, rom_addr_t a)
 {
-  nut_reg_t *nut_reg = sim->chip_data [0];
+  nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
   int i;
 
   for (i = STACK_DEPTH - 1; i > 0; i--)
@@ -466,14 +467,14 @@ static void push (sim_t *sim, rom_addr_t a)
 
 static void op_return (sim_t *sim, int opcode)
 {
-  nut_reg_t *nut_reg = sim->chip_data [0];
+  nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
 
   nut_reg->pc = pop (sim);
 }
 
 static void op_return_if_carry (sim_t *sim, int opcode)
 {
-  nut_reg_t *nut_reg = sim->chip_data [0];
+  nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
 
   if (nut_reg->prev_carry)
     nut_reg->pc = pop (sim);
@@ -481,7 +482,7 @@ static void op_return_if_carry (sim_t *sim, int opcode)
 
 static void op_return_if_no_carry (sim_t *sim, int opcode)
 {
-  nut_reg_t *nut_reg = sim->chip_data [0];
+  nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
 
   if (! nut_reg->prev_carry)
     nut_reg->pc = pop (sim);
@@ -494,7 +495,7 @@ static void op_pop (sim_t *sim, int opcode)
 
 static void op_pop_c (sim_t *sim, int opcode)
 {
-  nut_reg_t *nut_reg = sim->chip_data [0];
+  nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
   rom_addr_t a;
 
   a = pop (sim);
@@ -507,7 +508,7 @@ static void op_pop_c (sim_t *sim, int opcode)
 
 static void op_push_c (sim_t *sim, int opcode)
 {
-  nut_reg_t *nut_reg = sim->chip_data [0];
+  nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
 
   push (sim, ((nut_reg->c [6] << 12) |
 	      (nut_reg->c [5] << 8) |
@@ -522,7 +523,7 @@ static void op_push_c (sim_t *sim, int opcode)
 
 static void op_short_branch (sim_t *sim, int opcode)
 {
-  nut_reg_t *nut_reg = sim->chip_data [0];
+  nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
   int offset;
 
   offset = (opcode >> 3) & 0x3f;
@@ -536,7 +537,7 @@ static void op_short_branch (sim_t *sim, int opcode)
 
 static void op_long_branch (sim_t *sim, int opcode)
 {
-  nut_reg_t *nut_reg = sim->chip_data [0];
+  nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
 
   nut_reg->inst_state = long_branch;
   nut_reg->first_word = opcode;
@@ -546,7 +547,7 @@ static void op_long_branch (sim_t *sim, int opcode)
 
 static void op_long_branch_word_2 (sim_t *sim, int opcode)
 {
-  nut_reg_t *nut_reg = sim->chip_data [0];
+  nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
   rom_addr_t target;
 
   nut_reg->inst_state = norm;
@@ -569,7 +570,7 @@ static void op_long_branch_word_2 (sim_t *sim, int opcode)
 
 static void op_goto_c (sim_t *sim, int opcode)
 {
-  nut_reg_t *nut_reg = sim->chip_data [0];
+  nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
 
   nut_reg->pc = ((nut_reg->c [6] << 12) |
 		  (nut_reg->c [5] << 8) |
@@ -582,7 +583,7 @@ static void op_goto_c (sim_t *sim, int opcode)
 
 static void select_bank (sim_t *sim, rom_addr_t addr, uint8_t bank)
 {
-  nut_reg_t *nut_reg = sim->chip_data [0];
+  nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
   uint8_t page = addr / PAGE_SIZE;
 
   if (nut_reg->rom [page][bank])
@@ -592,7 +593,7 @@ static void select_bank (sim_t *sim, rom_addr_t addr, uint8_t bank)
 
 static void op_enbank (sim_t *sim, int opcode)
 {
-  nut_reg_t *nut_reg = sim->chip_data [0];
+  nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
 
   select_bank (sim, nut_reg->prev_pc, ((opcode >> 6) & 2) + ((opcode >> 7) & 1));
 }
@@ -604,21 +605,21 @@ static void op_enbank (sim_t *sim, int opcode)
 
 static void op_c_to_m (sim_t *sim, int opcode)
 {
-  nut_reg_t *nut_reg = sim->chip_data [0];
+  nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
 
   reg_copy (nut_reg->m, nut_reg->c, 0, WSIZE - 1);
 }
 
 static void op_m_to_c (sim_t *sim, int opcode)
 {
-  nut_reg_t *nut_reg = sim->chip_data [0];
+  nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
 
   reg_copy (nut_reg->c, nut_reg->m, 0, WSIZE - 1);
 }
 
 static void op_c_exch_m (sim_t *sim, int opcode)
 {
-  nut_reg_t *nut_reg = sim->chip_data [0];
+  nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
 
   reg_exch (nut_reg->c, nut_reg->m, 0, WSIZE - 1);
 }
@@ -630,21 +631,21 @@ static void op_c_exch_m (sim_t *sim, int opcode)
 
 static void op_c_to_n (sim_t *sim, int opcode)
 {
-  nut_reg_t *nut_reg = sim->chip_data [0];
+  nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
 
   reg_copy (nut_reg->n, nut_reg->c, 0, WSIZE - 1);
 }
 
 static void op_n_to_c (sim_t *sim, int opcode)
 {
-  nut_reg_t *nut_reg = sim->chip_data [0];
+  nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
 
   reg_copy (nut_reg->c, nut_reg->n, 0, WSIZE - 1);
 }
 
 static void op_c_exch_n (sim_t *sim, int opcode)
 {
-  nut_reg_t *nut_reg = sim->chip_data [0];
+  nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
 
   reg_exch (nut_reg->c, nut_reg->n, 0, WSIZE - 1);
 }
@@ -669,7 +670,7 @@ static void nut_ram_write_ignore (nut_reg_t *nut_reg, int addr, reg_t *reg)
 
 static void op_c_to_dadd (sim_t *sim, int opcode)
 {
-  nut_reg_t *nut_reg = sim->chip_data [0];
+  nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
 
   nut_reg->ram_addr = ((nut_reg->c [2] << 8) | 
 			(nut_reg->c [1] << 4) |
@@ -678,7 +679,7 @@ static void op_c_to_dadd (sim_t *sim, int opcode)
 
 static void op_c_to_pfad (sim_t *sim, int opcode)
 {
-  nut_reg_t *nut_reg = sim->chip_data [0];
+  nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
 
   nut_reg->pf_addr = ((nut_reg->c [1] << 4) |
 		       (nut_reg->c [0]));
@@ -686,7 +687,7 @@ static void op_c_to_pfad (sim_t *sim, int opcode)
 
 static void op_read_reg_n (sim_t *sim, int opcode)
 {
-  nut_reg_t *nut_reg = sim->chip_data [0];
+  nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
   uint16_t ram_addr;
   uint8_t pf_addr;
   int i;
@@ -732,7 +733,7 @@ static void op_read_reg_n (sim_t *sim, int opcode)
 
 static void op_write_reg_n (sim_t *sim, int opcode)
 {
-  nut_reg_t *nut_reg = sim->chip_data [0];
+  nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
   uint16_t ram_addr;
   uint8_t pf_addr;
   int i;
@@ -777,7 +778,7 @@ static void op_write_reg_n (sim_t *sim, int opcode)
 
 static void op_c_to_data (sim_t *sim, int opcode)
 {
-  nut_reg_t *nut_reg = sim->chip_data [0];
+  nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
   uint16_t ram_addr;
   uint8_t pf_addr;
   int i;
@@ -820,7 +821,7 @@ static void op_c_to_data (sim_t *sim, int opcode)
 
 static void op_test_ext_flag (sim_t *sim, int opcode)
 {
-  nut_reg_t *nut_reg = sim->chip_data [0];
+  nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
 
   nut_reg->carry = 0;  /* no periphs yet */
 }
@@ -831,28 +832,28 @@ static void op_test_ext_flag (sim_t *sim, int opcode)
 
 static void op_set_s (sim_t *sim, int opcode)
 {
-  nut_reg_t *nut_reg = sim->chip_data [0];
+  nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
 
   nut_reg->s [tmap [opcode >> 6]] = 1;
 }
 
 static void op_clr_s (sim_t *sim, int opcode)
 {
-  nut_reg_t *nut_reg = sim->chip_data [0];
+  nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
 
   nut_reg->s [tmap [opcode >> 6]] = 0;
 }
 
 static void op_test_s (sim_t *sim, int opcode)
 {
-  nut_reg_t *nut_reg = sim->chip_data [0];
+  nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
 
   nut_reg->carry = nut_reg->s [tmap [opcode >> 6]];
 }
 
 static int get_s_bits (sim_t *sim, int first, int count)
 {
-  nut_reg_t *nut_reg = sim->chip_data [0];
+  nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
   int i;
   int mask = 1;
   int r = 0;
@@ -867,7 +868,7 @@ static int get_s_bits (sim_t *sim, int first, int count)
 
 static void set_s_bits (sim_t *sim, int first, int count, int a)
 {
-  nut_reg_t *nut_reg = sim->chip_data [0];
+  nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
   int i;
   int mask = 1;
 
@@ -885,7 +886,7 @@ static void op_clear_all_s (sim_t *sim, int opcode)
 
 static void op_c_to_s (sim_t *sim, int opcode)
 {
-  nut_reg_t *nut_reg = sim->chip_data [0];
+  nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
 
   set_s_bits (sim, 0, 4, nut_reg->c [0]);
   set_s_bits (sim, 4, 4, nut_reg->c [1]);
@@ -893,7 +894,7 @@ static void op_c_to_s (sim_t *sim, int opcode)
 
 static void op_s_to_c (sim_t *sim, int opcode)
 {
-  nut_reg_t *nut_reg = sim->chip_data [0];
+  nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
 
   nut_reg->c [0] = get_s_bits (sim, 0, 4);
   nut_reg->c [1] = get_s_bits (sim, 4, 4);
@@ -901,7 +902,7 @@ static void op_s_to_c (sim_t *sim, int opcode)
 
 static void op_c_exch_s (sim_t *sim, int opcode)
 {
-  nut_reg_t *nut_reg = sim->chip_data [0];
+  nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
   int t;
 
   t = get_s_bits (sim, 0, 4);
@@ -914,21 +915,21 @@ static void op_c_exch_s (sim_t *sim, int opcode)
 
 static void op_sb_to_f (sim_t *sim, int opcode)
 {
-  nut_reg_t *nut_reg = sim->chip_data [0];
+  nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
 
   nut_reg->fo = get_s_bits (sim, 0, 8);
 }
 
 static void op_f_to_sb (sim_t *sim, int opcode)
 {
-  nut_reg_t *nut_reg = sim->chip_data [0];
+  nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
 
   set_s_bits (sim, 0, 8, nut_reg->fo);
 }
 
 static void op_f_exch_sb (sim_t *sim, int opcode)
 {
-  nut_reg_t *nut_reg = sim->chip_data [0];
+  nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
   int t;
 
   t = get_s_bits (sim, 0, 8);
@@ -942,7 +943,7 @@ static void op_f_exch_sb (sim_t *sim, int opcode)
 
 static void op_dec_pt (sim_t *sim, int opcode)
 {
-  nut_reg_t *nut_reg = sim->chip_data [0];
+  nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
 
   (*pt (nut_reg))--;
   if ((*pt (nut_reg)) >= WSIZE)  // can't be negative because it is unsigned
@@ -951,7 +952,7 @@ static void op_dec_pt (sim_t *sim, int opcode)
 
 static void op_inc_pt (sim_t *sim, int opcode)
 {
-  nut_reg_t *nut_reg = sim->chip_data [0];
+  nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
 
   (*pt (nut_reg))++;
   if ((*pt (nut_reg)) >= WSIZE)
@@ -960,35 +961,35 @@ static void op_inc_pt (sim_t *sim, int opcode)
 
 static void op_set_pt (sim_t *sim, int opcode)
 {
-  nut_reg_t *nut_reg = sim->chip_data [0];
+  nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
 
   (*pt (nut_reg)) = tmap [opcode >> 6];
 }
 
 static void op_test_pt (sim_t *sim, int opcode)
 {
-  nut_reg_t *nut_reg = sim->chip_data [0];
+  nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
 
   nut_reg->carry = ((*pt (nut_reg)) == tmap [opcode >> 6]);
 }
 
 static void op_sel_p (sim_t *sim, int opcode)
 {
-  nut_reg_t *nut_reg = sim->chip_data [0];
+  nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
 
   nut_reg->q_sel = false;
 }
 
 static void op_sel_q (sim_t *sim, int opcode)
 {
-  nut_reg_t *nut_reg = sim->chip_data [0];
+  nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
 
   nut_reg->q_sel = true;
 }
 
 static void op_test_pq (sim_t *sim, int opcode)
 {
-  nut_reg_t *nut_reg = sim->chip_data [0];
+  nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
 
   if (nut_reg->p == nut_reg->q)
     nut_reg->carry = 1;
@@ -996,7 +997,7 @@ static void op_test_pq (sim_t *sim, int opcode)
 
 static void op_lc (sim_t *sim, int opcode)
 {
-  nut_reg_t *nut_reg = sim->chip_data [0];
+  nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
 
   nut_reg->c [(*pt (nut_reg))--] = opcode >> 6;
   if ((*pt (nut_reg)) >= WSIZE)  /* unsigned, can't be negative */
@@ -1005,7 +1006,7 @@ static void op_lc (sim_t *sim, int opcode)
 
 static void op_c_to_g (sim_t *sim, int opcode)
 {
-  nut_reg_t *nut_reg = sim->chip_data [0];
+  nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
 
   nut_reg->g [0] = nut_reg->c [*pt (nut_reg)];
   if ((*pt (nut_reg)) == (WSIZE - 1))
@@ -1021,7 +1022,7 @@ static void op_c_to_g (sim_t *sim, int opcode)
 
 static void op_g_to_c (sim_t *sim, int opcode)
 {
-  nut_reg_t *nut_reg = sim->chip_data [0];
+  nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
 
   nut_reg->c [(*pt (nut_reg))] = nut_reg->g [0];
   if ((*pt (nut_reg)) == (WSIZE - 1))
@@ -1040,7 +1041,7 @@ static void op_g_to_c (sim_t *sim, int opcode)
 
 static void op_c_exch_g (sim_t *sim, int opcode)
 {
-  nut_reg_t *nut_reg = sim->chip_data [0];
+  nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
   int t;
 
   t = nut_reg->g [0];
@@ -1068,7 +1069,7 @@ static void op_c_exch_g (sim_t *sim, int opcode)
 
 static void op_keys_to_rom_addr (sim_t *sim, int opcode)
 {
-  nut_reg_t *nut_reg = sim->chip_data [0];
+  nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
 
   nut_reg->pc = (nut_reg->pc & 0xff00) | nut_reg->key_buf;
 }
@@ -1082,7 +1083,7 @@ static uint8_t keys [] = { 0x18, 0x17 };
 
 static void op_keys_to_c (sim_t *sim, int opcode)
 {
-  nut_reg_t *nut_reg = sim->chip_data [0];
+  nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
 
 #ifdef VOYAGER_SELF_TEST_KEY_HACK
   nut_reg->c [4] = keys [kp] >> 4; /* nut_reg->key_buf >> 4; */
@@ -1098,14 +1099,14 @@ static void op_keys_to_c (sim_t *sim, int opcode)
 
 static void op_test_kb (sim_t *sim, int opcode)
 {
-  nut_reg_t *nut_reg = sim->chip_data [0];
+  nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
 
   nut_reg->carry = nut_reg->key_flag;
 }
 
 static void op_reset_kb (sim_t *sim, int opcode)
 {
-  nut_reg_t *nut_reg = sim->chip_data [0];
+  nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
 
   nut_reg->key_flag = nut_reg->key_down;
 }
@@ -1121,21 +1122,21 @@ static void op_nop (sim_t *sim, int opcode)
 
 static void op_set_hex (sim_t *sim, int opcode)
 {
-  nut_reg_t *nut_reg = sim->chip_data [0];
+  nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
 
   nut_reg->decimal = false;
 }
 
 static void op_set_dec (sim_t *sim, int opcode)
 {
-  nut_reg_t *nut_reg = sim->chip_data [0];
+  nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
 
   nut_reg->decimal = true;
 }
 
 static void op_rom_to_c (sim_t *sim, int opcode)
 {
-  nut_reg_t *nut_reg = sim->chip_data [0];
+  nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
 
   nut_reg->cxisa_addr = ((nut_reg->c [6] << 12) |
 			  (nut_reg->c [5] << 8) |
@@ -1146,7 +1147,7 @@ static void op_rom_to_c (sim_t *sim, int opcode)
 
 static void op_rom_to_c_cycle_2 (sim_t *sim, int opcode)
 {
-  nut_reg_t *nut_reg = sim->chip_data [0];
+  nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
 
   nut_reg->c [2] = opcode >> 8;
   nut_reg->c [1] = (opcode >> 4) & 0x0f;
@@ -1157,7 +1158,7 @@ static void op_rom_to_c_cycle_2 (sim_t *sim, int opcode)
 
 static void op_clear_abc (sim_t *sim, int opcode)
 {
-  nut_reg_t *nut_reg = sim->chip_data [0];
+  nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
 
   reg_zero (nut_reg->a, 0, WSIZE - 1);
   reg_zero (nut_reg->b, 0, WSIZE - 1);
@@ -1166,14 +1167,14 @@ static void op_clear_abc (sim_t *sim, int opcode)
 
 static void op_ldi (sim_t *sim, int opcode)
 {
-  nut_reg_t *nut_reg = sim->chip_data [0];
+  nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
 
   nut_reg->inst_state = ldi;
 }
 
 static void op_ldi_cycle_2 (sim_t *sim, int opcode)
 {
-  nut_reg_t *nut_reg = sim->chip_data [0];
+  nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
 
   nut_reg->c [2] = opcode >> 8;
   nut_reg->c [1] = (opcode >> 4) & 0x0f;
@@ -1184,7 +1185,7 @@ static void op_ldi_cycle_2 (sim_t *sim, int opcode)
 
 static void op_or (sim_t *sim, int opcode)
 {
-  nut_reg_t *nut_reg = sim->chip_data [0];
+  nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
   int i;
 
   for (i = 0; i < WSIZE; i++)
@@ -1198,7 +1199,7 @@ static void op_or (sim_t *sim, int opcode)
 
 static void op_and (sim_t *sim, int opcode)
 {
-  nut_reg_t *nut_reg = sim->chip_data [0];
+  nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
   int i;
 
   for (i = 0; i < WSIZE; i++)
@@ -1212,7 +1213,7 @@ static void op_and (sim_t *sim, int opcode)
 
 static void op_rcr (sim_t *sim, int opcode)
 {
-  nut_reg_t *nut_reg = sim->chip_data [0];
+  nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
   int i, j;
   reg_t t;
 
@@ -1229,14 +1230,14 @@ static void op_rcr (sim_t *sim, int opcode)
 
 static void op_lld (sim_t *sim, int opcode)
 {
-  nut_reg_t *nut_reg = sim->chip_data [0];
+  nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
 
   nut_reg->carry = 0;  /* "batteries" are fine */
 }
 
 static void op_powoff (sim_t *sim, int opcode)
 {
-  nut_reg_t *nut_reg = sim->chip_data [0];
+  nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
 
 #ifdef SLEEP_DEBUG
   printf ("going to sleep!\n");
@@ -1350,7 +1351,7 @@ static void nut_init_ops (nut_reg_t *nut_reg)
 
 static void nut_disassemble (sim_t *sim, int addr, char *buf, int len)
 {
-  nut_reg_t *nut_reg = sim->chip_data [0];
+  nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
   int op1, op2;
 
   switch (nut_reg->inst_state)
@@ -1378,7 +1379,7 @@ static void print_reg (reg_t reg)
 
 static void print_stat (sim_t *sim)
 {
-  nut_reg_t *nut_reg = sim->chip_data [0];
+  nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
 
   int i;
   for (i = 0; i < SSIZE; i++)
@@ -1388,7 +1389,7 @@ static void print_stat (sim_t *sim)
 
 static void nut_print_state (sim_t *sim)
 {
-  nut_reg_t *nut_reg = sim->chip_data [0];
+  nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
 
   printf ("cycle %5" PRId64 "  ", sim->cycle_count);
   printf ("%c=%x ", (nut_reg->q_sel) ? 'p' : 'P', nut_reg->p);
@@ -1417,7 +1418,7 @@ static void nut_print_state (sim_t *sim)
 
 static bool nut_execute_cycle (sim_t *sim)
 {
-  nut_reg_t *nut_reg = sim->chip_data [0];
+  nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
   int opcode;
 
   if (! nut_reg->awake)
@@ -1470,7 +1471,7 @@ static bool nut_execute_cycle (sim_t *sim)
 
 static bool nut_execute_instruction (sim_t *sim)
 {
-  nut_reg_t *nut_reg = sim->chip_data [0];
+  nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
 
   do
     {
@@ -1550,7 +1551,7 @@ static bool nut_parse_listing_line (char *buf, int *bank, int *addr,
 
 static void nut_press_key (sim_t *sim, int keycode)
 {
-  nut_reg_t *nut_reg = sim->chip_data [0];
+  nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
 
 #if 0
   if ((! nut_reg->awake) && (! nut_reg->display_enable) && (keycode != 0x18))
@@ -1569,7 +1570,7 @@ static void nut_press_key (sim_t *sim, int keycode)
 
 static void nut_release_key (sim_t *sim)
 {
-  nut_reg_t *nut_reg = sim->chip_data [0];
+  nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
 
   nut_reg->key_down = false;
 }
@@ -1582,7 +1583,7 @@ static void nut_set_ext_flag (sim_t *sim, int flag, bool state)
 
 static void nut_reset (sim_t *sim)
 {
-  nut_reg_t *nut_reg = sim->chip_data [0];
+  nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
   int i;
 
   sim->cycle_count = 0;
@@ -1618,7 +1619,7 @@ static void nut_reset (sim_t *sim)
 
 static bool nut_read_ram (sim_t *sim, int addr, uint64_t *val)
 {
-  nut_reg_t *nut_reg = sim->chip_data [0];
+  nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
   uint64_t data = 0;
   int i;
 
@@ -1642,7 +1643,7 @@ static bool nut_read_ram (sim_t *sim, int addr, uint64_t *val)
 
 static bool nut_write_ram (sim_t *sim, int addr, uint64_t *val)
 {
-  nut_reg_t *nut_reg = sim->chip_data [0];
+  nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
   uint64_t data;
   int i;
 
@@ -1676,7 +1677,7 @@ static void nut_new_rom_addr_space (sim_t *sim,
 
 static void nut_new_pf_addr_space (sim_t *sim, int max_pf)
 {
-  nut_reg_t *nut_reg = sim->chip_data [0];
+  nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
 
   nut_reg->max_pf = max_pf;
   nut_reg->pf_exists = alloc (max_pf * sizeof (bool));
@@ -1685,7 +1686,7 @@ static void nut_new_pf_addr_space (sim_t *sim, int max_pf)
 
 static void nut_new_ram_addr_space (sim_t *sim, int max_ram)
 {
-  nut_reg_t *nut_reg = sim->chip_data [0];
+  nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
 
   sim->max_ram = max_ram;
   nut_reg->ram_exists   = alloc (max_ram * sizeof (bool));
@@ -1697,7 +1698,7 @@ static void nut_new_ram_addr_space (sim_t *sim, int max_ram)
 
 static void nut_new_ram (sim_t *sim, int base_addr, int count)
 {
-  nut_reg_t *nut_reg = sim->chip_data [0];
+  nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
   int i;
 
   for (i = base_addr; i < (base_addr + count); i++)
@@ -1711,7 +1712,7 @@ static void nut_new_processor (sim_t *sim, int ram_size)
 
   nut_reg = alloc (sizeof (nut_reg_t));
 
-  install_chip (sim, 0, & nut_cpu_chip_detail, nut_reg);
+  install_chip (sim, & nut_cpu_chip_detail, nut_reg);
 
   nut_init_ops (nut_reg);
 
@@ -1768,13 +1769,13 @@ static void nut_new_processor (sim_t *sim, int ram_size)
 
 static void nut_free_processor (sim_t *sim)
 {
-  remove_chip (sim, 0);
+  remove_chip (sim->first_chip);
 }
 
 
-static void nut_event_fn (sim_t *sim, int chip_num, int event)
+static void nut_event_fn (sim_t *sim, chip_handle_t *chip_handle, int event)
 {
-  // nut_reg_t *nut_reg = sim->chip_data [0];
+  // nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
 
   switch (event)
     {
@@ -1792,8 +1793,6 @@ processor_dispatch_t nut_processor =
   {
     .max_rom             = MAX_PAGE * PAGE_SIZE,
     .max_bank            = MAX_BANK,
-
-    .max_chip_count      = MAX_CHIP_COUNT,
 
     .new_processor       = nut_new_processor,
     .free_processor      = nut_free_processor,

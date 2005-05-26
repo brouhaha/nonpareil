@@ -70,7 +70,9 @@ static chip_detail_t voyager_display_chip_detail =
 {
   {
     "Voyager LCD",
-    0
+    false  // There is normally only one LCD driver on the bus.  There
+           // are two R2D2 chips in an HP-15C, but one of the does not
+           // have the LCD driver bonded out.
   },
   sizeof (voyager_display_reg_detail) / sizeof (reg_detail_t),
   voyager_display_reg_detail,
@@ -80,7 +82,8 @@ static chip_detail_t voyager_display_chip_detail =
 
 static void voyager_op_display_off (sim_t *sim, int opcode)
 {
-  voyager_display_reg_t *display = sim->chip_data [PFADDR_LCD_DISPLAY];
+  nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
+  voyager_display_reg_t *display = get_chip_data (nut_reg->display_chip);
 
   display->enable = 0;
   display->blink = 0;
@@ -92,7 +95,8 @@ static void voyager_op_display_off (sim_t *sim, int opcode)
 
 static void voyager_op_display_toggle (sim_t *sim, int opcode)
 {
-  voyager_display_reg_t *display = sim->chip_data [PFADDR_LCD_DISPLAY];
+  nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
+  voyager_display_reg_t *display = get_chip_data (nut_reg->display_chip);
 
   display->enable = ! display->enable;
   display->count = 0;  // force immediate display update
@@ -101,7 +105,8 @@ static void voyager_op_display_toggle (sim_t *sim, int opcode)
 
 static void voyager_op_display_blink (sim_t *sim, int opcode)
 {
-  voyager_display_reg_t *display = sim->chip_data [PFADDR_LCD_DISPLAY];
+  nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
+  voyager_display_reg_t *display = get_chip_data (nut_reg->display_chip);
 
   display->enable = 1;
   display->blink = 1;
@@ -113,7 +118,7 @@ static void voyager_op_display_blink (sim_t *sim, int opcode)
 
 static void voyager_display_init_ops (sim_t *sim)
 {
-  nut_reg_t *nut_reg = sim->chip_data [0];
+  nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
 
   sim->display_digits = VOYAGER_DISPLAY_DIGITS;
   nut_reg->op_fcn [0x030] = voyager_op_display_blink;
@@ -122,10 +127,8 @@ static void voyager_display_init_ops (sim_t *sim)
 }
 
 
-static void voyager_display_reset (sim_t *sim)
+static void voyager_display_reset (voyager_display_reg_t *display)
 {
-  voyager_display_reg_t *display = sim->chip_data [PFADDR_LCD_DISPLAY];
-
   display->enable = 0;
   display->blink = 0;
   display->count = 0;
@@ -192,10 +195,9 @@ voyager_segment_info_t voyager_display_map [11] [10] =
   };
 
 
-static void voyager_display_update (sim_t *sim)
+static void voyager_display_update (sim_t *sim, voyager_display_reg_t *display)
 {
-  nut_reg_t *nut_reg = sim->chip_data [0];
-  voyager_display_reg_t *display = sim->chip_data [PFADDR_LCD_DISPLAY];
+  nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
 
   int digit;
   int segment;
@@ -234,20 +236,20 @@ static void voyager_display_update (sim_t *sim)
 }
 
 
-static void voyager_display_event_fn (sim_t *sim, int chip_num, int event)
+static void voyager_display_event_fn (sim_t *sim, chip_handle_t *chip_handle, int event)
 {
-  nut_reg_t *nut_reg = sim->chip_data [0];
-  voyager_display_reg_t *display = sim->chip_data [PFADDR_LCD_DISPLAY];
+  nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
+  voyager_display_reg_t *display = get_chip_data (nut_reg->display_chip);
 
   switch (event)
     {
     case event_reset:
-       voyager_display_reset (sim);
+       voyager_display_reset (display);
        break;
     case event_cycle:
       if (display->count == 0)
 	{
-	  voyager_display_update (sim);
+	  voyager_display_update (sim, display);
 	  gui_display_update (sim);
 	  display->count = 15;
 	}
@@ -256,7 +258,7 @@ static void voyager_display_event_fn (sim_t *sim, int chip_num, int event)
       break;
     case event_sleep:
       // force display update
-      voyager_display_update (sim);
+      voyager_display_update (sim, display);
       gui_display_update (sim);
       display->count = 15;
 
@@ -277,7 +279,7 @@ static void voyager_display_event_fn (sim_t *sim, int chip_num, int event)
     case event_wake:
     case event_restore_completed:
       // force display update
-      voyager_display_update (sim);
+      voyager_display_update (sim, display);
       gui_display_update (sim);
       display->count = 15;
       break;
@@ -290,14 +292,15 @@ static void voyager_display_event_fn (sim_t *sim, int chip_num, int event)
 
 void voyager_display_init (sim_t *sim)
 {
+  nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
+
   voyager_display_reg_t *display;
 
   voyager_display_init_ops (sim);
 
   display = alloc (sizeof (voyager_display_reg_t));
 
-  install_chip (sim,
-		PFADDR_LCD_DISPLAY, 
-		& voyager_display_chip_detail,
-		display);
+  nut_reg->display_chip = install_chip (sim,
+					& voyager_display_chip_detail,
+					display);
 }

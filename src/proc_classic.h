@@ -46,10 +46,6 @@ typedef digit_t reg_t [WSIZE];
   #define PAGE_SIZE (ROM_SIZE)
 #endif
 
-#define MAX_CHIP_COUNT 3  // A&R, C&T CPU
-                          // program storage (HP-65 only)
-                          // CRC (HP-65 only)
-
 
 typedef struct
 {

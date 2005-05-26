@@ -52,7 +52,12 @@ typedef struct
 
 
 
-typedef void chip_event_fn_t (sim_t *sim, int chip_num, int event);
+typedef struct chip_handle_t chip_handle_t;  // opaque
+
+
+typedef void chip_event_fn_t (sim_t *sim,
+			      chip_handle_t *chip_handle,
+			      int event);
 
 
 typedef struct chip_detail_t
@@ -70,8 +75,6 @@ typedef struct
 {
   int max_rom;
   int max_bank;
-
-  int max_chip_count;
 
   void (* new_processor)       (sim_t *sim, int ram_size);
   void (* free_processor)      (sim_t *sim);
@@ -122,8 +125,8 @@ typedef struct sim_thread_vars_t sim_thread_vars_t;
 
 struct sim_t
 {
-  const chip_detail_t **chip_detail;   // array [max_chip_count]
-  void **chip_data;         // array [max_chip_count]
+  chip_handle_t *first_chip;  // opaque, but always the CPU
+  chip_handle_t *last_chip;   // opaque
 
   bool quit_flag;
 
@@ -166,15 +169,16 @@ struct sim_t
 };
 
 
-// Use -1 for chip_num for don't care.
-// Return value is actual chip_num, or negative if error.
-int install_chip (sim_t *sim,
-		  int chip_num,
-		  const chip_detail_t *chip_detail,
-		  void *chip_data);
+// Returns NULL if error.
+chip_handle_t *install_chip (sim_t *sim,
+			     const chip_detail_t *chip_detail,
+			     void *chip_data);
 
-bool remove_chip (sim_t *sim,
-		  int chip_num);
+void remove_chip (chip_handle_t *chip_handle);
 
 // Notify all chips of an event.
 void chip_event (sim_t *sim, int event);
+
+const chip_detail_t *get_chip_detail (chip_handle_t *chip_handle);
+
+void *get_chip_data (chip_handle_t *chip_handle);
