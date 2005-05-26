@@ -398,16 +398,16 @@ static void coconut_display_event_fn (sim_t *sim, int chip_num, int event)
 
 void coconut_display_init (sim_t *sim)
 {
-  coconut_display_init_ops (sim);
-
   nut_reg_t *nut_reg = sim->chip_data [0];
   coconut_display_reg_t *display;
 
+  coconut_display_init_ops (sim);
+
   display = alloc (sizeof (coconut_display_reg_t));
   nut_reg->pf_exists [PFADDR_LCD_DISPLAY] = 1;
-  nut_reg->rd_n_fcn [PFADDR_LCD_DISPLAY] = & coconut_lcd_rd_n;
-  nut_reg->wr_n_fcn [PFADDR_LCD_DISPLAY] = & coconut_lcd_wr_n;
-  nut_reg->wr_fcn   [PFADDR_LCD_DISPLAY] = & coconut_lcd_wr;
+  nut_reg->rd_n_fcn  [PFADDR_LCD_DISPLAY] = & coconut_lcd_rd_n;
+  nut_reg->wr_n_fcn  [PFADDR_LCD_DISPLAY] = & coconut_lcd_wr_n;
+  nut_reg->wr_fcn    [PFADDR_LCD_DISPLAY] = & coconut_lcd_wr;
 
   install_chip (sim,
 		PFADDR_LCD_DISPLAY, 
