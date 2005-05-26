@@ -1773,7 +1773,7 @@ static void nut_free_processor (sim_t *sim)
 }
 
 
-static void nut_event_fn (sim_t *sim, chip_handle_t *chip_handle, int event)
+static void nut_event_fn (sim_t *sim, chip_t *chip, int event)
 {
   // nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
 

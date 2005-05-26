@@ -118,6 +118,6 @@ typedef struct nut_reg_t
   void (* wr_n_fcn [256])(struct sim_t *sim, int n);
   void (* wr_fcn   [256])(struct sim_t *sim);
 
-  chip_handle_t *display_chip;  // opaque
-  chip_handle_t *phineas_chip;  // opaque
+  chip_t *display_chip;  // opaque
+  chip_t *phineas_chip;  // opaque
 } nut_reg_t;

@@ -168,7 +168,7 @@ static void write_reg (xmlTextWriterPtr writer,
 
 
 static void write_registers (sim_t *sim,
-			     int chip,
+			     chip_t *chip,
 			     int first_reg,
 			     int last_reg,
 			     xmlTextWriterPtr writer)
@@ -204,18 +204,18 @@ static void write_registers (sim_t *sim,
 
 
 static void write_chip_address (sim_t *sim,
-				int chip_num,
+				chip_t *chip,
 				xmlTextWriterPtr writer)
 {
   const reg_info_t *reg_info;
   uint64_t val;
   int digits;
 
-  reg_info = sim_get_register_info (sim, chip_num, 0);
+  reg_info = sim_get_register_info (sim, chip, 0);
   if (! reg_info)
     fatal (3, "error getting chip address from sim\n");
 
-  if (! sim_read_register (sim, chip_num, 0, 0, & val))
+  if (! sim_read_register (sim, chip, 0, 0, & val))
     fatal (3, "error getting chip address from sim\n");
 
   digits = (reg_info->element_bits + 3) / 4;
@@ -226,15 +226,15 @@ static void write_chip_address (sim_t *sim,
 
 static void write_chips (sim_t *sim, xmlTextWriterPtr writer)
 {
-  int chip_num;
+  chip_t *chip;
 
-  for (chip_num = 0; true; chip_num++)
+  for (chip = sim_get_first_chip (sim); chip; chip = sim_get_next_chip (sim, chip))
     {
       int first_reg = 0;
       int register_count;
       const chip_info_t *chip_info;
 
-      chip_info = sim_get_chip_info (sim, chip_num);
+      chip_info = sim_get_chip_info (sim, chip);
       if (! chip_info)
 	break;
       xml_start_element (writer, "chip");
@@ -242,14 +242,14 @@ static void write_chips (sim_t *sim, xmlTextWriterPtr writer)
 
       if (chip_info->multiple)
 	{
-	  write_chip_address (sim, chip_num, writer);
+	  write_chip_address (sim, chip, writer);
 	  first_reg = 1;
 	}
 
-      register_count = sim_get_reg_count (sim, chip_num);
+      register_count = sim_get_reg_count (sim, chip);
       if (register_count)
 	write_registers (sim,
-			 chip_num,
+			 chip,
 			 first_reg,
 			 register_count - 1,  // last_reg
 			 writer);

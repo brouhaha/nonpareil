@@ -1150,7 +1150,7 @@ static void classic_free_processor (sim_t *sim)
 }
 
 
-static void classic_event_fn (sim_t *sim, chip_handle_t *chip_handle, int event)
+static void classic_event_fn (sim_t *sim, chip_t *chip, int event)
 {
   // classic_cpu_reg_t *cpu_reg = get_chip_data (sim->first_chip);
 

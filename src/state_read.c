@@ -48,10 +48,8 @@ MA 02111, USA.
 
 typedef struct
 {
-  bool got_chip_addr;
-  uint64_t chip_addr;
-  char *chip_name;
   sim_t *sim;
+  chip_t *chip;
 } sax_data_t;
 
 
@@ -153,27 +151,37 @@ static void parse_switch (sax_data_t *sdata, char **attrs)
 static void parse_chip (sax_data_t *sdata, char **attrs)
 {
   int i;
-  bool got_chip_name = false;
-
-  sdata->got_chip_addr = false;
+  uint64_t addr = 0;
+  char *name;
+  bool got_addr = false;
+  bool got_name = false;
+  const chip_info_t *chip_info;
 
   for (i = 0; attrs && attrs [i]; i += 2)
     {
       if (strcmp (attrs [i], "addr") == 0)
 	{
-	  sdata->chip_addr = str_to_uint64 (attrs [i + 1], NULL, 16);
-	  sdata->got_chip_addr = true;
+	  addr = str_to_uint64 (attrs [i + 1], NULL, 16);
+	  got_addr = true;
 	}
       else if (strcmp (attrs [i], "name") == 0)
 	{
-	  realloc_strcpy (& sdata->chip_name, attrs [i + 1]);
-	  got_chip_name = true;
+	  name = attrs [i + 1];
+	  got_name = true;
 	}
       else
 	warning ("unknown attribute '%s' in 'chip' element\n", attrs [i]);
     }
-  if (! got_chip_name)
+  if (! got_name)
     fatal (3, "chip element with no name\n");
+  sdata->chip = sim_find_chip (sdata->sim, name, addr);
+  if (! sdata->chip)
+    fatal (3, "can't find chip '%s' addr %" PRIx64, name, addr);
+  chip_info = sim_get_chip_info (sdata->sim, sdata->chip);
+  if (! chip_info)
+    fatal (3, "can't get info on chip '%s' addr %" PRIx64 "\n,", name, addr);
+  if (got_addr && ! chip_info->multiple)
+    warning ("address specified unnecessarily for chip '%s'\n", name);
 }
 
 
@@ -222,7 +230,7 @@ static void parse_reg (sax_data_t *sdata, char **attrs)
     return;
 
   // find register
-  reg_num = sim_find_register (sdata->sim, sdata->chip_addr, name);
+  reg_num = sim_find_register (sdata->sim, sdata->chip, name);
   if (reg_num < 0)
     {
       warning ("unknown register '%s'\n", name);
@@ -230,7 +238,7 @@ static void parse_reg (sax_data_t *sdata, char **attrs)
     }
 
   // write register
-  if (! sim_write_register (sdata->sim, sdata->chip_addr, reg_num, index, & data))
+  if (! sim_write_register (sdata->sim, sdata->chip, reg_num, index, & data))
     fatal (3, "error writing '%014" PRIx64 "' to register '%s' (num %d) index %d\n", data, name, reg_num, index);
 }
 
@@ -376,9 +384,6 @@ void state_read_xml (sim_t *sim, char *fn)
   xmlSAXUserParseFile (& sax_handler,
 		       & sdata,
 		       fn);
-
-  if (sdata.chip_name)
-    free (sdata.chip_name);
 
   sim_event (sim, event_restore_completed);
   sim_set_io_pause_flag (sim, false);

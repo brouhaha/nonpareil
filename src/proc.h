@@ -51,6 +51,10 @@ typedef uint16_t rom_word_t;
 typedef struct sim_t sim_t;
 
 
+// opaque type representing a chip
+typedef struct chip_t chip_t;
+
+
 // chip_info_t is used to get information on chips
 typedef struct
 {
@@ -61,7 +65,7 @@ typedef struct
 } chip_info_t;
 
 
-// ref_info_t is used to get information on the available architecturally
+// reg_info_t is used to get information on the available architecturally
 // visible state of a simulated chip.
 typedef struct
 {
@@ -142,37 +146,52 @@ bool sim_write_ram (sim_t *sim,
 		    uint64_t *val);
 
 
+// Returns NULL if there are no chips (should never happen).
+chip_t *sim_get_first_chip (sim_t *sim);
+
+
+// Returns NULL if there are no more chips.
+chip_t *sim_get_next_chip (sim_t *sim, chip_t *chip);
+
+
+// Returns NULL if it can't find a chip with the specified name
+// (and address for chips that support multiple instances).
+chip_t *sim_find_chip (sim_t *sim,
+		       const char *name,
+		       uint64_t addr);
+
+
 // Returns NULL if specified chip_num doesn't exist.
 const chip_info_t *sim_get_chip_info (sim_t *sim,
-				      int   chip_num);
+				      chip_t *chip);
 
 
 
 // Returns n where valid register numbers are in the range 0 .. n-1.
-int sim_get_reg_count (sim_t *sim, int chip_num);
+int sim_get_reg_count (sim_t *sim, chip_t *chip);
 
 
 // Returns register number, or -1 if not found.
 int sim_find_register (sim_t *sim,
-		       int   chip_num,
+		       chip_t *chip,
 		       char  *name);
 
 
 // returns NULL if reg_num out of range
 const reg_info_t *sim_get_register_info (sim_t *sim,
-					 int   chip_num,
+					 chip_t *chip,
 					 int   reg_num);  // 0 and up
 
 // returns false if reg_num or index out of range
 bool sim_read_register (sim_t   *sim,
-			int     chip_num,
+			chip_t  *chip,
 			int     reg_num,
 			int     index,
 			uint64_t *val);
 
 // returns false if reg_num or index out of range
 bool sim_write_register (sim_t   *sim,
-			 int     chip_num,
+			 chip_t  *chip,
 			 int     reg_num,
 			 int     index,
 			 uint64_t *val);

@@ -52,11 +52,8 @@ typedef struct
 
 
 
-typedef struct chip_handle_t chip_handle_t;  // opaque
-
-
 typedef void chip_event_fn_t (sim_t *sim,
-			      chip_handle_t *chip_handle,
+			      chip_t *chip,
 			      int event);
 
 
@@ -125,8 +122,8 @@ typedef struct sim_thread_vars_t sim_thread_vars_t;
 
 struct sim_t
 {
-  chip_handle_t *first_chip;  // opaque, but always the CPU
-  chip_handle_t *last_chip;   // opaque
+  chip_t *first_chip;  // opaque, but always the CPU
+  chip_t *last_chip;   // opaque
 
   bool quit_flag;
 
@@ -170,15 +167,15 @@ struct sim_t
 
 
 // Returns NULL if error.
-chip_handle_t *install_chip (sim_t *sim,
-			     const chip_detail_t *chip_detail,
-			     void *chip_data);
+chip_t *install_chip (sim_t *sim,
+		      const chip_detail_t *chip_detail,
+		      void *chip_data);
 
-void remove_chip (chip_handle_t *chip_handle);
+void remove_chip (chip_t *chip);
 
 // Notify all chips of an event.
 void chip_event (sim_t *sim, int event);
 
-const chip_detail_t *get_chip_detail (chip_handle_t *chip_handle);
+const chip_detail_t *get_chip_detail (chip_t *chip);
 
-void *get_chip_data (chip_handle_t *chip_handle);
+void *get_chip_data (chip_t *chip);

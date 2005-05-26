@@ -1633,7 +1633,7 @@ static void woodstock_free_processor (sim_t *sim)
 }
 
 
-static void woodstock_event_fn (sim_t *sim, chip_handle_t *chip_handle, int event)
+static void woodstock_event_fn (sim_t *sim, chip_t *chip, int event)
 {
   // act_reg_t *act_reg = get_chip_data (sim->first_chip);
 

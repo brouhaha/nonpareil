@@ -305,7 +305,7 @@ static void phineas_update (sim_t *sim)
 
 
 static void phineas_event_fn (sim_t *sim,
-			      chip_handle_t *chip_handle,
+			      chip_t *chip,
 			      int event)
 {
   nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
