@@ -43,6 +43,7 @@ typedef struct
 {
   reg_info_t info;     // publicly visible info: name, bit count, etc.
   size_t     offset;   // offset into register data structure
+  size_t     size;     // sizeof(field) in bytes (for one element)
   // accessor functions - if NULL, use default
   reg_accessor_t *get;
   reg_accessor_t *set;

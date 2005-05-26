@@ -41,35 +41,61 @@ MA 02111, USA.
 #undef STACK_WARNING
 
 
+#define WR(name, field, bits, radix, get, set, arg) \
+    {{ name, bits, 1, radix },                      \
+     OFFSET_OF (act_reg_t, field),                  \
+     SIZE_OF (act_reg_t, field),                    \
+     get, set, arg } 
+
+
+#define WRA(name, field, bits, radix, get, set, arg, array) \
+    {{ name, bits, array, radix },                          \
+     OFFSET_OF (act_reg_t, field[0]),                       \
+     SIZE_OF (act_reg_t, field[0]),                         \
+     get, set, arg } 
+
+
+#define WRD(name, field, digits)      \
+    {{ name, digits * 4, 1, 16 },     \
+     OFFSET_OF (act_reg_t, field),    \
+     SIZE_OF (act_reg_t, field),      \
+     get_digits, set_digits, digits } 
+
+
 static reg_detail_t woodstock_cpu_reg_detail [] =
 {
-  {{ "a",        56,  1, 16 }, OFFSET_OF (act_reg_t, a),  get_digits, set_digits, WSIZE },
-  {{ "b",        56,  1, 16 }, OFFSET_OF (act_reg_t, b),  get_digits, set_digits, WSIZE },
-  {{ "c",        56,  1, 16 }, OFFSET_OF (act_reg_t, c),  get_digits, set_digits, WSIZE },
-  {{ "y",        56,  1, 16 }, OFFSET_OF (act_reg_t, y),  get_digits, set_digits, WSIZE },
-  {{ "z",        56,  1, 16 }, OFFSET_OF (act_reg_t, z),  get_digits, set_digits, WSIZE },
-  {{ "t",        56,  1, 16 }, OFFSET_OF (act_reg_t, t),  get_digits, set_digits, WSIZE },
-  {{ "m1",       56,  1, 16 }, OFFSET_OF (act_reg_t, m1), get_digits, set_digits, WSIZE },
-  {{ "m2",       56,  1, 16 }, OFFSET_OF (act_reg_t, m2), get_digits, set_digits, WSIZE },
-  {{ "p",         4,  1, 16 }, OFFSET_OF (act_reg_t, p),       NULL, NULL, 0 },
-  {{ "f",         4,  1, 16 }, OFFSET_OF (act_reg_t, f),       NULL, NULL, 0 },
-  {{ "decimal",   1,  1,  2 }, OFFSET_OF (act_reg_t, decimal), NULL, NULL, 0 },
-  {{ "carry",     1,  1,  2 }, OFFSET_OF (act_reg_t, carry),   NULL, NULL, 0 },
-  // prev_carry
-  {{ "s",     SSIZE,  1,  2 }, OFFSET_OF (act_reg_t, s), get_bools, set_bools, SSIZE },
-  {{ "ext_flag", EXT_FLAG_SIZE,  1,  2 }, OFFSET_OF (act_reg_t, ext_flag), get_bools, set_bools, EXT_FLAG_SIZE },
-  {{ "bank",      1,  1,  2 }, OFFSET_OF (act_reg_t, bank), NULL, NULL, 0 },
-  {{ "pc",       12,  1,  8 }, OFFSET_OF (act_reg_t, pc),   NULL, NULL, 0 },
-  // prev_pc
-  {{ "stack", 12, STACK_SIZE, 8 }, OFFSET_OF (act_reg_t, return_stack), NULL, NULL, 0 },
-  {{ "del_rom_flag", 1,  1,  2 }, OFFSET_OF (act_reg_t, del_rom_flag),  NULL, NULL, 0 },
-  {{ "del_rom",   4,  1,  8 }, OFFSET_OF (act_reg_t, del_rom), NULL, NULL, 0 },
+  //   name     field  digits
+  WRD ("a",     a,     WSIZE),
+  WRD ("b",     b,     WSIZE),
+  WRD ("c",     c,     WSIZE),
+  WRD ("y",     y,     WSIZE),
+  WRD ("z",     z,     WSIZE),
+  WRD ("t",     t,     WSIZE),
+  WRD ("m1",    m1,    WSIZE),
+  WRD ("m2",    m2,    WSIZE),
 
-  {{ "display_enable", 1,  1,  2 }, OFFSET_OF (act_reg_t, display_enable), NULL, NULL, 0 },
-  {{ "display_14_digit",  1,  1,  2 }, OFFSET_OF (act_reg_t, display_14_digit),   NULL, NULL, 0 },
+  //   name       field    bits   radix get        set        arg
+  WR  ("p",       p,       4,     16,   NULL,      NULL,      0),
+  WR  ("f",       f,       4,     16,   NULL,      NULL,      0),
+  WR  ("decimal", decimal, 1,      2,   NULL,      NULL,      0),
+  WR  ("carry",   carry,   1,      2,   NULL,      NULL,      0),
+  // prev_carry
+
+  WR  ("s",        s,        SSIZE,         2, get_bools, set_bools, SSIZE),
+  WR  ("ext_flag", ext_flag, EXT_FLAG_SIZE, 2, get_bools, set_bools, EXT_FLAG_SIZE),
+
+  WR  ("bank",    bank,    1,     2,   NULL,      NULL,      0),
+  WR  ("pc",      pc,      12,    8,   NULL,      NULL,      0),
+  // prev_pc
+  WRA ("stack",   stack,   12,    8, NULL,      NULL,        0, STACK_SIZE),
+  WR  ("del_rom_flag", del_rom_flag,   1,     2,   NULL,      NULL,      0),
+  WR  ("del_rom", del_rom, 4,     8,   NULL,      NULL,      0),
+
+  WR  ("display_enable", display_enable,   1,     2,   NULL,      NULL,      0),
+  WR  ("display_14_digit", display_14_digit,   1,     2,   NULL,      NULL,      0),
   // key_flag
   // key_buf
-  {{ "ram_addr",  8,  1, 16 }, OFFSET_OF (act_reg_t, ram_addr), NULL, NULL, 0 },
+  WR  ("ram_addr", ram_addr, 8, 16, NULL, NULL, 0)
 };
 
 
@@ -391,7 +417,7 @@ static void op_jsb (sim_t *sim, int opcode)
 {
   act_reg_t *act_reg = sim->chip_data [0];
 
-  act_reg->return_stack [act_reg->sp] = act_reg->pc;
+  act_reg->stack [act_reg->sp] = act_reg->pc;
   act_reg->sp++;
   if (act_reg->sp >= STACK_SIZE)
     {
@@ -417,7 +443,7 @@ static void op_return (sim_t *sim, int opcode)
 #endif
       act_reg->sp = STACK_SIZE - 1;
     }
-  act_reg->pc = act_reg->return_stack [act_reg->sp];
+  act_reg->pc = act_reg->stack [act_reg->sp];
 }
 
 

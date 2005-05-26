@@ -50,14 +50,33 @@ typedef struct
 } coconut_display_reg_t;
 
 
+#define CLR(name, field, bits, radix, get, set, arg) \
+    {{ name, bits, 1, radix },                       \
+     OFFSET_OF (coconut_display_reg_t, field),       \
+     SIZE_OF (coconut_display_reg_t, field),         \
+     get, set, arg } 
+
+
+#define CLRD(name, field, digits)              \
+    {{ name, digits * 4, 1, 16 },              \
+     OFFSET_OF (coconut_display_reg_t, field), \
+     SIZE_OF (coconut_display_reg_t, field),   \
+     get_digits, set_digits, digits } 
+
+
 static reg_detail_t coconut_display_reg_detail [] =
 {
-  {{ "enable", 1, 1, 2 }, OFFSET_OF (coconut_display_reg_t, enable), NULL, NULL, 0 },
-  {{ "blink",  1, 1, 2 }, OFFSET_OF (coconut_display_reg_t, blink),  NULL, NULL, 0 },
-  {{ "a",      COCONUT_DISPLAY_DIGITS * 4,  1, 16 }, OFFSET_OF (coconut_display_reg_t, a),    get_digits, set_digits, COCONUT_DISPLAY_DIGITS },
-  {{ "b",      COCONUT_DISPLAY_DIGITS * 4,  1, 16 }, OFFSET_OF (coconut_display_reg_t, b),    get_digits, set_digits, COCONUT_DISPLAY_DIGITS },
-  {{ "c",      COCONUT_DISPLAY_DIGITS * 1,  1, 16 }, OFFSET_OF (coconut_display_reg_t, c),    get_bit_digits, set_bit_digits, COCONUT_DISPLAY_DIGITS },
-  {{ "ann",    COCONUT_DISPLAY_DIGITS,      1,  2 }, OFFSET_OF (coconut_display_reg_t, ann),  NULL, NULL, 0 },
+  //    name      field   bits radix get   set   arg
+  CLR  ("enable", enable, 1,   2,    NULL, NULL, 0),
+  CLR  ("blink",  blink,  1,   2,    NULL, NULL, 0),
+
+  //    name     field  digits
+  CLRD ("a",     a,     COCONUT_DISPLAY_DIGITS),
+  CLRD ("b",     b,     COCONUT_DISPLAY_DIGITS),
+  CLRD ("c",     c,     COCONUT_DISPLAY_DIGITS),
+
+  //    name     field  bits                    radix get   set   arg
+  CLR  ("ann",   ann,   COCONUT_DISPLAY_DIGITS, 2,    NULL, NULL, 0)
 };
 
 

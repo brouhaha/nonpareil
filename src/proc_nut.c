@@ -45,26 +45,50 @@ static void print_reg (reg_t reg);
 #undef WARN_STRAY_WRITE
 
 
+#define NR(name, field, bits, radix, get, set, arg) \
+    {{ name, bits, 1, radix },                      \
+     OFFSET_OF (nut_reg_t, field),                  \
+     SIZE_OF (nut_reg_t, field),                    \
+     get, set, arg } 
+
+
+#define NRA(name, field, bits, radix, get, set, arg, array) \
+    {{ name, bits, array, radix },                          \
+     OFFSET_OF (nut_reg_t, field[0]),                       \
+     SIZE_OF (nut_reg_t, field[0]),                         \
+     get, set, arg } 
+
+
+#define NRD(name, field, digits)      \
+    {{ name, digits * 4, 1, 16 },     \
+     OFFSET_OF (nut_reg_t, field),    \
+     SIZE_OF (nut_reg_t, field),      \
+     get_digits, set_digits, digits } 
+
+
 static reg_detail_t nut_cpu_reg_detail [] =
 {
-  {{ "a",        56,  1, 16 }, OFFSET_OF (nut_reg_t, a),  get_digits, set_digits, WSIZE },
-  {{ "b",        56,  1, 16 }, OFFSET_OF (nut_reg_t, b),  get_digits, set_digits, WSIZE },
-  {{ "c",        56,  1, 16 }, OFFSET_OF (nut_reg_t, c),  get_digits, set_digits, WSIZE },
-  {{ "m",        56,  1, 16 }, OFFSET_OF (nut_reg_t, m),  get_digits, set_digits, WSIZE },
-  {{ "n",        56,  1, 16 }, OFFSET_OF (nut_reg_t, n),  get_digits, set_digits, WSIZE },
-  {{ "g",         8,  1, 16 }, OFFSET_OF (nut_reg_t, g),  get_digits,  set_digits, 2 },
-  {{ "p",         4,  1, 16 }, OFFSET_OF (nut_reg_t, p),     NULL,     NULL, 0 },
-  {{ "q",         4,  1, 16 }, OFFSET_OF (nut_reg_t, q),     NULL,     NULL, 0 },
-  {{ "q_sel",     1,  1,  2 }, OFFSET_OF (nut_reg_t, q_sel), NULL,     NULL, 0 },
-  {{ "fo",        8,  1, 16 }, OFFSET_OF (nut_reg_t, fo), get_digits,  set_digits, 2 },
-  {{ "s",     SSIZE,  1,  2 }, OFFSET_OF (nut_reg_t, s),  get_bools,    set_bools, SSIZE },
-  {{ "pc",       16,  1, 16 }, OFFSET_OF (nut_reg_t, pc), NULL, NULL, 0 },
-  // prev_pc
-  {{ "stack", 16, STACK_DEPTH, 16 }, OFFSET_OF (nut_reg_t, stack), NULL, NULL, 0 },
-  {{ "decimal",   1,  1,  2 }, OFFSET_OF (nut_reg_t, decimal), NULL, NULL, 0 },
-  {{ "carry",     1,  1,  2 }, OFFSET_OF (nut_reg_t, carry),   NULL, NULL, 0 },
-  {{ "awake",     1,  1,  2 }, OFFSET_OF (nut_reg_t, awake),   NULL, NULL, 0 },
+  //   name     field  digits
+  NRD ("a",     a,     WSIZE),
+  NRD ("b",     b,     WSIZE),
+  NRD ("c",     c,     WSIZE),
+  NRD ("m",     m,     WSIZE),
+  NRD ("n",     n,     WSIZE),
 
+  NRD ("g",     g,     2),
+
+  //   name       field    bits   radix get        set        arg
+  NR  ("p",       p,       4,     16,   NULL,      NULL,      0),
+  NR  ("q",       q,       4,     16,   NULL,      NULL,      0),
+  NR  ("q_sel",   q_sel,   1,      2,   NULL,      NULL,      0),
+  NR  ("fo",      fo,      8,     16,   NULL,      NULL,      0),
+  NR  ("s",       s,       SSIZE,  2,   get_bools, set_bools, SSIZE),
+  NR  ("pc",      pc,      16,    16,   NULL,      NULL,      0),
+  // prev_pc
+  NRA ("stack",   stack,   16,    16,   NULL,      NULL,      0, STACK_DEPTH ),
+  NR  ("decimal", decimal, 1,      2,   NULL,      NULL,      0),
+  NR  ("carry",   carry,   1,      2,   NULL,      NULL,      0),
+  NR  ("awake",   awake,   1,      2,   NULL,      NULL,      0),
   // inst_state
   // first_word
   // cxisa_addr
@@ -73,9 +97,9 @@ static reg_detail_t nut_cpu_reg_detail [] =
   // key_down
   // key_flag
   // key_buf
-  {{ "pf_addr",   8,  1, 16 }, OFFSET_OF (nut_reg_t, pf_addr),  NULL, NULL, 0 },
-  {{ "ram_addr", 10,  1, 16 }, OFFSET_OF (nut_reg_t, ram_addr), NULL, NULL, 0 },
-  {{ "active_bank", 2, MAX_PAGE, 16 }, OFFSET_OF (nut_reg_t, active_bank_number), NULL, NULL, 0 },
+  NR  ("pf_addr", pf_addr, 8,     16,   NULL,      NULL,      0),
+  NR  ("ram_addr", ram_addr, 10,  16,   NULL,      NULL,      0),
+  NRA ("active_bank", active_bank, 2, 16, NULL, NULL, 0, MAX_PAGE)
 };
 
 
@@ -106,7 +130,7 @@ static int itmap [WSIZE] =
 static rom_word_t nut_get_ucode (nut_reg_t *nut_reg, rom_addr_t addr)
 {
   uint8_t page = addr / PAGE_SIZE;
-  uint8_t bank = nut_reg->active_bank_number [page];
+  uint8_t bank = nut_reg->active_bank [page];
   uint16_t offset = addr & (PAGE_SIZE - 1);
 
   if (nut_reg->rom [page][bank])
@@ -121,7 +145,7 @@ static void nut_set_ucode (nut_reg_t *nut_reg,
 			   rom_word_t data)
 {
   uint8_t page = addr / PAGE_SIZE;
-  uint8_t bank = nut_reg->active_bank_number [page];
+  uint8_t bank = nut_reg->active_bank [page];
   uint16_t offset = addr & (PAGE_SIZE - 1);
 
   if (! nut_reg->rom [page][bank])
@@ -562,7 +586,7 @@ static void select_bank (sim_t *sim, rom_addr_t addr, uint8_t bank)
   uint8_t page = addr / PAGE_SIZE;
 
   if (nut_reg->rom [page][bank])
-    nut_reg->active_bank_number [page] = bank;
+    nut_reg->active_bank [page] = bank;
 }
 
 
@@ -1580,7 +1604,7 @@ static void nut_reset (sim_t *sim)
   nut_reg->q_sel = false;
 
   for (i = 0; i < MAX_PAGE; i++)
-    nut_reg->active_bank_number [i] = 0;
+    nut_reg->active_bank [i] = 0;
 
   /* wake from deep sleep */
   nut_reg->awake = true;

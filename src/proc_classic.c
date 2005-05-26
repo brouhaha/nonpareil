@@ -34,26 +34,45 @@ MA 02111, USA.
 #include "proc_classic.h"
 
 
+#define CR(name, field, bits, radix, get, set, arg) \
+    {{ name, bits, 1, radix },                      \
+     OFFSET_OF (classic_cpu_reg_t, field),          \
+     SIZE_OF (classic_cpu_reg_t, field),            \
+     get, set, arg } 
+
+
+#define CRD(name, field, digits)           \
+    {{ name, digits * 4, 1, 16 }    ,      \
+     OFFSET_OF (classic_cpu_reg_t, field), \
+     SIZE_OF (classic_cpu_reg_t, field),   \
+     get_digits, set_digits, digits } 
+
+
 static reg_detail_t classic_cpu_reg_detail [] =
 {
-  {{ "a",        56,  1, 16 }, OFFSET_OF (classic_cpu_reg_t, a),  get_digits, set_digits, WSIZE },
-  {{ "b",        56,  1, 16 }, OFFSET_OF (classic_cpu_reg_t, b),  get_digits, set_digits, WSIZE },
-  {{ "c",        56,  1, 16 }, OFFSET_OF (classic_cpu_reg_t, c),  get_digits, set_digits, WSIZE },
-  {{ "d",        56,  1, 16 }, OFFSET_OF (classic_cpu_reg_t, d),  get_digits, set_digits, WSIZE },
-  {{ "e",        56,  1, 16 }, OFFSET_OF (classic_cpu_reg_t, e),  get_digits, set_digits, WSIZE },
-  {{ "f",        56,  1, 16 }, OFFSET_OF (classic_cpu_reg_t, f),  get_digits, set_digits, WSIZE },
-  {{ "m",        56,  1, 16 }, OFFSET_OF (classic_cpu_reg_t, m),  get_digits, set_digits, WSIZE },
-  {{ "p",         4,  1, 16 }, OFFSET_OF (classic_cpu_reg_t, p),     NULL,     NULL, 0 },
-  {{ "carry",     1,  1,  2 }, OFFSET_OF (classic_cpu_reg_t, carry),   NULL, NULL, 0 },
-  // prev_carry
-  {{ "s",     SSIZE,  1,  2 }, OFFSET_OF (classic_cpu_reg_t, s),  get_bools,  set_bools, SSIZE },
-  {{ "ext_flag", EXT_FLAG_SIZE,  1,  2 }, OFFSET_OF (classic_cpu_reg_t, ext_flag),  get_bools, set_bools, EXT_FLAG_SIZE },
-  {{ "group",     8,  1,  3 }, OFFSET_OF (classic_cpu_reg_t, group),  NULL,     NULL, 0 },
-  {{ "rom",       8,  1,  3 }, OFFSET_OF (classic_cpu_reg_t, rom),    NULL,     NULL, 0 },
-  {{ "pc",        8,  1,  3 }, OFFSET_OF (classic_cpu_reg_t, pc),     NULL,     NULL, 0 },
-  {{ "ret_pc",    8,  1,  3 }, OFFSET_OF (classic_cpu_reg_t, ret_pc), NULL,     NULL, 0 },
-  // prev_pc
-  {{ "display_enable", 1,  1,  2 }, OFFSET_OF (classic_cpu_reg_t, display_enable),   NULL, NULL, 0 },
+  //   name     field  digits
+  CRD ("a",     a,     WSIZE),
+  CRD ("b",     b,     WSIZE),
+  CRD ("c",     c,     WSIZE),
+  CRD ("d",     d,     WSIZE),
+  CRD ("e",     e,     WSIZE),
+  CRD ("f",     f,     WSIZE),
+  CRD ("m",     m,     WSIZE),
+
+  //   name     field    bits   radix get        set        arg
+  CR  ("p",      p,      4,     16,   NULL,      NULL,      0),
+  CR  ("carry",  carry,  1,      2,   NULL,      NULL,      0),
+  //    prev_carry
+  CR  ("s",     s,     SSIZE,    2,   get_bools, set_bools, SSIZE),
+  CR  ("ext_flag", ext_flag, EXT_FLAG_SIZE, 2, get_bools, set_bools, EXT_FLAG_SIZE),
+
+  CR  ("group",  group,  1,     2,   NULL,      NULL,      0),
+  CR  ("rom",    rom,    3,     8,   NULL,      NULL,      0),
+  CR  ("pc",     pc,     8,     8,   NULL,      NULL,      0),
+  CR  ("ret_pc", ret_pc, 8,     8,   NULL,      NULL,      0),
+  //    prev_pc
+
+  CR  ("display_enable", display_enable, 1, 2, NULL, NULL, 0),
   // key_flag
   // key_buf
 };

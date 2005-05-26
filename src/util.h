@@ -27,6 +27,7 @@ MA 02111, USA.
 // The OFFSET_OF macro is used to return the offset of a field within
 // a structure.
 #define OFFSET_OF(type, field) ((int)&( ((type *)0)->field) )
+#define SIZE_OF(type, field) sizeof(((type *)0)->field)
 
 
 extern char *progname;  /* must be set by main program */

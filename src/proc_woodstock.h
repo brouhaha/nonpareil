@@ -82,7 +82,7 @@ typedef struct
   inst_state_t inst_state;
 
   int sp;  /* stack pointer */
-  uint16_t return_stack [STACK_SIZE];
+  uint16_t stack [STACK_SIZE];
 
   int prev_pc;  /* used to store complete five-digit octal address of instruction */
 

@@ -146,23 +146,6 @@ struct sim_thread_vars_t
 };
 
 
-// Storage size in bytes for register values of a particular
-// number of bits
-// Each entry is (log2(n) + 1) / 8
-static int storage_size [65] =
-{
-  0, 1, 1, 1, 1, 1, 1, 1,
-  1, 2, 2, 2, 2, 2, 2, 2,
-  2, 4, 4, 4, 4, 4, 4, 4,
-  4, 4, 4, 4, 4, 4, 4, 4,
-  4, 8, 8, 8, 8, 8, 8, 8,
-  8, 8, 8, 8, 8, 8, 8, 8,
-  8, 8, 8, 8, 8, 8, 8, 8,
-  8, 8, 8, 8, 8, 8, 8, 8,
-  8
-};
-
-
 static bool sim_load_mod1_rom_word (sim_t *sim,
 				    uint8_t bank,
 				    addr_t addr,
@@ -390,7 +373,6 @@ static void cmd_read_register (sim_t *sim, sim_msg_t *msg)
 {
   const chip_detail_t *chip_detail;
   const reg_detail_t *reg_detail;
-  size_t size;
   uint8_t *addr;
   uint64_t *result_val;
 
@@ -407,8 +389,8 @@ static void cmd_read_register (sim_t *sim, sim_msg_t *msg)
   if (msg->arg3 >= reg_detail->info.array_element_count)
     return;
 
-  size = storage_size [reg_detail->info.element_bits];
-  addr = ((uint8_t *) sim->chip_data [msg->arg1]) + reg_detail->offset + msg->arg3 * size;
+  addr = (((uint8_t *) sim->chip_data [msg->arg1]) +
+	  reg_detail->offset + msg->arg3 * reg_detail->size);
   result_val = msg->data;
 
   if (reg_detail->get)
@@ -418,7 +400,7 @@ static void cmd_read_register (sim_t *sim, sim_msg_t *msg)
     }
   else
     {
-      switch (size)
+      switch (reg_detail->size)
 	{
 	case 1: *result_val = *((uint8_t  *) addr); break;
 	case 2: *result_val = *((uint16_t *) addr); break;
@@ -436,7 +418,6 @@ static void cmd_write_register (sim_t *sim, sim_msg_t *msg)
 {
   const chip_detail_t *chip_detail;
   const reg_detail_t *reg_detail;
-  size_t size;
   uint8_t *addr;
   uint64_t *source_val;
 
@@ -453,8 +434,8 @@ static void cmd_write_register (sim_t *sim, sim_msg_t *msg)
   if (msg->arg3 >= reg_detail->info.array_element_count)
     return;
 
-  size = storage_size [reg_detail->info.element_bits];
-  addr = ((uint8_t *) sim->chip_data [msg->arg1]) + reg_detail->offset + msg->arg3 * size;
+  addr = (((uint8_t *) sim->chip_data [msg->arg1]) +
+	  reg_detail->offset + msg->arg3 * reg_detail->size);
   source_val = msg->data;
 
   if (reg_detail->set)
@@ -464,7 +445,7 @@ static void cmd_write_register (sim_t *sim, sim_msg_t *msg)
     }
   else
     {
-      switch (size)
+      switch (reg_detail->size)
 	{
 	case 1: *((uint8_t  *) addr) = *source_val; break;
 	case 2: *((uint16_t *) addr) = *source_val; break;
@@ -1002,6 +983,8 @@ bool sim_read_register (sim_t   *sim,
 
   if (reg_num >= chip_detail->reg_count)
     return false;
+
+  *val = 0;
 
   memset (& msg, 0, sizeof (sim_msg_t));
   msg.arg1 = chip_num;

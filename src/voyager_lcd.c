@@ -48,10 +48,18 @@ typedef struct
 } voyager_display_reg_t;
 
 
+#define VLR(name, field, bits, radix, get, set, arg) \
+    {{ name, bits, 1, radix },                       \
+     OFFSET_OF (voyager_display_reg_t, field),       \
+     SIZE_OF (voyager_display_reg_t, field),         \
+     get, set, arg }
+
+
 static reg_detail_t voyager_display_reg_detail [] =
 {
-  {{ "enable", 1, 1, 2 }, OFFSET_OF (voyager_display_reg_t, enable), NULL, NULL },
-  {{ "blink",  1, 1, 2 }, OFFSET_OF (voyager_display_reg_t, blink),  NULL, NULL }
+  //    name      field   bits radix get   set   arg
+  VLR  ("enable", enable, 1,   2,    NULL, NULL, 0),
+  VLR  ("blink",  blink,  1,   2,    NULL, NULL, 0)
 };
 
 
