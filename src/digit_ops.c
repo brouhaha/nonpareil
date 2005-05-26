@@ -34,7 +34,7 @@ void reg_zero (digit_t *dest, int first, int last)
 }
 
 
-void reg_copy (digit_t *dest, digit_t *src, int first, int last)
+void reg_copy (digit_t *dest, const digit_t *src, int first, int last)
 {
   int i;
   for (i = first; i <= last; i++)
@@ -86,7 +86,7 @@ static digit_t do_sub (digit_t x, digit_t y, bool *carry, uint8_t base)
 }
 
 
-void reg_add (digit_t *dest, digit_t *src1, digit_t *src2,
+void reg_add (digit_t *dest, const digit_t *src1, const digit_t *src2,
 	      int first, int last,
 	      bool *carry, uint8_t base)
 {
@@ -100,7 +100,7 @@ void reg_add (digit_t *dest, digit_t *src1, digit_t *src2,
 }
 
 
-void reg_sub (digit_t *dest, digit_t *src1, digit_t *src2,
+void reg_sub (digit_t *dest, const digit_t *src1, const digit_t *src2,
 	      int first, int last,
 	      bool *carry, uint8_t base)
 {
@@ -118,7 +118,7 @@ void reg_sub (digit_t *dest, digit_t *src1, digit_t *src2,
 
 
 // $$$ if in decimal mode, do illegal digits get normalized?
-void reg_test_equal    (digit_t *src1, digit_t *src2,
+void reg_test_equal    (const digit_t *src1, const digit_t *src2,
 			int first, int last,
 			bool *carry)
 {
@@ -134,7 +134,7 @@ void reg_test_equal    (digit_t *src1, digit_t *src2,
 
 
 // $$$ if in decimal mode, do illegal digits get normalized?
-void reg_test_nonequal (digit_t *src1, digit_t *src2,
+void reg_test_nonequal (const digit_t *src1, const digit_t *src2,
 			int first, int last,
 			bool *carry)
 {

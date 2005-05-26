@@ -24,25 +24,25 @@ typedef uint8_t digit_t;
 
 void reg_zero (digit_t *dest, int first, int last);
 
-void reg_copy (digit_t *dest, digit_t *src, int first, int last);
+void reg_copy (digit_t *dest, const digit_t *src, int first, int last);
 
 void reg_exch (digit_t *dest, digit_t *src, int first, int last);
 
-void reg_add (digit_t *dest, digit_t *src1, digit_t *src2,
+void reg_add (digit_t *dest, const digit_t *src1, const digit_t *src2,
 	      int first, int last,
 	      bool *carry, uint8_t base);
 
-void reg_sub (digit_t *dest, digit_t *src1, digit_t *src2,
+void reg_sub (digit_t *dest, const digit_t *src1, const digit_t *src2,
 	      int first, int last,
 	      bool *carry, uint8_t base);
 
 // sets carry if equal
-void reg_test_equal    (digit_t *src1, digit_t *src2,
+void reg_test_equal    (const digit_t *src1, const digit_t *src2,
 			int first, int last,
 			bool *carry);
 
 // sets carry if nonequal
-void reg_test_nonequal (digit_t *src1, digit_t *src2,
+void reg_test_nonequal (const digit_t *src1, const digit_t *src2,
 			int first, int last,
 			bool *carry);
 
