@@ -1,6 +1,6 @@
 # SConscript for Nonpareil
 # $Id$
-# Copyright 2004 Eric L. Smith <eric@brouhaha.com>
+# Copyright 2004, 2005 Eric L. Smith <eric@brouhaha.com>
 
 # Nonpareil is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License version 2 as
@@ -24,11 +24,11 @@ Import('env source_release_dir snapshot_dir')
 # Install firmware files
 #-----------------------------------------------------------------------------
 
-roms = Split ("""hp21.obj hp25.obj
-                 hp67.obj
-                 hp32e.obj hp33c.obj hp34c.obj hp37e.obj hp38c.obj hp38e.obj
-                 hp41cv.mod hp41cx.mod
-                 hp11c.obj hp12c.obj hp15c.obj hp16c.obj""")
+roms = Split ("""21.obj 25.obj
+                 67.obj
+                 32e.obj 33c.obj 34c.obj 37e.obj 38c.obj 38e.obj
+                 41cv.mod 41cx.mod
+                 11c.obj 12c.obj 15c.obj 16c.obj""")
 
 env.Alias (target = 'install',
            source = env.Install (dir = env ['destdir'] + env ['libdir'],

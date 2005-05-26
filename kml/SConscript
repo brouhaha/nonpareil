@@ -1,6 +1,6 @@
 # SConscript for Nonpareil
 # $Id$
-# Copyright 2004 Eric L. Smith <eric@brouhaha.com>
+# Copyright 2004, 2005 Eric L. Smith <eric@brouhaha.com>
 
 # Nonpareil is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License version 2 as
@@ -24,12 +24,12 @@ Import('env source_release_dir snapshot_dir')
 # Install KML files
 #-----------------------------------------------------------------------------
 
-kmls = Split ("""hp35.kml hp45.kml hp55.kml hp80.kml
-                 hp21.kml hp25.kml
-                 hp67.kml
-                 hp32e.kml hp33c.kml hp34c.kml hp37e.kml hp38c.kml hp38e.kml
-                 hp41cv.kml hp41cx.kml
-                 hp11c.kml hp12c.kml hp15c.kml hp16c.kml""")
+kmls = Split ("""35.kml 45.kml 55.kml 80.kml
+                 21.kml 25.kml
+                 67.kml
+                 32e.kml 33c.kml 34c.kml 37e.kml 38c.kml 38e.kml
+                 41cv.kml 41cx.kml
+                 11c.kml 12c.kml 15c.kml 16c.kml""")
 
 env.Alias (target = 'install',
            source = env.Install (dir = env ['destdir'] + env ['libdir'],
