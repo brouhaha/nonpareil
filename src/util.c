@@ -118,6 +118,18 @@ char *newstrn (char *orig, int max_len)
 }
 
 
+void realloc_strcpy (char **dest, char *src)
+{
+  int len = strlen (src);
+
+  *dest = realloc (*dest, len + 1);
+  if (! *dest)
+    fatal (2, "Memory allocation failed\n");
+  
+  strcpy (*dest, src);
+}
+
+
 char *max_strncat (char *dest, const char *src, size_t n)
 {
   size_t len1 = strlen (dest);

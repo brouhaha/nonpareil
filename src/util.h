@@ -50,6 +50,9 @@ char *newstrcat (char *orig1, char *orig2);
 
 char *newstrn (char *orig, int max_len);
 
+void realloc_strcpy (char **dest, char *src);
+
+
 // max_strncat() is similar to strncat(), except that the size parameter
 // is the maximum total length of the destination, not the maximum number
 // of characters to concatenate.
