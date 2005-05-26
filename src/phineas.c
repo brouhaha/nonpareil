@@ -1,186 +1,363 @@
 /*
-NSIM is a simulator for the processor used in the HP-41 (Nut) and in the HP
-Series 10 (Voyager) calculators.
-
 $Id$
-Copyright 1995, 2003 Eric Smith <eric@brouhaha.com>
+Copyright 1995, 2005 Eric L. Smith <eric@brouhaha.com>
 
-NSIM is free software; you can redistribute it and/or modify it under the
-terms of the GNU General Public License version 2 as published by the Free
-Software Foundation.  Note that I am not granting permission to redistribute
-or modify NSIM under the terms of any later version of the General Public
-License.
+Nonpareil is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.  Note that I am not
+granting permission to redistribute or modify Nonpareil under the
+terms of any later version of the General Public License.
 
-This program is distributed in the hope that it will be useful (or at least
-amusing), but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General
-Public License for more details.
+Nonpareil is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
 
-You should have received a copy of the GNU General Public License along with
-this program (in the file "COPYING"); if not, write to the Free Software
-Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+You should have received a copy of the GNU General Public License
+along with this program (in the file "COPYING"); if not, write to the
+Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
+MA 02111, USA.
 */
 
-/*
- * Phineas clock chip in Time Module and 41CX
- */
 
+#include <stdbool.h>
+#include <stdint.h>
 #include <stdio.h>
-#include "nsim.h"
+
+#include "arch.h"
+#include "util.h"
+#include "display.h"
+#include "proc.h"
+#include "digit_ops.h"
+#include "proc_int.h"
+#include "proc_nut.h"
 #include "phineas.h"
 
-#define TIMER_MAX 2
+
+// Every PHINEAS_UPDATE_CYCLES, we service the Phineas.
+#define PHINEAS_UPDATE_CYCLES 10
+
+
+// Bits in Phineas status register:
+#define PS_ALMA    0  // ALarM A
+#define PS_DTZA    1  // Decrement Through Zero A
+#define PS_ALMB    2  // ALarM B
+#define PS_DTZB    3  // Decrement Through Zero B
+#define PS_DTZIT   4  // Decrement Through Zero Interval Timer
+#define PS_PUS     5  // Power Up Status
+#define PS_CKAEN   6  // ClocK A ENable
+#define PS_CKBEN   7  // ClocK B ENable
+#define PS_ALAEN   8  // ALarm A ENable
+#define PS_ALBEN   9  // ALarm B ENable
+#define PS_ITEN   10  // Interval Timer ENable
+#define PS_TESTA  11
+#define PS_TESTB  12
+
+
+#define INTERVAL_WIDTH 5  // digits in interval timer
+#define STATUS_WIDTH   4  // digits in status register (13 bits)
+#define AF_WIDTH       4  // digits in accuracy factor (13 bits)
+
+
 #define TIMER_A 0
 #define TIMER_B 1
+#define TIMER_MAX 2
 
-int timer_reg_sel = TIMER_A;
 
-int clock_enable [TIMER_MAX];
-int alarm_enable [TIMER_MAX];
-int clock_decr [TIMER_MAX];  /* count up */
-int sec_wakeup = 0;
-int min_wakeup = 0;
-int interval_running = 0;
 
-reg clock_reg [TIMER_MAX];
-reg alarm_reg [TIMER_MAX];
-reg timer_status;
-reg accuracy_factor;
-reg interval_timer;
-reg timer_scratch;
 
-static void phineas_rd_n (int n)
+static const reg_t TIME_MODULE_ALMB_WARMSTART_CONSTANT =
+{ 0, 0, 0, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 0 };
+
+
+typedef struct
 {
+  bool timer_sel;
+  bool hold;
+  digit_t status [STATUS_WIDTH];  // least significant 13 bits used
+  reg_t clock   [TIMER_MAX];
+  reg_t alarm   [TIMER_MAX];
+  reg_t scratch [TIMER_MAX];
+  digit_t interval_timer [INTERVAL_WIDTH];
+  digit_t accuracy_factor [AF_WIDTH];  // least significant 13 bits used
+
+  int update_counter;  // counts down from PHINEAS_UPDATE_CYCLES
+} phineas_reg_t;
+
+
+#define PR(name, field, bits, radix, get, set, arg)        \
+    {{ name, bits, 1, radix },                             \
+     OFFSET_OF (phineas_reg_t, field),                     \
+     SIZE_OF (phineas_reg_t, field),                       \
+     get, set, arg } 
+
+
+#define PRA(name, field, bits, radix, get, set, arg, array) \
+    {{ name, bits, array, radix },                          \
+     OFFSET_OF (phineas_reg_t, field[0]                     \
+     SIZE_OF (phineas_reg_t, field[0]),                     \
+     get, set, arg } 
+
+
+#define PRD(name, field, digits) \
+    {{ name, digits * 4, 1, 16 },   \
+     OFFSET_OF (phineas_reg_t, field),  \
+     SIZE_OF (phineas_reg_t, field),    \
+     get_digits, set_digits, digits } 
+
+
+#define PRAD(name, field, digits, array) \
+    {{ name, digits * 4, array, 16 },   \
+     OFFSET_OF (phineas_reg_t, field[0]),  \
+     SIZE_OF (phineas_reg_t, field[0]),    \
+     get_digits, set_digits, digits } 
+
+
+static const reg_detail_t phineas_reg_detail [] =
+{
+  //    name               field            bits radix  get   set   arg
+  PR   ("timer_sel",       timer_sel,       1,   2,     NULL, NULL, 0),
+  PR   ("hold",            hold,            1,   2,     NULL, NULL, 0),
+
+  //    name               field            digits          array
+  PRAD ("clock",           clock,           WSIZE,          TIMER_MAX),
+  PRAD ("alarm",           alarm,           WSIZE,          TIMER_MAX),
+  PRAD ("scratch",         scratch,         WSIZE,          TIMER_MAX),
+
+  //    name               field            digits
+  PRD  ("status",          status,          STATUS_WIDTH),
+  PRD  ("interval_timer",  interval_timer,  INTERVAL_WIDTH),
+  PRD  ("accuracy_factor", accuracy_factor, AF_WIDTH)
+};
+
+
+static chip_event_fn_t phineas_event_fn;
+
+
+static const chip_detail_t phineas_chip_detail =
+{
+  {
+    "Phineas clock",
+    PFADDR_PHINEAS
+  },
+  sizeof (phineas_reg_detail) / sizeof (reg_detail_t),
+  phineas_reg_detail,
+  phineas_event_fn
+};
+
+
+// Warning - doesn't test for bit number out of range!
+static bool phineas_get_status_bit (phineas_reg_t *phineas, int bit)
+{
+  int dig = bit / 4;
+  uint8_t mask = 1 << (bit & 3);
+
+  return (phineas->status [dig] & mask) != 0;
+}
+
+
+// Warning - doesn't test for bit number out of range!
+static void phineas_set_status_bit (phineas_reg_t *phineas, int bit, bool val)
+{
+  int dig = bit / 4;
+  uint8_t mask = 1 << (bit & 3);
+
+  if (val)
+    phineas->status [dig] |= mask;
+  else
+    phineas->status [dig] &= ~ mask;
+}
+
+
+static void phineas_rd_n (sim_t *sim, int n)
+{
+  nut_reg_t *nut_reg = sim->chip_data [0];
+  phineas_reg_t *phineas = sim->chip_data [PFADDR_PHINEAS];
+
+  reg_zero (nut_reg->c, 0, WSIZE - 1);
+
   switch (n)
     {
-    case 0x0: /* 038: RTIME */
-      reg_copy (c, clock_reg [timer_reg_sel]);
+    case 0x0: // Read Clock
+      reg_copy (nut_reg->c, phineas->clock [phineas->timer_sel], 0, WSIZE - 1);
       break;
-    case 0x1: /* 078: RTIMEST */
-      reg_copy (c, clock_reg [timer_reg_sel]);
-      /* start correction count ??? */
+    case 0x1: // Read Clock and Hold
+      reg_copy (nut_reg->c, phineas->clock [phineas->timer_sel], 0, WSIZE - 1);
+      phineas->hold = true;
       break;
-    case 0x2: /* 0b8: RALM */
-      reg_copy (c, alarm_reg [timer_reg_sel]);
+    case 0x2: // Read Alarm
+      reg_copy (nut_reg->c, phineas->alarm [phineas->timer_sel], 0, WSIZE - 1);
       break;
-    case 0x3: /* 0f8: RSTS */
-      reg_copy (c, timer_reg_sel ? accuracy_factor : timer_status);
-      break;
-    case 0x4: /* 138: RSCR */
-      reg_copy (c, timer_scratch);
-      break;
-    case 0x5: /* 178: RINT */
-      reg_copy (c, interval_timer);
-      break;
-    case 0x6: /* 1b8: ??? */
-    case 0x7: /* 1f8: ??? */
-    case 0x8: /* 238: ??? */
-    case 0x9: /* 278: ??? */
-    case 0xa: /* 2b8: ??? */
-    case 0xb: /* 2f8: ??? */
-    case 0xc: /* 338: ??? */
-    case 0xd: /* 378: ??? */
-    case 0xe: /* 3b8: ??? */
-    case 0xf: /* 3f8: ??? */
-      reg_zero (c);
-      break;
-    }
-}
-
-static void phineas_wr_n (int n)
-{
-  switch (n)
-    {
-    case 0x0: /* 028: WTIME   write C to clock register */
-      reg_copy (clock_reg [timer_reg_sel], c);
-      clock_decr [timer_reg_sel] = 0;
-      break;
-    case 0x1: /* 068: WTIME-  write C to clock register and set to decr */ 
-      reg_copy (clock_reg [timer_reg_sel], c);
-      clock_decr [timer_reg_sel]= 1;
-      break;
-    case 0x2: /* 0a8: WALM    write C to alarm register */
-      reg_copy (alarm_reg [timer_reg_sel], c);
-      break;
-    case 0x3: /* 0e8: WSTS */
-      reg_copy (timer_reg_sel ? accuracy_factor : timer_status, c);
-      break;
-    case 0x4: /* 128: WSCR    write C to scratch register */
-      reg_copy (timer_scratch, c);
-      break;
-    case 0x5: /* 168: WINTST  write C to interval timer and start */
-      reg_copy (interval_timer, c);
-      interval_running = 1;
-      break;
-    case 0x6: /* 1a8: ??? */
-      break;
-    case 0x7: /* 1e8: STPINT  stop interval timer */
-      interval_running = 0;
-      break;
-    case 0x8: /* 228: WKUPOFF */
-      if (timer_reg_sel == TIMER_A)
-	sec_wakeup = 0;
-      else
-	min_wakeup = 0;
-      break;
-    case 0x9: /* 268: WKUPON */ break;
-      if (timer_reg_sel == TIMER_A)
-	sec_wakeup = 1;
-      else
-	min_wakeup = 1;
-      break;
-    case 0xa: /* 2a8: ALMOFF */ 
-      alarm_enable [timer_reg_sel] = 0;
-      break;
-    case 0xb: /* 2e8: ALMON */
-      alarm_enable [timer_reg_sel] = 1;
-      break;
-    case 0xc: /* 328: STOPC */
-      clock_enable [timer_reg_sel] = 0; 
-      break;
-    case 0xd: /* 368: STARTC */
-      clock_enable [timer_reg_sel] = 1;
-      break;
-    case 0xe: /* 3a8: TIMER=A */
-      timer_reg_sel = TIMER_A;
-      break;
-    case 0xf: /* 3e8: TIMER=B */
-      timer_reg_sel = TIMER_B;
-      break;
-    }
-}
-
-static void phineas_wr (void)
-{
-  /* don't do anything?  write selected register? */
-}
-
-void init_phineas (void)
-{
-  int i, t;
-
-  pf_exists [PHINEAS] = 1;
-  rd_n_fcn  [PHINEAS] = & phineas_rd_n;
-  wr_n_fcn  [PHINEAS] = & phineas_wr_n;
-  wr_fcn    [PHINEAS] = & phineas_wr;
-
-  for (t = 0; t < TIMER_MAX; t++)
-    {
-      clock_enable [t] = 0;
-      alarm_enable [t] = 0;
-      clock_decr [t] = 0;
-      for (i = 0; i < WSIZE; i++)
+    case 0x3: // Read Status/Accuracy Factor
+      if (phineas->timer_sel)
 	{
-	  clock_reg [t][i] = 0;
-	  alarm_reg [t][i] = 0;
+	  // Read Accuracy Factor
+          reg_copy (nut_reg->c + 1, phineas->accuracy_factor, 0, AF_WIDTH - 1);
 	}
-    }
-  for (i = 0; i < WSIZE; i++)
-    {
-      timer_status [i] = 0;
-      accuracy_factor [i] = 0;
-      interval_timer [i] = 0;
-      timer_scratch [i] = 0;
+      else
+	{
+	  // Read Status
+          reg_copy (nut_reg->c, phineas->status, 0, STATUS_WIDTH - 1);
+	}
+      break;
+    case 0x4: // Read Scratch
+      reg_copy (nut_reg->c, phineas->scratch [phineas->timer_sel], 0, WSIZE - 1);
+      break;
+    case 0x5: // Read Interval Timer
+      reg_copy (nut_reg->c, phineas->interval_timer, 0, INTERVAL_WIDTH - 1);
+      break;
+    case 0x6: // unused
+    case 0x7: // unused
+    case 0x8: // unused
+    case 0x9: // unused
+    case 0xa: // unused
+    case 0xb: // unused
+    case 0xc: // unused
+    case 0xd: // unused
+    case 0xe: // unused
+    case 0xf: // unused
+      break;
     }
 }
 
+static void phineas_wr_n (sim_t *sim, int n)
+{
+  nut_reg_t *nut_reg = sim->chip_data [0];
+  phineas_reg_t *phineas = sim->chip_data [PFADDR_PHINEAS];
+
+  switch (n)
+    {
+    case 0x0: // Write Clock
+      reg_copy (phineas->clock [phineas->timer_sel], nut_reg->c, 0, WSIZE - 1);
+      break;
+    case 0x1: // Write Clock & Correct
+      reg_copy (phineas->clock [phineas->timer_sel], nut_reg->c, 0, WSIZE - 1);
+      phineas->hold = false;
+      // $$$ add in any deferred increment here
+      break;
+    case 0x2: // Write Alarm
+      reg_copy (phineas->alarm [phineas->timer_sel], nut_reg->c, 0, WSIZE - 1);
+      break;
+    case 0x3:
+      if (phineas->timer_sel)
+	{
+	  // Write Accuracy Factor
+          reg_copy (phineas->accuracy_factor, nut_reg->c + 1, 0, AF_WIDTH - 1);
+	  phineas->accuracy_factor [AF_WIDTH - 1] &= 1;
+	}
+      else
+	{
+          // Write Status - can only turn off bits 0-5
+          phineas->status [0] &= nut_reg->c [0];
+	  phineas->status [1] &= (0xc | nut_reg->c [1]);
+	}
+      break;
+    case 0x4: // Write Scratch
+      reg_copy (phineas->scratch [phineas->timer_sel], nut_reg->c, 0, WSIZE - 1);
+      break;
+    case 0x5: // Write Interval Timer and Start
+      reg_copy (phineas->interval_timer, nut_reg->c, 0, INTERVAL_WIDTH - 1);
+      phineas_set_status_bit (phineas, PS_ITEN, true);
+      break;
+    case 0x6: // unused
+      break;
+    case 0x7: // Stop Interval Timer
+      phineas_set_status_bit (phineas, PS_ITEN, false);
+      break;
+    case 0x8: // Clear Test Mode
+      phineas_set_status_bit (phineas, PS_TESTA << phineas->timer_sel, false);
+      break;
+    case 0x9: // Set Test Mode
+      phineas_set_status_bit (phineas, PS_TESTA << phineas->timer_sel, true);
+      break;
+    case 0xa: // Disable Alarm
+      phineas_set_status_bit (phineas, PS_ALAEN << phineas->timer_sel, false);
+      break;
+    case 0xb: // Enable Alarm
+      phineas_set_status_bit (phineas, PS_ALAEN << phineas->timer_sel, true);
+      break;
+    case 0xc: // Stop Clock
+      phineas_set_status_bit (phineas, PS_CKAEN << phineas->timer_sel, false);
+      break;
+    case 0xd: // Start Clock
+      phineas_set_status_bit (phineas, PS_CKAEN << phineas->timer_sel, true);
+      break;
+    case 0xe: // Set Pointer to B
+      phineas->timer_sel = 1;
+      break;
+    case 0xf: // Set Pointer to A
+      phineas->timer_sel = 0;
+      break;
+    }
+}
+
+
+static void phineas_wr (sim_t *sim)
+{
+  ; // don't do anything
+}
+
+
+static void phineas_update (sim_t *sim)
+{
+  ; // $$$ don't do anything yet
+}
+
+
+static void phineas_event_fn (sim_t *sim, int chip_num, int event)
+{
+  phineas_reg_t *clock = sim->chip_data [chip_num];
+
+  switch (event)
+    {
+    case event_reset:
+      // phineas_reset (sim);
+      break;
+    case event_cycle:
+      if (clock->update_counter < 0)
+	{
+	  phineas_update (sim);
+	  clock->update_counter = PHINEAS_UPDATE_CYCLES;
+	}
+      else
+	clock->update_counter--;
+      break;
+    case event_sleep:
+      clock->update_counter = PHINEAS_UPDATE_CYCLES;
+      break;
+    case event_wake:
+    case event_restore_completed:
+      phineas_update (sim);
+      clock->update_counter = PHINEAS_UPDATE_CYCLES;
+      break;
+    default:
+      // warning ("phineas: unknown event %d\n", event);
+      break;
+    }
+}
+
+
+static void phineas_init_ops (sim_t *sim)
+{
+}
+
+
+void phineas_init (sim_t *sim)
+{
+  nut_reg_t *nut_reg = sim->chip_data [0];
+  phineas_reg_t *clock;
+
+  clock = alloc (sizeof (phineas_reg_t));
+
+  nut_reg->pf_exists [PFADDR_PHINEAS] = 1;
+  nut_reg->rd_n_fcn  [PFADDR_PHINEAS] = & phineas_rd_n;
+  nut_reg->wr_n_fcn  [PFADDR_PHINEAS] = & phineas_wr_n;
+  nut_reg->wr_fcn    [PFADDR_PHINEAS] = & phineas_wr;
+
+  install_chip (sim,
+		PFADDR_PHINEAS,
+		& phineas_chip_detail,
+		clock);
+
+  phineas_init_ops (sim);
+}
