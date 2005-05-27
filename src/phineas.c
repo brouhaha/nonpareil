@@ -81,6 +81,8 @@ typedef struct
   digit_t interval_timer [INTERVAL_WIDTH];
   digit_t accuracy_factor [AF_WIDTH];  // least significant 13 bits used
 
+  bool selected;       // True if a PERIPH SLCT for PFADDR_PHINEAS has been
+                       // seen, but cleared if a RAM SLCT is seen.
   int update_counter;  // counts down from PHINEAS_UPDATE_CYCLES
 } phineas_reg_t;
 
@@ -169,6 +171,25 @@ static void phineas_set_status_bit (phineas_reg_t *phineas, int bit, bool val)
 }
 
 
+static void phineas_update_ext_flags (nut_reg_t *nut_reg,
+				      phineas_reg_t *phineas)
+{
+  bool flag;
+
+  flag = (phineas_get_status_bit (phineas, PS_ALMA) ||
+	  phineas_get_status_bit (phineas, PS_DTZA) ||
+	  phineas_get_status_bit (phineas, PS_ALMB) ||
+	  phineas_get_status_bit (phineas, PS_DTZB) ||
+	  phineas_get_status_bit (phineas, PS_DTZIT) ||
+	  phineas_get_status_bit (phineas, PS_PUS));
+
+  if (flag)
+    nut_reg->ext_flag [13] = true;
+  if (flag && phineas->selected)
+    nut_reg->ext_flag [12] = true;
+}
+
+
 static void phineas_rd_n (sim_t *sim, int n)
 {
   nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
@@ -250,6 +271,7 @@ static void phineas_wr_n (sim_t *sim, int n)
           // Write Status - can only turn off bits 0-5
           phineas->status [0] &= nut_reg->c [0];
 	  phineas->status [1] &= (0xc | nut_reg->c [1]);
+	  phineas_update_ext_flags (nut_reg, phineas);
 	}
       break;
     case 0x4: // Write Scratch
@@ -298,9 +320,82 @@ static void phineas_wr (sim_t *sim)
 }
 
 
-static void phineas_update (sim_t *sim)
+// Increments a clock register by specified number of ticks,
+// and compares to alarm register.  Returns overflow and alarm
+// indications.
+static void phineas_increment_clock (phineas_reg_t *phineas,
+				     bool sel,
+				     uint32_t ticks)
 {
-  ; // $$$ don't do anything yet
+  uint64_t old_val, new_val, alarm_val;
+  bool overflow, alarm;
+
+  // clock running?
+  if (! phineas_get_status_bit (phineas, PS_CKAEN + sel))
+    return;  // no, done
+
+  // $$$ read old_val from clock
+
+  new_val = old_val + ticks;
+  overflow = (new_val > 99999999999999ull);
+  if (overflow)
+    {
+      new_val -= 100000000000000ull;
+      phineas_set_status_bit (phineas, PS_DTZA + 2 * sel, true);
+    }
+
+  // $$$ write new_val back to clock
+
+  // alarm enabled?
+  if (! phineas_get_status_bit (phineas, PS_ALAEN + sel))
+    return;  // no, done
+
+  // $$$ read alarm from clock
+
+  if (overflow)
+    alarm = (alarm_val > old_val) || (alarm_val <= new_val);
+  else
+    alarm = (alarm_val > old_val) && (alarm_val <= new_val);
+
+  if (alarm)
+    phineas_set_status_bit (phineas, PS_ALMA + 2 * sel, true);
+}
+
+
+// Increments the interval timer by the specified number of ticks.
+// Returns overflow indication.
+static void phineas_increment_interval_timer (phineas_reg_t *phineas,
+					      uint32_t ticks)
+{
+  uint32_t old_val, new_val;
+
+  // clock running?
+  if (! phineas_get_status_bit (phineas, PS_ITEN))
+    return;  // no, done
+
+  // $$$ read old_val from interval_timer
+
+  new_val = old_val + ticks;
+  if (new_val > 99999l)
+    {
+      new_val -= 100000ull;
+      phineas_set_status_bit (phineas, PS_DTZIT, true);
+    }
+
+  // $$$ write new_val back to interval timer
+
+}
+
+
+static void phineas_update (nut_reg_t *nut_reg, phineas_reg_t *phineas)
+{
+  uint32_t ticks = 1;
+  int sel;
+
+  for (sel = TIMER_A; sel <= TIMER_B; sel++)
+    phineas_increment_clock (phineas, sel, ticks);
+  phineas_increment_interval_timer (phineas, ticks);
+  phineas_update_ext_flags (nut_reg, phineas);
 }
 
 
@@ -319,7 +414,7 @@ static void phineas_event_fn (sim_t *sim,
     case event_cycle:
       if (phineas->update_counter < 0)
 	{
-	  phineas_update (sim);
+	  phineas_update (nut_reg, phineas);
 	  phineas->update_counter = PHINEAS_UPDATE_CYCLES;
 	}
       else
@@ -330,8 +425,16 @@ static void phineas_event_fn (sim_t *sim,
       break;
     case event_wake:
     case event_restore_completed:
-      phineas_update (sim);
+      phineas_update (nut_reg, phineas);
       phineas->update_counter = PHINEAS_UPDATE_CYCLES;
+      break;
+    case event_ram_select:
+      phineas->selected = false;
+      phineas_update_ext_flags (nut_reg, phineas); 
+      break;
+    case event_periph_select:
+      phineas->selected = nut_reg->pf_addr == PFADDR_PHINEAS;
+      phineas_update_ext_flags (nut_reg, phineas);
       break;
     default:
       // warning ("phineas: unknown event %d\n", event);
