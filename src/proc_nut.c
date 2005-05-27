@@ -827,7 +827,7 @@ static void op_test_ext_flag (sim_t *sim, int opcode)
 {
   nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
 
-  nut_reg->carry = nut_reg->ext_flag [opcode >> 6];  // $$$ use tmap?
+  nut_reg->carry = nut_reg->ext_flag [tmap [opcode >> 6]];
 }
 
 /*
@@ -1425,6 +1425,8 @@ static bool nut_execute_cycle (sim_t *sim)
   nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
   int opcode;
 
+  chip_event (sim, event_cycle);
+
   if (! nut_reg->awake)
     return (false);
 
@@ -1467,8 +1469,6 @@ static bool nut_execute_cycle (sim_t *sim)
     }
   sim->cycle_count++;
 
-  chip_event (sim, event_cycle);
-
   return (true);
 }
 
@@ -1479,8 +1479,12 @@ static bool nut_execute_instruction (sim_t *sim)
 
   do
     {
+#if 1
+      (void) nut_execute_cycle (sim);
+#else
       if (! nut_execute_cycle (sim))
 	return false;
+#endif
     }
   while (nut_reg->inst_state != norm);
   return true;
