@@ -204,12 +204,12 @@ static void phineas_update_ext_flags (nut_reg_t *nut_reg,
 {
   bool flag;
 
-  flag = (phineas_get_status_bit (phineas, PS_ALMA) ||
-	  phineas_get_status_bit (phineas, PS_DTZA) ||
-	  phineas_get_status_bit (phineas, PS_ALMB) ||
-	  phineas_get_status_bit (phineas, PS_DTZB) ||
-	  phineas_get_status_bit (phineas, PS_DTZIT) ||
-	  phineas_get_status_bit (phineas, PS_PUS));
+  flag = ((! phineas_get_status_bit (phineas, PS_PUS)) &&
+	  (phineas_get_status_bit (phineas, PS_ALMA) ||
+	   phineas_get_status_bit (phineas, PS_DTZA) ||
+	   phineas_get_status_bit (phineas, PS_ALMB) ||
+	   phineas_get_status_bit (phineas, PS_DTZB) ||
+	   phineas_get_status_bit (phineas, PS_DTZIT)));
 
   if (flag)
     {
@@ -462,6 +462,12 @@ static void phineas_update (nut_reg_t *nut_reg, phineas_reg_t *phineas)
 }
 
 
+static void phineas_reset (phineas_reg_t *phineas)
+{
+  phineas_set_status_bit (phineas, PS_PUS, true);  // initial power-up
+}
+
+
 static void phineas_event_fn (sim_t *sim,
 			      chip_t *chip,
 			      int event)
@@ -472,7 +478,7 @@ static void phineas_event_fn (sim_t *sim,
   switch (event)
     {
     case event_reset:
-      // phineas_reset (sim);
+      phineas_reset (phineas);
       break;
     case event_cycle:
       if ((--phineas->update_counter) == 0)
