@@ -35,7 +35,7 @@ MA 02111, USA.
 
 
 // Every PHINEAS_UPDATE_CYCLES, we service the Phineas.
-#define PHINEAS_UPDATE_CYCLES 10
+#define PHINEAS_UPDATE_CYCLES 67
 
 
 // Bits in Phineas status register:
@@ -53,6 +53,8 @@ MA 02111, USA.
 #define PS_TESTA  11
 #define PS_TESTB  12
 
+#define PS_COUNT  13
+
 
 #define INTERVAL_WIDTH 5  // digits in interval timer
 #define STATUS_WIDTH   4  // digits in status register (13 bits)
@@ -64,6 +66,25 @@ MA 02111, USA.
 #define TIMER_MAX 2
 
 
+#undef PHINEAS_DEBUG
+#ifdef PHINEAS_DEBUG
+static char *ps_bit_name [13] =
+{
+  [PS_ALMA]  = "ALMA",
+  [PS_DTZA]  = "DTZA",
+  [PS_ALMB]  = "ALMB",
+  [PS_DTZB]  = "DTZB",
+  [PS_DTZIT] = "DTZIT",
+  [PS_PUS]   = "PUS",
+  [PS_CKAEN] = "CKAEN",
+  [PS_CKBEN] = "CKBEN",
+  [PS_ALAEN] = "ALAEN",
+  [PS_ALBEN] = "ALBEN",
+  [PS_ITEN]  = "ITEN",
+  [PS_TESTA] = "TESTA",
+  [PS_TESTB] = "TESTB",
+};
+#endif
 
 
 static const reg_t TIME_MODULE_ALMB_WARMSTART_CONSTANT =
@@ -74,11 +95,13 @@ typedef struct
 {
   bool timer_sel;
   bool hold;
+
   digit_t status [STATUS_WIDTH];  // least significant 13 bits used
   reg_t clock   [TIMER_MAX];
   reg_t alarm   [TIMER_MAX];
   reg_t scratch [TIMER_MAX];
-  digit_t interval_timer [INTERVAL_WIDTH];
+  digit_t interval_timer    [INTERVAL_WIDTH];
+  digit_t it_terminal_count [INTERVAL_WIDTH];
   digit_t accuracy_factor [AF_WIDTH];  // least significant 13 bits used
 
   bool selected;       // True if a PERIPH SLCT for PFADDR_PHINEAS has been
@@ -126,10 +149,11 @@ static const reg_detail_t phineas_reg_detail [] =
   PRAD ("alarm",           alarm,           WSIZE,          TIMER_MAX),
   PRAD ("scratch",         scratch,         WSIZE,          TIMER_MAX),
 
-  //    name               field            digits
-  PRD  ("status",          status,          STATUS_WIDTH),
-  PRD  ("interval_timer",  interval_timer,  INTERVAL_WIDTH),
-  PRD  ("accuracy_factor", accuracy_factor, AF_WIDTH)
+  //    name                 field              digits
+  PRD  ("status",            status,            STATUS_WIDTH),
+  PRD  ("interval_timer",    interval_timer,    INTERVAL_WIDTH),
+  PRD  ("it_terminal_count", it_terminal_count, INTERVAL_WIDTH),
+  PRD  ("accuracy_factor",   accuracy_factor,   AF_WIDTH)
 };
 
 
@@ -164,6 +188,10 @@ static void phineas_set_status_bit (phineas_reg_t *phineas, int bit, bool val)
   int dig = bit / 4;
   uint8_t mask = 1 << (bit & 3);
 
+#ifdef PHINEAS_DEBUG
+  printf ("setting Phineas status %s (%d) to %d\n", ps_bit_name [bit], bit, val);
+#endif
+
   if (val)
     phineas->status [dig] |= mask;
   else
@@ -184,9 +212,12 @@ static void phineas_update_ext_flags (nut_reg_t *nut_reg,
 	  phineas_get_status_bit (phineas, PS_PUS));
 
   if (flag)
-    nut_reg->ext_flag [13] = true;
-  if (flag && phineas->selected)
-    nut_reg->ext_flag [12] = true;
+    {
+      nut_reg->ext_flag [EF_SERVICE_REQUEST] = true;
+      nut_reg->awake = true;  // wake up CPU if asleep
+      if (phineas->selected)
+	nut_reg->ext_flag [EF_TIMER] = true;
+    }
 }
 
 
@@ -269,8 +300,18 @@ static void phineas_wr_n (sim_t *sim, int n)
       else
 	{
           // Write Status - can only turn off bits 0-5
-          phineas->status [0] &= nut_reg->c [0];
-	  phineas->status [1] &= (0xc | nut_reg->c [1]);
+	  if (! (nut_reg->c [0] & 0x01))
+	    phineas_set_status_bit (phineas, PS_ALMA, false);
+	  if (! (nut_reg->c [0] & 0x02))
+	    phineas_set_status_bit (phineas, PS_DTZA, false);
+	  if (! (nut_reg->c [0] & 0x04))
+	    phineas_set_status_bit (phineas, PS_ALMB, false);
+	  if (! (nut_reg->c [0] & 0x08))
+	    phineas_set_status_bit (phineas, PS_DTZB, false);
+	  if (! (nut_reg->c [1] & 0x01))
+	    phineas_set_status_bit (phineas, PS_DTZIT, false);
+	  if (! (nut_reg->c [1] & 0x02))
+	    phineas_set_status_bit (phineas, PS_PUS, false);
 	  phineas_update_ext_flags (nut_reg, phineas);
 	}
       break;
@@ -278,7 +319,8 @@ static void phineas_wr_n (sim_t *sim, int n)
       reg_copy (phineas->scratch [phineas->timer_sel], nut_reg->c, 0, WSIZE - 1);
       break;
     case 0x5: // Write Interval Timer and Start
-      reg_copy (phineas->interval_timer, nut_reg->c, 0, INTERVAL_WIDTH - 1);
+      reg_copy (phineas->it_terminal_count, nut_reg->c, 0, INTERVAL_WIDTH - 1);
+      reg_zero (phineas->interval_timer, 0, INTERVAL_WIDTH - 1);
       phineas_set_status_bit (phineas, PS_ITEN, true);
       break;
     case 0x6: // unused
@@ -370,21 +412,30 @@ static void phineas_increment_clock (phineas_reg_t *phineas,
 static void phineas_increment_interval_timer (phineas_reg_t *phineas,
 					      uint32_t ticks)
 {
-  uint32_t val;
+  uint32_t val, tc;
 
   // clock running?
   if (! phineas_get_status_bit (phineas, PS_ITEN))
     return;  // no, done
 
-  // read interval_timer
-  val = bcd_reg_to_binary (phineas->interval_timer, INTERVAL_WIDTH);
+  // read interval_timer and terminal count
+  val = bcd_reg_to_binary (phineas->interval_timer,    INTERVAL_WIDTH);
+  tc  = bcd_reg_to_binary (phineas->it_terminal_count, INTERVAL_WIDTH);
+
+#if 0
+  printf ("incrementing interval timer from %u by %u, tc=%u", val, ticks, tc);
+#endif
 
   val += ticks;
-  if (val > 99999ul)
+  if (val >= tc)
     {
-      val -= 100000ul;
+      val = 0;
       phineas_set_status_bit (phineas, PS_DTZIT, true);
     }
+
+#if 0
+  printf (", result %u\n", val);
+#endif
 
   // write val back to interval timer
   binary_to_bcd_reg (val, phineas->interval_timer, INTERVAL_WIDTH);
