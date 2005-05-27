@@ -467,13 +467,11 @@ static void phineas_event_fn (sim_t *sim,
       // phineas_reset (sim);
       break;
     case event_cycle:
-      if (phineas->update_counter < 0)
+      if ((--phineas->update_counter) == 0)
 	{
 	  phineas_update (nut_reg, phineas);
 	  phineas->update_counter = PHINEAS_UPDATE_CYCLES;
 	}
-      else
-	phineas->update_counter--;
       break;
     case event_sleep:
       phineas->update_counter = PHINEAS_UPDATE_CYCLES;

@@ -52,9 +52,9 @@ model_info_t model_info [] =
     { "37E",  PLATFORM_SPICE,     ARCH_WOODSTOCK,  48, 140000 },
     { "38E",  PLATFORM_SPICE,     ARCH_WOODSTOCK,  48, 140000 },
     { "38C",  PLATFORM_SPICE,     ARCH_WOODSTOCK,  48, 140000 },
-    { "41C",  PLATFORM_COCONUT,   ARCH_NUT,        80, 360000 },
-    { "41CV", PLATFORM_COCONUT,   ARCH_NUT,       336, 360000 },
-    { "41CX", PLATFORM_COCONUT,   ARCH_NUT,       464, 360000 },
+    { "41C",  PLATFORM_COCONUT,   ARCH_NUT,        80, 375200 }, // 6700 uinst
+    { "41CV", PLATFORM_COCONUT,   ARCH_NUT,       336, 375200 }, //   per
+    { "41CX", PLATFORM_COCONUT,   ARCH_NUT,       464, 375200 }, //   second
     { "45",   PLATFORM_CLASSIC,   ARCH_CLASSIC,    10, 196000 },
     { "55",   PLATFORM_CLASSIC,   ARCH_CLASSIC,    30, 196000 },
     { "65",   PLATFORM_CLASSIC,   ARCH_CLASSIC,    10, 196000 },
