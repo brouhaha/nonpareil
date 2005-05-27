@@ -27,7 +27,23 @@ typedef digit_t reg_t [WSIZE];
 
 
 #define SSIZE 14
+
+
 #define EXT_FLAG_SIZE 14
+
+#define EF_PRINTER_BUSY     0  // 82143A printer
+#define EF_CARD_READER      1  // 82104A card reader
+#define EF_WAND_DATA_AVAIL  2  // 82153A bar code wand
+#define EF_BLINKY_EDAV      5  // 88242A IR printer module
+#define EF_HPIL_IFCR        6  // 82160A HP-IL module
+#define EF_HPIL_SRQR        7
+#define EF_HPIL_FRAV        8
+#define EF_HPIL_FRNS        9
+#define EF_HPIL_ORAV       10
+#define EF_TIMER           12  // 82182A Time Module (built into 41CX)
+#define EF_SERVICE_REQUEST 13  // shared general service request
+// Flags 3, 4, and 11 are apparently not used by any standard peripherals
+
 
 #define STACK_DEPTH 4
 
