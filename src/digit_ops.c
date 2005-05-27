@@ -165,3 +165,28 @@ void reg_shift_left (digit_t *reg, int first, int last)
   for (i = last; i >= first; i--)
     reg [i] = (i == first) ? 0 : reg [i-1];
 }
+
+
+// BCD to native host binary and vice versa
+uint64_t bcd_reg_to_binary (digit_t *reg, int digits)
+{
+  uint64_t val = 0;
+
+  reg += digits;
+  while (digits--)
+    {
+      val *= 10;
+      val += *(--reg);
+    }
+
+  return val;
+}
+
+void binary_to_bcd_reg (uint64_t val, digit_t *reg, int digits)
+{
+  while (digits--)
+    {
+      *(reg++) = val % 10;
+      val /= 10;
+    }
+}

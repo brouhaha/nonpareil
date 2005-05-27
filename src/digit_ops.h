@@ -49,3 +49,9 @@ void reg_test_nonequal (const digit_t *src1, const digit_t *src2,
 void reg_shift_right (digit_t *reg, int first, int last);
 
 void reg_shift_left (digit_t *reg, int first, int last);
+
+
+// BCD to native host binary and vice versa
+uint64_t bcd_reg_to_binary (digit_t *reg, int digits);
+
+void binary_to_bcd_reg (uint64_t val, digit_t *reg, int digits);
