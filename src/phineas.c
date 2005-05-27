@@ -334,7 +334,8 @@ static void phineas_increment_clock (phineas_reg_t *phineas,
   if (! phineas_get_status_bit (phineas, PS_CKAEN + sel))
     return;  // no, done
 
-  // $$$ read old_val from clock
+  // read old_val from clock
+  old_val = bcd_reg_to_binary (phineas->clock [sel], WSIZE);
 
   new_val = old_val + ticks;
   overflow = (new_val > 99999999999999ull);
@@ -344,13 +345,15 @@ static void phineas_increment_clock (phineas_reg_t *phineas,
       phineas_set_status_bit (phineas, PS_DTZA + 2 * sel, true);
     }
 
-  // $$$ write new_val back to clock
+  // write new_val back to clock
+  binary_to_bcd_reg (new_val, phineas->clock [sel], WSIZE);
 
   // alarm enabled?
   if (! phineas_get_status_bit (phineas, PS_ALAEN + sel))
     return;  // no, done
 
-  // $$$ read alarm from clock
+  // read alarm from clock
+  alarm_val = bcd_reg_to_binary (phineas->alarm [sel], WSIZE);
 
   if (overflow)
     alarm = (alarm_val > old_val) || (alarm_val <= new_val);
@@ -367,23 +370,24 @@ static void phineas_increment_clock (phineas_reg_t *phineas,
 static void phineas_increment_interval_timer (phineas_reg_t *phineas,
 					      uint32_t ticks)
 {
-  uint32_t old_val, new_val;
+  uint32_t val;
 
   // clock running?
   if (! phineas_get_status_bit (phineas, PS_ITEN))
     return;  // no, done
 
-  // $$$ read old_val from interval_timer
+  // read interval_timer
+  val = bcd_reg_to_binary (phineas->interval_timer, INTERVAL_WIDTH);
 
-  new_val = old_val + ticks;
-  if (new_val > 99999l)
+  val += ticks;
+  if (val > 99999ul)
     {
-      new_val -= 100000ull;
+      val -= 100000ul;
       phineas_set_status_bit (phineas, PS_DTZIT, true);
     }
 
-  // $$$ write new_val back to interval timer
-
+  // write val back to interval timer
+  binary_to_bcd_reg (val, phineas->interval_timer, INTERVAL_WIDTH);
 }
 
 
