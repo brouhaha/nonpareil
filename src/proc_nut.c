@@ -675,6 +675,8 @@ static void op_c_to_dadd (sim_t *sim, int opcode)
   nut_reg->ram_addr = ((nut_reg->c [2] << 8) | 
 			(nut_reg->c [1] << 4) |
 			(nut_reg->c [0])) & 0x3ff;
+
+  chip_event (sim, event_ram_select);
 }
 
 static void op_c_to_pfad (sim_t *sim, int opcode)
@@ -683,6 +685,8 @@ static void op_c_to_pfad (sim_t *sim, int opcode)
 
   nut_reg->pf_addr = ((nut_reg->c [1] << 4) |
 		       (nut_reg->c [0]));
+
+  chip_event (sim, event_periph_select);
 }
 
 static void op_read_reg_n (sim_t *sim, int opcode)
@@ -823,7 +827,7 @@ static void op_test_ext_flag (sim_t *sim, int opcode)
 {
   nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
 
-  nut_reg->carry = 0;  /* no periphs yet */
+  nut_reg->carry = nut_reg->ext_flag [opcode >> 6];  // $$$ use tmap?
 }
 
 /*

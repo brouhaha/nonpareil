@@ -27,11 +27,20 @@ typedef digit_t reg_t [WSIZE];
 
 
 #define SSIZE 14
+#define EXT_FLAG_SIZE 14
+
 #define STACK_DEPTH 4
 
 #define PAGE_SIZE 4096
 #define MAX_PAGE 16
 #define MAX_BANK 4
+
+
+enum
+{
+  event_periph_select = first_arch_event,
+  event_ram_select
+};
 
 
 typedef uint16_t rom_addr_t;
@@ -113,6 +122,8 @@ typedef struct nut_reg_t
   uint16_t max_pf;
   uint8_t pf_addr;  // selected peripheral address
   bool *pf_exists;
+
+  bool ext_flag [EXT_FLAG_SIZE];
 
   void (* rd_n_fcn [256])(struct sim_t *sim, int n);
   void (* wr_n_fcn [256])(struct sim_t *sim, int n);
