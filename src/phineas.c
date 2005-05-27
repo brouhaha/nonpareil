@@ -221,10 +221,13 @@ static void phineas_update_ext_flags (nut_reg_t *nut_reg,
 }
 
 
-static void phineas_rd_n (sim_t *sim, int n)
+static bool phineas_rd_n (sim_t *sim, int n)
 {
   nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
   phineas_reg_t *phineas = get_chip_data (nut_reg->phineas_chip);
+
+  if (! phineas->selected)
+    return false;
 
   reg_zero (nut_reg->c, 0, WSIZE - 1);
 
@@ -270,12 +273,16 @@ static void phineas_rd_n (sim_t *sim, int n)
     case 0xf: // unused
       break;
     }
+  return true;
 }
 
-static void phineas_wr_n (sim_t *sim, int n)
+static bool phineas_wr_n (sim_t *sim, int n)
 {
   nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
   phineas_reg_t *phineas = get_chip_data (nut_reg->phineas_chip);
+
+  if (! phineas->selected)
+    return false;
 
   switch (n)
     {
@@ -353,12 +360,13 @@ static void phineas_wr_n (sim_t *sim, int n)
       phineas->timer_sel = 0;
       break;
     }
+  return true;
 }
 
 
-static void phineas_wr (sim_t *sim)
+static bool phineas_wr (sim_t *sim)
 {
-  ; // don't do anything
+  return false; // Phineas doesn't use the generic write
 }
 
 

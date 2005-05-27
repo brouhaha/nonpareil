@@ -141,9 +141,10 @@ typedef struct nut_reg_t
 
   bool ext_flag [EXT_FLAG_SIZE];
 
-  void (* rd_n_fcn [256])(struct sim_t *sim, int n);
-  void (* wr_n_fcn [256])(struct sim_t *sim, int n);
-  void (* wr_fcn   [256])(struct sim_t *sim);
+  // Peripheral I/O functions return true if the peripheral responded.
+  bool (* rd_n_fcn [256])(struct sim_t *sim, int n);
+  bool (* wr_n_fcn [256])(struct sim_t *sim, int n);
+  bool (* wr_fcn   [256])(struct sim_t *sim);
 
   chip_t *display_chip;  // opaque
   chip_t *phineas_chip;  // opaque

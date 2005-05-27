@@ -219,7 +219,7 @@ static void coconut_lcd_wr_ann (nut_reg_t *nut_reg, coconut_display_reg_t *displ
 }
 
 
-static void coconut_lcd_rd_n (sim_t *sim, int n)
+static bool coconut_lcd_rd_n (sim_t *sim, int n)
 {
   nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
   coconut_display_reg_t *display = get_chip_data (nut_reg->display_chip);
@@ -243,9 +243,10 @@ static void coconut_lcd_rd_n (sim_t *sim, int n)
     case 0xe:  coconut_lcd_rd_reg (nut_reg, display, ABC,  1, RIGHT); break;
     case 0xf:  coconut_lcd_rd_reg (nut_reg, display, ABC,  1, LEFT);  break;
     }
+  return true;
 }
 
-static void coconut_lcd_wr_n (sim_t *sim, int n)
+static bool coconut_lcd_wr_n (sim_t *sim, int n)
 {
   nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
   coconut_display_reg_t *display = get_chip_data (nut_reg->display_chip);
@@ -269,26 +270,31 @@ static void coconut_lcd_wr_n (sim_t *sim, int n)
     case 0xe:  coconut_lcd_wr_reg (nut_reg, display, ABC,  1, LEFT);  break;
     case 0xf:  coconut_lcd_wr_reg (nut_reg, display, ABC,  1, RIGHT); break;
     }
+  return true;
 }
 
-static void coconut_lcd_wr (sim_t *sim)
+static bool coconut_lcd_wr (sim_t *sim)
 {
   nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
   coconut_display_reg_t *display = get_chip_data (nut_reg->display_chip);
 
   coconut_lcd_wr_ann (nut_reg, display);
+  return true;
 }
 
-static void halfnut_lcd_rd_n (sim_t *sim, int n)
+static bool halfnut_lcd_rd_n (sim_t *sim, int n)
 {
+  return true;
 }
 
-static void halfnut_lcd_wr_n (sim_t *sim, int n)
+static bool halfnut_lcd_wr_n (sim_t *sim, int n)
 {
+  return true;
 }
 
-static void halfnut_lcd_wr (sim_t *sim)
+static bool halfnut_lcd_wr (sim_t *sim)
 {
+  return true;
 }
 
 
