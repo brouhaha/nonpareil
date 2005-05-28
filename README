@@ -232,21 +232,29 @@ I also used an SCons source tarball builder posted to the scons-users
 mailing list by Paul Davis.  Additional SCons advice was provided by
 Timothee Besset.
 
-Adam Sampson's efforts at constructing GARstop packages of Nonpareil
+Adam Sampson's efforts at constructing GARstow packages of Nonpareil
 convinced me to make various improvements to the SConstruct/SConscript
 files.
 
 Warren Furlow developed the .mod file format, and provided public domain
 code to work with mod files, as part of his V41 source code.
 
-If I've omitted anyone who should be listed here, I appologize, and
+Chris Roccati and Christophe Gottheimer each independently added proper
+bank switching to my older NSIM HP-41C simulator.  Chris Roccati implemented
+the Phineas (timer) chip, and Thomas Olesen ported his changes to Nonpareil.
+I did not incorporate that code directly, but did use it as a model.
+
+Christophe Gottheimer also implemented simulation of the HEPAX module in
+NSIM, and I expect to incorporate that into Nonpareil in the near future.
+
+If I've omitted anyone who should be listed here, I apologize, and
 please let me know so I can remedy the omission.
 
 -----------------------------------------------------------------------------
 
 Ports:
 
-David G. Hicks translated the earlier csim HP-45 simulator to Java:
+David Hicks translated the earlier csim HP-45 simulator to Java:
         http://www.hpmuseum.org/simulate/sim45.htm
 
 Jonathan Purvis ported csim to PalmOS:
