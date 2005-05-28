@@ -35,7 +35,7 @@ typedef uint32_t segment_bitmap_t;
 /* 
  * Display segments:
  *
- * For seven-segment displays, by convention the segments are labelled 'a'
+ * For seven-segment displays, by convention the segments are labeled 'a'
  * through 'g'.  We designate the '.' and ',' as 'h' and 'i', respectively.
  *
  *     aaa
@@ -54,8 +54,8 @@ typedef uint32_t segment_bitmap_t;
  * classic series, put the '.' inside the seven segments, and dedicate a
  * full digit position to the radix mark.
  *
- * For fourteen-segment dsiplays, by convention the segments are
- * labelled 'a' through 'n'.  We designate '.' and ',' as 'o' and 'p',
+ * For fourteen-segment displays, by convention the segments are
+ * labeled 'a' through 'n'.  We designate '.' and ',' as 'o' and 'p',
  * respectively.  The second dot for the ':' is 'q'.  The segment
  * designations do not match the HP 1LA4 documentation, but rather are
  * based on commercial 14-segment displays such as the Noritake
