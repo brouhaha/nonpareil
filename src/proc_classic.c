@@ -795,7 +795,7 @@ static void classic_display_scan (sim_t *sim)
       while (cpu_reg->display_digit_position < MAX_DIGIT_POSITION)
 	sim->display_segments [cpu_reg->display_digit_position++] = 0;
 
-      gui_display_update (sim);
+      sim_send_display_update_to_gui (sim);
 
       cpu_reg->display_digit_position = 0;
       cpu_reg->display_scan_position = cpu_reg->left_scan;

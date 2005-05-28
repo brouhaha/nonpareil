@@ -163,6 +163,10 @@ struct sim_t
   // ROM:
   bool       *breakpoint;
   char       **source;
+
+  // callbacks into GUI
+  display_update_callback_fn_t *display_update_callback;
+  void *display_update_callback_ref;
 };
 
 

@@ -128,6 +128,7 @@ typedef enum
 
 typedef struct
 {
+  sim_t            *sim;
   gui_cmd_t        cmd;
   int              display_digits;
   segment_bitmap_t display_segments [MAX_DIGIT_POSITION];
@@ -604,7 +605,7 @@ static void handle_sim_cmd (sim_t *sim, sim_msg_t *msg)
       msg->reply = OK;
       break;
     case CMD_GET_DISPLAY_UPDATE:
-      gui_display_update (sim);
+      sim_send_display_update_to_gui (sim);
       msg->reply = OK;
       break;
     default:
@@ -711,11 +712,14 @@ static void prefill_gui_cmd_q (GAsyncQueue *q, int count)
 static gboolean gui_cmd_callback (gpointer data)
 {
   gui_msg_t *msg = (gui_msg_t *) data;
+  sim_t *sim = msg->sim;
 
   switch (msg->cmd)
     {
     case CMD_DISPLAY_UPDATE:
-      display_update (msg->display_digits, msg->display_segments);
+      sim->display_update_callback (sim->display_update_callback_ref,
+				    msg->display_digits,
+				    msg->display_segments);
       break;
     case CMD_BREAKPOINT_HIT:
       break;
@@ -731,7 +735,9 @@ static gboolean gui_cmd_callback (gpointer data)
 sim_t *sim_init  (int model,
 		  int clock_frequency,  /* Hz */
 		  int ram_size,
-		  segment_bitmap_t *char_gen)
+		  segment_bitmap_t *char_gen,
+		  display_update_callback_fn_t *display_update_callback,
+		  void *display_update_callback_ref)
 {
   sim_t *sim;
   model_info_t *model_info = get_model_info (model);
@@ -739,6 +745,10 @@ sim_t *sim_init  (int model,
 
   sim = alloc (sizeof (sim_t));
   sim->thread_vars = alloc (sizeof (sim_thread_vars_t));
+
+  // save display callback info
+  sim->display_update_callback = display_update_callback;
+  sim->display_update_callback_ref = display_update_callback_ref;
 
   sim->model = model;
 
@@ -1154,7 +1164,7 @@ bool sim_get_debug_flag (sim_t *sim, int debug_flag)
 #endif // HAS_DEBUGGER
 
 
-void gui_display_update (sim_t *sim)
+void sim_send_display_update_to_gui (sim_t *sim)
 {
   gui_msg_t *msg;
 
@@ -1162,6 +1172,7 @@ void gui_display_update (sim_t *sim)
   if (! msg)
     msg = alloc (sizeof (gui_msg_t));
 
+  msg->sim = sim;
   msg->cmd = CMD_DISPLAY_UPDATE;
   msg->display_digits = sim->display_digits;
   memcpy (msg->display_segments, sim->display_segments, sizeof (sim->display_segments));

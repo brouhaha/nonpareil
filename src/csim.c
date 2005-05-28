@@ -73,6 +73,9 @@ static GtkWidget *main_window;
 static GtkWidget *menubar;  /* actually a popup menu in transparency/shape mode */
 
 
+gui_display_t *gui_display;
+
+
 void usage (FILE *f)
 {
   fprintf (f, "%s:  Microcode-level calculator simulator\n",
@@ -460,15 +463,6 @@ int main (int argc, char *argv[])
 
   model_info = get_model_info (model);
 
-  sim = sim_init (model,
-		  model_info->clock_frequency,
-		  model_info->ram_size,
-		  kml->character_segment_map);
-
-#ifdef HAS_DEBUGGER_GUI
-  init_debugger_gui (sim);
-#endif
-
   image_fn = find_file_in_path_list (kml->image, NULL, default_path);
   if (! image_fn)
     fatal (2, "can't find image file '%s'\n", kml->image);
@@ -540,14 +534,31 @@ int main (int argc, char *argv[])
       gtk_fixed_put (GTK_FIXED (fixed), image, 0, 0);
     }
 
-  add_slide_switches (sim, kml, background_pixbuf, fixed);
-  add_keys (sim, kml, background_pixbuf, fixed);
-
-  // Have to show everything here, or display_init() can't construct the
+  // Have to show everything here, or gui_display_init() can't construct the
   // GCs for the annunciators.
   gtk_widget_show_all (main_window);
 
-  display_init (kml, main_window, event_box, fixed, file_pixbuf);
+  gui_display = gui_display_init (kml,
+				  main_window,
+				  event_box,
+				  fixed,
+				  file_pixbuf);
+  if (! gui_display)
+    fatal (2, "can't initialize display\n");
+
+  sim = sim_init (model,
+		  model_info->clock_frequency,
+		  model_info->ram_size,
+		  kml->character_segment_map,
+		  gui_display_update,
+		  gui_display);
+
+#ifdef HAS_DEBUGGER_GUI
+  init_debugger_gui (sim);
+#endif
+
+  add_slide_switches (sim, kml, background_pixbuf, fixed);
+  add_keys (sim, kml, background_pixbuf, fixed);
 
   if (image_mask_bitmap)
     {
@@ -559,7 +570,7 @@ int main (int argc, char *argv[])
       gtk_window_set_decorated (GTK_WINDOW (main_window), FALSE);
     }
 
-  // Have to show everything again, now that we've done display_init()
+  // Have to show everything again, now that we've done gui_display_init()
   // and combined the shape mask.
   gtk_widget_show_all (main_window);
 

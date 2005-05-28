@@ -387,7 +387,7 @@ static void coconut_display_event_fn (sim_t *sim, chip_t *chip, int event)
       if (display->count == 0)
 	{
 	  coconut_display_update (sim, display);
-	  gui_display_update (sim);
+	  sim_send_display_update_to_gui (sim);
 	  display->count = 15;
 	}
       else
@@ -396,7 +396,7 @@ static void coconut_display_event_fn (sim_t *sim, chip_t *chip, int event)
     case event_sleep:
       // force display update
       coconut_display_update (sim, display);
-      gui_display_update (sim);
+      sim_send_display_update_to_gui (sim);
       display->count = 15;
 
       if (display->enable)
@@ -416,7 +416,7 @@ static void coconut_display_event_fn (sim_t *sim, chip_t *chip, int event)
     case event_restore_completed:
       // force display update
       coconut_display_update (sim, display);
-      gui_display_update (sim);
+      sim_send_display_update_to_gui (sim);
       display->count = 15;
       break;
     default:

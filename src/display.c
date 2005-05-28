@@ -37,31 +37,30 @@ MA 02111, USA.
 //#include "model.h"
 
 
-static kml_t *dkml;  // display keeps a pointer to the KML file.  Ugly!
-
-GdkPixbuf *d_file_pixbuf;  // display keeps a pointer to the file pixbuf. Ugly!
-
-static GtkWidget *display;
-
-static GdkGC *annunciator_gc [KML_MAX_ANNUNCIATOR];
-
-
-static segment_bitmap_t display_segments [KML_MAX_DIGITS];
+struct gui_display_t
+{
+  kml_t *kml;
+  GdkPixbuf *file_pixbuf;
+  GtkWidget *drawing_area;
+  GdkGC *annunciator_gc [KML_MAX_ANNUNCIATOR];
+  segment_bitmap_t display_segments [KML_MAX_DIGITS];
+};
 
 
-static void draw_annunciator (GtkWidget *widget, int i)
+static void draw_annunciator (gui_display_t *d, GtkWidget *widget, int i)
 {
   gdk_draw_rectangle (widget->window,
-		      annunciator_gc [i],
+		      d->annunciator_gc [i],
 		      TRUE,
-		      dkml->annunciator [i]->offset.x - dkml->display_offset.x,
-		      dkml->annunciator [i]->offset.y - dkml->display_offset.y,
-		      dkml->annunciator [i]->size.width,
-		      dkml->annunciator [i]->size.height);
+		      d->kml->annunciator [i]->offset.x - d->kml->display_offset.x,
+		      d->kml->annunciator [i]->offset.y - d->kml->display_offset.y,
+		      d->kml->annunciator [i]->size.width,
+		      d->kml->annunciator [i]->size.height);
 }
 
 
-static void draw_digit (GtkWidget *widget,
+static void draw_digit (gui_display_t *d,
+			GtkWidget *widget,
 			gint x,
 			gint y,
 			segment_bitmap_t segments)
@@ -69,40 +68,40 @@ static void draw_digit (GtkWidget *widget,
   int i;
 
   for (i = 0; i < KML_MAX_SEGMENT; i++)
-    if ((segments & (1 << i)) && (dkml->segment [i]))
+    if ((segments & (1 << i)) && (d->kml->segment [i]))
       {
-	switch (dkml->segment [i]->type)
+	switch (d->kml->segment [i]->type)
 	  {
 	  case kml_segment_type_line:
 	    gdk_draw_line (widget->window,
-			   display->style->fg_gc [GTK_WIDGET_STATE (widget)],
-			   x + dkml->segment [i]->offset.x,
-			   y + dkml->segment [i]->offset.y,
-			   x + dkml->segment [i]->offset.x + dkml->segment [i]->size.width - 1,
-			   y + dkml->segment [i]->offset.y + dkml->segment [i]->size.height - 1);
+			   d->drawing_area->style->fg_gc [GTK_WIDGET_STATE (widget)],
+			   x + d->kml->segment [i]->offset.x,
+			   y + d->kml->segment [i]->offset.y,
+			   x + d->kml->segment [i]->offset.x + d->kml->segment [i]->size.width - 1,
+			   y + d->kml->segment [i]->offset.y + d->kml->segment [i]->size.height - 1);
 	    break;
 	  case kml_segment_type_rect:
 	    gdk_draw_rectangle (widget->window,
-				display->style->fg_gc [GTK_WIDGET_STATE (widget)],
+				d->drawing_area->style->fg_gc [GTK_WIDGET_STATE (widget)],
 				TRUE,
-				x + dkml->segment [i]->offset.x,
-				y + dkml->segment [i]->offset.y,
-				dkml->segment [i]->size.width,
-				dkml->segment [i]->size.height);
+				x + d->kml->segment [i]->offset.x,
+				y + d->kml->segment [i]->offset.y,
+				d->kml->segment [i]->size.width,
+				d->kml->segment [i]->size.height);
 	    break;
 	  case kml_segment_type_image:
-	    gdk_draw_pixbuf (widget->window,                 // drawable
-			     display->style->fg_gc [GTK_WIDGET_STATE (widget)],
-                             d_file_pixbuf,                  // pixbuf
-			     dkml->segment [i]->offset.x,    // src_x
-			     dkml->segment [i]->offset.y,    // src_y
-			     x,                              // dest_x
-			     y,                              // dest_y
-			     dkml->segment [i]->size.width,  // width
-			     dkml->segment [i]->size.height, // height
-			     GDK_RGB_DITHER_NORMAL,          // dither
-			     0,                              // x_dither
-			     0);                             // y_dither
+	    gdk_draw_pixbuf (widget->window,                   // drawable
+			     d->drawing_area->style->fg_gc [GTK_WIDGET_STATE (widget)],
+                             d->file_pixbuf,                   // pixbuf
+			     d->kml->segment [i]->offset.x,    // src_x
+			     d->kml->segment [i]->offset.y,    // src_y
+			     x,                                // dest_x
+			     y,                                // dest_y
+			     d->kml->segment [i]->size.width,  // width
+			     d->kml->segment [i]->size.height, // height
+			     GDK_RGB_DITHER_NORMAL,            // dither
+			     0,                                // x_dither
+			     0);                               // y_dither
 	    break;
 	  }
       }
@@ -113,32 +112,34 @@ static gboolean display_expose_event_callback (GtkWidget *widget,
 					       GdkEventExpose *event,
 					       gpointer data)
 {
+  gui_display_t *d = data;
   int i;
   int x;
 
   /* clear the display */
   gdk_draw_rectangle (widget->window,
-		      display->style->bg_gc [GTK_WIDGET_STATE (widget)],
+		      d->drawing_area->style->bg_gc [GTK_WIDGET_STATE (widget)],
 		      TRUE,
 		      0, 0,
-		      display->allocation.width,
-		      display->allocation.height);
+		      d->drawing_area->allocation.width,
+		      d->drawing_area->allocation.height);
 
-  x = dkml->digit_offset.x;
-  for (i = 0; i < dkml->display_digits; i++)
+  x = d->kml->digit_offset.x;
+  for (i = 0; i < d->kml->display_digits; i++)
     {
-      draw_digit (widget, x, dkml->digit_offset.y, display_segments [i]);
-      if ((display_segments [i] & SEGMENT_ANN) && dkml->annunciator [i])
-	draw_annunciator (widget, i);
-      x += dkml->digit_size.width;
+      draw_digit (d, widget, x, d->kml->digit_offset.y, d->display_segments [i]);
+      if ((d->display_segments [i] & SEGMENT_ANN) && d->kml->annunciator [i])
+	draw_annunciator (d, widget, i);
+      x += d->kml->digit_size.width;
     }
 
   return (TRUE);
 }
 
 
-void display_update (int digit_count,
-		     segment_bitmap_t *segments)
+void gui_display_update (gui_display_t *d,
+			 int digit_count,
+			 segment_bitmap_t *segments)
 {
   int i;
   GdkRectangle rect = { 0, 0, 0, 0 };
@@ -146,21 +147,21 @@ void display_update (int digit_count,
 
   for (i = 0; i < digit_count; i++)
     {
-      if (segments [i] != display_segments [i])
+      if (segments [i] != d->display_segments [i])
 	changed = 1;
     }
 
   if (! changed)
     return;
 
-  memcpy (display_segments, segments,
+  memcpy (d->display_segments, segments,
 	  digit_count * sizeof (segment_bitmap_t));
 
-  rect.width = display->allocation.width;
-  rect.height = display->allocation.height;
+  rect.width = d->drawing_area->allocation.width;
+  rect.height = d->drawing_area->allocation.height;
 
   /* invalidate the entire drawing area */
-  gdk_window_invalidate_rect (display->window,
+  gdk_window_invalidate_rect (d->drawing_area->window,
 			      & rect,
 			      FALSE);
 }
@@ -199,7 +200,7 @@ static void get_pixbuf_pixel (GdkPixbuf *pixbuf, int x, int y,
 // XBM bit order is defined as being MSB left, but
 // gdk_bitmap_create_from_data() uses the data as LSB left.
 
-static void init_annunciator (GdkPixbuf *file_pixbuf, int i)
+static void init_annunciator (gui_display_t *d, GdkPixbuf *file_pixbuf, int i)
 {
   int row_bytes;
   char *xbm_data;
@@ -211,13 +212,13 @@ static void init_annunciator (GdkPixbuf *file_pixbuf, int i)
   int r, g, b;
   GdkBitmap *bitmap;
 
-  row_bytes = (dkml->annunciator [i]->size.width + 7) / 8;
+  row_bytes = (d->kml->annunciator [i]->size.width + 7) / 8;
 
-  xbm_data = alloc (row_bytes * dkml->annunciator [i]->size.height + 9);
+  xbm_data = alloc (row_bytes * d->kml->annunciator [i]->size.height + 9);
   // $$$ If we don't add at least 9 bytes of padding,
   // gdk_bitmap_create_from_data() will segfault!
 
-  for (y = 0; y < dkml->annunciator [i]->size.height; y++)
+  for (y = 0; y < d->kml->annunciator [i]->size.height; y++)
     {
       p = & xbm_data [y * row_bytes];
 #ifdef XBM_LSB_LEFT
@@ -225,11 +226,11 @@ static void init_annunciator (GdkPixbuf *file_pixbuf, int i)
 #else
       bitmask = 0x80;
 #endif
-      for (x = 0; x < dkml->annunciator [i]->size.width; x++)
+      for (x = 0; x < d->kml->annunciator [i]->size.width; x++)
 	{
 	  get_pixbuf_pixel (file_pixbuf, 
-			    dkml->annunciator [i]->offset.x + x,
-			    dkml->annunciator [i]->offset.y + y,
+			    d->kml->annunciator [i]->offset.x + x,
+			    d->kml->annunciator [i]->offset.y + y,
 			    & r, & g, & b);
 
 	  bit = (r == 0) && (g == 0) && (b == 0);
@@ -259,40 +260,40 @@ static void init_annunciator (GdkPixbuf *file_pixbuf, int i)
 
   bitmap = gdk_bitmap_create_from_data (NULL,
 					xbm_data,
-					dkml->annunciator [i]->size.width,
-					dkml->annunciator [i]->size.height);
+					d->kml->annunciator [i]->size.width,
+					d->kml->annunciator [i]->size.height);
 
   free (xbm_data);
 
-  annunciator_gc [i] = gdk_gc_new (display->window);
-  gdk_gc_copy (annunciator_gc [i],
-	       display->style->fg_gc [GTK_WIDGET_STATE (display)]);
-  gdk_gc_set_clip_mask (annunciator_gc [i], bitmap);
-  gdk_gc_set_clip_origin (annunciator_gc [i],
-			  dkml->annunciator [i]->offset.x - dkml->display_offset.x,
-			  dkml->annunciator [i]->offset.y - dkml->display_offset.y);
-  gdk_gc_set_function (annunciator_gc [i], GDK_COPY);
-  gdk_gc_set_fill (annunciator_gc [i], GDK_SOLID);
+  d->annunciator_gc [i] = gdk_gc_new (d->drawing_area->window);
+  gdk_gc_copy (d->annunciator_gc [i],
+	       d->drawing_area->style->fg_gc [GTK_WIDGET_STATE (d->drawing_area)]);
+  gdk_gc_set_clip_mask (d->annunciator_gc [i], bitmap);
+  gdk_gc_set_clip_origin (d->annunciator_gc [i],
+			  d->kml->annunciator [i]->offset.x - d->kml->display_offset.x,
+			  d->kml->annunciator [i]->offset.y - d->kml->display_offset.y);
+  gdk_gc_set_function (d->annunciator_gc [i], GDK_COPY);
+  gdk_gc_set_fill (d->annunciator_gc [i], GDK_SOLID);
 }
 
 
-static void init_annunciators (GdkPixbuf *file_pixbuf)
+static void init_annunciators (gui_display_t *d, GdkPixbuf *file_pixbuf)
 {
   int i;
 
   for (i = 0; i < KML_MAX_ANNUNCIATOR; i++)
-    if (dkml->annunciator [i])
-      init_annunciator (file_pixbuf, i);
+    if (d->kml->annunciator [i])
+      init_annunciator (d, file_pixbuf, i);
 }
 
 
 static void setup_color (GdkColormap *colormap,
-		  kml_color_t *kml_color,
-		  GdkColor *gdk_color,
-		  char *name,
-		  guint16 default_red,
-		  guint16 default_green,
-		  guint16 default_blue)
+			 kml_color_t *kml_color,
+			 GdkColor *gdk_color,
+			 char *name,
+			 guint16 default_red,
+			 guint16 default_green,
+			 guint16 default_blue)
 {
   if (kml_color)
     {
@@ -315,20 +316,23 @@ static void setup_color (GdkColormap *colormap,
 }
 
 
-void display_init (kml_t *kml,
-		   GtkWidget *main_window,
-		   GtkWidget *event_box,
-		   GtkWidget *fixed,
-		   GdkPixbuf *file_pixbuf)
+gui_display_t * gui_display_init (kml_t *kml,
+				  GtkWidget *main_window,
+				  GtkWidget *event_box,
+				  GtkWidget *fixed,
+				  GdkPixbuf *file_pixbuf)
 {
+  gui_display_t *d;
   GdkColormap *colormap;
   GdkColor image_bg_color;
   GdkColor display_fg_color, display_bg_color;
 
-  dkml = kml;
-  d_file_pixbuf = file_pixbuf;
+  d = alloc (sizeof (gui_display_t));
 
-  display = gtk_drawing_area_new ();
+  d->kml = kml;
+  d->file_pixbuf = file_pixbuf;
+
+  d->drawing_area = gtk_drawing_area_new ();
 
   colormap = gtk_widget_get_colormap (main_window);
   setup_color (colormap, kml->global_color [0], & image_bg_color,
@@ -342,20 +346,22 @@ void display_init (kml_t *kml,
   setup_color (colormap, kml->display_color [2], & display_fg_color,
 	       "display foreground", 0xffff, 0x1111, 0x1111);
 
-  gtk_widget_set_size_request (display,
+  gtk_widget_set_size_request (d->drawing_area,
 			       kml->display_size.width,
 			       kml->display_size.height);
-  gtk_widget_modify_fg (display, GTK_STATE_NORMAL, & display_fg_color);
-  gtk_widget_modify_bg (display, GTK_STATE_NORMAL, & display_bg_color);
+  gtk_widget_modify_fg (d->drawing_area, GTK_STATE_NORMAL, & display_fg_color);
+  gtk_widget_modify_bg (d->drawing_area, GTK_STATE_NORMAL, & display_bg_color);
   gtk_fixed_put (GTK_FIXED (fixed),
-		 display,
+		 d->drawing_area,
 		 kml->display_offset.x - kml->background_offset.x,
 		 kml->display_offset.y - kml->background_offset.y);
 
-  init_annunciators (file_pixbuf);
+  init_annunciators (d, file_pixbuf);
 
-  g_signal_connect (G_OBJECT (display),
+  g_signal_connect (G_OBJECT (d->drawing_area),
 		    "expose_event",
 		    G_CALLBACK (display_expose_event_callback),
-		    NULL);
+		    d);
+
+  return d;
 }

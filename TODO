@@ -93,8 +93,6 @@ Internals:
 
   Replace globals in csim.c with structure.  Allow for multiple instances.
 
-  Replace globals in display.c with structure, and pass to/from csim.c.
-
   Use more of glib:
 
       file handling: g_build_filename(), g_stat()

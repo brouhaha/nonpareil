@@ -1144,7 +1144,7 @@ static void display_scan_advance (sim_t *sim)
       while (act_reg->display_digit_position < MAX_DIGIT_POSITION)
 	sim->display_segments [act_reg->display_digit_position++] = 0;
 
-      gui_display_update (sim);
+      sim_send_display_update_to_gui (sim);
 
       act_reg->display_digit_position = 0;
       act_reg->display_scan_position = act_reg->left_scan;

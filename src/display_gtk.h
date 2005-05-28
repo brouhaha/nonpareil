@@ -1,5 +1,5 @@
 /*
-$Id: display.h 413 2004-05-08 23:51:35Z eric $
+$Id$
 Copyright 2005 Eric L. Smith <eric@brouhaha.com>
 
 Nonpareil is free software; you can redistribute it and/or modify it
@@ -20,8 +20,17 @@ MA 02111, USA.
 */
 
 
-void display_init (kml_t *kml,
-		   GtkWidget *main_window,
-		   GtkWidget *event_box,
-		   GtkWidget *fixed,
-		   GdkPixbuf *file_pixbuf);
+typedef struct gui_display_t gui_display_t;
+
+gui_display_t *gui_display_init (kml_t *kml,
+				 GtkWidget *main_window,
+				 GtkWidget *event_box,
+				 GtkWidget *fixed,
+				 GdkPixbuf *file_pixbuf);
+
+
+void gui_display_update (gui_display_t *display,
+			 int digit_count,
+			 segment_bitmap_t *segments);
+
+

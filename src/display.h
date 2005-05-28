@@ -32,10 +32,6 @@ MA 02111, USA.
 typedef uint32_t segment_bitmap_t;
 
 
-void display_update (int digit_count,
-		     segment_bitmap_t *segments);
-
-
 /* 
  * Display segments:
  *

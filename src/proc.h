@@ -76,6 +76,12 @@ typedef struct
 } reg_info_t;
 
 
+// callback function that will be used for display updates
+typedef void display_update_callback_fn_t (void *ref,
+					   int digit_count,
+					   segment_bitmap_t *segments);
+
+
 /*
  * Create the sim thread, initially in idle state
  *
@@ -85,7 +91,9 @@ typedef struct
 sim_t *sim_init  (int model,
 		  int clock_frequency,  /* Hz */
 		  int ram_size,
-		  segment_bitmap_t *char_gen);
+		  segment_bitmap_t *char_gen,
+		  display_update_callback_fn_t *display_update_callback,
+		  void *display_update_callback_ref);
 
 int sim_get_model (sim_t *sim);
 
@@ -231,4 +239,6 @@ void sim_clear_breakpoint (sim_t  *sim,
  * GUI thread, but do not wait for a reply..
  */
 
-void gui_display_update (sim_t *sim);
+void sim_send_display_update_to_gui (sim_t *sim);
+
+
