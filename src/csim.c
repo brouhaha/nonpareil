@@ -59,21 +59,17 @@ MA 02111, USA.
 
 char *default_path = MAKESTR(DEFAULT_PATH);
 
-char state_fn [255];
 
-gboolean scancode_debug = FALSE;
-
-static kml_t *kml;
-
-sim_t *sim;
-
-static GtkWidget *main_window;
-
-
-static GtkWidget *menubar;  /* actually a popup menu in transparency/shape mode */
-
-
-gui_display_t *gui_display;
+typedef struct
+{
+  gboolean scancode_debug;
+  kml_t *kml;
+  sim_t *sim;
+  GtkWidget *main_window;
+  GtkWidget *menubar;  // actually a popup menu in transparency/shape mode
+  gui_display_t *gui_display;
+  char state_fn [255];
+} csim_t;
 
 
 void usage (FILE *f)
@@ -102,12 +98,14 @@ void usage (FILE *f)
 }
 
 
-void process_commands (kml_command_list_t *commands,
+void process_commands (csim_t *csim,
+		       kml_command_list_t *commands,
 		       int scancode,
 		       int pressed);
 
 
-void process_command (kml_command_list_t *command,
+void process_command (csim_t *csim,
+		      kml_command_list_t *command,
 		      int scancode,
 		      int pressed)
 {
@@ -129,44 +127,51 @@ void process_command (kml_command_list_t *command,
       break;
     case KML_CMD_IFPRESSED:
       if (pressed)
-	process_commands (command->then_part, scancode, pressed);
+	process_commands (csim, command->then_part, scancode, pressed);
       else if (command->else_part)
-	process_commands (command->else_part, scancode, pressed);
+	process_commands (csim, command->else_part, scancode, pressed);
       break;
     default:
       fprintf (stderr, "unimplemented command %d\n", command->cmd);
     }
 }
 
-void process_commands (kml_command_list_t *commands,
+void process_commands (csim_t *csim,
+		       kml_command_list_t *commands,
 		       int scancode,
 		       int pressed)
 {
   while (commands)
     {
-      process_command (commands, scancode, pressed);
+      process_command (csim, commands, scancode, pressed);
       commands = commands->next;
     }
 }
 
 
-gboolean on_key_event (GtkWidget *widget, GdkEventKey *event)
+gboolean key_event_callback (GtkWidget *widget,
+			     GdkEventKey *event,
+			     gpointer data)
 {
+  csim_t *csim = data;
   kml_scancode_t *scancode;
 
   if ((event->type != GDK_KEY_PRESS) && 
       (event->type != GDK_KEY_RELEASE))
     return (FALSE);  /* why are we here? */
 
-  for (scancode = kml->first_scancode; scancode; scancode = scancode->next)
+  for (scancode = csim->kml->first_scancode; scancode; scancode = scancode->next)
     {
       if (event->keyval == scancode->scancode)
 	{
-	  process_commands (scancode->commands, event->keyval, event->type == GDK_KEY_PRESS);
+	  process_commands (csim,
+			    scancode->commands,
+			    event->keyval,
+			    event->type == GDK_KEY_PRESS);
 	  return (TRUE);
 	}
     }
-  if (scancode_debug)
+  if (csim->scancode_debug)
     fprintf (stderr, "unrecognized scancode %d\n", event->keyval);
   return (FALSE);
 }
@@ -174,18 +179,31 @@ gboolean on_key_event (GtkWidget *widget, GdkEventKey *event)
 
 static void quit_callback (GtkWidget *widget, gpointer data)
 {
-  if (*state_fn)
-    state_write_xml (sim, state_fn);
+  csim_t *csim = data;
+
+  if (csim->state_fn [0])
+    state_write_xml (csim->sim, csim->state_fn);
+  gtk_main_quit ();
+}
+
+
+static void main_window_destroy_callback (GtkWidget *widget, gpointer data)
+{
+  csim_t *csim = data;
+
+  if (csim->state_fn [0])
+    state_write_xml (csim->sim, csim->state_fn);
   gtk_main_quit ();
 }
 
 
 static void file_open (GtkWidget *widget, gpointer data)
 {
+  csim_t *csim = data;
   GtkWidget *dialog;
 
   dialog = gtk_file_chooser_dialog_new ("Load Calculator State",
-					GTK_WINDOW (main_window),
+					GTK_WINDOW (csim->main_window),
 					GTK_FILE_CHOOSER_ACTION_OPEN,
 					GTK_STOCK_CANCEL,
 					GTK_RESPONSE_CANCEL,
@@ -196,9 +214,9 @@ static void file_open (GtkWidget *widget, gpointer data)
   if (gtk_dialog_run (GTK_DIALOG (dialog)) == GTK_RESPONSE_ACCEPT)
     {
       char *fn = gtk_file_chooser_get_filename (GTK_FILE_CHOOSER (dialog));
-      strncpy (state_fn, fn, sizeof (state_fn));
+      strncpy (csim->state_fn, fn, sizeof (csim->state_fn));
       g_free (fn);
-      state_read_xml (sim, state_fn);
+      state_read_xml (csim->sim, csim->state_fn);
     }
 
   gtk_widget_destroy (dialog);
@@ -207,10 +225,11 @@ static void file_open (GtkWidget *widget, gpointer data)
 
 static void file_save_as (GtkWidget *widget, gpointer data)
 {
+  csim_t *csim = data;
   GtkWidget *dialog;
 
   dialog = gtk_file_chooser_dialog_new ("Save Calculator State",
-					GTK_WINDOW (main_window),
+					GTK_WINDOW (csim->main_window),
 					GTK_FILE_CHOOSER_ACTION_SAVE,
 					GTK_STOCK_CANCEL,
 					GTK_RESPONSE_CANCEL,
@@ -221,9 +240,9 @@ static void file_save_as (GtkWidget *widget, gpointer data)
   if (gtk_dialog_run (GTK_DIALOG (dialog)) == GTK_RESPONSE_ACCEPT)
     {
       char *fn = gtk_file_chooser_get_filename (GTK_FILE_CHOOSER (dialog));
-      strncpy (state_fn, fn, sizeof (state_fn));
+      strncpy (csim->state_fn, fn, sizeof (csim->state_fn));
       g_free (fn);
-      state_write_xml (sim, state_fn);
+      state_write_xml (csim->sim, csim->state_fn);
     }
 
   gtk_widget_destroy (dialog);
@@ -232,8 +251,10 @@ static void file_save_as (GtkWidget *widget, gpointer data)
 
 static void file_save (GtkWidget *widget, gpointer data)
 {
-  if (*state_fn)
-    state_write_xml (sim, state_fn);
+  csim_t *csim = data;
+
+  if (csim->state_fn [0])
+    state_write_xml (csim->sim, csim->state_fn);
   else
     file_save_as (widget, data);
 }
@@ -253,7 +274,9 @@ static void edit_paste (GtkWidget *widget, gpointer data)
 
 static void help_about (GtkWidget *widget, gpointer data)
 {
-  about_dialog (main_window, kml);
+  csim_t *csim = data;
+
+  about_dialog (csim->main_window, csim->kml);
 }
 
 
@@ -290,7 +313,7 @@ static GtkItemFactoryEntry menu_items [] =
 static gint nmenu_items = sizeof (menu_items) / sizeof (GtkItemFactoryEntry);
 
 
-static GtkWidget *create_menus (GtkWidget *window,
+static GtkWidget *create_menus (csim_t *csim,
 				GtkType container_type)
 {
   GtkAccelGroup *accel_group;
@@ -300,27 +323,31 @@ static GtkWidget *create_menus (GtkWidget *window,
   item_factory = gtk_item_factory_new (container_type,
 				       "<main>",
 				       accel_group);
-  gtk_item_factory_create_items (item_factory, nmenu_items, menu_items, NULL);
-  gtk_window_add_accel_group (GTK_WINDOW (window), accel_group);
+  gtk_item_factory_create_items (item_factory, nmenu_items, menu_items, csim);
+  gtk_window_add_accel_group (GTK_WINDOW (csim->main_window), accel_group);
   return (gtk_item_factory_get_widget (item_factory, "<main>"));
 }
 
 
-gboolean on_move_window (GtkWidget *widget, GdkEventButton *event)
+gboolean move_window_callback (GtkWidget *widget,
+			       GdkEventButton *event,
+			       gpointer data)
 {
+  csim_t *csim = data;
+
   if (event->type == GDK_BUTTON_PRESS)
     {
       switch (event->button)
 	{
 	case 1:  /* left button */
-	  gtk_window_begin_move_drag (GTK_WINDOW (main_window),
+	  gtk_window_begin_move_drag (GTK_WINDOW (csim->main_window),
 				      event->button,
 				      event->x_root,
 				      event->y_root,
 				      event->time);
 	  break;
 	case 3:  /* right button */
-	  gtk_menu_popup (GTK_MENU (menubar),
+	  gtk_menu_popup (GTK_MENU (csim->menubar),
 			  NULL,  /* parent_menu_shell */
 			  NULL,  /* parent_menu_item */
 			  NULL,  /* func */
@@ -334,37 +361,40 @@ gboolean on_move_window (GtkWidget *widget, GdkEventButton *event)
 }
 
 
-void set_default_state_path (void)
+void set_default_state_path (csim_t *csim)
 {
   const char *p;
   model_info_t *model_info;
 
-  model_info = get_model_info (sim_get_model (sim));
+  model_info = get_model_info (sim_get_model (csim->sim));
 
   p = g_get_home_dir ();
-  strcpy (state_fn, p);
+  strcpy (csim->state_fn, p);
   // $$$ not sure whether we're supposed to g_free() the home dir string
 
-  max_strncat (state_fn, "/.nonpareil", sizeof (state_fn));
-  if (! dir_exists (state_fn))
+  max_strncat (csim->state_fn, "/.nonpareil", sizeof (csim->state_fn));
+  if (! dir_exists (csim->state_fn))
     {
-      if (! create_dir (state_fn))
-	warning ("can't create directory '%s'\n", state_fn);
+      if (! create_dir (csim->state_fn))
+	warning ("can't create directory '%s'\n", csim->state_fn);
     }
 
-  max_strncat (state_fn, "/", sizeof (state_fn));
-  max_strncat (state_fn, model_info->name, sizeof (state_fn));
-  max_strncat (state_fn, ".nst", sizeof (state_fn));
+  max_strncat (csim->state_fn, "/", sizeof (csim->state_fn));
+  max_strncat (csim->state_fn, model_info->name, sizeof (csim->state_fn));
+  max_strncat (csim->state_fn, ".nst", sizeof (csim->state_fn));
 }
 
 
 int main (int argc, char *argv[])
 {
+  csim_t *csim;
   char *kml_name = NULL;
   char *kml_fn, *image_fn, *rom_fn;
 #ifdef HAS_DEBUGGER
   char *listing_fn;
 #endif
+
+  csim = alloc (sizeof (csim_t));
 
   gboolean shape = SHAPE_DEFAULT;
   gboolean kml_dump = FALSE;
@@ -404,7 +434,7 @@ int main (int argc, char *argv[])
 	  else if (strcasecmp (argv [0], "--kmldump") == 0)
 	    kml_dump = 1;
 	  else if (strcasecmp (argv [0], "--scancodedebug") == 0)
-	    scancode_debug = 1;
+	    csim->scancode_debug = 1;
 #ifdef HAS_DEBUGGER
 	  else if (strcasecmp (argv [0], "--stop") == 0)
 	    run = FALSE;
@@ -438,94 +468,94 @@ int main (int argc, char *argv[])
     }
 
 
-  kml = read_kml_file (kml_fn);
-  if (! kml)
+  csim->kml = read_kml_file (kml_fn);
+  if (! csim->kml)
     fatal (2, "can't read KML file '%s'\n", kml_fn);
 
   if (kml_dump)
     {
-      print_kml (stdout, kml);
+      print_kml (stdout, csim->kml);
       exit (0);
     }
 
-  if (! kml->image)
+  if (! csim->kml->image)
     fatal (2, "No image file spsecified in KML\n");
 
-  if (! kml->rom)
+  if (! csim->kml->rom)
     fatal (2, "No ROM file specified in KML\n");
 
-  if (! kml->model)
+  if (! csim->kml->model)
     fatal (2, "No model specified in KML\n");
 
-  model = find_model_by_name (kml->model);
+  model = find_model_by_name (csim->kml->model);
   if (model == MODEL_UNKNOWN)
     fatal (2, "Unrecognized model specified in KML\n");
 
   model_info = get_model_info (model);
 
-  image_fn = find_file_in_path_list (kml->image, NULL, default_path);
+  image_fn = find_file_in_path_list (csim->kml->image, NULL, default_path);
   if (! image_fn)
-    fatal (2, "can't find image file '%s'\n", kml->image);
+    fatal (2, "can't find image file '%s'\n", csim->kml->image);
 
   file_pixbuf = gdk_pixbuf_new_from_file (image_fn, & error);
   if (! file_pixbuf)
     fatal (2, "can't load image '%s'\n", image_fn);
 
-  if (! kml->has_background_size)
+  if (! csim->kml->has_background_size)
     {
-      kml->background_size.width = gdk_pixbuf_get_width (file_pixbuf) - kml->background_offset.x;
-      kml->background_size.height = gdk_pixbuf_get_height (file_pixbuf) - kml->background_offset.y;
+      csim->kml->background_size.width = gdk_pixbuf_get_width (file_pixbuf) - csim->kml->background_offset.x;
+      csim->kml->background_size.height = gdk_pixbuf_get_height (file_pixbuf) - csim->kml->background_offset.y;
     }
 
   background_pixbuf = gdk_pixbuf_new_subpixbuf (file_pixbuf,
-						kml->background_offset.x,
-						kml->background_offset.y,
-						kml->background_size.width,
-						kml->background_size.height);
+						csim->kml->background_offset.x,
+						csim->kml->background_offset.y,
+						csim->kml->background_size.width,
+						csim->kml->background_size.height);
 
-  main_window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
+  csim->main_window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
 
-  if (kml->has_transparency && shape)
+  if (csim->kml->has_transparency && shape)
     {
       image_mask_bitmap = (GdkBitmap *) gdk_pixmap_new (NULL,
-							kml->background_size.width,
-							kml->background_size.height,
+							csim->kml->background_size.width,
+							csim->kml->background_size.height,
 							1);
       gdk_pixbuf_render_threshold_alpha (file_pixbuf,
 					 image_mask_bitmap,
-					 kml->background_offset.x,  /* src_x */
-					 kml->background_offset.y,  /* src_y */
+					 csim->kml->background_offset.x,  /* src_x */
+					 csim->kml->background_offset.y,  /* src_y */
 					 0, 0,  /* dest_x, _y */
-					 kml->background_size.width,
-					 kml->background_size.height,
-					 kml->transparency_threshold);
+					 csim->kml->background_size.width,
+					 csim->kml->background_size.height,
+					 csim->kml->transparency_threshold);
     }
 
-  gtk_window_set_resizable (GTK_WINDOW (main_window), FALSE);
+  gtk_window_set_resizable (GTK_WINDOW (csim->main_window), FALSE);
 
-  gtk_window_set_title (GTK_WINDOW (main_window),
-			kml->title ? kml->title : "Nonpareil");
+  gtk_window_set_title (GTK_WINDOW (csim->main_window),
+			csim->kml->title ? csim->kml->title : "Nonpareil");
 
   event_box = gtk_event_box_new ();
-  gtk_container_add (GTK_CONTAINER (main_window), event_box);
+  gtk_container_add (GTK_CONTAINER (csim->main_window), event_box);
 
   vbox = gtk_vbox_new (FALSE, 1);
   gtk_container_add (GTK_CONTAINER (event_box), vbox);
 
   if (image_mask_bitmap)
     {
-      menubar = create_menus (main_window, GTK_TYPE_MENU);
+      csim->menubar = create_menus (csim, GTK_TYPE_MENU);
     }
   else
     {
-      menubar = create_menus (main_window, GTK_TYPE_MENU_BAR);
-      gtk_box_pack_start (GTK_BOX (vbox), menubar, FALSE, TRUE, 0);
+      csim->menubar = create_menus (csim, GTK_TYPE_MENU_BAR);
+      gtk_box_pack_start (GTK_BOX (vbox), csim->menubar, FALSE, TRUE, 0);
     }
 
   fixed = gtk_fixed_new ();
   gtk_widget_set_size_request (fixed,
-			       kml->background_size.width,
-			       kml->background_size.height);
+			       csim->kml->background_size.width,
+			       csim->kml->background_size.height);
   gtk_box_pack_end (GTK_BOX (vbox), fixed, FALSE, TRUE, 0);
 
   if (background_pixbuf != NULL)
@@ -536,91 +566,91 @@ int main (int argc, char *argv[])
 
   // Have to show everything here, or gui_display_init() can't construct the
   // GCs for the annunciators.
-  gtk_widget_show_all (main_window);
+  gtk_widget_show_all (csim->main_window);
 
-  gui_display = gui_display_init (kml,
-				  main_window,
-				  event_box,
-				  fixed,
-				  file_pixbuf);
-  if (! gui_display)
+  csim->gui_display = gui_display_init (csim->kml,
+					csim->main_window,
+					event_box,
+					fixed,
+					file_pixbuf);
+  if (! csim->gui_display)
     fatal (2, "can't initialize display\n");
 
-  sim = sim_init (model,
-		  model_info->clock_frequency,
-		  model_info->ram_size,
-		  kml->character_segment_map,
-		  gui_display_update,
-		  gui_display);
+  csim->sim = sim_init (model,
+			model_info->clock_frequency,
+			model_info->ram_size,
+			csim->kml->character_segment_map,
+			(display_update_callback_fn_t *) gui_display_update,
+			csim->gui_display);
 
 #ifdef HAS_DEBUGGER_GUI
-  init_debugger_gui (sim);
+  init_debugger_gui (csim->sim);
 #endif
 
-  add_slide_switches (sim, kml, background_pixbuf, fixed);
-  add_keys (sim, kml, background_pixbuf, fixed);
+  add_slide_switches (csim->sim, csim->kml, background_pixbuf, fixed);
+  add_keys (csim->sim, csim->kml, background_pixbuf, fixed);
 
   if (image_mask_bitmap)
     {
-      gtk_widget_shape_combine_mask (main_window,
+      gtk_widget_shape_combine_mask (csim->main_window,
 				     image_mask_bitmap,
 				     0,
 				     0);
 
-      gtk_window_set_decorated (GTK_WINDOW (main_window), FALSE);
+      gtk_window_set_decorated (GTK_WINDOW (csim->main_window), FALSE);
     }
 
   // Have to show everything again, now that we've done gui_display_init()
   // and combined the shape mask.
-  gtk_widget_show_all (main_window);
+  gtk_widget_show_all (csim->main_window);
 
-  g_signal_connect (G_OBJECT (main_window),
+  g_signal_connect (G_OBJECT (csim->main_window),
 		    "key_release_event",
-		    G_CALLBACK (on_key_event),
-		    NULL);
+		    G_CALLBACK (key_event_callback),
+		    csim);
 
   if (image_mask_bitmap)
     {
-      g_signal_connect (G_OBJECT (main_window),
+      g_signal_connect (G_OBJECT (csim->main_window),
 			"button_press_event",
-			G_CALLBACK (on_move_window),
-			NULL);
+			G_CALLBACK (move_window_callback),
+			csim);
     }
 
-  g_signal_connect (G_OBJECT (main_window),
+  g_signal_connect (G_OBJECT (csim->main_window),
 		    "destroy",
-		    GTK_SIGNAL_FUNC (quit_callback),
-		    NULL);
+		    GTK_SIGNAL_FUNC (main_window_destroy_callback),
+		    csim);
 
-  rom_fn = find_file_in_path_list (kml->rom, NULL, default_path);
+  rom_fn = find_file_in_path_list (csim->kml->rom, NULL, default_path);
   if (! rom_fn)
-    fatal (2, "can't find ROM file '%s'\n", kml->rom);
+    fatal (2, "can't find ROM file '%s'\n", csim->kml->rom);
 
-  if (! sim_read_object_file (sim, rom_fn))
+  if (! sim_read_object_file (csim->sim, rom_fn))
     fatal (2, "can't read object file '%s'\n", rom_fn);
 
 #ifdef HAS_DEBUGGER
-  if (kml->rom_listing)
+  if (csim->kml->rom_listing)
     {
-      listing_fn = find_file_in_path_list (kml->rom_listing, NULL, default_path);
+      listing_fn = find_file_in_path_list (csim->kml->rom_listing, NULL, default_path);
       if (! listing_fn)
 	warning ("can't find ROM listing file '%s'\n", kml->rom_listing);
-      else if (! sim_read_listing_file (sim, listing_fn))
+      else if (! sim_read_listing_file (csim->sim, listing_fn))
 	warning ("can't read ROM listing file '%s'\n", listing_fn);
     }
 #endif
 
-  sim_reset (sim);
+  sim_reset (csim->sim);
 
   init_slide_switches ();
 
-  set_default_state_path ();
+  set_default_state_path (csim);
 
-  if ((*state_fn) && file_exists (state_fn))
-    state_read_xml (sim, state_fn);
+  if ((csim->state_fn [0]) && file_exists (csim->state_fn))
+    state_read_xml (csim->sim, csim->state_fn);
 
   if (run)
-    sim_start (sim);
+    sim_start (csim->sim);
 
   gtk_main ();
 
