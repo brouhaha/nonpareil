@@ -275,6 +275,9 @@ segment_type		:	LINE segment_param_list END
 			|	RECT segment_param_list END
 				{ yy_kml->segment [kml_cur_idx]->type =
 				    kml_segment_type_rect; }
+			|	IMAGE segment_param_list END
+				{ yy_kml->segment [kml_cur_idx]->type =
+				    kml_segment_type_image; }
 			;
 
 segment_param_list	:	segment_param

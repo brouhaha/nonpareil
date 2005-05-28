@@ -154,7 +154,8 @@ typedef struct kml_scancode_t
 typedef enum
   {
     kml_segment_type_line,
-    kml_segment_type_rect
+    kml_segment_type_rect,
+    kml_segment_type_image,
   } kml_segment_type_t;
 
 typedef struct

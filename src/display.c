@@ -39,6 +39,8 @@ MA 02111, USA.
 
 static kml_t *dkml;  // display keeps a pointer to the KML file.  Ugly!
 
+GdkPixbuf *d_file_pixbuf;  // display keeps a pointer to the file pixbuf. Ugly!
+
 static GtkWidget *display;
 
 static GdkGC *annunciator_gc [KML_MAX_ANNUNCIATOR];
@@ -87,6 +89,20 @@ static void draw_digit (GtkWidget *widget,
 				y + dkml->segment [i]->offset.y,
 				dkml->segment [i]->size.width,
 				dkml->segment [i]->size.height);
+	    break;
+	  case kml_segment_type_image:
+	    gdk_draw_pixbuf (widget->window,                 // drawable
+			     display->style->fg_gc [GTK_WIDGET_STATE (widget)],
+                             d_file_pixbuf,                  // pixbuf
+			     dkml->segment [i]->offset.x,    // src_x
+			     dkml->segment [i]->offset.y,    // src_y
+			     x,                              // dest_x
+			     y,                              // dest_y
+			     dkml->segment [i]->size.width,  // width
+			     dkml->segment [i]->size.height, // height
+			     GDK_RGB_DITHER_NORMAL,          // dither
+			     0,                              // x_dither
+			     0);                             // y_dither
 	    break;
 	  }
       }
@@ -310,6 +326,7 @@ void display_init (kml_t *kml,
   GdkColor display_fg_color, display_bg_color;
 
   dkml = kml;
+  d_file_pixbuf = file_pixbuf;
 
   display = gtk_drawing_area_new ();
 
