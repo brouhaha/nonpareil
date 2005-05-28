@@ -36,7 +36,7 @@ typedef uint32_t segment_bitmap_t;
  * Display segments:
  *
  * For seven-segment displays, by convention the segments are labelled 'a'
- * through 'g'.  We designate the '.' and ',' as 'o' and 'p', respectively.
+ * through 'g'.  We designate the '.' and ',' as 'h' and 'i', respectively.
  *
  *     aaa
  *    f   b
