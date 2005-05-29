@@ -46,7 +46,10 @@ void usage (FILE *f)
   fprintf (f, "Copyright 2004, 2005 Eric L. Smith\n");
   fprintf (f, "http://nonpareil.brouhaha.com/\n");
   fprintf (f, "\n");
-  fprintf (f, "usage: %s kmlfile \"string\" pngfile\n", progname);
+  fprintf (f, "usage: %s [options] kmlfile \"string\" pngfile\n", progname);
+  fprintf (f, "options:\n");
+  fprintf (f, "  -x <size>      horizontal character size in pixels\n");
+  fprintf (f, "  -y <size>      vertical character size in pixels\n");
 }
 
 
@@ -393,19 +396,68 @@ void draw_char (int x, char c)
 
 int main (int argc, char *argv[])
 {
+  char *kml_name = NULL;
+  char *str = NULL;
+  char *png_fn = NULL;
+  int x_size = 0;
+  int y_size = 0;
+
+  char *kml_fn;
   char *image_fn;
   int i;
 
   progname = newstr (argv [0]);
 
-  if (argc != 4)
-    fatal (1, NULL);
-
   gtk_init (& argc, & argv);
 
-  kml = read_kml_file (argv [1]);
+  while (--argc)
+    {
+      argv++;
+      if (*argv [0] == '-')
+	{
+	  if (strcmp (argv [0], "-x") == 0)
+	    {
+	      if (! --argc)
+		fatal (1, NULL);
+	      argv++;
+	      x_size = atoi (argv [0]);
+	    }
+	  else if (strcmp (argv [0], "-y") == 0)
+	    {
+	      if (! --argc)
+		fatal (1, NULL);
+	      argv++;
+	      y_size = atoi (argv [0]);
+	    }
+	  else
+	    fatal (1, "unrecognized option '%s'\n", argv [0]);
+	}
+      else if (! kml_name)
+	kml_name = argv [0];
+      else if (! str)
+	str = argv [0];
+      else if (! png_fn)
+	png_fn = argv [0];
+      else
+	fatal (1, NULL);
+    }
+
+  if (! (kml_name && str && png_fn))
+    fatal (1, NULL);
+
+  kml_fn = find_file_in_path_list (kml_name, ".kml", default_path);
+  if (! kml_fn)
+    fatal (2, "can't find KML file '%s'\n", kml_name);
+
+  kml = read_kml_file (kml_fn);
   if (! kml)
-    fatal (2, "can't read KML file '%s'\n", argv [1]);
+    fatal (2, "can't read KML file '%s'\n", kml_fn);
+
+  if (x_size)
+    kml->digit_size.width = x_size;
+
+  if (y_size)
+    kml->digit_size.height = y_size;
 
   if (! kml->image)
     fatal (2, "No image file spsecified in KML\n");
@@ -423,7 +475,7 @@ int main (int argc, char *argv[])
   render_pixbuf = gdk_pixbuf_new (GDK_COLORSPACE_RGB,
 				  TRUE,
 				  8,
-				  strlen (argv [2]) * kml->digit_size.width,
+				  strlen (str) * kml->digit_size.width,
 				  kml->digit_size.height);
 
   // fill pixbuf with color kml->display_color [0]
@@ -434,11 +486,11 @@ int main (int argc, char *argv[])
 	       0);  // alpha 0 = transparent, 255 = opaque
 
   // render segments with color kml->display_color [2]
-  for (i = 0; i < strlen (argv [2]); i++)
-    draw_char (i * kml->digit_size.width, argv [2][i]);
+  for (i = 0; i < strlen (str); i++)
+    draw_char (i * kml->digit_size.width, str [i]);
 
   gdk_pixbuf_save (render_pixbuf,
-		   argv [3],
+		   png_fn,
 		   "png",
 		   & error,
 		   NULL);
