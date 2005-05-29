@@ -159,7 +159,9 @@ static gboolean on_destroy_reg_window_event (GtkWidget *widget,
 }
 
 
-void debug_show_reg (GtkWidget *widget, gpointer data)
+void debug_show_reg  (gpointer callback_data,
+		      guint    callback_action,
+		      GtkWidget *widget)
 {
   GtkWidget *table;
   int reg_num = 0;
@@ -251,7 +253,9 @@ static gboolean on_destroy_ram_window_event (GtkWidget *widget,
 }
 
 
-void debug_show_ram (GtkWidget *widget, gpointer data)
+void debug_show_ram  (gpointer callback_data,
+		      guint    callback_action,
+		      GtkWidget *widget)
 {
   GtkWidget *table;
   GtkWidget *scrolled_window;
@@ -297,33 +301,43 @@ void debug_show_ram (GtkWidget *widget, gpointer data)
 }
 
 
-void debug_run (GtkWidget *widget, gpointer data)
+void debug_run       (gpointer callback_data,
+		      guint    callback_action,
+		      GtkWidget *widget)
 {
   sim_start (dsim);
 }
 
 
-void debug_step (GtkWidget *widget, gpointer data)
+void debug_step      (gpointer callback_data,
+		      guint    callback_action,
+		      GtkWidget *widget)
 {
   sim_single_inst (dsim);
 }
 
 
-void debug_trace (GtkWidget *widget, gpointer data)
+void debug_trace     (gpointer callback_data,
+		      guint    callback_action,
+		      GtkWidget *widget)
 {
   sim_set_debug_flag (dsim, SIM_DEBUG_TRACE,
 		      ! sim_get_debug_flag (dsim, SIM_DEBUG_TRACE));
 }
 
 
-void debug_key_trace (GtkWidget *widget, gpointer data)
+void debug_key_trace (gpointer callback_data,
+		      guint    callback_action,
+		      GtkWidget *widget)
 {
   sim_set_debug_flag (dsim, SIM_DEBUG_KEY_TRACE,
 		      ! sim_get_debug_flag (dsim, SIM_DEBUG_KEY_TRACE));
 }
 
 
-void debug_ram_trace (GtkWidget *widget, gpointer data)
+void debug_ram_trace (gpointer callback_data,
+		      guint    callback_action,
+		      GtkWidget *widget)
 {
   sim_set_debug_flag (dsim, SIM_DEBUG_RAM_TRACE,
 		      ! sim_get_debug_flag (dsim, SIM_DEBUG_RAM_TRACE));

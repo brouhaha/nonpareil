@@ -177,16 +177,6 @@ gboolean key_event_callback (GtkWidget *widget,
 }
 
 
-static void quit_callback (GtkWidget *widget, gpointer data)
-{
-  csim_t *csim = data;
-
-  if (csim->state_fn [0])
-    state_write_xml (csim->sim, csim->state_fn);
-  gtk_main_quit ();
-}
-
-
 static void main_window_destroy_callback (GtkWidget *widget, gpointer data)
 {
   csim_t *csim = data;
@@ -197,9 +187,23 @@ static void main_window_destroy_callback (GtkWidget *widget, gpointer data)
 }
 
 
-static void file_open (GtkWidget *widget, gpointer data)
+static void quit_callback (gpointer callback_data,
+			   guint    callback_action,
+			   GtkWidget *widget)
 {
-  csim_t *csim = data;
+  csim_t *csim = callback_data;
+
+  if (csim->state_fn [0])
+    state_write_xml (csim->sim, csim->state_fn);
+  gtk_main_quit ();
+}
+
+
+static void file_open (gpointer callback_data,
+		       guint    callback_action,
+		       GtkWidget *widget)
+{
+  csim_t *csim = callback_data;
   GtkWidget *dialog;
 
   dialog = gtk_file_chooser_dialog_new ("Load Calculator State",
@@ -223,10 +227,19 @@ static void file_open (GtkWidget *widget, gpointer data)
 }
 
 
-static void file_save_as (GtkWidget *widget, gpointer data)
+// handles save (action==1) and save as (action==2)
+static void file_save (gpointer callback_data,
+		       guint    callback_action,
+		       GtkWidget *widget)
 {
-  csim_t *csim = data;
+  csim_t *csim = callback_data;
   GtkWidget *dialog;
+
+  if ((callback_action == 1) && (csim->state_fn [0]))
+    {
+      state_write_xml (csim->sim, csim->state_fn);
+      return;
+    }
 
   dialog = gtk_file_chooser_dialog_new ("Save Calculator State",
 					GTK_WINDOW (csim->main_window),
@@ -249,32 +262,29 @@ static void file_save_as (GtkWidget *widget, gpointer data)
 }
 
 
-static void file_save (GtkWidget *widget, gpointer data)
+static void edit_copy (gpointer callback_data,
+		       guint    callback_action,
+		       GtkWidget *widget)
 {
-  csim_t *csim = data;
-
-  if (csim->state_fn [0])
-    state_write_xml (csim->sim, csim->state_fn);
-  else
-    file_save_as (widget, data);
+  // csim_t *csim = callback_data;
+  // $$$ not yet implemented
 }
 
 
-static void edit_copy (GtkWidget *widget, gpointer data)
+static void edit_paste (gpointer callback_data,
+			guint    callback_action,
+			GtkWidget *widget)
 {
-  /* $$$ not yet implemented */
+  // csim_t *csim = callback_data;
+  // $$$ not yet implemented
 }
 
 
-static void edit_paste (GtkWidget *widget, gpointer data)
+static void help_about (gpointer callback_data,
+			guint    callback_action,
+			GtkWidget *widget)
 {
-  /* $$$ not yet implemented */
-}
-
-
-static void help_about (GtkWidget *widget, gpointer data)
-{
-  csim_t *csim = data;
+  csim_t *csim = callback_data;
 
   about_dialog (csim->main_window, csim->kml);
 }
@@ -283,31 +293,31 @@ static void help_about (GtkWidget *widget, gpointer data)
 static GtkItemFactoryEntry menu_items [] =
   {
     { "/_File",         NULL,         NULL,          0, "<Branch>" },
-    { "/File/_Open",    "<control>O", file_open,     0, "<StockItem>", GTK_STOCK_OPEN },
-    { "/File/_Save",    "<control>S", file_save,     0, "<StockItem>", GTK_STOCK_SAVE },
-    { "/File/Save _As", NULL,         file_save_as,  0, "<Item>" },
+    { "/File/_Open",    "<control>O", file_open,     1, "<StockItem>", GTK_STOCK_OPEN },
+    { "/File/_Save",    "<control>S", file_save,     1, "<StockItem>", GTK_STOCK_SAVE },
+    { "/File/Save _As", NULL,         file_save,     2, "<Item>" },
     { "/File/sep1",     NULL,         NULL,          0, "<Separator>" },
-    { "/File/_Quit",    "<CTRL>Q",    quit_callback, 0, "<StockItem>", GTK_STOCK_QUIT },
+    { "/File/_Quit",    "<CTRL>Q",    quit_callback, 1, "<StockItem>", GTK_STOCK_QUIT },
     { "/_Edit",         NULL,         NULL,          0, "<Branch>" },
-    { "/Edit/_Copy",    "<control>C", edit_copy,     0, "<StockItem>", GTK_STOCK_COPY },
-    { "/Edit/_Paste",   "<control>V", edit_paste,    0, "<StockItem>", GTK_STOCK_PASTE },
+    { "/Edit/_Copy",    "<control>C", edit_copy,     1, "<StockItem>", GTK_STOCK_COPY },
+    { "/Edit/_Paste",   "<control>V", edit_paste,    1, "<StockItem>", GTK_STOCK_PASTE },
 #ifdef HAS_DEBUGGER
     { "/_Debug",        NULL,         NULL,          0, "<Branch>" },
 #endif
 #ifdef HAS_DEBUGGER_GUI
-    { "/Debug/Show Reg", NULL,        debug_show_reg, 0, "<Item>" },
-    { "/Debug/Show RAM", NULL,        debug_show_ram, 0, "<Item>" },
-    { "/Debug/Run",     NULL,         debug_run,     0, "<Item>" },
-    { "/Debug/Step",    NULL,         debug_step,    0, "<Item>" },
-    { "/Debug/Trace",   NULL,         debug_trace,   0, "<ToggleItem>" },
-    { "/Debug/Key Trace", NULL,     debug_key_trace, 0, "<ToggleItem>" },
-    { "/Debug/RAM Trace", NULL,     debug_ram_trace, 0, "<ToggleItem>" },
+    { "/Debug/Show Reg", NULL,        debug_show_reg, 1, "<Item>" },
+    { "/Debug/Show RAM", NULL,        debug_show_ram, 1, "<Item>" },
+    { "/Debug/Run",     NULL,         debug_run,     1, "<Item>" },
+    { "/Debug/Step",    NULL,         debug_step,    1, "<Item>" },
+    { "/Debug/Trace",   NULL,         debug_trace,   1, "<ToggleItem>" },
+    { "/Debug/Key Trace", NULL,     debug_key_trace, 1, "<ToggleItem>" },
+    { "/Debug/RAM Trace", NULL,     debug_ram_trace, 1, "<ToggleItem>" },
 #endif // HAS_DEBUGGER
 #ifdef HAS_DEBUGGER_CLI
-    { "/Debug/Command Window", NULL,     debug_cmd_win, 0, "<ToggleItem>" },
+    { "/Debug/Command Window", NULL,     debug_cmd_win, 1, "<ToggleItem>" },
 #endif // HAS_DEBUGGER_CLI
     { "/_Help",         NULL,         NULL,          0, "<LastBranch>" },
-    { "/_Help/About",   NULL,         help_about,    0, "<Item>" }
+    { "/_Help/About",   NULL,         help_about,    1, "<Item>" }
   };
 
 static gint nmenu_items = sizeof (menu_items) / sizeof (GtkItemFactoryEntry);
