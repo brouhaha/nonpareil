@@ -213,10 +213,20 @@ str2png = str2png_env.Program (target = 'str2png',
                                          common_objs))
 
 #-----------------------------------------------------------------------------
+# bin2c
+#-----------------------------------------------------------------------------
+
+bin2c_srcs = Split ("""bin2c.c""")
+
+bin2c = env.Program (target = 'bin2c',
+                     source = (bin2c_srcs +
+                               common_objs))
+
+#-----------------------------------------------------------------------------
 # default targets
 #-----------------------------------------------------------------------------
 
-Default ([nonpareil, uasm, modutil, str2png])
+Default ([nonpareil, uasm, modutil, str2png, bin2c])
 # omit udis, nsim_conv for now
 
 #-----------------------------------------------------------------------------
@@ -255,7 +265,8 @@ dist_files = (misc + headers +
               nonpareil_debugger_gui_srcs +
               nonpareil_debugger_cli_srcs +
               modutil_srcs +
-              str2png_srcs)
+              str2png_srcs +
+              bin2c_srcs)
 
 env.Distribute (source_release_dir, dist_files)
 
