@@ -43,6 +43,7 @@ struct gui_display_t
   GdkPixbuf *file_pixbuf;
   GtkWidget *drawing_area;
   GdkGC *annunciator_gc [KML_MAX_ANNUNCIATOR];
+  GdkPixbuf *segment_pixbuf [KML_MAX_SEGMENT];
   segment_bitmap_t display_segments [KML_MAX_DIGITS];
 };
 
@@ -90,6 +91,7 @@ static void draw_digit (gui_display_t *d,
 				d->kml->segment [i]->size.height);
 	    break;
 	  case kml_segment_type_image:
+	    // grab segment images from individual templates in image file
 	    gdk_draw_pixbuf (widget->window,                   // drawable
 			     d->drawing_area->style->fg_gc [GTK_WIDGET_STATE (widget)],
                              d->file_pixbuf,                   // pixbuf
@@ -99,6 +101,22 @@ static void draw_digit (gui_display_t *d,
 			     y,                                // dest_y
 			     d->kml->segment [i]->size.width,  // width
 			     d->kml->segment [i]->size.height, // height
+			     GDK_RGB_DITHER_NORMAL,            // dither
+			     0,                                // x_dither
+			     0);                               // y_dither
+	    break;
+	  case kml_segment_type_scaled:
+	    // pre-rendered images extracted from a single template in
+            // image file and scaled down
+	    gdk_draw_pixbuf (widget->window,                   // drawable
+			     d->drawing_area->style->fg_gc [GTK_WIDGET_STATE (widget)],
+                             d->segment_pixbuf [i],            // pixbuf
+			     0,                                // src_x
+			     0,                                // src_y
+			     x,                                // dest_x
+			     y,                                // dest_y
+			     d->kml->digit_size.width,         // width
+			     d->kml->digit_size.height,        // height
 			     GDK_RGB_DITHER_NORMAL,            // dither
 			     0,                                // x_dither
 			     0);                               // y_dither
@@ -200,7 +218,7 @@ static void get_pixbuf_pixel (GdkPixbuf *pixbuf, int x, int y,
 // XBM bit order is defined as being MSB left, but
 // gdk_bitmap_create_from_data() uses the data as LSB left.
 
-static void init_annunciator (gui_display_t *d, GdkPixbuf *file_pixbuf, int i)
+static void init_annunciator (gui_display_t *d, int i)
 {
   int row_bytes;
   char *xbm_data;
@@ -228,7 +246,7 @@ static void init_annunciator (gui_display_t *d, GdkPixbuf *file_pixbuf, int i)
 #endif
       for (x = 0; x < d->kml->annunciator [i]->size.width; x++)
 	{
-	  get_pixbuf_pixel (file_pixbuf, 
+	  get_pixbuf_pixel (d->file_pixbuf, 
 			    d->kml->annunciator [i]->offset.x + x,
 			    d->kml->annunciator [i]->offset.y + y,
 			    & r, & g, & b);
@@ -277,13 +295,299 @@ static void init_annunciator (gui_display_t *d, GdkPixbuf *file_pixbuf, int i)
 }
 
 
-static void init_annunciators (gui_display_t *d, GdkPixbuf *file_pixbuf)
+static void init_annunciators (gui_display_t *d)
 {
   int i;
 
   for (i = 0; i < KML_MAX_ANNUNCIATOR; i++)
     if (d->kml->annunciator [i])
-      init_annunciator (d, file_pixbuf, i);
+      init_annunciator (d, i);
+}
+
+
+static void copy_pixels (GdkPixbuf *src,
+			 GdkPixbuf *dest)
+{
+  int width, height;
+  int x, y;
+
+  int src_n_channels, src_rowstride;
+  guchar *src_pixels;
+
+  int dest_n_channels, dest_rowstride;
+  guchar *dest_pixels;
+
+  g_assert (gdk_pixbuf_get_colorspace (src) == GDK_COLORSPACE_RGB);
+  g_assert (gdk_pixbuf_get_bits_per_sample (src) == 8);
+
+  width = gdk_pixbuf_get_width (src);
+  height = gdk_pixbuf_get_height (src);
+
+  src_n_channels = gdk_pixbuf_get_n_channels (src);
+  src_rowstride = gdk_pixbuf_get_rowstride (src);
+  src_pixels = gdk_pixbuf_get_pixels (src);
+
+  dest_n_channels = gdk_pixbuf_get_n_channels (dest);
+  dest_rowstride = gdk_pixbuf_get_rowstride (dest);
+  dest_pixels = gdk_pixbuf_get_pixels (dest);
+
+
+  for (y = 0; y < height; y++)
+    {
+      guchar *sp = src_pixels;
+      guchar *dp = dest_pixels;
+      for (x = 0; x < width; x++)
+	{
+	  dp [0] = sp [0];
+	  dp [1] = sp [1];
+	  dp [2] = sp [2];
+	  if (dest_n_channels >= 4)
+	    {
+	      if (src_n_channels >= 4)
+		dp [3] = sp [3];
+	      else
+		dp [3] = 0xff;
+	    }
+	  sp += src_n_channels;
+	  dp += dest_n_channels;
+	}
+      src_pixels += src_rowstride;
+      dest_pixels += dest_rowstride;
+    }
+}
+
+
+static GdkPixbuf *copy_subpixbuf_with_alpha (GdkPixbuf *src_pixbuf,
+					     int src_x,
+					     int src_y,
+					     int width,
+					     int height)
+{
+  GdkPixbuf *sub, *copy;
+
+  sub = gdk_pixbuf_new_subpixbuf (src_pixbuf, src_x, src_y, width, height);
+  if (! sub)
+    fatal (3, "copy_subpixbuf: error creating subpixbuf\n");
+
+  if (gdk_pixbuf_get_has_alpha (sub))
+    {
+      copy = gdk_pixbuf_copy (sub);
+      if (! copy)
+	fatal (3, "copy_subpixbuf: error copying pixbuf\n");
+    }
+  else
+    {
+      copy = gdk_pixbuf_new (GDK_COLORSPACE_RGB,
+			     TRUE,   // has_alpha
+			     8,      // bits_per_sample
+			     width,
+			     height);
+      copy_pixels (sub, copy);
+    }
+
+  g_object_unref (sub);
+
+  return copy;
+}
+
+
+typedef void pixel_map_fn_t (uint8_t *r,
+			     uint8_t *g,
+			     uint8_t *b,
+			     uint8_t *a,
+			     void *data);
+
+
+// Iterate over all pixels in a pixbuf, applying a mapping function to
+// the pixel value.
+static void pixbuf_map_all_pixels (GdkPixbuf *pixbuf,
+				   pixel_map_fn_t *map_fn,
+				   void *data)
+{
+  int width, height;
+  int rowstride;
+  int n_channels;
+  int x, y;
+  guchar *pixels;
+
+  g_assert (gdk_pixbuf_get_colorspace (pixbuf) == GDK_COLORSPACE_RGB);
+  g_assert (gdk_pixbuf_get_bits_per_sample (pixbuf) == 8);
+
+  n_channels = gdk_pixbuf_get_n_channels (pixbuf);
+
+  width = gdk_pixbuf_get_width (pixbuf);
+  height = gdk_pixbuf_get_height (pixbuf);
+
+  rowstride = gdk_pixbuf_get_rowstride (pixbuf);
+  pixels = gdk_pixbuf_get_pixels (pixbuf);
+
+  for (y = 0; y < height; y++)
+    {
+      guchar *p = pixels;
+      for (x = 0; x < width; x++)
+	{
+	  if (n_channels >= 4)
+	    map_fn (& p[0], & p[1], & p[2], & p[3], data);
+	  else
+	    {
+	      uint8_t dummy = 0xff;
+	      map_fn (& p[0], & p[1], & p[2], & dummy, data);
+	    }
+	  p += n_channels;
+	}
+      pixels += rowstride;
+    }
+}
+
+
+static void color_key (uint8_t *r,
+		       uint8_t *g,
+		       uint8_t *b,
+		       uint8_t *a,
+		       void *data)
+{
+  kml_color_t *color = data;
+
+  if (((*r) == color->r) && ((*g) == color->g) && ((*b) == color->b))
+    {
+      // match - set pixel to black
+      (*r) = 0;
+      (*b) = 0;
+      (*g) = 0;
+    }
+  else
+    {
+      // non-match - set pixel to white
+      (*r) = 255;
+      (*b) = 255;
+      (*g) = 255;
+    }
+}
+
+
+static void grey_to_alpha (uint8_t *r,
+			   uint8_t *g,
+			   uint8_t *b,
+			   uint8_t *a,
+			   void *data)
+{
+  uint16_t level;
+
+  // Compute luminance value by averaging R, G, and B (not ideal!).
+  level = (*r);
+  level += (*b);
+  level += (*g);
+  level /= 3;
+
+  // Turn luminance into opacity of black.
+  (*r) = 0;
+  (*b) = 0;
+  (*g) = 0;
+  (*a) = 255 - level;
+}
+
+
+#ifdef SCALED_SEGMENT_DEBUG
+static void show_pixbuf (gui_display_t *d, char *s, GdkPixbuf *pixbuf)
+{
+  GtkWidget *dialog;
+  GtkWidget *image;
+
+  dialog = gtk_dialog_new_with_buttons (s,
+					NULL,  // d->main_window,
+					GTK_DIALOG_MODAL,
+					GTK_STOCK_OK,
+					GTK_RESPONSE_NONE,
+					NULL);
+
+  image = gtk_image_new_from_pixbuf (pixbuf);
+
+  gtk_container_add (GTK_CONTAINER (GTK_DIALOG (dialog)->vbox), image);
+
+  gtk_widget_show_all (dialog);
+
+  gtk_dialog_run (GTK_DIALOG (dialog));
+
+  gtk_widget_destroy (dialog);
+}
+#endif
+
+
+// Used only for segments of type "scaled".  Extracts the segment image
+// from the template based on color, and scales it down into a new
+// pixbuf.
+static void init_segment (gui_display_t *d, int i)
+{
+  GdkPixbuf *full_size_pixbuf;
+  double scale_x, scale_y;
+
+  full_size_pixbuf = copy_subpixbuf_with_alpha (d->file_pixbuf,
+						d->kml->segment [i]->offset.x,
+						d->kml->segment [i]->offset.y,
+						d->kml->segment [i]->size.width,
+						d->kml->segment [i]->size.height);
+
+#ifdef SCALED_SEGMENT_DEBUG
+  show_pixbuf (d, "full size orig", full_size_pixbuf);
+#endif
+
+  pixbuf_map_all_pixels (full_size_pixbuf,
+			 color_key,
+			 & d->kml->segment [i]->color);
+
+#ifdef SCALED_SEGMENT_DEBUG
+  show_pixbuf (d, "full size mapped", full_size_pixbuf);
+#endif
+
+  d->segment_pixbuf [i] = gdk_pixbuf_new (GDK_COLORSPACE_RGB,
+					  TRUE,   // has_alpha
+					  8,      // bits_per_sample
+					  d->kml->digit_size.width,
+					  d->kml->digit_size.height);
+
+  scale_x = (d->kml->digit_size.width * 1.0) / d->kml->segment [i]->size.width;
+  scale_y = (d->kml->digit_size.height * 1.0) / d->kml->segment [i]->size.height;
+
+  // Scale the pixbuf down to the final size.
+  // Note that GDK_INTERP_HYPER is slow but results in high quality.
+  // This is OK since we're only pre-rendering the segments once at
+  // startup.
+  gdk_pixbuf_scale (full_size_pixbuf,            // src
+		    d->segment_pixbuf [i],       // dest
+		    0,                           // dest_x
+		    0,                           // dest_y
+		    d->kml->digit_size.width,    // dest_width
+		    d->kml->digit_size.height,   // dest_height
+		    0,                           // offset_x
+		    0,                           // offset_y
+		    scale_x,
+		    scale_y,
+		    GDK_INTERP_HYPER);           // interp_type
+
+#ifdef SCALED_SEGMENT_DEBUG
+  show_pixbuf (d, "scaled", d->segment_pixbuf [i]);
+#endif
+
+  // Convert pixbuf grey level to alpha
+  pixbuf_map_all_pixels (d->segment_pixbuf [i],
+			 grey_to_alpha,
+			 NULL);
+
+#ifdef SCALED_SEGMENT_DEBUG
+  show_pixbuf (d, "mapped", d->segment_pixbuf [i]);
+#endif
+
+  g_object_unref (full_size_pixbuf);
+}
+
+
+static void init_segments (gui_display_t *d)
+{
+  int i;
+
+  for (i = 0; i < KML_MAX_SEGMENT; i++)
+    if (d->kml->segment [i]->type == kml_segment_type_scaled)
+      init_segment (d, i);
 }
 
 
@@ -356,7 +660,9 @@ gui_display_t * gui_display_init (kml_t *kml,
 		 kml->display_offset.x - kml->background_offset.x,
 		 kml->display_offset.y - kml->background_offset.y);
 
-  init_annunciators (d, file_pixbuf);
+  init_annunciators (d);
+
+  init_segments (d);
 
   g_signal_connect (G_OBJECT (d->drawing_area),
 		    "expose_event",

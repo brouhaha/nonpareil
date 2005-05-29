@@ -111,6 +111,7 @@ rect		return (RECT);
 release		return (RELEASE);
 resetflag	return (RESETFLAG);
 rom		return (ROM);
+scaled          return (SCALED);
 scancode	return (SCANCODE);
 segment		return (SEGMENT);
 setflag		return (SETFLAG);

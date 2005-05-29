@@ -156,6 +156,7 @@ typedef enum
     kml_segment_type_line,
     kml_segment_type_rect,
     kml_segment_type_image,
+    kml_segment_type_scaled,
   } kml_segment_type_t;
 
 typedef struct
@@ -163,6 +164,8 @@ typedef struct
   kml_segment_type_t type;
   kml_size_t   size;
   kml_offset_t offset;
+  kml_color_t  color;  // used for "scaled" segment type, which extracts
+                       // only the portion of the image in this color
 } kml_segment_t;
 
 

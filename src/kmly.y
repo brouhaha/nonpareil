@@ -53,9 +53,9 @@ int kml_cur_idx2;
 %token LISTING      MAP          MENUITEM     MODEL        NOHOLD
 %token OFFSET       ONDOWN       ONUP         OUTIN        PATCH
 %token POSITION     PRESS        PRINT        RECT         RELEASE
-%token RESETFLAG    ROM          SCANCODE     SEGMENT      SETFLAG
-%token SIZE         SWITCH       TITLE        TRANSPARENCY TYPE
-%token VIRTUAL      ZOOM
+%token RESETFLAG    ROM          SCALED       SCANCODE     SEGMENT
+%token SETFLAG      SIZE         SWITCH       TITLE        TRANSPARENCY
+%token TYPE         VIRTUAL      ZOOM
 
 
 %type <intpair> offset_stmt size_stmt down_stmt
@@ -278,6 +278,10 @@ segment_type		:	LINE segment_param_list END
 			|	IMAGE segment_param_list END
 				{ yy_kml->segment [kml_cur_idx]->type =
 				    kml_segment_type_image; }
+			|	SCALED segment_param_list END
+				{ yy_kml->segment [kml_cur_idx]->type =
+				    kml_segment_type_scaled; }
+
 			;
 
 segment_param_list	:	segment_param
@@ -290,6 +294,10 @@ segment_param		:	size_stmt
 			|	offset_stmt
 				{ yy_kml->segment [kml_cur_idx]->offset.x = $1.a;
 				  yy_kml->segment [kml_cur_idx]->offset.y = $1.b; }
+			|	COLOR INTEGER INTEGER INTEGER
+				{ yy_kml->segment [kml_cur_idx]->color.r = $2;
+				  yy_kml->segment [kml_cur_idx]->color.g = $3;
+				  yy_kml->segment [kml_cur_idx]->color.b = $4; }
 			;
 
 /*----------------------------------------------------------------------------
