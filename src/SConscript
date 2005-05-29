@@ -49,6 +49,9 @@ common_objs = [env.Object(src) for src in common_srcs]
 common_dis_srcs = Split ("""dis_woodstock.c dis_nut.c""")
 common_dis_objs = [env.Object(src) for src in common_dis_srcs];
 
+kml_srcs = Split ("""kmll.l kmly.y kml.c""")
+kml_objs = [env.Object(src) for src in kml_srcs]
+
 state_io_srcs = Split ("""state_write.c state_read.c""")
 state_io_objs = [env.Object(src) for src in state_io_srcs];
 state_io_packages = "gtk+-2.0 gdk-2.0 gdk-pixbuf-2.0 glib-2.0 libxml-2.0"
@@ -96,7 +99,6 @@ nonpareil_env = env.Copy ()
 nonpareil_srcs = Split ("""proc.c glib_async_queue_source.c
                            about.c
                            display.c keyboard.c slide_switch.c
-			   kmll.l kmly.y kml.c
                            platform.c model.c
                            digit_ops.c
                            proc_classic.c
@@ -154,7 +156,11 @@ for src in nonpareil_srcs:
     nonpareil_objs.append (nonpareil_env.Object (src))
 
 nonpareil = nonpareil_env.Program (target = 'nonpareil',
-                                   source = common_objs + state_io_objs + common_dis_objs + nonpareil_objs)
+                                   source = (nonpareil_objs +
+                                             kml_objs +
+                                             common_objs +
+                                             state_io_objs +
+                                             common_dis_objs))
 
 #-----------------------------------------------------------------------------
 # udis
@@ -192,10 +198,25 @@ modutil = env.Program (target = 'modutil',
                        source = modutil_srcs + common_objs)
 
 #-----------------------------------------------------------------------------
+# str2png
+#-----------------------------------------------------------------------------
+
+str2png_env = env.Copy ()
+
+str2png_env.Append (CPPDEFINES = {'DEFAULT_PATH': env ['libdir']})
+
+str2png_srcs = Split ("""str2png.c""")
+
+str2png = str2png_env.Program (target = 'str2png',
+                               source = (str2png_srcs +
+                                         kml_objs +
+                                         common_objs))
+
+#-----------------------------------------------------------------------------
 # default targets
 #-----------------------------------------------------------------------------
 
-Default ([nonpareil, uasm, modutil])
+Default ([nonpareil, uasm, modutil, str2png])
 # omit udis, nsim_conv for now
 
 #-----------------------------------------------------------------------------
@@ -227,12 +248,14 @@ headers = Split ("""util.h
 
 misc = Split ("""SConscript ChangeLog release.c""")
 
-dist_files = (misc + headers + common_srcs + common_dis_srcs +
+dist_files = (misc + headers +
+              kml_srcs + common_srcs + common_dis_srcs +
               state_io_srcs + uasm_srcs +
               nonpareil_srcs + nonpareil_csim_srcs +
               nonpareil_debugger_gui_srcs +
               nonpareil_debugger_cli_srcs +
-              modutil_srcs)
+              modutil_srcs +
+              str2png_srcs)
 
 env.Distribute (source_release_dir, dist_files)
 
