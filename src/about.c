@@ -27,8 +27,10 @@ MA 02111, USA.
 #include <gtk/gtk.h>
 
 #include "util.h"
+#include "pixbuf_util.h"
 #include "display.h"
 #include "kml.h"
+#include "goose.h"
 
 
 static char *credits_people [] =
@@ -48,6 +50,7 @@ static char *credits_people [] =
   "Thomas Olesen",
   "Richard Ottosen",
   "Jim Phillips",
+  "Tony Phillips",
   "Hedley Rainnie",
   "Chris Rocatti",
   "Adam Sampson",
@@ -72,7 +75,7 @@ static void add_credits (GtkWidget *widget)
   count = sizeof (credits_people) / sizeof (char *);
   rows = (count + CREDITS_COLUMNS - 1) / CREDITS_COLUMNS;
 
-  table = gtk_table_new (rows, CREDITS_COLUMNS, false);
+  table = gtk_table_new (rows + 2, CREDITS_COLUMNS, true);
 
   index = 0;
   for (column = 0; column < CREDITS_COLUMNS; column++)
@@ -82,34 +85,14 @@ static void add_credits (GtkWidget *widget)
 				   gtk_label_new (credits_people [index++]),
 				   column,
 				   column + 1,
-				   row,
-				   row + 1);
+				   row + 1,
+				   row + 2);
 
   gtk_container_add (GTK_CONTAINER (widget), table);
 
   gtk_container_add (GTK_CONTAINER (widget),
 		     gtk_label_new ("My apologies if I've forgotten to list anyone!"));
 
-}
-
-
-static GdkPixbuf* new_pixbuf_from_png_array (const uint8_t *p, size_t len)
-{
-  GError *error;
-  GdkPixbuf *pixbuf;
-  GdkPixbufLoader *loader;
-
-  loader = gdk_pixbuf_loader_new ();
-  if (! loader)
-    return NULL;
-  if (! gdk_pixbuf_loader_write (loader, p, len, & error))
-    return NULL;
-  if (! gdk_pixbuf_loader_close (loader, & error))
-    return NULL;
-
-  pixbuf = gdk_pixbuf_loader_get_pixbuf (loader);
-
-  return (pixbuf);
 }
 
 
@@ -162,7 +145,15 @@ void about_dialog (GtkWidget *main_window, kml_t *kml)
 	gtk_container_add (GTK_CONTAINER (GTK_DIALOG (dialog)->vbox),
 			   gtk_label_new (kml->author));
     }
+
+  gtk_container_add (GTK_CONTAINER (GTK_DIALOG (dialog)->vbox),
+		     gtk_hseparator_new ());
+
+  gtk_container_add (GTK_CONTAINER (GTK_DIALOG (dialog)->vbox),
+		     new_goose (12));
+
   gtk_widget_show_all (dialog);
+
   gtk_dialog_run (GTK_DIALOG (dialog));
   gtk_widget_destroy (dialog);
 }

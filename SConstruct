@@ -209,6 +209,7 @@ Export ('env source_release_dir snapshot_dir')
 SConscript ('rom/SConscript')
 SConscript ('kml/SConscript')
 SConscript ('image/SConscript')
+SConscript ('sound/SConscript')
 
 #-----------------------------------------------------------------------------
 # code

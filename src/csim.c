@@ -43,6 +43,7 @@ MA 02111, USA.
 #include "model.h"
 #include "state_io.h"
 #include "about.h"
+#include "sound.h"
 
 #ifdef HAS_DEBUGGER_GUI
   #include "debugger_gui.h"
@@ -431,6 +432,8 @@ int main (int argc, char *argv[])
   g_thread_init (NULL);
 
   gtk_init (& argc, & argv);
+
+  init_sound ();
 
   while (--argc)
     {
