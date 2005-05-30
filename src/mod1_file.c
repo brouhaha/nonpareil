@@ -28,6 +28,7 @@ MA 02111, USA.
 #include <stdio.h>
 #include <string.h>
 
+#include "util.h"
 #include "mod1_file.h"
 
 
@@ -62,6 +63,38 @@ static inline bool bad_page_value (char *field_name, uint8_t value)
 
 
 
+#define READ_FIELD(f,field) \
+  do                        \
+    if (fread_bytes (f, & field, sizeof (field), & eof, & error) !=    \
+        sizeof (field))     \
+      return false;         \
+  while (0)                 \
+      
+
+bool mod1_read_file_header (FILE *f, mod1_file_header_t *header)
+{
+  bool eof, error;
+
+  READ_FIELD (f, header->FileFormat);
+  READ_FIELD (f, header->Title);
+  READ_FIELD (f, header->Version);
+  READ_FIELD (f, header->PartNumber);
+  READ_FIELD (f, header->Author);
+  READ_FIELD (f, header->Copyright);
+  READ_FIELD (f, header->License);
+  READ_FIELD (f, header->Comments);
+  READ_FIELD (f, header->Category);
+  READ_FIELD (f, header->Hardware);
+  READ_FIELD (f, header->MemModules);
+  READ_FIELD (f, header->XMemModules);
+  READ_FIELD (f, header->Original);
+  READ_FIELD (f, header->AppAutoUpdate);
+  READ_FIELD (f, header->NumPages);
+  READ_FIELD (f, header->HeaderCustom);
+  return true;
+}
+
+
 bool mod1_validate_file_header (mod1_file_header_t *header, size_t file_size)
 {
   bool status = true;
@@ -86,6 +119,25 @@ bool mod1_validate_file_header (mod1_file_header_t *header, size_t file_size)
     status = bad_header_value ("Hardware\n", header->Hardware);
 
   return status;
+}
+
+
+bool mod1_read_page (FILE *f, mod1_file_page_t *page)
+{
+  bool eof, error;
+
+  READ_FIELD (f, page->Name);
+  READ_FIELD (f, page->ID);
+  READ_FIELD (f, page->Page);
+  READ_FIELD (f, page->PageGroup);
+  READ_FIELD (f, page->Bank);
+  READ_FIELD (f, page->BankGroup);
+  READ_FIELD (f, page->RAM);
+  READ_FIELD (f, page->WriteProtect);
+  READ_FIELD (f, page->FAT);
+  READ_FIELD (f, page->Image);
+  READ_FIELD (f, page->PageCustom);
+  return true;
 }
 
 

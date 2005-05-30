@@ -178,10 +178,8 @@ static bool sim_read_mod1_page (sim_t *sim, FILE *f)
   mod1_file_page_t page;
   addr_t addr;
   int i;
-  bool eof, error;
 
-  if (fread_bytes (f, & page, sizeof (mod1_file_page_t), & eof, & error) !=
-      sizeof (mod1_file_page_t))
+  if (! mod1_read_page (f, & page))
     {
       fprintf (stderr, "Can't read MOD1 page\n");
       return false;
@@ -239,14 +237,12 @@ static bool sim_read_mod1_file (sim_t *sim, FILE *f)
   mod1_file_header_t header;
   size_t file_size;
   int i;
-  bool eof, error;
 
   fseek (f, 0, SEEK_END);
   file_size = ftell (f);
   fseek (f, 0, SEEK_SET);
 
-  if (fread_bytes (f, & header, sizeof (mod1_file_header_t), & eof, & error) !=
-      sizeof (mod1_file_header_t))
+  if (! mod1_read_file_header (f, & header))
     {
       fprintf (stderr, "Can't read MOD1 file header\n");
       return false;

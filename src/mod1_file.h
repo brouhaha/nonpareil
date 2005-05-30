@@ -95,7 +95,20 @@ File size=sizeof(ModuleFileHeader)+NumPages*sizeof(ModuleFilePage)
 #define POSITION_MAX      0x6f  // maximum POSITION_ define value
 
 
+#define MOD1_HEADER_SIZE   729
+#define MOD1_PAGE_SIZE    5188
+
+
+// A mod1 file consists of a module header followed by zero to 255 pages,
+// As defined below.  Thus for a valid module file,
+//    ((file_length - MOD1_HEADER_SIZE) % MOD1_PAGE_SIZE) == 0
+
+
 // Module header
+
+// Unfortunately this structure can't be used directly for I/O due to
+// structure field alignment considerations on some systems.
+
 typedef struct
 {
   char FileFormat [5];       // constant value defines file format and revision
@@ -122,13 +135,17 @@ typedef struct
                              // 1 = overwrite this file automatically when
                              //     saving other data,
                              // 0 = do not update
-  uint8_t NumPages;          // the number of pages in this file (0-256, but
+  uint8_t NumPages;          // the number of pages in this file (0-255, but
                              // normally between 1-6)
   uint8_t HeaderCustom[32];  // for special hardware attributes
 } mod1_file_header_t;
 
 
-// page struct
+// Module page
+
+// Unfortunately this structure can't be used directly for I/O due to
+// structure field alignment considerations on some systems.
+
 typedef struct
 {
   char Name [20];           // normally the name of the original .ROM file,
@@ -156,6 +173,10 @@ typedef struct
 } mod1_file_page_t;
 
 
+bool mod1_read_file_header (FILE *f, mod1_file_header_t *header);
+
 bool mod1_validate_file_header (mod1_file_header_t *header, size_t file_size);
+
+bool mod1_read_page (FILE *f, mod1_file_page_t *page);
 
 bool mod1_validate_page (mod1_file_page_t *page);
