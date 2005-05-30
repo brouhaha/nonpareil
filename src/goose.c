@@ -22,10 +22,12 @@ MA 02111, USA.
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 #include <gdk/gdk.h>
 #include <gtk/gtk.h>
 
+#include "util.h"
 #include "sound.h"
 #include "pixbuf_util.h"
 
@@ -36,50 +38,44 @@ MA 02111, USA.
 #include "lgoose_png.h"
 
 
-static int goose_position;
-static int goose_positions;
-static bool goose_backward;
-static GtkWidget *goose_table;
-static GtkWidget *rgoose_image;
-static GtkWidget *lgoose_image;
-static GtkWidget *rgoose_event_box;
-static GtkWidget *lgoose_event_box;
-
-
-
-static void fly_goose (bool move, bool reverse)
+typedef struct
 {
-  GtkWidget *goose_event_box;
+  int  positions;
+  int  position;
+  bool backward;
+  GtkWidget *event_box [2];
+  GtkWidget *table;
+  guint timeout_source_id;
+} goose_t;
 
-  goose_event_box = goose_backward ? lgoose_event_box : rgoose_event_box;
 
-  if (goose_position >= 0)
-    gtk_container_remove (GTK_CONTAINER (goose_table), goose_event_box);
+static void fly_goose (goose_t *goose, bool move, bool reverse)
+{
+  if (goose->position >= 0)
+    gtk_container_remove (GTK_CONTAINER (goose->table),
+			  goose->event_box [goose->backward]);
 
   if (reverse)
-    {
-      goose_backward ^= 1;
-      goose_event_box = goose_backward ? lgoose_event_box : rgoose_event_box;
-    }
+    goose->backward ^= 1;
 
   if (move)
     {
-      if (goose_backward)
+      if (goose->backward)
 	{
-	  if ((--goose_position) < 0)
-	    goose_position = goose_positions - 1;
+	  if ((--goose->position) < 0)
+	    goose->position = goose->positions - 1;
 	}
       else
 	{
-	  if ((++goose_position) >= goose_positions)
-	    goose_position = 0;
+	  if ((++goose->position) >= goose->positions)
+	    goose->position = 0;
 	}
     }
 
-  gtk_table_attach (GTK_TABLE (goose_table),  // table
-		    goose_event_box,          // child
-		    goose_position,           // left_attach
-		    goose_position + 1,       // right_attach
+  gtk_table_attach (GTK_TABLE (goose->table), // table
+		    goose->event_box [goose->backward], // child
+		    goose->position,          // left_attach
+		    goose->position + 1,      // right_attach
 		    0,                        // top_attach
 		    1,                        // bottom_attach
 		    GTK_FILL,                 // xoptions
@@ -93,58 +89,90 @@ static void goose_click_callback (GtkWidget *widget,
 				  GdkEventButton *event,
 				  gpointer data)
 {
-  fly_goose (false, true);
+  goose_t *goose = data;
+
+  fly_goose (goose, false, true);
   play_sound (canada_goose_wav, sizeof (canada_goose_wav));
+}
+
+
+static gboolean goose_timeout_callback (gpointer data)
+{
+  goose_t *goose = data;
+
+  fly_goose (goose, true, false);
+  return TRUE;
+}
+
+
+
+static GtkWidget *init_goose_from_image (const uint8_t *p, size_t size)
+{
+  GdkPixbuf *pixbuf;
+  GtkWidget *image;
+  GtkWidget *event_box;
+
+  pixbuf = new_pixbuf_from_png_array (p, size);
+
+  image = gtk_image_new_from_pixbuf (pixbuf);
+  gtk_widget_show (image);
+
+  event_box = gtk_event_box_new();
+  gtk_container_add (GTK_CONTAINER (event_box), image);
+  gtk_widget_show (event_box);
+  g_object_ref (event_box);
+
+  return event_box;
+}
+
+
+static void destroy_goose (gpointer data)
+{
+  goose_t *goose = data;
+  int i;
+
+  g_source_remove (goose->timeout_source_id);
+
+  for (i = 0; i < 2; i++)
+    g_object_unref (goose->event_box [i]);
+
+  free (goose);
 }
 
 
 GtkWidget *new_goose (int positions)
 {
-  GdkPixbuf *rgoose_pixbuf;
-  GdkPixbuf *lgoose_pixbuf;
+  int i;
+  goose_t *goose;
 
-  goose_positions = positions;
+  goose = alloc (sizeof (goose_t));
 
-  goose_table = gtk_table_new (1, positions, TRUE);
+  goose->positions = positions;
+  goose->position = -1;
+  goose->backward = false;
 
-  gtk_widget_show (goose_table);
+  goose->table = gtk_table_new (1, positions, TRUE);
+  gtk_widget_show (goose->table);
 
-  rgoose_pixbuf = new_pixbuf_from_png_array (rgoose_png,
-					     sizeof (rgoose_png));
-  rgoose_image = gtk_image_new_from_pixbuf (rgoose_pixbuf);
-  gtk_widget_show (rgoose_image);
+  g_object_set_data_full (G_OBJECT (goose->table), "goose", goose, destroy_goose);
 
-  rgoose_event_box = gtk_event_box_new();
-  gtk_container_add (GTK_CONTAINER (rgoose_event_box),
-		     rgoose_image);
-  gtk_widget_show (rgoose_event_box);
-  g_object_ref (rgoose_event_box);
+  goose->event_box [0] = init_goose_from_image (rgoose_png,
+						sizeof (rgoose_png));
 
-  g_signal_connect (G_OBJECT (rgoose_event_box),
-		    "button_press_event",
-		    G_CALLBACK (goose_click_callback),
-		    NULL);
+  goose->event_box [1] = init_goose_from_image (lgoose_png,
+						sizeof (lgoose_png));
 
+  for (i = 0; i < 2; i++)
+    g_signal_connect (G_OBJECT (goose->event_box [i]),
+		      "button_press_event",
+		      G_CALLBACK (goose_click_callback),
+		      goose);
 
-  lgoose_pixbuf = new_pixbuf_from_png_array (lgoose_png,
-					     sizeof (lgoose_png));
-  lgoose_image = gtk_image_new_from_pixbuf (lgoose_pixbuf);
-  gtk_widget_show (lgoose_image);
+  fly_goose (goose, true, false);
 
-  lgoose_event_box = gtk_event_box_new();
-  gtk_container_add (GTK_CONTAINER (lgoose_event_box),
-		     lgoose_image);
-  gtk_widget_show (lgoose_event_box);
-  g_object_ref (lgoose_event_box);
+  goose->timeout_source_id = g_timeout_add (250,
+					    goose_timeout_callback,
+					    goose);
 
-  g_signal_connect (G_OBJECT (lgoose_event_box),
-		    "button_press_event",
-		    G_CALLBACK (goose_click_callback),
-		    NULL);
-
-  goose_position = -1;
-  goose_backward = false;
-  fly_goose (true, false);
-
-  return goose_table;
+  return goose->table;
 }
