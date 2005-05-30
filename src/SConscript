@@ -62,6 +62,66 @@ common_objs.append (release_env.Object ('release.c'))
 env.ParseConfig(pkg_config_cmd + state_io_packages)
 
 #-----------------------------------------------------------------------------
+# str2png
+#-----------------------------------------------------------------------------
+
+str2png_env = env.Copy ()
+
+str2png_env.Append (CPPDEFINES = {'DEFAULT_PATH': env ['libdir']})
+
+str2png_srcs = Split ("""str2png.c""")
+
+str2png = str2png_env.Program (target = 'str2png',
+                               source = (str2png_srcs +
+                                         kml_objs +
+                                         common_objs))
+
+def Str2PNG_Emitter (target, source, env):
+    env.Depends (target, "$STR2PNG")
+    return (target, source)
+
+Str2PNG = Builder (action = "$STR2PNGCOM",
+                   suffix = '.png',
+                   src_suffix = '.kml',
+                   emitter = Str2PNG_Emitter)
+
+env.Append (BUILDERS = { 'STR2PNG': Str2PNG },
+            STR2PNG = str2png,
+            STR2PNGCOM = "$STR2PNG $STR2PNG_OPTS $SOURCE \"$STR2PNG_STRING\" $TARGET")
+
+#-----------------------------------------------------------------------------
+# bin2c
+#-----------------------------------------------------------------------------
+
+bin2c_srcs = Split ("""bin2c.c""")
+
+bin2c = env.Program (target = 'bin2c',
+                     source = (bin2c_srcs +
+                               common_objs))
+
+def basename (fullpath):
+    return os.path.splitext (os.path.basename (fullpath)) [0]
+
+def PNG2H_Generator (source, target, env, for_signature):
+    return '%s %s %s >%s' % (bin2c [0],
+                             source [0],
+                             basename (str(source [0])) + '_png',
+                             target [0])
+
+def PNG2H_Emitter (target, source, env):
+    env.Depends (target, "$BIN2C")
+    return (target, source)
+
+PNG2H = Builder (generator = PNG2H_Generator,
+                 suffix = '_png.h',
+                 src_suffix = '.png',
+                 emitter = PNG2H_Emitter)
+
+env.Append (BUILDERS = { 'PNG2H': PNG2H },
+            BIN2C = bin2c)
+
+
+#-----------------------------------------------------------------------------
 # uasm
 #-----------------------------------------------------------------------------
 
@@ -155,6 +215,17 @@ for src in nonpareil_csim_srcs:
 for src in nonpareil_srcs:
     nonpareil_objs.append (nonpareil_env.Object (src))
 
+title_env = env.Copy (STR2PNG_STRING = 'NONPAREIL',
+                      STR2PNG_OPTS = '-x 40 -y 44')
+
+title_env ['ENV']['DISPLAY'] = os.environ ['DISPLAY']
+title_env ['ENV']['XAUTHORITY'] = os.environ ['XAUTHORITY']
+
+title_env.STR2PNG (target = 'nonpareil_title',
+                   source = env ['KML_41CV'])
+
+env.PNG2H ('nonpareil_title')
+
 nonpareil = nonpareil_env.Program (target = 'nonpareil',
                                    source = (nonpareil_objs +
                                              kml_objs +
@@ -196,31 +267,6 @@ modutil_srcs = Split ("""modutil.c""")
 
 modutil = env.Program (target = 'modutil',
                        source = modutil_srcs + common_objs)
-
-#-----------------------------------------------------------------------------
-# str2png
-#-----------------------------------------------------------------------------
-
-str2png_env = env.Copy ()
-
-str2png_env.Append (CPPDEFINES = {'DEFAULT_PATH': env ['libdir']})
-
-str2png_srcs = Split ("""str2png.c""")
-
-str2png = str2png_env.Program (target = 'str2png',
-                               source = (str2png_srcs +
-                                         kml_objs +
-                                         common_objs))
-
-#-----------------------------------------------------------------------------
-# bin2c
-#-----------------------------------------------------------------------------
-
-bin2c_srcs = Split ("""bin2c.c""")
-
-bin2c = env.Program (target = 'bin2c',
-                     source = (bin2c_srcs +
-                               common_objs))
 
 #-----------------------------------------------------------------------------
 # default targets

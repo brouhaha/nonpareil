@@ -20,16 +20,18 @@
 
 Import('env source_release_dir snapshot_dir')
 
-#-----------------------------------------------------------------------------
-# Install KML files
-#-----------------------------------------------------------------------------
-
 kmls = Split ("""35.kml 45.kml 55.kml 80.kml
                  21.kml 25.kml
                  67.kml
                  32e.kml 33c.kml 34c.kml 37e.kml 38c.kml 38e.kml
                  41cv.kml 41cx.kml
                  11c.kml 12c.kml 15c.kml 16c.kml""")
+
+env.Append (KML_41CV = File ('41cv.kml'))
+
+#-----------------------------------------------------------------------------
+# Install KML files
+#-----------------------------------------------------------------------------
 
 env.Alias (target = 'install',
            source = env.Install (dir = env ['destdir'] + env ['libdir'],

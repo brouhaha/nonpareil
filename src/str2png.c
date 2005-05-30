@@ -28,12 +28,10 @@ MA 02111, USA.
 #include <string.h>
 
 #include <gdk/gdk.h>
-#include <gtk/gtk.h>
 
 #include "util.h"
 #include "display.h"
 #include "kml.h"
-#include "display_gtk.h"
 
 
 char *default_path = MAKESTR(DEFAULT_PATH);
@@ -408,7 +406,7 @@ int main (int argc, char *argv[])
 
   progname = newstr (argv [0]);
 
-  gtk_init (& argc, & argv);
+  gdk_init (& argc, & argv);
 
   while (--argc)
     {

@@ -20,16 +20,18 @@
 
 Import('env source_release_dir snapshot_dir')
 
-#-----------------------------------------------------------------------------
-# Install image files
-#-----------------------------------------------------------------------------
-
 images = Split ("""35.png 45.png 55.png 80.png
 	           21.png 25.png
                    67.png
                    32e.png 33c.png 34c.png 37e.png 38c.png
                    41cv.png
                    11c.png 12c.png 15c.png 16c.png""")
+
+env.Append (IMAGE_41CV = File ('41cv.png'))
+
+#-----------------------------------------------------------------------------
+# Install image files
+#-----------------------------------------------------------------------------
 
 env.Alias (target = 'install',
            source = env.Install (dir = env ['destdir'] + env ['libdir'],

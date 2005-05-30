@@ -93,9 +93,33 @@ static void add_credits (GtkWidget *widget)
 }
 
 
+static GdkPixbuf* new_pixbuf_from_png_array (const uint8_t *p, size_t len)
+{
+  GError *error;
+  GdkPixbuf *pixbuf;
+  GdkPixbufLoader *loader;
+
+  loader = gdk_pixbuf_loader_new ();
+  if (! loader)
+    return NULL;
+  if (! gdk_pixbuf_loader_write (loader, p, len, & error))
+    return NULL;
+  if (! gdk_pixbuf_loader_close (loader, & error))
+    return NULL;
+
+  pixbuf = gdk_pixbuf_loader_get_pixbuf (loader);
+
+  return (pixbuf);
+}
+
+
+#include "nonpareil_title_png.h"
+
+
 void about_dialog (GtkWidget *main_window, kml_t *kml)
 {
   GtkWidget *dialog;
+  GdkPixbuf *title_pixbuf;
 
   dialog = gtk_dialog_new_with_buttons ("About Nonpareil",
 					GTK_WINDOW (main_window),
@@ -106,8 +130,15 @@ void about_dialog (GtkWidget *main_window, kml_t *kml)
 
   gtk_dialog_set_has_separator (GTK_DIALOG (dialog), TRUE);
 
+  title_pixbuf = new_pixbuf_from_png_array (nonpareil_title_png,
+					    sizeof (nonpareil_title_png));
+
+  gtk_container_add (GTK_CONTAINER (GTK_DIALOG (dialog)->vbox),
+		     gtk_image_new_from_pixbuf (title_pixbuf));
+
   gtk_container_add (GTK_CONTAINER (GTK_DIALOG (dialog)->vbox),
 		     gtk_label_new (nonpareil_release));
+
   gtk_container_add (GTK_CONTAINER (GTK_DIALOG (dialog)->vbox),
 		     gtk_label_new ("Microcode-level calculator simulator\n"
 				    "Copyright 1995, 2003, 2004, 2005 Eric L. Smith\n"

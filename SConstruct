@@ -18,7 +18,7 @@
 # the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
 # Boston, MA 02111, USA.
 
-release = '0.67'  # should get from a file, and use only if a release option
+release = '0.68'  # should get from a file, and use only if a release option
                   # is specified
 
 conf_file = 'nonpareil.conf'
@@ -197,10 +197,22 @@ env.Alias ('snap', snapshot_tarball)
 env.AddPostAction (snapshot_tarball, Delete (snapshot_dir))
 
 #-----------------------------------------------------------------------------
-# code
+# Prepare for SConscription
 #-----------------------------------------------------------------------------
 
 Export ('env source_release_dir snapshot_dir')
+
+#-----------------------------------------------------------------------------
+# KML, image, firmware files
+#-----------------------------------------------------------------------------
+
+SConscript ('rom/SConscript')
+SConscript ('kml/SConscript')
+SConscript ('image/SConscript')
+
+#-----------------------------------------------------------------------------
+# code
+#-----------------------------------------------------------------------------
 
 SConscript ('src/SConscript',
             build_dir=build_dir,
@@ -213,14 +225,6 @@ SConscript ('src/SConscript',
 SConscript ('asm/SConscript',
 	    build_dir='obj',
 	    duplicate=0)
-
-#-----------------------------------------------------------------------------
-# KML, image, firmware files
-#-----------------------------------------------------------------------------
-
-SConscript ('rom/SConscript')
-SConscript ('kml/SConscript')
-SConscript ('image/SConscript')
 
 #-----------------------------------------------------------------------------
 # documentation

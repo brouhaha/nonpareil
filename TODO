@@ -10,7 +10,6 @@ Bugs and critical features for next release:
     use gtk_key_snooper_install()?
 
   Display:
-    Improve 41C segments - on the real 41, they come closer to meeting
     Voyager segments - oversize for scaled segment mode
     Voyager annunciators
 
