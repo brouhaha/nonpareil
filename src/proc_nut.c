@@ -772,6 +772,7 @@ static void op_write_reg_n (sim_t *sim, int opcode)
     }
 }
 
+
 static void op_c_to_data (sim_t *sim, int opcode)
 {
   nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
@@ -784,14 +785,23 @@ static void op_c_to_data (sim_t *sim, int opcode)
   pf_addr = nut_reg->pf_addr;
 
   is_ram = nut_reg->ram_exists [ram_addr];
-  is_pf  = nut_reg->pf_exists  [pf_addr];
 
-  if (is_ram && is_pf)
+  is_pf  = (nut_reg->pf_exists  [pf_addr] &&
+	    nut_reg->wr_fcn [pf_addr] &&
+	    (*nut_reg->wr_fcn [pf_addr]) (sim));
+
+  if (is_ram)
     {
-      printf ("warning: conflicting write RAM %03x PF %02x\n",
-	      ram_addr, pf_addr);
+      if (is_pf)
+	printf ("warning: conflicting write RAM %03x PF %02x\n",
+		ram_addr, pf_addr);
+      if (nut_reg->ram_write_fn [ram_addr])
+        nut_reg->ram_write_fn [ram_addr] (nut_reg, ram_addr, & nut_reg->c);
+      else
+	for (i = 0; i < WSIZE; i++)
+	  nut_reg->ram [ram_addr][i] = nut_reg->c [i];
     }
-  else if ((! is_ram) && (! is_pf))
+  else if (! is_pf)
     {
 #ifdef WARN_STRAY_WRITE
       printf ("warning: stray write RAM %03x PF %02x data ",
@@ -800,20 +810,8 @@ static void op_c_to_data (sim_t *sim, int opcode)
       printf ("\n");
 #endif
     }
-  if (is_ram)
-    {
-      if (nut_reg->ram_write_fn [ram_addr])
-        nut_reg->ram_write_fn [ram_addr] (nut_reg, ram_addr, & nut_reg->c);
-      else
-        for (i = 0; i < WSIZE; i++)
-          nut_reg->ram [ram_addr][i] = nut_reg->c [i];
-    }
-  if (is_pf)
-    {
-      if (nut_reg->wr_fcn [pf_addr])
-	(*nut_reg->wr_fcn [pf_addr]) (sim);
-    }
 }
+
 
 static void op_test_ext_flag (sim_t *sim, int opcode)
 {
