@@ -60,20 +60,6 @@ instruction is only available in the HP-65.
 The design of the processor and the instruction set are described in
 detail in United States patents 3,863,060 and 4,001,569.
 
-I've typed in the source code from the '569, '379, and '060 patents
-which cover the HP-45, HP-55, and HP-80 respectively.  The listings in
-the patents were poorly reproduced.  Peter Monta found and corrected
-several of my typographical errors.  The code in the patents might not
-be identical to that in production units; I plan to eventually dump
-the ROMs from actual calculators.
-
-Peter Monta also *optically* dumped the contents of the HP-35 ROMs,
-and disassembled the resulting code.  I've cleaned it up a bit and
-added labels using the HP-45 source code as a guide.  Peter's web
-site describe the process he used to dump the ROMs, and has amazing
-photographs:
-        http://www.pmonta.com/calculators/hp-35/
-
 In 1975 HP introduced their second generation handheld calculators,
 known internally as the Woodstock series.  These use an improved
 processor architecture described in the article "Inside the New Pocket
@@ -192,8 +178,10 @@ Credits:
 Nonpareil was originally written by Eric Smith.  Any bugs in it are
 my fault.
 
-Peter Monta provided the HP-35 code.  He also found and corrected
-typographical errors in my entry of the HP-45 and HP-55 source code.
+Peter Monta found and corrected typographical errors in my entry of
+the HP-45 and HP-55 source code, and provided the HP-35 code based on
+an *optical* ROM dump:
+        http://www.pmonta.com/calculators/hp-35/
 
 The HP-41C image (hp41cv.png) is a stylized illustration rendered by
 my older NSIM simulator with improvements by Maciej Bartosiak and
@@ -215,9 +203,11 @@ some deep memory acquisition cards for it.
 Bernhard Engl, Richard Ottosen, and Jim Phillips provided assistance with
 circuit designs for PMOS interfacing.
 
-Bernhard Engl reverse-engineered the bank-switching feature of the
-Woodstock series ROM chips, and built a ROM emulator which was used
-to run keycode verification tests.
+Bernhard Engl built a Woodstock ROM emulator which was used to run a
+keycode test program on the HP-67, and he reverse-engineered the
+details of the bank-switching feature of the Woodstock series ROM
+chips, which turned out to be slightly different than that of the
+Spice series, which I'd already reverse-engineerd.
 
 Nelson Sicuro, Randy Sloyer, and Kenneth Sumrall provided calculators
 and technical assistance.
@@ -237,7 +227,8 @@ convinced me to make various improvements to the SConstruct/SConscript
 files.
 
 Warren Furlow developed the .mod file format, and provided public domain
-code to work with mod files, as part of his V41 source code.
+code to work with mod files, as part of his V41 source code:
+        http://www.hp41.org/Emulation.cfm
 
 Chris Roccati and Christophe Gottheimer each independently added proper
 bank switching to my older NSIM HP-41C simulator.  Chris Roccati implemented
@@ -247,7 +238,9 @@ I did not incorporate that code directly, but did use it as a model.
 Christophe Gottheimer also implemented simulation of the HEPAX module in
 NSIM, and I expect to incorporate that into Nonpareil in the near future.
 
-Tony Phillips provided a recording of a Canada goose.
+Tony Phillips provided an audio recording of a Canada goose, from his
+web site "Songs and callse of some New York State birds":
+        http://www.math.sunysb.edu/~tony/birds/
 
 If I've omitted anyone who should be listed here, I apologize, and
 please let me know so I can remedy the omission.
