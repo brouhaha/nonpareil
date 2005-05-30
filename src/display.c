@@ -586,7 +586,8 @@ static void init_segments (gui_display_t *d)
   int i;
 
   for (i = 0; i < KML_MAX_SEGMENT; i++)
-    if (d->kml->segment [i]->type == kml_segment_type_scaled)
+    if (d->kml->segment [i] &&
+	(d->kml->segment [i]->type == kml_segment_type_scaled))
       init_segment (d, i);
 }
 
