@@ -24,5 +24,6 @@ Import('env source_release_dir')
 # source tarball
 #-----------------------------------------------------------------------------
 
-env.Distribute (source_release_dir,
-                'scons-local-0.96.90.tar.gz')
+dist_files = Split ("""SConscript scons-local-0.96.90.tar.gz""")
+
+env.Distribute (source_release_dir, dist_files)
