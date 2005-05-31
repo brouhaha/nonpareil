@@ -28,6 +28,8 @@ Build process:
 
 User interface:
 
+  Replace use of GtkItemFactory (deprecated) with GTKUIManager.
+
   Make slide switches look better.
 
   Implement edit menu commands:

@@ -317,7 +317,7 @@ static GtkItemFactoryEntry menu_items [] =
 #ifdef HAS_DEBUGGER_CLI
     { "/Debug/Command Window", NULL,     debug_cmd_win, 1, "<ToggleItem>" },
 #endif // HAS_DEBUGGER_CLI
-    { "/_Help",         NULL,         NULL,          0, "<LastBranch>" },
+    { "/_Help",         NULL,         NULL,          0, "<Branch>" },
     { "/_Help/About",   NULL,         help_about,    1, "<Item>" }
   };
 
