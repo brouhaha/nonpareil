@@ -647,7 +647,7 @@ int main (int argc, char *argv[])
     {
       listing_fn = find_file_in_path_list (csim->kml->rom_listing, NULL, default_path);
       if (! listing_fn)
-	warning ("can't find ROM listing file '%s'\n", kml->rom_listing);
+	warning ("can't find ROM listing file '%s'\n", csim->kml->rom_listing);
       else if (! sim_read_listing_file (csim->sim, listing_fn))
 	warning ("can't read ROM listing file '%s'\n", listing_fn);
     }
