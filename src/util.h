@@ -53,9 +53,23 @@ char *newstrn (char *orig, int max_len);
 void realloc_strcpy (char **dest, char *src);
 
 
+// strlcpy will copy as much of src into dest as it can, up to one less than
+// the maximum length of dest specified by the argument l.  Unlike strncpy(),
+// strlcpy() will always leave dest NULL-terminated on return.
+char *strlcpy (char *dest, const char *src, size_t l);
+
+
+// strlncpy will copy up to n characters from src to dest, but not more than
+// one less than the maximum length of dest specified by the argument l.
+// Unlike strncpy(), strlncpy() will always leave dest NULL-terminated on
+// return.
+char *strlncpy (char *dest, const char *src, size_t l, size_t n);
+
+
 // max_strncat() is similar to strncat(), except that the size parameter
 // is the maximum total length of the destination, not the maximum number
 // of characters to concatenate.
+// On entry, dest must be NULL-terminated.
 char *max_strncat (char *dest, const char *src, size_t n);
 
 void trim_trailing_whitespace (char *s);

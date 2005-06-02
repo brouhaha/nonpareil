@@ -219,7 +219,7 @@ static void file_open (gpointer callback_data,
   if (gtk_dialog_run (GTK_DIALOG (dialog)) == GTK_RESPONSE_ACCEPT)
     {
       char *fn = gtk_file_chooser_get_filename (GTK_FILE_CHOOSER (dialog));
-      strncpy (csim->state_fn, fn, sizeof (csim->state_fn));
+      strlcpy (csim->state_fn, fn, sizeof (csim->state_fn));
       g_free (fn);
       state_read_xml (csim->sim, csim->state_fn);
     }
@@ -254,7 +254,7 @@ static void file_save (gpointer callback_data,
   if (gtk_dialog_run (GTK_DIALOG (dialog)) == GTK_RESPONSE_ACCEPT)
     {
       char *fn = gtk_file_chooser_get_filename (GTK_FILE_CHOOSER (dialog));
-      strncpy (csim->state_fn, fn, sizeof (csim->state_fn));
+      strlcpy (csim->state_fn, fn, sizeof (csim->state_fn));
       g_free (fn);
       state_write_xml (csim->sim, csim->state_fn);
     }

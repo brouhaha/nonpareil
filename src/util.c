@@ -130,12 +130,41 @@ void realloc_strcpy (char **dest, char *src)
 }
 
 
+// strlcpy will copy as much of src into dest as it can, up to one less than
+// the maximum length of dest specified by the argument l.  Unlike strncpy(),
+// strlcpy() will always leave dest NULL-terminated on return.
+char *strlcpy (char *dest, const char *src, size_t l)
+{
+  strncpy (dest, src, l);
+  dest [l - 1] = '\0';
+  return dest;
+}
+
+
+// strlncpy will copy up to n characters from src to dest, but not more than
+// one less than the maximum length of dest specified by the argument l.
+// Unlike strncpy(), strlncpy() will always leave dest NULL-terminated on
+// return.
+char *strlncpy (char *dest, const char *src, size_t l, size_t n)
+{
+  if (n < (l - 1))
+    {
+      strncpy (dest, src, n);
+      dest [n] = '\0';
+    }
+  else
+     strlcpy (dest, src, l);
+  return dest;
+}
+
+
+// On entry, dest must be NULL-terminated.
 char *max_strncat (char *dest, const char *src, size_t n)
 {
   size_t len1 = strlen (dest);
 
   if (len1 < (n - 1))
-    strncpy (dest + len1, src, (n - 1) - len1);
+    strlcpy (dest + len1, src, (n - 1) - len1);
   return dest;
 }
 
@@ -281,7 +310,7 @@ char *find_file_in_path_list (char *name, char *opt_suffix, char *path_list)
   char buf [PATH_MAX];
 
   // First look in the current directory, even if it's not in the path.
-  strncpy (buf, name, sizeof (buf));
+  strlcpy (buf, name, sizeof (buf));
   if (file_exists (buf))
     goto found;
   if (opt_suffix)
@@ -295,7 +324,8 @@ char *find_file_in_path_list (char *name, char *opt_suffix, char *path_list)
     {
       char *p = strchr (path_list, ':');
       size_t n = p ? (p - path_list) : strlen (path_list);
-      strncpy (buf, path_list, n);
+
+      strlncpy (buf, path_list, sizeof (buf), n);
       max_strncat (buf, "/", sizeof (buf));
       max_strncat (buf, name, sizeof (buf));
       if (file_exists (buf))
