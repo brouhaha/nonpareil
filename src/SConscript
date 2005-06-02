@@ -341,7 +341,7 @@ headers = Split ("""util.h
                     debugger_gui.h debugger_cli.h
                     dis_woodstock.h dis_nut.h
                     display.h coconut_lcd.h voyager_lcd.h phineas.h
-                    about.h goose.h pixbuf_util.h
+                    about.h goose.h pixbuf_util.h sound.h
                     display_gtk.h keyboard.h slide_switch.h
                     asm.h symtab.h
                     nsim_conv.h
