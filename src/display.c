@@ -31,10 +31,6 @@ MA 02111, USA.
 #include "display.h"
 #include "kml.h"
 #include "display_gtk.h"
-//#include "proc.h"
-//#include "arch.h"
-//#include "platform.h"
-//#include "model.h"
 
 
 struct gui_display_t
@@ -42,21 +38,40 @@ struct gui_display_t
   kml_t *kml;
   GdkPixbuf *file_pixbuf;
   GtkWidget *drawing_area;
+  int digit_count;  // how many digits the sim thread asked us to display
   GdkGC *annunciator_gc [KML_MAX_ANNUNCIATOR];
   GdkPixbuf *segment_pixbuf [KML_MAX_SEGMENT];
   segment_bitmap_t display_segments [KML_MAX_DIGITS];
 };
 
 
-static void draw_annunciator (gui_display_t *d, GtkWidget *widget, int i)
+static void draw_annunciator (gui_display_t *d,
+			      GtkWidget *widget,
+			      int i,
+			      bool state)
 {
+  GdkGC *bg_gc;
+
+  bg_gc = d->drawing_area->style->bg_gc [GTK_WIDGET_STATE (widget)];
+
+  // first clear annunciator rect to bg color
   gdk_draw_rectangle (widget->window,
-		      d->annunciator_gc [i],
+		      bg_gc,
 		      TRUE,
-		      d->kml->annunciator [i]->offset.x - d->kml->display_offset.x,
-		      d->kml->annunciator [i]->offset.y - d->kml->display_offset.y,
+		      d->kml->annunciator [i]->offset.x,
+		      d->kml->annunciator [i]->offset.y,
 		      d->kml->annunciator [i]->size.width,
 		      d->kml->annunciator [i]->size.height);
+		      
+  // then if annunciator is active, draw it
+  if (state)
+    gdk_draw_rectangle (widget->window,
+			d->annunciator_gc [i],  // fg color clipped to annunciator shape
+			TRUE,
+			d->kml->annunciator [i]->offset.x,
+			d->kml->annunciator [i]->offset.y,
+			d->kml->annunciator [i]->size.width,
+			d->kml->annunciator [i]->size.height);
 }
 
 
@@ -67,7 +82,11 @@ static void draw_digit (gui_display_t *d,
 			segment_bitmap_t segments)
 {
   int i;
+  GdkGC *fg_gc;
 
+  fg_gc = d->drawing_area->style->fg_gc [GTK_WIDGET_STATE (widget)];
+
+  // $$$ (erase first if segments aren't using "scaled" mode
   for (i = 0; i < KML_MAX_SEGMENT; i++)
     if ((segments & (1 << i)) && (d->kml->segment [i]))
       {
@@ -75,7 +94,7 @@ static void draw_digit (gui_display_t *d,
 	  {
 	  case kml_segment_type_line:
 	    gdk_draw_line (widget->window,
-			   d->drawing_area->style->fg_gc [GTK_WIDGET_STATE (widget)],
+			   fg_gc,
 			   x + d->kml->segment [i]->offset.x,
 			   y + d->kml->segment [i]->offset.y,
 			   x + d->kml->segment [i]->offset.x + d->kml->segment [i]->size.width - 1,
@@ -83,7 +102,7 @@ static void draw_digit (gui_display_t *d,
 	    break;
 	  case kml_segment_type_rect:
 	    gdk_draw_rectangle (widget->window,
-				d->drawing_area->style->fg_gc [GTK_WIDGET_STATE (widget)],
+				fg_gc,
 				TRUE,
 				x + d->kml->segment [i]->offset.x,
 				y + d->kml->segment [i]->offset.y,
@@ -93,7 +112,7 @@ static void draw_digit (gui_display_t *d,
 	  case kml_segment_type_image:
 	    // grab segment images from individual templates in image file
 	    gdk_draw_pixbuf (widget->window,                   // drawable
-			     d->drawing_area->style->fg_gc [GTK_WIDGET_STATE (widget)],
+			     fg_gc,
                              d->file_pixbuf,                   // pixbuf
 			     d->kml->segment [i]->offset.x,    // src_x
 			     d->kml->segment [i]->offset.y,    // src_y
@@ -109,7 +128,7 @@ static void draw_digit (gui_display_t *d,
 	    // pre-rendered images extracted from a single template in
             // image file and scaled down
 	    gdk_draw_pixbuf (widget->window,                   // drawable
-			     d->drawing_area->style->fg_gc [GTK_WIDGET_STATE (widget)],
+			     fg_gc,
                              d->segment_pixbuf [i],            // pixbuf
 			     0,                                // src_x
 			     0,                                // src_y
@@ -126,30 +145,80 @@ static void draw_digit (gui_display_t *d,
 }
 
 
+static void region_subtract_rect (GdkRegion *region, GdkRectangle *rect)
+{
+  GdkRegion *subtrahend;
+
+  subtrahend = gdk_region_rectangle (rect);
+  gdk_region_subtract (region, subtrahend);
+  gdk_region_destroy (subtrahend);
+}
+
 static gboolean display_expose_event_callback (GtkWidget *widget,
 					       GdkEventExpose *event,
 					       gpointer data)
 {
   gui_display_t *d = data;
   int i;
-  int x;
+  GdkRectangle rect;
+  GdkGC *bg_gc;
 
-  /* clear the display */
-  gdk_draw_rectangle (widget->window,
-		      d->drawing_area->style->bg_gc [GTK_WIDGET_STATE (widget)],
-		      TRUE,
-		      0, 0,
-		      d->drawing_area->allocation.width,
-		      d->drawing_area->allocation.height);
+  bg_gc = d->drawing_area->style->bg_gc [GTK_WIDGET_STATE (widget)];
 
-  x = d->kml->digit_offset.x;
-  for (i = 0; i < d->kml->display_digits; i++)
+
+  rect.x = d->kml->digit_offset.x;
+  rect.y = d->kml->digit_offset.y;
+  rect.width = d->kml->digit_size.width;
+  rect.height = d->kml->digit_size.height;
+
+  for (i = 0; (i < d->digit_count) && ! gdk_region_empty (event->region); i++)
     {
-      draw_digit (d, widget, x, d->kml->digit_offset.y, d->display_segments [i]);
-      if ((d->display_segments [i] & SEGMENT_ANN) && d->kml->annunciator [i])
-	draw_annunciator (d, widget, i);
-      x += d->kml->digit_size.width;
+      if (gdk_region_rect_in (event->region, & rect) != GDK_OVERLAP_RECTANGLE_OUT)
+	{
+	  draw_digit (d,
+		      widget,
+		      rect.x,
+		      rect.y,
+		      d->display_segments [i]);
+	  region_subtract_rect (event->region, & rect);
+	}
+      rect.x += d->kml->digit_size.width;
     }
+
+  for (i = 0; (i < d->digit_count) && ! gdk_region_empty (event->region); i++)
+    {
+      if (! d->kml->annunciator [i])
+	continue;
+      rect.x = d->kml->annunciator [i]->offset.x;
+      rect.y = d->kml->annunciator [i]->offset.y;
+      rect.width  = d->kml->annunciator [i]->size.width;
+      rect.height = d->kml->annunciator [i]->size.height;
+      if (gdk_region_rect_in (event->region, & rect) != GDK_OVERLAP_RECTANGLE_OUT)
+	{
+	  draw_annunciator (d,
+			    widget,
+			    i,
+			    (d->display_segments [i] & SEGMENT_ANN) != 0);
+	  region_subtract_rect (event->region, & rect);
+	}
+    }
+
+  // GDK automatically draws the background for us.
+#if 0
+  if (! gdk_region_empty (event->region))
+  {
+    // draw background clipped to the remaining expose region
+    gdk_gc_set_clip_region (bg_gc, event->region);
+    gdk_draw_rectangle (widget->window,  // drawable
+			bg_gc,           // gc
+			TRUE,            // filled
+			0,               // x
+			0,               // y
+			d->drawing_area->allocation.width,    // width
+			d->drawing_area->allocation.height);  // height
+    region_subtract_rect (event->region, & rect);
+  }
+#endif
 
   return (TRUE);
 }
@@ -160,28 +229,72 @@ void gui_display_update (gui_display_t *d,
 			 segment_bitmap_t *segments)
 {
   int i;
-  GdkRectangle rect = { 0, 0, 0, 0 };
-  bool changed = 0;
+  GdkRectangle rect;
+  bool prev_digit_changed = false;
+
+  d->digit_count = digit_count;
+
+  rect.x = d->kml->digit_offset.x;
+  rect.y = d->kml->digit_offset.y;
+  rect.width  = d->kml->digit_size.width;
+  rect.height = d->kml->digit_size.height;
 
   for (i = 0; i < digit_count; i++)
     {
-      if (segments [i] != d->display_segments [i])
-	changed = 1;
+      if ((segments [i] & ~ SEGMENT_ANN) ==
+	  (d->display_segments [i] & ~ SEGMENT_ANN))
+	{
+	  if (prev_digit_changed)
+	    gdk_window_invalidate_rect (d->drawing_area->window,
+					& rect,
+					FALSE);
+	  prev_digit_changed = false;
+	}
+      else
+	{
+	  if (prev_digit_changed)
+	    {
+	      // grow the rect to include this digit
+	      rect.width += d->kml->digit_size.width;
+	    }
+	  else
+	    {
+	      // start a new rect
+	      rect.x = (d->kml->digit_offset.x + i * d->kml->digit_size.width);
+	      rect.width = d->kml->digit_size.width;
+	    }
+	  prev_digit_changed = true;
+	}
     }
 
-  if (! changed)
-    return;
+  if (prev_digit_changed)
+    {
+      gdk_window_invalidate_rect (d->drawing_area->window,
+				  & rect,
+				  FALSE);
+    }
 
+  for (i = 0; i < digit_count; i++)
+    if (d->kml->annunciator [i] &&
+	((segments [i] & SEGMENT_ANN) !=
+	 (d->display_segments [i] & SEGMENT_ANN)))
+      {
+	// invalidate annunciator
+	rect.x = d->kml->annunciator [i]->offset.x;
+	rect.y = d->kml->annunciator [i]->offset.y;
+	rect.width =  d->kml->annunciator [i]->size.width;
+	rect.height = d->kml->annunciator [i]->size.height;
+	gdk_window_invalidate_rect (d->drawing_area->window,
+				    & rect,
+				    FALSE);
+      }
+
+  // save current segments for comparison next time
   memcpy (d->display_segments, segments,
 	  digit_count * sizeof (segment_bitmap_t));
 
   rect.width = d->drawing_area->allocation.width;
   rect.height = d->drawing_area->allocation.height;
-
-  /* invalidate the entire drawing area */
-  gdk_window_invalidate_rect (d->drawing_area->window,
-			      & rect,
-			      FALSE);
 }
 
 
@@ -222,6 +335,8 @@ static void init_annunciator (gui_display_t *d, int i)
 {
   int row_bytes;
   char *xbm_data;
+  int xbm_data_size;
+
   char *p;
   int bitmask;
 
@@ -232,9 +347,10 @@ static void init_annunciator (gui_display_t *d, int i)
 
   row_bytes = (d->kml->annunciator [i]->size.width + 7) / 8;
 
-  xbm_data = alloc (row_bytes * d->kml->annunciator [i]->size.height + 9);
+  xbm_data_size = row_bytes * d->kml->annunciator [i]->size.height + 9;
   // $$$ If we don't add at least 9 bytes of padding,
   // gdk_bitmap_create_from_data() will segfault!
+  xbm_data = alloc (xbm_data_size);
 
   for (y = 0; y < d->kml->annunciator [i]->size.height; y++)
     {
@@ -247,8 +363,8 @@ static void init_annunciator (gui_display_t *d, int i)
       for (x = 0; x < d->kml->annunciator [i]->size.width; x++)
 	{
 	  get_pixbuf_pixel (d->file_pixbuf, 
-			    d->kml->annunciator [i]->offset.x + x,
-			    d->kml->annunciator [i]->offset.y + y,
+			    d->kml->display_offset.x + d->kml->annunciator [i]->offset.x + x,
+			    d->kml->display_offset.y + d->kml->annunciator [i]->offset.y + y,
 			    & r, & g, & b);
 
 	  bit = (r == 0) && (g == 0) && (b == 0);
@@ -286,10 +402,12 @@ static void init_annunciator (gui_display_t *d, int i)
   d->annunciator_gc [i] = gdk_gc_new (d->drawing_area->window);
   gdk_gc_copy (d->annunciator_gc [i],
 	       d->drawing_area->style->fg_gc [GTK_WIDGET_STATE (d->drawing_area)]);
-  gdk_gc_set_clip_mask (d->annunciator_gc [i], bitmap);
   gdk_gc_set_clip_origin (d->annunciator_gc [i],
-			  d->kml->annunciator [i]->offset.x - d->kml->display_offset.x,
-			  d->kml->annunciator [i]->offset.y - d->kml->display_offset.y);
+			  d->kml->annunciator [i]->offset.x,
+			  d->kml->annunciator [i]->offset.y);
+
+  gdk_gc_set_clip_mask (d->annunciator_gc [i], bitmap);
+
   gdk_gc_set_function (d->annunciator_gc [i], GDK_COPY);
   gdk_gc_set_fill (d->annunciator_gc [i], GDK_SOLID);
 }

@@ -11,21 +11,7 @@ Bugs and critical features for next release:
 
   Display:
 
-    Voyager segments - oversize for scaled segment mode
-
     Voyager annunciators
-
-    Increase display update performance
-
-      Pre-render digits/characters (compositing of segments) to increase
-      display update performance.  Need 2**9 segment combinations for
-      Voyager, 2**9 character/punctuation combinations for Coconut.  Note
-      that this will require Coconut code to pass character code to GUI
-      rather than segment map.
-
-      Push pre-rendered digits/characters to X server (optional?) using
-      GDK pixmaps.  Create offscreen pixmap from pixbuf with
-      gdk_draw_pixbuf().  Use gdk_draw_drawable() to blit to display.
 
 
 Build process:
@@ -100,9 +86,19 @@ Internals:
      Sim thread:
          Use io_count, etc. to improve display update timing.  (done in Nut.)
          Only send display update message to GUI thread if display has changed.
-     GUI thread:
-         on update from sim, only invalidate digits that have changed.
-         on invalidate, only draw digits whose rects intersect invalidated area
+
+    Increase display update performance
+
+      Pre-render digits/characters (compositing of segments) to increase
+      display update performance.  Need 2**9 segment combinations for
+      Voyager, 2**9 character/punctuation combinations for Coconut.  Note
+      that this will require Coconut code to pass character code to GUI
+      rather than segment map.
+
+      Push pre-rendered digits/characters to X server (optional?) using
+      GDK pixmaps.  Create offscreen pixmap from pixbuf with
+      gdk_draw_pixbuf().  Use gdk_draw_drawable() to blit to display.
+
 
   Split proc.c into separate GUI thread and simulator thread portions.
 
