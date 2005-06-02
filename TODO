@@ -9,10 +9,6 @@ Bugs and critical features for next release:
     use gtk_signal_connect_after()?
     use gtk_key_snooper_install()?
 
-  Display:
-
-    Voyager annunciators
-
 
 Build process:
 

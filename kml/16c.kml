@@ -34,27 +34,27 @@ background
 end
 
 display
-	offset 72 28
-	size 306 56
+	offset 73 29
+	size 305 55
 
 	color 0  165 175 145  # background
 	color 1  165 175 145  # unlit segments
 	color 2    0   0   0  # lit segments
 
-	annunciator  0  size  5  8 offset  11 46  end  # * (battery low)
-	annunciator  1  size 23  8 offset  21 46  end  # USER
-	annunciator  2  size  5  8 offset  49 46  end  # f
-	annunciator  3  size  6  8 offset  58 46  end  # g
-	annunciator  4  size  5  8 offset  70 46  end  # G
-	annunciator  5  size 17  8 offset  76 46  end  # RAD
-	annunciator  6  size 27  8 offset 100 46  end  # BEGIN
-	annunciator  7  size 21  8 offset 134 46  end  # D.MY
-	annunciator  8  size  6  8 offset 160 46  end  # C
-	annunciator  9  size 23  8 offset 171 46  end  # PRGM
+	annunciator  1  size  5  7 offset  13 42  end  # * (battery low)
+	annunciator  2  size 23  7 offset  45 42  end  # USER
+	annunciator  3  size  5  7 offset  88 42  end  # f
+	annunciator  4  size  6  8 offset 105 44  end  # g
+	annunciator  5  size 27  7 offset 124 42  end  # BEGIN
+	annunciator  6  size  5  7 offset 181 42  end  # G
+	annunciator  7  size 17  7 offset 187 42  end  # RAD
+	annunciator  8  size 20  7 offset 211 42  end  # D.MY
+	annunciator  9  size  5  7 offset 244 42  end  # C
+	annunciator 10  size 23  7 offset 271 42  end  # PRGM
 
 	digits 11
 		size 27 31
-		offset 4 4
+		offset 5 4
 	end
 
 	segment 'a' scaled offset 560 2 size 157 182
