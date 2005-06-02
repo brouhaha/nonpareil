@@ -4,20 +4,6 @@ $Id$
 
 -----------------------------------------------------------------------------
 
-Runtime dependencies:
-
-			minimum		recommended
-			version		version
-			-------		-----------
-
-    gtk			2.0		2.4.14
-    gdk			2.0
-    gdk-pixbuf
-    glib				2.4.7
-    libxml2				2.6.16
-
------------------------------------------------------------------------------
-
 Toolchain and build-time dependencies (not needed at runtime):
 
 Nonpareil is written in C99 (ISO/IEC 9899:1999), Flex, and Bison, and
@@ -33,6 +19,9 @@ build it with a non-GNU toolchain.
     SCons		0.96.90		0.96.90
     Python		1.5.2		2.3.4
     NetPBM				10.25
+
+In addition, the libraries and header files for the runtime dependencies
+must be available at build time.  A list of these is in the README file.
 
 If you do not wish to install SCons on your system, a standalone copy
 is provided in the directory scons-local.  For information on SCons,

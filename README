@@ -17,7 +17,7 @@ In this release, the following calculators are simulated:
 
 Many menu commands are not yet implemented.
 
-Known bugs in the simulations:
+Known bugs and deficiencies:
 
 * The HP-55 simulation does not correctly support user registers
   .0 through .9.
@@ -163,6 +163,22 @@ The file "hp55.asm" when assembled with uasm will produce one warning,
 which will be printed to standard out twice (once during each pass).
 This warning can be ignored as it is the result of uasm being pickier
 than the HP assembler about forms of the "go to" instruction.
+
+-----------------------------------------------------------------------------
+
+Runtime dependencies:
+
+			minimum		recommended
+			version		version
+			-------		-----------
+
+    gtk			2.0		2.4.14
+    gdk			2.0
+    gdk-pixbuf
+    glib				2.4.7
+    libxml2				2.6.16
+    libSDL				1.2.7
+    libSDL_mixer			1.2.5
 
 -----------------------------------------------------------------------------
 
