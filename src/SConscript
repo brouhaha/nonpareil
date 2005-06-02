@@ -69,7 +69,7 @@ env.ParseConfig(pkg_config_cmd + state_io_packages)
 
 str2png_env = env.Copy ()
 
-str2png_env.Append (CPPDEFINES = {'DEFAULT_PATH': env ['libdir']})
+str2png_env.Append (CPPDEFINES = {'DEFAULT_PATH': 'image'})
 
 str2png_srcs = Split ("""str2png.c""")
 
@@ -176,7 +176,7 @@ title_env = str2png_env.Copy (STR2PNG_STRING = 'NONPAREIL',
                               STR2PNG_OPTS = '-x 40 -y 44')
 
 title_env.STR2PNG (target = 'nonpareil_title',
-                   source = env ['KML_41CV'])
+                   source = env ['KML_41CV'].abspath)
 
 env.PNG2H ('nonpareil_title')
 
