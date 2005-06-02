@@ -101,3 +101,7 @@ size_t fwrite_bytes (FILE *stream,
 // list of directory paths, try to find a file.  Returns a newly allocated
 // string with the filename if found, or NULL otherwise.
 char *find_file_in_path_list (char *name, char *opt_suffix, char *path_list);
+
+
+// Useful for debugging.
+void hex_dump (FILE *f, void *p, size_t count);
