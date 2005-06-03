@@ -116,7 +116,8 @@ void usage (FILE *f)
   fprintf (f, "options:\n");
   fprintf (f, "   -v  verbose\n");
   fprintf (f, "   -e  extract ROM images, if any\n");
-  fprintf (f, "   -f  decode FAT, if any - implies verbose mode\n");
+  fprintf (f, "   -f  decode FAT, if any\n");
+  fprintf (f, "   -h  hex/text dump of pages\n");
   fprintf (f, "\n");
 }
 
@@ -286,6 +287,40 @@ void unpack_image (uint16_t *ROM,
 
 
 
+void output_hex_dump (FILE *outfile,
+		      uint16_t *ROM)
+{
+  int i, j;
+
+  for (i = 0; i < 0x1000; i += 8)
+    {
+      fprintf (outfile, "%03x: ", i);
+      for (j = i; j < (i + 8); j++)
+	fprintf (outfile, "%03x ", ROM [j]);
+      fprintf (outfile, "'");
+      for (j = i; j < (i + 8); j++)
+	{
+	  char ch, punct;
+
+	  decode_lcdchar (ROM [j] & 0x1ff, & ch, & punct);
+	  fprintf (outfile, "%c", ch);
+	}
+      fprintf (outfile, "' '");
+      for (j = i; j < (i + 8); j++)
+	{
+	  char ch;
+
+	  ch = ROM [j] & 0x7f;
+	  if ((ch >= ' ') && (ch <= '~'))
+	    fprintf (outfile, "%c", ch);
+	  else
+	    fprintf (outfile, ".");
+	}
+      fprintf (outfile, "'\n");
+    }
+}
+
+
 void output_fat (FILE *outfile,
 		 mod1_file_page_t *page,
 		 uint16_t page_addr,
@@ -372,13 +407,10 @@ void output_fat (FILE *outfile,
 
 void output_page_info (FILE *outfile,
 		       mod1_file_page_t *page,
-		       bool decode_fat)  // decode fat if it exists
+		       uint16_t *ROM)
 {
-  uint16_t page_addr;
   char ID [10];
-  uint16_t ROM [0x1000];
 
-  unpack_image (ROM, page->Image);
   fprintf (outfile, "ROM NAME: %s\n", page->Name);
   get_rom_id (ROM, ID);
   if (strcmp (page->ID, ID) == 0)
@@ -399,10 +431,7 @@ void output_page_info (FILE *outfile,
       ((! page->PageGroup) && (page->Page >POSITION_ANY)))  // non-grouped pages cannot use grouped position codes
     fprintf (outfile, "WARNING: Page info invalid\n");
   if (page->Page <= 0x0f)
-    {
-      fprintf (outfile, "PAGE: %X - must be in this location\n", page->Page);
-      page_addr = page->Page * 0x1000;
-    }
+    fprintf (outfile, "PAGE: %X - must be in this location\n", page->Page);
   else
     {
       fprintf (outfile, "PAGE: May be in more than one location\n");
@@ -444,15 +473,10 @@ void output_page_info (FILE *outfile,
     fprintf (outfile, "WARNING: ROM pages should not have WriteProtect set\n");
   fprintf (outfile, "FAT: %s\n", page->FAT ? "Yes" : "No");
 
-  // output FAT
   if (page->FAT)
     {
       fprintf (outfile, "XROM: %d\n", ROM [0]);
       fprintf (outfile, "FCNS: %d\n", ROM [1]);
-      if (decode_fat)
-	output_fat (outfile, page, page_addr, ROM);
-      else
-	fprintf (outfile, "(FAT Not Decoded)\n");
     }
 
   fprintf (outfile, "CHECKSUM: %03X", ROM[0x0fff]);
@@ -465,12 +489,43 @@ void output_page_info (FILE *outfile,
 }
 
 
+void verbose_header_output (FILE *outfile,
+			    char *fn,
+			    mod1_file_header_t *header)
+{
+  // output header info
+  fprintf (outfile, "FILE NAME: %s\n", fn);
+  fprintf (outfile, "FILE FORMAT: %s\n", header->FileFormat);
+  fprintf (outfile, "TITLE: %s\n", header->Title);
+  fprintf (outfile, "VERSION: %s\n", header->Version);
+  fprintf (outfile, "PART NUMBER: %s\n", header->PartNumber);
+  fprintf (outfile, "AUTHOR: %s\n", header->Author);
+  fprintf (outfile, "COPYRIGHT: %s\n", header->Copyright);
+  fprintf (outfile, "LICENSE: %s\n", header->License);
+  fprintf (outfile, "COMMENTS: %s\n", header->Comments);
+  fprintf (outfile, "CATEGORY: %s\n", category_name [header->Category]);
+  fprintf (outfile, "HARDWARE: %s\n", hardware_name [header->Hardware]);
+  fprintf (outfile, "MEMORY MODULES: %d\n", header->MemModules);
+  fprintf (outfile, "EXENDED MEMORY MODULES: %d\n", header->XMemModules);
+  fprintf (outfile, "ORIGINAL: %s\n",
+	   header->Original ?
+	   "Yes - unaltered" :
+	   "No - this file has been updated by a user application");
+  fprintf (outfile, "APPLICATION AUTO UPDATE: %s\n",
+	   header->AppAutoUpdate ?
+	   "Yes - update this file when saving other data (for MLDL/RAM)" :
+	   "No - do not update this file");
+  fprintf (outfile, "NUMBER OF PAGES: %d\n", header->NumPages);
+}
+
+
 // Returns true for success, false for any failure
 
 bool output_mod_info (FILE *outfile,    // output file or set to stdout
 		      char *fn,
-		      bool verbose,     // generate all info except FAT
-		      bool decode_fat)  // decode fat if it exists
+		      bool verbose,     // decode header, page info
+		      bool decode_fat,  // decode fat if it exists
+		      bool hex_dump)
 {
   bool result = false;
   FILE *mod_file = NULL;
@@ -541,48 +596,36 @@ bool output_mod_info (FILE *outfile,    // output file or set to stdout
       goto done;
     }
 
-  if (! verbose)
-    {
-      fprintf (outfile, "%-20s %-30s %-20s\n", fn,
-	       header->Title, header->Author);
-      result = true;
-      goto done;
-    }
-
-  // output header info
-  fprintf (outfile, "FILE NAME: %s\n", fn);
-  fprintf (outfile, "FILE FORMAT: %s\n", header->FileFormat);
-  fprintf (outfile, "TITLE: %s\n", header->Title);
-  fprintf (outfile, "VERSION: %s\n", header->Version);
-  fprintf (outfile, "PART NUMBER: %s\n", header->PartNumber);
-  fprintf (outfile, "AUTHOR: %s\n", header->Author);
-  fprintf (outfile, "COPYRIGHT: %s\n", header->Copyright);
-  fprintf (outfile, "LICENSE: %s\n", header->License);
-  fprintf (outfile, "COMMENTS: %s\n", header->Comments);
-  fprintf (outfile, "CATEGORY: %s\n", category_name [header->Category]);
-  fprintf (outfile, "HARDWARE: %s\n", hardware_name [header->Hardware]);
-  fprintf (outfile, "MEMORY MODULES: %d\n", header->MemModules);
-  fprintf (outfile, "EXENDED MEMORY MODULES: %d\n", header->XMemModules);
-  fprintf (outfile, "ORIGINAL: %s\n",
-	   header->Original ?
-	   "Yes - unaltered" :
-	   "No - this file has been updated by a user application");
-  fprintf (outfile, "APPLICATION AUTO UPDATE: %s\n",
-	   header->AppAutoUpdate ?
-	   "Yes - update this file when saving other data (for MLDL/RAM)" :
-	   "No - do not update this file");
-  fprintf (outfile, "NUMBER OF PAGES: %d\n", header->NumPages);
+  if (verbose)
+    verbose_header_output (outfile, fn, header);
+  else
+    fprintf (outfile, "%-20s %-30s %-20s\n", fn,
+	     header->Title, header->Author);
 
   // go through each page
   for (i = 0; i < header->NumPages; i++)
     {
+      uint16_t page_addr;
       mod1_file_page_t *page;
+      uint16_t ROM [0x1000];
 
       page = (mod1_file_page_t *) (buffer +
 				  sizeof (mod1_file_header_t) +
 				  i * sizeof (mod1_file_page_t));
+
+      unpack_image (ROM, page->Image);
+
+      if (page->Page <= 0x0f)
+	page_addr = page->Page * 0x1000;
+      page_addr = 0x8000;  // wild-ass guess
+
       fprintf (outfile, "\n");
-      output_page_info (outfile, page, decode_fat);
+      if (verbose)
+	output_page_info (outfile, page, ROM);
+      if (decode_fat && page->FAT)
+	output_fat (outfile, page, page_addr, ROM);
+      if (hex_dump)
+	output_hex_dump (outfile, ROM);
     }
 
   result = true;  // everything OK
@@ -677,6 +720,7 @@ int main (int argc, char *argv [])
   bool verbose = false;
   bool extract = false;
   bool decode_fat = false;
+  bool hex_dump = false;
 
   progname = newstr (argv [0]);
 
@@ -693,16 +737,15 @@ int main (int argc, char *argv [])
 	  else if (strcmp (argv [0], "-e") == 0)
 	    extract = true;
 	  else if (strcmp (argv [0], "-f") == 0)
-	    {
-	      decode_fat = true;
-	      verbose = true;
-	    }
+	    decode_fat = true;
+	  else if (strcmp (argv [0], "-h") == 0)
+	    hex_dump = true;
 	  else
 	    fatal (1, "unrecognized option '%s'\n", argv [0]);
 	}
       else
 	{
-	  if (! output_mod_info (stdout, argv [0], verbose, decode_fat))
+	  if (! output_mod_info (stdout, argv [0], verbose, decode_fat, hex_dump))
 	    errors++;
 	  if (extract && ! extract_roms (argv [0]))
 	    errors++;
