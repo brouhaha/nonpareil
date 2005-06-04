@@ -169,8 +169,11 @@ env.Append (BUILDERS = { 'Assemble': Assemble },
 #-----------------------------------------------------------------------------
 
 str2png_env = env.Copy ()
-str2png_env ['ENV']['DISPLAY'] = os.environ ['DISPLAY']
-str2png_env ['ENV']['XAUTHORITY'] = os.environ ['XAUTHORITY']
+
+# pull in X11-related environment variables to make gdk-pixbuf library happy
+for var in [ 'DISPLAY', 'XAUTHORITY' ]:
+    if var in os.environ:
+        str2png_env ['ENV'][var] = os.environ [var]
 
 title_env = str2png_env.Copy (STR2PNG_STRING = 'NONPAREIL',
                               STR2PNG_OPTS = '-x 40 -y 44')
