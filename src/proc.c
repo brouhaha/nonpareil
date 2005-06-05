@@ -74,6 +74,7 @@ typedef enum
   CMD_SET_IO_PAUSE_FLAG,
   CMD_WRITE_REGISTER,
   CMD_READ_REGISTER,
+  CMD_SET_BANK_GROUP,
   CMD_WRITE_ROM,
   CMD_READ_ROM,
   CMD_WRITE_RAM,
@@ -110,7 +111,7 @@ typedef struct
   uint64_t      cycle_count;
   addr_t        addr;
   chip_t        *chip;
-  int           arg1;   // reg_num, keycode, flag number, bank etc.
+  int           arg1;   // reg_num, keycode, flag number, bank, bank group, etc.
   int           arg2;   // index (in read/write register)
   void          *data;  // register value, memory value, etc.
 } sim_msg_t;
@@ -173,6 +174,10 @@ static bool sim_load_mod1_rom_word (sim_t *sim,
 }
 
 
+static int bank_group [MAX_BANK_GROUP + 1];  // index from 1 .. MAX_BANK_GROUP,
+                                             // entry 0 not used
+
+
 static bool sim_read_mod1_page (sim_t *sim, FILE *f)
 {
   mod1_file_page_t page;
@@ -198,6 +203,13 @@ static bool sim_read_mod1_page (sim_t *sim, FILE *f)
     }
 
   addr = page.Page << 12;
+
+  if (page.BankGroup)
+    {
+      if (! bank_group [page.BankGroup])
+	bank_group [page.BankGroup] = sim_create_bank_group (sim);
+      sim_set_bank_group (sim, bank_group [page.BankGroup], addr);
+    }
 
   for (i = 0; i < 5120; i += 5)
     {
@@ -237,6 +249,9 @@ static bool sim_read_mod1_file (sim_t *sim, FILE *f)
   mod1_file_header_t header;
   size_t file_size;
   int i;
+
+  for (i = 1; i <= MAX_BANK_GROUP; i++)
+    bank_group [i] = 0;
 
   fseek (f, 0, SEEK_END);
   file_size = ftell (f);
@@ -462,6 +477,16 @@ static void cmd_write_register (sim_t *sim, sim_msg_t *msg)
 }
 
 
+static void cmd_set_bank_group (sim_t *sim, sim_msg_t *msg)
+{
+  if (! sim->proc->set_bank_group)
+    msg->reply = UNIMPLEMENTED;
+  else if (sim->proc->set_bank_group (sim, msg->arg1, msg->addr))
+    msg->reply = OK;
+  else
+    msg->reply = ARG_RANGE_ERROR;
+}
+
 static void cmd_read_rom (sim_t *sim, sim_msg_t *msg)
 {
   if (sim->proc->read_rom (sim, msg->arg1, msg->addr, msg->data))
@@ -531,6 +556,9 @@ static void handle_sim_cmd (sim_t *sim, sim_msg_t *msg)
       break;
     case CMD_WRITE_REGISTER:
       cmd_write_register (sim, msg);
+      break;
+    case CMD_SET_BANK_GROUP:
+      cmd_set_bank_group (sim, msg);
       break;
     case CMD_READ_ROM:
       cmd_read_rom (sim, msg);
@@ -1032,6 +1060,29 @@ bool sim_write_register (sim_t   *sim,
 }
 
 
+// Bank switching routines
+int sim_create_bank_group (sim_t *sim)
+{
+  static int bank_group = 0;
+
+  return ++bank_group;
+}
+
+bool sim_set_bank_group (sim_t  *sim,
+			 int    bank_group,
+			 addr_t addr)
+{
+  sim_msg_t msg;
+  memset (& msg, 0, sizeof (sim_msg_t));
+  msg.arg1 = bank_group;
+  msg.addr = addr;
+  msg.cmd = CMD_SET_BANK_GROUP;
+  send_cmd_to_sim_thread (sim, (gpointer) & msg);
+  return (msg.reply == OK);
+}
+
+
+// ROM access routines
 bool sim_read_rom  (sim_t      *sim,
 		    uint8_t    bank,
 		    addr_t     addr,

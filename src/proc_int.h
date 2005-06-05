@@ -93,10 +93,15 @@ typedef struct
   void (* set_ext_flag)        (sim_t *sim, int flag, bool state);
 
   /* memory access: */
+  bool (* set_bank_group)      (sim_t      *sim,
+				int        bank_group,
+				addr_t     addr);
+
   bool (* read_rom)            (sim_t      *sim,
 				uint8_t    bank,
 				addr_t     addr,
 				rom_word_t *val);
+
   bool (* write_rom)           (sim_t      *sim,
 				uint8_t    bank,
 				addr_t     addr,

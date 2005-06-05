@@ -163,6 +163,29 @@ static void nut_set_ucode (nut_reg_t *nut_reg,
 }
 
 
+static bool nut_set_bank_group (sim_t    *sim,
+				int      bank_group,
+				addr_t   addr)
+{
+  nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
+  uint8_t page;
+  uint16_t offset;
+  
+  if (addr >= (MAX_PAGE * PAGE_SIZE))
+    return false;
+
+  page = addr / PAGE_SIZE;
+  offset = addr & (PAGE_SIZE - 1);
+
+  if (offset != 0)
+    return false;
+
+  nut_reg->bank_group [page] = bank_group;
+
+  return true;
+}
+
+
 static bool nut_read_rom (sim_t      *sim,
 			  uint8_t    bank,
 			  addr_t     addr,
@@ -581,13 +604,20 @@ static void op_goto_c (sim_t *sim, int opcode)
 
 // Bank selection used in 41CX, Advantage ROM, and perhaps others
 
-static void select_bank (sim_t *sim, rom_addr_t addr, uint8_t bank)
+static void select_bank (sim_t *sim, rom_addr_t addr, uint8_t new_bank)
 {
   nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
-  uint8_t page = addr / PAGE_SIZE;
+  uint8_t page;
+  int bank_group;
 
-  if (nut_reg->rom [page][bank])
-    nut_reg->active_bank [page] = bank;
+  bank_group = nut_reg->bank_group [addr / PAGE_SIZE];
+  if (! bank_group)
+    return;
+
+  for (page = 0; page < MAX_PAGE; page++)
+    if ((nut_reg->bank_group [page] == bank_group) &&
+	(nut_reg->rom [page] [new_bank]))
+      nut_reg->active_bank [page] = new_bank;
 }
 
 
@@ -595,7 +625,7 @@ static void op_enbank (sim_t *sim, int opcode)
 {
   nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
 
-  select_bank (sim, nut_reg->prev_pc, ((opcode >> 6) & 2) + ((opcode >> 7) & 1));
+  select_bank (sim, nut_reg->prev_pc, ((opcode >> 5) & 2) + ((opcode >> 7) & 1));
 }
 
 
@@ -1805,6 +1835,7 @@ processor_dispatch_t nut_processor =
     .release_key         = nut_release_key,
     .set_ext_flag        = nut_set_ext_flag,
 
+    .set_bank_group      = nut_set_bank_group,
     .read_rom            = nut_read_rom,
     .write_rom           = nut_write_rom,
 

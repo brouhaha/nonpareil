@@ -1670,6 +1670,7 @@ processor_dispatch_t woodstock_processor =
     .release_key         = woodstock_release_key,
     .set_ext_flag        = woodstock_set_ext_flag,
 
+    .set_bank_group      = NULL,
     .read_rom            = woodstock_read_rom,
     .write_rom           = woodstock_write_rom,
 

@@ -133,6 +133,14 @@ uint64_t sim_get_cycle_count (sim_t *siim);
 void sim_set_cycle_count (sim_t *sim,
 			  uint64_t count);
 
+// Bank switching routines
+int sim_create_bank_group (sim_t *sim);
+
+bool sim_set_bank_group (sim_t   *sim,
+			 int     bank_group,
+			 addr_t  addr);
+
+// ROM access routines
 bool sim_read_rom  (sim_t      *sim,
 		    uint8_t    bank,
 		    addr_t     addr,
@@ -143,6 +151,7 @@ bool sim_write_rom (sim_t      *sim,
 		    addr_t     addr,
 		    rom_word_t *val);
 
+// RAM access routines
 addr_t sim_get_max_ram (sim_t *sim);
 
 bool sim_read_ram (sim_t *sim,
@@ -153,6 +162,8 @@ bool sim_write_ram (sim_t *sim,
 		    addr_t addr,
 		    uint64_t *val);
 
+
+// Chip access routines
 
 // Returns NULL if there are no chips (should never happen).
 chip_t *sim_get_first_chip (sim_t *sim);

@@ -146,6 +146,11 @@ typedef struct
 // Unfortunately this structure can't be used directly for I/O due to
 // structure field alignment considerations on some systems.
 
+
+#define MAX_PAGE_GROUP 8
+#define MAX_BANK_GROUP 8
+
+
 typedef struct
 {
   char Name [20];           // normally the name of the original .ROM file,

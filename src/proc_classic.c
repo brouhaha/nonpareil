@@ -1185,6 +1185,7 @@ processor_dispatch_t classic_processor =
     .release_key         = classic_release_key,
     .set_ext_flag        = classic_set_ext_flag,
 
+    .set_bank_group      = NULL,
     .read_rom            = classic_read_rom,
     .write_rom           = classic_write_rom,
 

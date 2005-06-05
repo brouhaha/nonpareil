@@ -121,6 +121,7 @@ typedef struct nut_reg_t
   void (* op_fcn [1024])(struct sim_t *sim, int opcode);
 
   // ROM:
+  int bank_group [MAX_PAGE];  // defines which pages bank switch together
   uint8_t active_bank [MAX_PAGE];  // bank number from 0..MAX_BANK-1
   bool rom_writeable [MAX_PAGE][MAX_BANK];
   rom_word_t *rom [MAX_PAGE][MAX_BANK];
