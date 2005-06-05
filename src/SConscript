@@ -320,7 +320,7 @@ modutil = env.Program (target = 'modutil',
 # default targets
 #-----------------------------------------------------------------------------
 
-Default ([nonpareil, uasm, modutil, str2png, bin2c])
+Default ([nonpareil, uasm, modutil])
 # omit udis, nsim_conv for now
 
 #-----------------------------------------------------------------------------
