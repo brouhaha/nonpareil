@@ -43,6 +43,7 @@ static char *credits_people [] =
   "Christophe Gottheimer",
   "Warren Furlow",
   "David Hicks",
+  "John Hogerhuis",
   "HrastProgrammer",
   "Steven Knight",
   "Allen Kossow",

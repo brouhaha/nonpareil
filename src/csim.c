@@ -618,6 +618,11 @@ int main (int argc, char *argv[])
   gtk_widget_show_all (csim->main_window);
 
   g_signal_connect (G_OBJECT (csim->main_window),
+		    "key_press_event",
+		    G_CALLBACK (key_event_callback),
+		    csim);
+
+  g_signal_connect (G_OBJECT (csim->main_window),
 		    "key_release_event",
 		    G_CALLBACK (key_event_callback),
 		    csim);

@@ -6,7 +6,7 @@ $Id$
 
 News:
 
-Release 0.70 of Nonpareil is an interim development release.
+Release 0.71 of Nonpareil is an interim development release.
 
 In this release, the following calculators are simulated:
 	HP-35, HP-45, HP-55, HP-80
@@ -258,6 +258,8 @@ NSIM, and I expect to incorporate that into Nonpareil in the near future.
 Tony Phillips provided an audio recording of a Canada goose, from his
 web site "Songs and callse of some New York State birds":
         http://www.math.sunysb.edu/~tony/birds/
+
+John Hogerhuis helped get the keyboard support working again.
 
 If I've omitted anyone who should be listed here, I apologize, and
 please let me know so I can remedy the omission.
