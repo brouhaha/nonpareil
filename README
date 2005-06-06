@@ -1,4 +1,4 @@
-Nonpareil - a calculator microassembler and simulator
+Nonpareil - a calculator simulator
 Copyright 1995, 2003, 2004, 2005 Eric L. Smith <eric@brouhaha.com>
 $Id$
 
@@ -192,76 +192,7 @@ Credits:
 Nonpareil was originally written by Eric Smith.  Any bugs in it are
 my fault.
 
-Peter Monta found and corrected typographical errors in my entry of
-the HP-45 and HP-55 source code, and provided the HP-35 code based on
-an *optical* ROM dump:
-        http://www.pmonta.com/calculators/hp-35/
-
-The HP-41C image (hp41cv.png) is a stylized illustration rendered by
-my older NSIM simulator with improvements by Maciej Bartosiak and
-Thomas Olesen.  The HP-15C and HP-16C images are also by Maciej Barosiak,
-and the HP-11C and HP-12C images are derived from them.
-
-Thomas Olesen improved the HP-41CV KML file for a more realistic display
-"font" and alpha keyboard mapping.
-
-Images of the HP-21, HP-25, HP-32E, HP-33C, HP-34C, HP-35, HP-37E,
-HP-38C, HP-45, HP-55, and HP-80 are copyrighted by David Hicks of the
-Museum of HP Calculators and have been included in this package by his
-permission:
-        http://www.hpmuseum.org/
-
-Allen Kossow provided a HP 16500B logic analyzer when mine broke, and
-some deep memory acquisition cards for it.
-
-Bernhard Engl, Richard Ottosen, and Jim Phillips provided assistance with
-circuit designs for PMOS interfacing.
-
-Bernhard Engl built a Woodstock ROM emulator which was used to run a
-keycode test program on the HP-67, and he reverse-engineered the
-details of the bank-switching feature of the Woodstock series ROM
-chips, which turned out to be slightly different than that of the
-Spice series, which I'd already reverse-engineerd.
-
-Nelson Sicuro, Randy Sloyer, and Kenneth Sumrall provided calculators
-and technical assistance.
-
-Hedley Rainnie prodded me multiple times to work on simulation of the
-Voyager calculators, and HrastProgrammer provided invaluable assistance
-in getting the Voyager simulation working correctly.
-
-Steven Ellis and Steven Knight helped with the SConstruct and SConscript
-files, which are used to build the Nonpareil using SCons rather than make.
-I also used an SCons source tarball builder posted to the scons-users
-mailing list by Paul Davis.  Additional SCons advice was provided by
-Timothee Besset.
-
-Adam Sampson's efforts at constructing GARstow packages of Nonpareil
-convinced me to make various improvements to the SConstruct/SConscript
-files.  He also reported several bugs in the code and in the build process,
-and provided patches and suggestions.
-
-Warren Furlow developed the .mod file format, and provided public domain
-code to work with mod files, as part of his V41 source code:
-        http://www.hp41.org/Emulation.cfm
-
-Chris Roccati and Christophe Gottheimer each independently added proper
-bank switching to my older NSIM HP-41C simulator.  Chris Roccati implemented
-the Phineas (timer) chip, and Thomas Olesen ported his changes to Nonpareil.
-I did not incorporate that code directly, but did use it as a model.
-
-Christophe Gottheimer also implemented simulation of the HEPAX module in
-NSIM, and I expect to incorporate that into Nonpareil in the near future.
-
-Tony Phillips provided an audio recording of a Canada goose, from his
-web site "Songs and callse of some New York State birds":
-        http://www.math.sunysb.edu/~tony/birds/
-
-John Hogerhuis helped get the keyboard support working again, and contributed
-better key bindings for the 12C.
-
-If I've omitted anyone who should be listed here, I apologize, and
-please let me know so I can remedy the omission.
+The full list of credits is getting long, so it is now in the file CREDITS.
 
 -----------------------------------------------------------------------------
 
