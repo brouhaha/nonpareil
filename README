@@ -22,8 +22,6 @@ Known bugs and deficiencies:
 * The HP-55 simulation does not correctly support user registers
   .0 through .9.
 
-* The stopwatch mode of the HP-41CX doesn't work.
-
 * The code is written to run the HP-41CX clock at very close to real time,
   but it does not currently initialize the calculator time and date from
   the host, nor track the host time and date.

@@ -67,6 +67,7 @@ MA 02111, USA.
 
 
 #undef PHINEAS_DEBUG
+
 #ifdef PHINEAS_DEBUG
 static char *ps_bit_name [13] =
 {
@@ -287,26 +288,41 @@ static bool phineas_wr_n (sim_t *sim, int n)
   switch (n)
     {
     case 0x0: // Write Clock
+#ifdef PHINEAS_DEBUG
+      printf ("write clock %c\n", 'A' + phineas->timer_sel);
+#endif
       reg_copy (phineas->clock [phineas->timer_sel], nut_reg->c, 0, WSIZE - 1);
       break;
     case 0x1: // Write Clock & Correct
+#ifdef PHINEAS_DEBUG
+      printf ("write clock and correct %c\n", 'A' + phineas->timer_sel);
+#endif
       reg_copy (phineas->clock [phineas->timer_sel], nut_reg->c, 0, WSIZE - 1);
       phineas->hold = false;
       // $$$ add in any deferred increment here
       break;
     case 0x2: // Write Alarm
+#ifdef PHINEAS_DEBUG
+      printf ("write alarm %c\n", 'A' + phineas->timer_sel);
+#endif
       reg_copy (phineas->alarm [phineas->timer_sel], nut_reg->c, 0, WSIZE - 1);
       break;
     case 0x3:
       if (phineas->timer_sel)
 	{
 	  // Write Accuracy Factor
+#ifdef PHINEAS_DEBUG
+	  printf ("write accuracy factor\n");
+#endif
           reg_copy (phineas->accuracy_factor, nut_reg->c + 1, 0, AF_WIDTH - 1);
 	  phineas->accuracy_factor [AF_WIDTH - 1] &= 1;
 	}
       else
 	{
           // Write Status - can only turn off bits 0-5
+#ifdef PHINEAS_DEBUG
+	  printf ("write status\n");
+#endif
 	  if (! (nut_reg->c [0] & 0x01))
 	    phineas_set_status_bit (phineas, PS_ALMA, false);
 	  if (! (nut_reg->c [0] & 0x02))
@@ -323,9 +339,15 @@ static bool phineas_wr_n (sim_t *sim, int n)
 	}
       break;
     case 0x4: // Write Scratch
+#ifdef PHINEAS_DEBUG
+      printf ("write scratch %c\n", 'A' + phineas->timer_sel);
+#endif
       reg_copy (phineas->scratch [phineas->timer_sel], nut_reg->c, 0, WSIZE - 1);
       break;
     case 0x5: // Write Interval Timer and Start
+#ifdef PHINEAS_DEBUG
+      printf ("write interval timer and start\n");
+#endif
       reg_copy (phineas->it_terminal_count, nut_reg->c, 0, INTERVAL_WIDTH - 1);
       reg_zero (phineas->interval_timer, 0, INTERVAL_WIDTH - 1);
       phineas_set_status_bit (phineas, PS_ITEN, true);
@@ -333,25 +355,28 @@ static bool phineas_wr_n (sim_t *sim, int n)
     case 0x6: // unused
       break;
     case 0x7: // Stop Interval Timer
+#ifdef PHINEAS_DEBUG
+      printf ("stop interval timer\n");
+#endif
       phineas_set_status_bit (phineas, PS_ITEN, false);
       break;
     case 0x8: // Clear Test Mode
-      phineas_set_status_bit (phineas, PS_TESTA << phineas->timer_sel, false);
+      phineas_set_status_bit (phineas, PS_TESTA + phineas->timer_sel, false);
       break;
     case 0x9: // Set Test Mode
-      phineas_set_status_bit (phineas, PS_TESTA << phineas->timer_sel, true);
+      phineas_set_status_bit (phineas, PS_TESTA + phineas->timer_sel, true);
       break;
     case 0xa: // Disable Alarm
-      phineas_set_status_bit (phineas, PS_ALAEN << phineas->timer_sel, false);
+      phineas_set_status_bit (phineas, PS_ALAEN + phineas->timer_sel, false);
       break;
     case 0xb: // Enable Alarm
-      phineas_set_status_bit (phineas, PS_ALAEN << phineas->timer_sel, true);
+      phineas_set_status_bit (phineas, PS_ALAEN + phineas->timer_sel, true);
       break;
     case 0xc: // Stop Clock
-      phineas_set_status_bit (phineas, PS_CKAEN << phineas->timer_sel, false);
+      phineas_set_status_bit (phineas, PS_CKAEN + phineas->timer_sel, false);
       break;
     case 0xd: // Start Clock
-      phineas_set_status_bit (phineas, PS_CKAEN << phineas->timer_sel, true);
+      phineas_set_status_bit (phineas, PS_CKAEN + phineas->timer_sel, true);
       break;
     case 0xe: // Set Pointer to B
       phineas->timer_sel = 1;
@@ -430,7 +455,7 @@ static void phineas_increment_interval_timer (phineas_reg_t *phineas,
   val = bcd_reg_to_binary (phineas->interval_timer,    INTERVAL_WIDTH);
   tc  = bcd_reg_to_binary (phineas->it_terminal_count, INTERVAL_WIDTH);
 
-#if 0
+#ifdef PHINEAS_DEBUG
   printf ("incrementing interval timer from %u by %u, tc=%u", val, ticks, tc);
 #endif
 
@@ -441,7 +466,7 @@ static void phineas_increment_interval_timer (phineas_reg_t *phineas,
       phineas_set_status_bit (phineas, PS_DTZIT, true);
     }
 
-#if 0
+#ifdef PHINEAS_DEBUG
   printf (", result %u\n", val);
 #endif
 
