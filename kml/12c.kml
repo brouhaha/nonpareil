@@ -19,7 +19,7 @@
 
 global
 	title "12C Financial Calculator"
-	author "Eric Smith <eric@brouhaha.com>"
+	author "Eric Smith <eric@brouhaha.com> and John R. Hogerhuis"
 	hardware "Voyager"
 	model "12c"
 	rom "12c.obj"
@@ -140,18 +140,38 @@ scancode  54 map  54 29 end  # 6
 scancode  55 map  55 17 end  # 7
 scancode  56 map  56 18 end  # 8
 scancode  57 map  57 19 end  # 9
-scancode  97 map  97 11 end  # A
-scancode  98 map  98 12 end  # B
-scancode  99 map  99 13 end  # C
-scancode 100 map 100 14 end  # D
-scancode 101 map 101 14 end  # E
-scancode 102 map 102 14 end  # F
 scancode  46 map  46 48 end  # .
 scancode  43 map  43 40 end  # +
 scancode  45 map  45 30 end  # -
 scancode  42 map  42 20 end  # *
 scancode  47 map  47 10 end  # /
 scancode 65293 map 65293 36 end  # ENTER
+
+# suggested bindings (John R. Hogerhuis)
+# !, @, comma are derived from Forth. Any better (unshifted) ideas?
+scancode 110   map 110     11 end  # 'n' is n
+scancode 105   map 105     12 end  # 'i' is i
+scancode 91    map 91      13 end  # '[' is PV (present-value)
+scancode 112   map 112     14 end  # 'p' is PMT
+scancode 93    map 93      15 end  # ']' is FV (future-value)
+scancode 96    map 96      16 end  # back-tick is CHS (change-sign)
+scancode 94    map 94      21 end  # '^' is y^x
+scancode 92    map 92      22 end  # '\' is 1/x
+scancode 116   map 116     23 end  # 't' is %T (percent of total) 
+scancode 100   map 100     24 end  # 'd' is delta percent
+scancode 37    map 37      25 end  # '%' is %
+scancode 101   map 101     26 end  # 'e' is EEX
+scancode 120   map 120     31 end  # 'R/S' is x (execute)  
+scancode 115   map 115     32 end  # 's' is SST (single-step) 
+scancode 65366 map 65366   33 end  # 'PgDn' is R-down
+scancode 59    map 59      34 end  # ';' is X><Y (swap)
+scancode 65535 map 65535   35 end  # 'Delete' is CLx
+scancode 32    map 32      41 end  # 'Space' is ON
+scancode 102   map 102     42 end  # 'f' is f
+scancode 103   map 103     43 end  # 'g' is g
+scancode 33    map 33      44 end  # '!' is STO
+scancode 64    map 64      45 end  # '@' is RCL
+scancode 44    map 44      49 end  # comma is sigma+
 
 # keypad:
 scancode 65456 map 65456 47 end  # 0
@@ -170,3 +190,4 @@ scancode 65453 map 65453 30 end  # -
 scancode 65450 map 65450 20 end  # *
 scancode 65455 map 65455 10 end  # /
 scancode 65421 map 65421 36 end  # ENTER
+
