@@ -140,17 +140,22 @@ scancode  54 map  54 29 end  # 6
 scancode  55 map  55 17 end  # 7
 scancode  56 map  56 18 end  # 8
 scancode  57 map  57 19 end  # 9
-scancode  97 map  97 11 end  # A
-scancode  98 map  98 12 end  # B
-scancode  99 map  99 13 end  # C
-scancode 100 map 100 14 end  # D
-scancode 101 map 101 14 end  # E
-scancode 102 map 102 14 end  # F
+scancode  66 map  66 26 end  # Bin
+scancode  68 map  68 24 end  # Dec
+scancode  72 map  72 23 end  # Hex
+scancode  79 map  79 25 end  # Oct
+scancode  97 map  97 11 end  # a
+scancode  98 map  98 12 end  # b
+scancode  99 map  99 13 end  # c
+scancode 100 map 100 14 end  # d
+scancode 101 map 101 15 end  # e
+scancode 102 map 102 16 end  # f
 scancode  46 map  46 48 end  # .
 scancode  43 map  43 40 end  # +
 scancode  45 map  45 30 end  # -
 scancode  42 map  42 20 end  # *
 scancode  47 map  47 10 end  # /
+scancode 65288 map 65288 35 end  # backspace
 scancode 65293 map 65293 36 end  # ENTER
 
 # keypad:
