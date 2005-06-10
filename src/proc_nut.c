@@ -35,6 +35,7 @@ MA 02111, USA.
 #include "digit_ops.h"
 #include "coconut_lcd.h"
 #include "voyager_lcd.h"
+#include "helios.h"
 #include "phineas.h"
 #include "proc_nut.h"
 #include "dis_nut.h"
@@ -90,17 +91,21 @@ static reg_detail_t nut_cpu_reg_detail [] =
   NR  ("decimal", decimal, 1,      2,   NULL,      NULL,      0),
   NR  ("carry",   carry,   1,      2,   NULL,      NULL,      0),
   NR  ("awake",   awake,   1,      2,   NULL,      NULL,      0),
-  // inst_state
-  // first_word
-  // cxisa_addr
-  // long_branch_carry
-  // prev_carry
   // key_down
   // key_flag
   // key_buf
   NR  ("pf_addr", pf_addr, 8,     16,   NULL,      NULL,      0),
   NR  ("ram_addr", ram_addr, 10,  16,   NULL,      NULL,      0),
-  NRA ("active_bank", active_bank, 2, 16, NULL, NULL, 0, MAX_PAGE)
+  NRA ("active_bank", active_bank, 2, 16, NULL, NULL, 0, MAX_PAGE),
+
+  // inst_state
+
+  // following are only applicable if inst_state != norm:
+  // first_word
+  // cxisa_addr
+  // long_branch_carry
+  // prev_carry
+  // NR  ("selprf",  selprf,  4,     16,   NULL,      NULL,      0),
 };
 
 
@@ -850,6 +855,32 @@ static void op_test_ext_flag (sim_t *sim, int opcode)
   nut_reg->carry = nut_reg->ext_flag [tmap [opcode >> 6]];
 }
 
+
+static void op_selprf (sim_t *sim, int opcode)
+{
+  nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
+
+  nut_reg->selprf = opcode >> 6;
+  nut_reg->inst_state = selprf;
+}
+
+
+// This "opcode" handles all instructions following a selprf (AKA
+// PERTCT or SELP) instruction until a return of control.
+static void op_smart_periph (sim_t *sim, int opcode)
+{
+  nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
+  bool flag = false;
+
+  if (nut_reg->selprf_fcn [nut_reg->selprf])
+    flag = nut_reg->selprf_fcn [nut_reg->selprf] (sim, opcode);
+  if ((opcode & 0x03f) == 0x003)
+    nut_reg->carry = flag;
+  if (opcode & 1)
+    nut_reg->inst_state = norm;
+}
+
+
 /*
  * s operations
  */
@@ -1314,7 +1345,7 @@ static void nut_init_ops (nut_reg_t *nut_reg)
   for (i = 0; i < 16; i++)
     {
       nut_reg->op_fcn [0x010 + (i << 6)] = op_lc;
-      // nut_reg->op_fcn [0x024 + (i << 6)] = op_selprf;
+      nut_reg->op_fcn [0x024 + (i << 6)] = op_selprf;
       nut_reg->op_fcn [0x028 + (i << 6)] = op_write_reg_n;
       nut_reg->op_fcn [0x038 + (i << 6)] = op_read_reg_n;
     }
@@ -1383,6 +1414,7 @@ static void nut_disassemble (sim_t *sim, int addr, char *buf, int len)
     case long_branch:   snprintf (buf, len, "(long branch)"); return;
     case cxisa:         snprintf (buf, len, "(cxisa)");       return;
     case ldi:           snprintf (buf, len, "(immediate)");   return;
+    case selprf:        snprintf (buf, len, "(selprf)");      return;
     case norm:          break;
     }
 
@@ -1481,6 +1513,10 @@ static bool nut_execute_cycle (sim_t *sim)
     case ldi:
       nut_reg->pc++;
       op_ldi_cycle_2 (sim, opcode);
+      break;
+    case selprf:
+      nut_reg->pc++;
+      op_smart_periph (sim, opcode);
       break;
     default:
       printf ("nut: bad inst_state %d!\n", nut_reg->inst_state);
@@ -1765,6 +1801,9 @@ static void nut_new_processor (sim_t *sim, int ram_size)
       nut_new_ram (sim, 0x0c0, ram_size);
 
       coconut_display_init (sim);
+
+      helios_init (sim);
+
       break;
 
     case PLATFORM_VOYAGER:

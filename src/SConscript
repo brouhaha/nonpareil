@@ -220,7 +220,8 @@ nonpareil_srcs = Split ("""proc.c glib_async_queue_source.c
                            digit_ops.c
                            proc_classic.c
                            proc_woodstock.c
-                           proc_nut.c coconut_lcd.c phineas.c
+                           proc_nut.c
+                           coconut_lcd.c helios.c phineas.c
                            voyager_lcd.c
                            mod1_file.c""")
 
@@ -343,7 +344,9 @@ headers = Split ("""util.h
                     state_io.h
                     debugger_gui.h debugger_cli.h
                     dis_woodstock.h dis_nut.h
-                    display.h coconut_lcd.h voyager_lcd.h phineas.h
+                    display.h
+                    voyager_lcd.h
+                    coconut_lcd.h helios.h phineas.h
                     about.h goose.h pixbuf_util.h sound.h
                     display_gtk.h keyboard.h slide_switch.h
                     asm.h symtab.h

@@ -67,7 +67,8 @@ typedef enum
     norm,
     long_branch,
     cxisa,
-    ldi
+    ldi,
+    selprf         // "smart" peripheral selected (NPIC, PIL)
   } inst_state_t;
 
 
@@ -147,6 +148,13 @@ typedef struct nut_reg_t
   bool (* wr_n_fcn [256])(struct sim_t *sim, int n);
   bool (* wr_fcn   [256])(struct sim_t *sim);
 
+  uint8_t selprf;  // selected "smart peripheral" number
+
+  // Function to call for "smart peripheral" to handle opcodes after
+  // a selprf instruction:
+  bool (* selprf_fcn [16])(struct sim_t *sim, rom_word_t opcode);
+
   chip_t *display_chip;  // opaque
   chip_t *phineas_chip;  // opaque
+  chip_t *helios_chip;   // opaque
 } nut_reg_t;
