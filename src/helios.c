@@ -101,7 +101,7 @@ static char *hs_bit_name [HS_COUNT] =
 #endif
 
 
-#define HELIOS_BUF_MAX 77
+#define HELIOS_BUF_MAX 44
 
 
 typedef struct
