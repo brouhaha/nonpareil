@@ -35,6 +35,8 @@ MA 02111, USA.
 #include "display.h"
 #include "kml.h"
 #include "display_gtk.h"
+#include "printer.h"
+#include "printer_gtk.h"
 #include "proc.h"
 #include "keyboard.h"
 #include "slide_switch.h"
@@ -69,6 +71,7 @@ typedef struct
   GtkWidget *main_window;
   GtkWidget *menubar;  // actually a popup menu in transparency/shape mode
   gui_display_t *gui_display;
+  gui_printer_t *gui_printer;
   char state_fn [255];
 } csim_t;
 
@@ -639,6 +642,8 @@ int main (int argc, char *argv[])
 			csim->kml->character_segment_map,
 			(display_update_callback_fn_t *) gui_display_update,
 			csim->gui_display);
+
+  csim->gui_printer = gui_printer_init ();
 
 #ifdef HAS_DEBUGGER_GUI
   init_debugger_gui (csim->sim);

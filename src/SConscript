@@ -215,7 +215,7 @@ nonpareil_env = env.Copy ()
 nonpareil_srcs = Split ("""proc.c glib_async_queue_source.c
                            about.c goose.c pixbuf_util.c
                            sound.c
-                           display.c keyboard.c slide_switch.c
+                           display.c keyboard.c slide_switch.c printer.c
                            platform.c model.c
                            digit_ops.c
                            proc_classic.c
@@ -344,11 +344,11 @@ headers = Split ("""util.h
                     state_io.h
                     debugger_gui.h debugger_cli.h
                     dis_woodstock.h dis_nut.h
-                    display.h
+                    display.h printer.h
                     voyager_lcd.h
                     coconut_lcd.h helios.h phineas.h
                     about.h goose.h pixbuf_util.h sound.h
-                    display_gtk.h keyboard.h slide_switch.h
+                    display_gtk.h keyboard.h slide_switch.h printer_gtk.h
                     asm.h symtab.h
                     nsim_conv.h
                     mod1_file.h""")
