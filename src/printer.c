@@ -237,7 +237,10 @@ gui_printer_t * gui_printer_init (void)
   // create line 0 with tear
   p->line [0] = alloc (sizeof (gui_printer_line_t));
   p->line [0]->tear = true;
-  p->line_count = 1;
+
+  p->line [1] = alloc (sizeof (gui_printer_line_t));
+
+  p->line_count = 2;
 
   p->layout = gtk_layout_new (NULL, NULL);
 
