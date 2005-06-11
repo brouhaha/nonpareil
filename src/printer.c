@@ -100,12 +100,15 @@ static void gui_printer_copy_pixels_to_pixbuf (gui_printer_t *p,
 
   memset (p->pixels, 0, p->pixels_size);
   line_ptr = p->pixels;
-  for (y = 0; y < PRINTER_CHARACTER_HEIGHT_PIXELS; y++)
+  for (y = 0; y < PRINTER_LINE_HEIGHT_PIXELS; y++)
     {
       guchar *pixel_ptr = line_ptr;
       for (x = 0; x < PRINTER_WIDTH; x++)
 	{
-	  val = (line->data.columns [x] & (1 << y)) ? 0xff : 0x00;
+	  if (y < PRINTER_CHARACTER_HEIGHT_PIXELS)
+	    val = (line->data.columns [x] & (1 << y)) ? 0x00 : 0xff;
+	  else
+	    val = 0xff;
 	  *(pixel_ptr++) = val;
 	  *(pixel_ptr++) = val;
 	  *(pixel_ptr++) = val;
