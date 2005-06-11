@@ -281,6 +281,48 @@ static void edit_paste (gpointer callback_data,
 }
 
 
+static void configure_load_module (gpointer callback_data,
+		       guint    callback_action,
+		       GtkWidget *widget)
+{
+  csim_t *csim = callback_data;
+  GtkWidget *dialog;
+  char *fn;
+
+  dialog = gtk_file_chooser_dialog_new ("Load Module",
+					GTK_WINDOW (csim->main_window),
+					GTK_FILE_CHOOSER_ACTION_OPEN,
+					GTK_STOCK_CANCEL,
+					GTK_RESPONSE_CANCEL,
+					GTK_STOCK_OPEN,
+					GTK_RESPONSE_ACCEPT,
+					NULL);
+
+  if (gtk_dialog_run (GTK_DIALOG (dialog)) != GTK_RESPONSE_ACCEPT)
+    {
+      gtk_widget_destroy (dialog);
+      return;
+    }
+  
+  fn = gtk_file_chooser_get_filename (GTK_FILE_CHOOSER (dialog));
+  gtk_widget_destroy (dialog);
+
+  if (! sim_read_object_file (csim->sim, fn))
+    {
+      dialog = gtk_message_dialog_new (GTK_WINDOW (csim->main_window),
+				       GTK_DIALOG_DESTROY_WITH_PARENT,
+				       GTK_MESSAGE_ERROR,
+				       GTK_BUTTONS_CLOSE,
+				       "Error loading module file '%s'",
+				       fn);
+      gtk_dialog_run (GTK_DIALOG (dialog));
+      gtk_widget_destroy (dialog);
+    }
+
+  g_free (fn);
+}
+
+
 static void help_about (gpointer callback_data,
 			guint    callback_action,
 			GtkWidget *widget)
@@ -302,6 +344,8 @@ static GtkItemFactoryEntry menu_items [] =
     { "/_Edit",         NULL,         NULL,          0, "<Branch>" },
     { "/Edit/_Copy",    "<control>C", edit_copy,     1, "<StockItem>", GTK_STOCK_COPY },
     { "/Edit/_Paste",   "<control>V", edit_paste,    1, "<StockItem>", GTK_STOCK_PASTE },
+    { "/_Configure",    NULL,         NULL,          0, "<Branch>" },
+    { "/Configure/Load Module", NULL, configure_load_module, 1, "<Item>" },
 #ifdef HAS_DEBUGGER
     { "/_Debug",        NULL,         NULL,          0, "<Branch>" },
 #endif
