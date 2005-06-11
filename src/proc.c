@@ -296,13 +296,13 @@ bool sim_read_object_file (sim_t *sim, char *fn)
       return (false);
     }
 
-  if (fread_bytes (f, magic, 4, & eof, & error) != 4)
+  if (fread_bytes (f, magic, sizeof (magic), & eof, & error) != sizeof (magic))
     {
       fprintf (stderr, "error reading object file\n");
       return (false);
     }
 
-  if (strcmp (magic, "MOD1") == 0)
+  if (strncmp (magic, "MOD1", sizeof (magic)) == 0)
     return sim_read_mod1_file (sim, f);
 
   f = freopen (NULL, "r", f);  // switch from binary to text mode, and rewind
