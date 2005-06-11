@@ -109,7 +109,11 @@ typedef struct
   uint8_t  flags;   // NPIC flags, NF_xxx defines above
   uint16_t status;  // status bits for Nut, HS_xxx defines above
   uint8_t  count;   // count of bytes in buffer
-  uint8_t  buffer [HELIOS_BUF_MAX];
+  uint16_t buffer [HELIOS_BUF_MAX];  // bits 6..0 = char or column data
+                                     // bit 8..7 == 00 for plain alpha
+                                     //          == 01 for skip
+                                     //          == 10 for double-wide alpha
+                                     //          == 11 for column data
 } helios_reg_t;
 
 
@@ -155,7 +159,11 @@ static const chip_detail_t helios_chip_detail =
 // Warning - doesn't test for bit number out of range!
 static bool helios_get_npic_flag_bit (helios_reg_t *helios, int bit)
 {
-  return (helios->flags >> bit) != 0;
+#ifdef HELIOS_DEBUG
+  printf ("Getting Helios NPIC flag %s (%d): %d\n", nf_bit_name [bit], bit,
+	  (helios->flags >> bit) & 1);
+#endif
+  return (helios->flags >> bit) & 1;
 }
 
 
@@ -163,7 +171,7 @@ static bool helios_get_npic_flag_bit (helios_reg_t *helios, int bit)
 static void helios_set_npic_flag_bit (helios_reg_t *helios, int bit, bool val)
 {
 #ifdef HELIOS_DEBUG
-  printf ("setting NPIC flag %s (%d) to %d\n", nf_bit_name [bit], bit, val);
+  printf ("setting Helios NPIC flag %s (%d) to %d\n", nf_bit_name [bit], bit, val);
 #endif
 
   if (val)
@@ -176,7 +184,13 @@ static void helios_set_npic_flag_bit (helios_reg_t *helios, int bit, bool val)
 // Warning - doesn't test for bit number out of range!
 static bool helios_get_status_bit (helios_reg_t *helios, int bit)
 {
-  return (helios->status >> bit) != 0;
+#if 0
+#ifdef HELIOS_DEBUG
+  printf ("Getting Helios status %s (%d): %d\n", hs_bit_name [bit], bit,
+	  (helios->status >> bit) & 1);
+#endif
+#endif
+  return (helios->status >> bit) & 1;
 }
 
 
@@ -222,6 +236,10 @@ static void helios_reset (helios_reg_t *helios)
   helios->count = 0;  // empty buffer
 
   helios_set_npic_flag_bit (helios, NF_DD3, true);  // powered on
+  helios_set_npic_flag_bit (helios, NF_RFF, true);  // status valid
+
+  helios_set_status_bit (helios, HS_MODE_TRACE, true);  // trace mode
+  //helios_set_status_bit (helios, HS_MODE_NORM, true);  // normal mode
 
   helios_set_status_bit (helios, HS_IDLE,      true);  // not printing
   helios_set_status_bit (helios, HS_BUF_EMPTY, true);  // nothing in buffer
@@ -247,18 +265,95 @@ static void helios_event_fn (sim_t *sim,
 }
 
 
+static void helios_eol (sim_t *sim, bool right_justify)
+{
+  nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
+  helios_reg_t *helios = get_chip_data (nut_reg->helios_chip);
+  int i;
+
+  printf ("Helios buffer:");
+  for (i = 0; i < helios->count; i++)
+    printf (" %03x", helios->buffer [i]);
+  printf ("\n");
+  helios->count = 0;
+  helios_set_status_bit (helios, HS_BUF_EMPTY, true);
+}
+
+
+static void helios_set_mode (helios_reg_t *helios, uint8_t mode)
+{
+  helios_set_status_bit (helios, HS_DOUBLE_WIDE, mode & 1);
+  helios_set_status_bit (helios, HS_GRAPHICS,    (mode >> 1) & 1);
+  helios_set_status_bit (helios, HS_LOWER_CASE,  (mode >> 2) & 1);
+}
+
+
+static void helios_buffer_add (sim_t *sim, uint8_t byte)
+{
+  nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
+  helios_reg_t *helios = get_chip_data (nut_reg->helios_chip);
+  uint16_t data;
+
+  data = byte;
+  if (data <= 0x7f)
+    {
+      if (helios_get_status_bit (helios, HS_GRAPHICS))
+	data |= 0x180;
+      else
+	{
+	  if (helios_get_status_bit (helios, HS_LOWER_CASE) &&
+	      (data >= 'a') && (data <= 'z'))
+	    data -= 0x20;
+	  if (helios_get_status_bit (helios, HS_DOUBLE_WIDE))
+	    data |= 0x100;
+	}
+    }
+  
+  helios->buffer [helios->count++] = byte;
+  helios_set_status_bit (helios, HS_BUF_EMPTY, false);
+
+  if (helios->count == HELIOS_BUF_MAX)
+    helios_eol (sim, false);
+}
+
+
 static void helios_npic_write (sim_t *sim)
 {
   nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
   helios_reg_t *helios = get_chip_data (nut_reg->helios_chip);
   uint8_t byte;
+  bool right_just;
 
   byte = (nut_reg->c [1] << 4) + nut_reg->c [0];
-  printf ("helios output byte %02x\n", byte);
 
-  if (helios->count < HELIOS_BUF_MAX)
+#ifdef HELIOS_DEBUG
+  printf ("helios output byte %02x\n", byte);
+#endif
+
+  helios_set_status_bit (helios, HS_LAST_BYTE_EOL,
+			 (byte >= 0xe0) && (byte <= 0xef))
+
+  if (byte < 0xc0)
+    helios_buffer_add (sim, byte);
+  else switch ((byte >> 4) & 3)
     {
-      helios->buffer [helios->count++] = byte;
+    case 0:
+      // unimplemented
+      break;
+    case 1:
+      // mode change only
+      helios_set_mode (helios, byte & 7);
+      break;
+    case 2:
+      // end of line
+      helios_set_mode (helios, byte & 7);
+      right_just = (byte >> 3) & 1;
+      helios_eol (sim, right_just);
+      helios_set_status_bit (helios, HS_RIGHT_JUST, right_just);
+      break;
+    case 3:
+      // misc
+      break;
     }
 }
 
@@ -268,6 +363,10 @@ static void helios_npic_read (sim_t *sim)
   nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
   helios_reg_t *helios = get_chip_data (nut_reg->helios_chip);
   int i;
+
+#ifdef HELIOS_DEBUG
+  printf ("Getting Helios status: %04x\n", helios->status);
+#endif
 
   for (i = 3; i >= 0; i--)
     nut_reg->c [i + 10] = ((helios_get_status_bit (helios, i * 4 + 3) << 3) +
@@ -286,15 +385,24 @@ static bool helios_pertct_op (sim_t *sim, rom_word_t opcode)
     {
       int flag_bit = opcode >> 6;
       if (flag_bit < NF_COUNT)
-	return helios_get_npic_flag_bit (helios, flag_bit);
+	{
+	  return helios_get_npic_flag_bit (helios, flag_bit);
+	}
+      else
+	{
+	  printf ("Helios testing unknown flag %d\n", flag_bit);
+	}
     }
 
   if (opcode == 0x007)
     helios_npic_write (sim);
   else if (opcode == 0x03a)
     helios_npic_read (sim);
+  else if (opcode == 0x005)
+    ;  // just a return 
   else
-    fatal (2, "Helios unrecognized instruction\n");
+    fatal (2, "Helios unrecognized instruction %04x at addr %04x\n",
+	   opcode, nut_reg->prev_pc);
 
   return false;
 }
