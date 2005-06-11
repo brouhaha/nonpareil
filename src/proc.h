@@ -82,6 +82,10 @@ typedef void display_update_callback_fn_t (void *ref,
 					   segment_bitmap_t *segments);
 
 
+typedef void printer_callback_fn_t (void *ref,
+				    printer_line_data_t *data);
+
+
 /*
  * Create the sim thread, initially in idle state
  *
@@ -94,6 +98,12 @@ sim_t *sim_init  (int model,
 		  segment_bitmap_t *char_gen,
 		  display_update_callback_fn_t *display_update_callback,
 		  void *display_update_callback_ref);
+
+
+void sim_set_printer_callback (sim_t *sim,
+			       printer_callback_fn_t *printer_callback,
+			       void *printer_callback_ref);
+
 
 int sim_get_model (sim_t *sim);
 

@@ -23,10 +23,12 @@ MA 02111, USA.
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
+#include <string.h>
 
 #include "arch.h"
 #include "util.h"
 #include "display.h"
+#include "printer.h"
 #include "proc.h"
 #include "digit_ops.h"
 #include "proc_int.h"
@@ -101,6 +103,12 @@ static char *hs_bit_name [HS_COUNT] =
 #endif
 
 
+// Bit weights in Helios print mode:
+#define HM_LOWER_CASE  1
+#define HM_GRAPHICS    2
+#define HM_DOUBLE_WIDE 4
+
+
 #define HELIOS_BUF_MAX 43
 
 
@@ -108,9 +116,11 @@ typedef struct
 {
   uint8_t  flags;   // NPIC flags, NF_xxx defines above
   uint16_t status;  // status bits for Nut, HS_xxx defines above
+
+  uint8_t  mode;     // print mode in effect at start of buffer
   uint8_t  count;   // count of bytes in buffer
-  uint8_t buffer [HELIOS_BUF_MAX];
-  uint16_t sstatus; // print mode status bits in effect at start of buffer
+  uint8_t  buffer [HELIOS_BUF_MAX];
+
 } helios_reg_t;
 
 
@@ -133,9 +143,9 @@ static const reg_detail_t helios_reg_detail [] =
   //    name       field    bits radix  get   set   arg  array
   PR   ("flags",   flags,    3,   2,    NULL, NULL, 0),
   PR   ("status",  status,  16,   2,    NULL, NULL, 0),
+  PR   ("mode",    mode,     3,   16,   NULL, NULL, 0),
   PR   ("count",   count,    8,   16,   NULL, NULL, 0),
   PRA  ("buffer",  buffer,   8,   16,   NULL, NULL, 0,   HELIOS_BUF_MAX),
-  PR   ("sstatus", sstatus, 16,   2,    NULL, NULL, 0)
 };
 
 
@@ -206,19 +216,6 @@ static void helios_set_status_bit (helios_reg_t *helios, int bit, bool val)
 }
 
 
-// Warning - doesn't test for bit number out of range!
-static bool helios_get_sstatus_bit (helios_reg_t *helios, int bit)
-{
-#if 0
-#ifdef HELIOS_DEBUG
-  printf ("Getting Helios sstatus %s (%d): %d\n", hs_bit_name [bit], bit,
-	  (helios->sstatus >> bit) & 1);
-#endif
-#endif
-  return (helios->sstatus >> bit) & 1;
-}
-
-
 static void helios_update_ext_flags (nut_reg_t *nut_reg,
 				     helios_reg_t *helios)
 {
@@ -276,29 +273,54 @@ static void helios_event_fn (sim_t *sim,
 }
 
 
-static void print_mode_delta (int old_mode, int mode)
+static bool helios_add_column (printer_line_data_t *line,
+			       int *col_idx,
+			       uint8_t col)
 {
-  if ((old_mode & 4) != (mode & 4))
+  if (((*col_idx) + 1) > PRINTER_WIDTH)
+    return false;
+
+  line->columns [(*col_idx)++] = col;
+
+  return true;
+}
+
+
+static bool helios_add_char (printer_line_data_t *line,
+			     int *col_idx,
+			     uint8_t c,
+			     uint8_t mode)
+{
+  int col;
+
+  if (((* col_idx) + ((mode & HM_DOUBLE_WIDE) ? 14 : 7)) >
+      PRINTER_WIDTH)
+    return false;
+
+  if ((mode & HM_LOWER_CASE) &&
+      ((c >= 'A') && (c <= 'Z')))
+    c += 0x20;
+
+  line->columns [(* col_idx)++] = 0;
+  if (mode & HM_DOUBLE_WIDE)
+    line->columns [(* col_idx)++] = 0;
+
+  for (col = 0; col < 5; col++)
     {
-      if (mode & 4)
-	printf (" (double wide)");
-      else
-	printf (" (single wide)");
+      uint8_t col_data = 0;
+
+      // $$$ look up character data here
+
+      line->columns [(* col_idx)++] = col_data;
+      if (mode & HM_DOUBLE_WIDE)
+	line->columns [(* col_idx)++] = col_data;
     }
-  if ((old_mode & 2) != (mode & 2))
-    {
-      if (mode & 2)
-	printf (" (graphics)");
-      else
-	printf (" (text)");
-    }
-  if ((old_mode & 1) != (mode & 1))
-    {
-      if (mode & 1)
-	printf (" (lc)");
-      else
-	printf (" (uc)");
-    }
+
+  line->columns [(* col_idx)++] = 0;
+  if (mode & HM_DOUBLE_WIDE)
+    line->columns [(* col_idx)++] = 0;
+
+  return true;
 }
 
 
@@ -306,45 +328,110 @@ static void helios_eol (sim_t *sim, bool right_justify)
 {
   nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
   helios_reg_t *helios = get_chip_data (nut_reg->helios_chip);
-  int old_mode = 0;
-  int mode;
-  int i;
-  uint8_t byte;
+  int old_mode, mode;
+  int buf_idx;  // index into printer buffer
+  int col_idx;  // index into graphic line buffer
+  printer_line_data_t line;  // graphic line buffer
 
-  printf ("Helios buffer: ");
-  mode = ((helios_get_sstatus_bit (helios, HS_DOUBLE_WIDE) << 2) +
-	  (helios_get_sstatus_bit (helios, HS_GRAPHICS) << 1) +
-	  helios_get_status_bit (helios, HS_LOWER_CASE));
-  print_mode_delta (old_mode, mode);
-  for (i = 0; i < helios->count; i++)
+  // init graphic output buffer
+  memset (& line, 0, sizeof (line));
+  col_idx = 0;
+
+  // get saved mode from start of buffer
+  old_mode = 0;
+  mode = helios->mode;
+
+  buf_idx = 0;
+  while (buf_idx < helios->count)
     {
-      byte = helios->buffer [i];
+      uint8_t byte = helios->buffer [buf_idx];
+
       if (byte < 0x80)
-	printf (" %02x", byte);
-      else if ((byte >= 0xa0) && (byte <= 0xb7))
-	printf (" (skip %d char)", byte - 0xa0);
-      else if ((byte >= 0xb8) && (byte <= 0xbf))
-	printf (" (skip %d col)", byte - 0xb8);
+	{
+	  if (mode & HM_GRAPHICS)
+	    {
+	      if (! helios_add_column (& line, & col_idx, byte))
+		break;  // not room for another column
+	      buf_idx++;
+	    }
+	  else
+	    {
+	      if (! helios_add_char (& line, & col_idx, byte, mode))
+		break;
+	      buf_idx++;
+	    }
+	}
+      else if ((byte == 0xa0) || (byte == 0xb8))
+	{
+	  // skip zero chars or columns - just eat the byte
+	  buf_idx++;
+	}
+      else if ((byte > 0xa0) && (byte <= 0xb7))
+	{
+	  if (! helios_add_char (& line, & col_idx, ' ', mode))
+	    break;
+	  helios->buffer [buf_idx]--;
+	}
+      else if ((byte > 0xb8) && (byte <= 0xbf))
+	{
+	  if (! helios_add_column (& line, & col_idx, 0x00))
+	    break;
+	  helios->buffer [buf_idx]--;
+	}
       else
 	{
+	  // mode change
 	  old_mode = mode;
 	  mode = byte & 7;
-	  print_mode_delta (old_mode, mode);
-	  if (byte >= 0xe0)
-	    printf (" (EOL %cj)", ((byte >> 3) & 1) ? 'r' : 'l');
+	  buf_idx++;
 	}
     }
-  printf ("\n");
-  helios->count = 0;
-  helios_set_status_bit (helios, HS_BUF_EMPTY, true);
+
+  if (right_justify && (col_idx < PRINTER_WIDTH))
+    {
+      // shift output data to right justify
+      memmove (& line.columns + (PRINTER_WIDTH - col_idx),
+	       & line.columns,
+	       col_idx);
+      memset (& line.columns, 0, PRINTER_WIDTH - col_idx);
+    }
+
+  // print graphic line buffer here
+
+  if (buf_idx != helios->count)
+    {
+      // shift remaining contents of buffer to beginning
+      memmove (helios->buffer,
+	       helios->buffer + buf_idx,
+	       helios->count - buf_idx);
+    }
+
+  helios->count -= buf_idx;
+  if (! helios->count)
+    helios_set_status_bit (helios, HS_BUF_EMPTY, true);
 }
 
 
 static void helios_set_mode (helios_reg_t *helios, uint8_t mode)
 {
-  helios_set_status_bit (helios, HS_DOUBLE_WIDE, mode & 1);
-  helios_set_status_bit (helios, HS_GRAPHICS,    (mode >> 1) & 1);
-  helios_set_status_bit (helios, HS_LOWER_CASE,  (mode >> 2) & 1);
+  helios_set_status_bit (helios, HS_DOUBLE_WIDE, (mode & HM_DOUBLE_WIDE) != 0);
+  helios_set_status_bit (helios, HS_GRAPHICS,    (mode & HM_GRAPHICS) != 0);
+  helios_set_status_bit (helios, HS_LOWER_CASE,  (mode & HM_LOWER_CASE) != 0);
+}
+
+
+static uint8_t helios_get_mode (helios_reg_t *helios)
+{
+  uint8_t mode = 0;
+
+  if (helios_get_status_bit (helios, HS_DOUBLE_WIDE))
+    mode += HM_DOUBLE_WIDE;
+  if (helios_get_status_bit (helios, HS_GRAPHICS))
+    mode += HM_GRAPHICS;
+  if (helios_get_status_bit (helios, HS_LOWER_CASE))
+    mode += HM_LOWER_CASE;
+
+  return mode;
 }
 
 
@@ -371,7 +458,7 @@ static void helios_npic_write (sim_t *sim)
     {
       if (! helios->count)
 	{
-	  helios->sstatus = helios->status;
+	  helios->mode = helios_get_mode (helios);
 	  helios_set_status_bit (helios, HS_BUF_EMPTY, false);
 	}
       helios->buffer [helios->count++] = byte;

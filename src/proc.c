@@ -30,6 +30,7 @@ MA 02111, USA.
 
 #include "util.h"
 #include "display.h"
+#include "printer.h"
 #include "proc.h"
 #include "arch.h"
 #include "platform.h"
@@ -124,6 +125,7 @@ typedef struct
 typedef enum
 {
   CMD_DISPLAY_UPDATE,
+  CMD_PRINT,
   CMD_BREAKPOINT_HIT
 } gui_cmd_t;
 
@@ -131,8 +133,18 @@ typedef struct
 {
   sim_t            *sim;
   gui_cmd_t        cmd;
-  int              display_digits;
-  segment_bitmap_t display_segments [MAX_DIGIT_POSITION];
+  union
+  {
+    struct
+    {
+      int              display_digits;
+      segment_bitmap_t display_segments [MAX_DIGIT_POSITION];
+    };
+    struct
+    {
+      printer_line_data_t printer_line;
+    };
+  };
 } gui_msg_t;
 
 
@@ -745,6 +757,10 @@ static gboolean gui_cmd_callback (gpointer data)
 				    msg->display_digits,
 				    msg->display_segments);
       break;
+    case CMD_PRINT:
+      sim->printer_callback (sim->printer_callback_ref,
+			     & msg->printer_line);
+      break;
     case CMD_BREAKPOINT_HIT:
       break;
     }
@@ -809,6 +825,16 @@ sim_t *sim_init  (int model,
 
   return (sim);
 }
+
+
+void sim_set_printer_callback (sim_t *sim,
+			       printer_callback_fn_t *printer_callback,
+			       void *printer_callback_ref)
+{
+  sim->printer_callback = printer_callback;
+  sim->printer_callback_ref = printer_callback_ref;
+}
+
 
 
 int sim_get_model (sim_t *sim)

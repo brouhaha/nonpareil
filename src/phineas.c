@@ -27,6 +27,7 @@ MA 02111, USA.
 #include "arch.h"
 #include "util.h"
 #include "display.h"
+#include "printer.h"
 #include "proc.h"
 #include "digit_ops.h"
 #include "proc_int.h"

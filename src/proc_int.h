@@ -172,6 +172,9 @@ struct sim_t
   // callbacks into GUI
   display_update_callback_fn_t *display_update_callback;
   void *display_update_callback_ref;
+
+  printer_callback_fn_t *printer_callback;
+  void *printer_callback_ref;
 };
 
 
