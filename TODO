@@ -3,13 +3,6 @@ Copyright 1995, 2003, 2004, 2005 Eric L. Smith <eric@brouhaha.com>
 $Id$
 
 
-Bugs and critical features for next release:
-
-  Regression: keyboard not working at all.
-    use gtk_signal_connect_after()?
-    use gtk_key_snooper_install()?
-
-
 Build process:
 
   Create an RPM .spec file.
@@ -23,6 +16,17 @@ Build process:
 
 
 User interface:
+
+  Printer
+      plug/unplug
+      menu bar
+      mode switch, power switch
+      left and right margins
+      double-size display
+      set reasonable initial window size
+      handle closing window, provide way to reopen
+      start "tape" at bottom of window
+      save as (text, PNG, multi-column PDF)
 
   Replace use of GtkItemFactory (deprecated) with GTKUIManager.
 
