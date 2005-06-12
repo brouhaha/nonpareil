@@ -30,7 +30,6 @@ MA 02111, USA.
 
 #include "util.h"
 #include "display.h"
-#include "printer.h"
 #include "proc.h"
 #include "arch.h"
 #include "platform.h"
@@ -542,7 +541,7 @@ static void cmd_write_ram (sim_t *sim, sim_msg_t *msg)
 
 static void cmd_event (sim_t *sim, sim_msg_t *msg)
 {
-  chip_event (sim, msg->arg1, msg->chip, msg->data);
+  chip_event (sim, msg->arg1, msg->chip, msg->arg2, msg->data);
 }
 
 
@@ -879,6 +878,7 @@ int sim_get_model (sim_t *sim)
 void sim_event (sim_t  *sim,
 		int    event,
 		chip_t *chip,
+		int    arg,
 		void   *data)
 {
   sim_msg_t msg;
@@ -887,6 +887,7 @@ void sim_event (sim_t  *sim,
   msg.cmd = CMD_EVENT;
   msg.chip = chip;
   msg.arg1 = event;
+  msg.arg2 = arg;
   msg.data = data;
   send_cmd_to_sim_thread (sim, (gpointer) & msg);
 }
@@ -1507,18 +1508,18 @@ void remove_chip (chip_t *chip)
 }
 
 
-void chip_event (sim_t *sim, int event, chip_t *chip, void *data)
+void chip_event (sim_t *sim, int event, chip_t *chip, int arg, void *data)
 {
   if (chip)
     {
       if (chip->chip_detail->chip_event_fn)
-	chip->chip_detail->chip_event_fn (sim, chip, event, data);
+	chip->chip_detail->chip_event_fn (sim, chip, event, arg, data);
     }
   else
     {
       for (chip = sim->first_chip; chip; chip = chip->next)
 	if (chip->chip_detail->chip_event_fn)
-	  chip->chip_detail->chip_event_fn (sim, chip, event, data);
+	  chip->chip_detail->chip_event_fn (sim, chip, event, arg, data);
     }
   if (data)
     free (data);

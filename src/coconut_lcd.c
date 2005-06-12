@@ -27,7 +27,6 @@ MA 02111, USA.
 #include "arch.h"
 #include "util.h"
 #include "display.h"
-#include "printer.h"
 #include "proc.h"
 #include "digit_ops.h"
 #include "coconut_lcd.h"
@@ -375,7 +374,11 @@ static void coconut_display_update (sim_t *sim,
 }
 
 
-static void coconut_display_event_fn (sim_t *sim, chip_t *chip, int event, void *data)
+static void coconut_display_event_fn (sim_t  *sim,
+				      chip_t *chip,
+				      int    event,
+				      int    arg,
+				      void   *data)
 {
   nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
   coconut_display_reg_t *display = get_chip_data (nut_reg->display_chip);

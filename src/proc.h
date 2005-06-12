@@ -40,7 +40,7 @@ enum
 
   first_arch_event = 0x100,  // CPU architecture specific events
 
-  first_dev_event = 0x200    // chip specific events
+  first_chip_event = 0x200   // chip specific events
 };
 
 
@@ -130,6 +130,7 @@ bool sim_read_listing_file (struct sim_t *sim,
 void sim_event        (sim_t  *sim,
 		       int    event,
 		       chip_t *chip,  // NULL for all chips
+		       int    arg,
 		       void   *data);
 
 void sim_quit         (sim_t *sim);  // kill the sim thread

@@ -33,7 +33,6 @@ MA 02111, USA.
 
 #include "util.h"
 #include "display.h"
-#include "printer.h"
 #include "kml.h"
 #include "proc.h"
 #include "slide_switch.h"
@@ -311,7 +310,7 @@ void state_write_xml (sim_t *sim, char *fn)
   // LIBXML_TEST_VERSION
 
   sim_set_io_pause_flag (sim, true);
-  sim_event (sim, event_save_starting, NULL, NULL);
+  sim_event (sim, event_save_starting, NULL, 0, NULL);
 
 #if 1
   out = xmlOutputBufferCreateFilename (fn, NULL, true);
@@ -357,7 +356,7 @@ void state_write_xml (sim_t *sim, char *fn)
 
   xmlFreeTextWriter (writer);
 
-  sim_event (sim, event_save_completed, NULL, NULL);
+  sim_event (sim, event_save_completed, NULL, 0, NULL);
   sim_set_io_pause_flag (sim, false);
 }
 

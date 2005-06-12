@@ -30,9 +30,8 @@ MA 02111, USA.
 #include "util.h"
 #include "display.h"
 #include "kml.h"
-#include "printer.h"
 #include "proc.h"
-#include "printer_gtk.h"
+#include "printer.h"
 
 
 typedef struct

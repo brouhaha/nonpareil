@@ -32,7 +32,6 @@ MA 02111, USA.
 
 #include "util.h"
 #include "display.h"
-#include "printer.h"
 #include "proc.h"
 
 

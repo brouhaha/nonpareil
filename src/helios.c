@@ -28,11 +28,11 @@ MA 02111, USA.
 #include "arch.h"
 #include "util.h"
 #include "display.h"
-#include "printer.h"
 #include "proc.h"
 #include "digit_ops.h"
 #include "proc_int.h"
 #include "proc_nut.h"
+#include "printer.h"
 #include "helios.h"
 
 
@@ -258,6 +258,7 @@ static void helios_reset (helios_reg_t *helios)
 static void helios_event_fn (sim_t  *sim,
 			     chip_t *chip,
 			     int    event,
+			     int    arg,
 			     void   *data)
 {
   nut_reg_t *nut_reg = get_chip_data (sim->first_chip);

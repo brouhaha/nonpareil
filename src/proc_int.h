@@ -55,6 +55,7 @@ typedef struct
 typedef void chip_event_fn_t (sim_t  *sim,
 			      chip_t *chip,
 			      int    event,
+			      int    arg,
 			      void   *data);
 
 
@@ -184,7 +185,7 @@ chip_t *install_chip (sim_t *sim,
 void remove_chip (chip_t *chip);
 
 // Notify all chips of an event.
-void chip_event (sim_t *sim, int event, chip_t *chip, void *data);
+void chip_event (sim_t *sim, int event, chip_t *chip, int arg, void *data);
 
 const chip_detail_t *get_chip_detail (chip_t *chip);
 

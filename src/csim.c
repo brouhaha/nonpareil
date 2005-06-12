@@ -35,9 +35,7 @@ MA 02111, USA.
 #include "display.h"
 #include "kml.h"
 #include "display_gtk.h"
-#include "printer.h"
 #include "proc.h"
-#include "printer_gtk.h"
 #include "keyboard.h"
 #include "slide_switch.h"
 #include "arch.h"
@@ -46,6 +44,8 @@ MA 02111, USA.
 #include "state_io.h"
 #include "about.h"
 #include "sound.h"
+#include "printer.h"
+
 
 #ifdef HAS_DEBUGGER_GUI
   #include "debugger_gui.h"

@@ -27,7 +27,6 @@ MA 02111, USA.
 #include "arch.h"
 #include "util.h"
 #include "display.h"
-#include "printer.h"
 #include "proc.h"
 #include "digit_ops.h"
 #include "proc_int.h"
@@ -498,6 +497,7 @@ static void phineas_reset (phineas_reg_t *phineas)
 static void phineas_event_fn (sim_t  *sim,
 			      chip_t *chip,
 			      int    event,
+			      int    arg,
 			      void   *data)
 {
   nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
