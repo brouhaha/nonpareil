@@ -156,6 +156,7 @@ static const chip_detail_t helios_chip_detail =
 {
   {
     "Helios printer",
+    CHIP_HELIOS,
     false  // There can only be one Helios on the bus.
   },
   sizeof (helios_reg_detail) / sizeof (reg_detail_t),

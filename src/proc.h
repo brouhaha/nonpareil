@@ -51,17 +51,31 @@ typedef uint16_t rom_word_t;
 typedef struct sim_t sim_t;
 
 
-// opaque type representing a chip
+// opaque type representing a chip (or more generally, a hardware device)
 typedef struct chip_t chip_t;
+
+
+typedef enum
+{
+  // generic
+  CHIP_CPU,
+  CHIP_DISPLAY,
+
+  // coconut & peripherals
+  CHIP_PHINEAS,
+  CHIP_HELIOS
+} chip_type_t;
 
 
 // chip_info_t is used to get information on chips
 typedef struct
 {
-  char *name;
-  bool multiple;  // True if there might be more than one chip of this kind,
-                  // in which case register #0 should contain the necessary
-                  // distinguishing information (e.g., address)
+  char        *name;
+  chip_type_t type;
+  bool        multiple;  // True if there might be more than one chip of this
+                         // kind, in which case register #0 should contain the
+                         // necessary distinguishing information (e.g.,
+                         // address)
 } chip_info_t;
 
 

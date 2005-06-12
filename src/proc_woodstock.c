@@ -107,6 +107,7 @@ static chip_detail_t woodstock_cpu_chip_detail =
 {
   {
     "ACT",
+    CHIP_CPU,
     false  // There can only be one ACT in the calculator.
   },
   sizeof (woodstock_cpu_reg_detail) / sizeof (reg_detail_t),

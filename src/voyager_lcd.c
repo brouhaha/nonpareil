@@ -71,6 +71,7 @@ static chip_detail_t voyager_display_chip_detail =
 {
   {
     "Voyager LCD",
+    CHIP_DISPLAY,
     false  // There is normally only one LCD driver on the bus.  There
            // are two R2D2 chips in an HP-15C, but one of the does not
            // have the LCD driver bonded out.

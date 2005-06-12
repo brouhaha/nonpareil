@@ -317,6 +317,7 @@ static chip_detail_t coconut_display_chip_detail =
 {
   {
     "Coconut LCD",
+    CHIP_DISPLAY,
     false  // There can only be one set of LCD drivers on the bus.
   },
   sizeof (coconut_display_reg_detail) / sizeof (reg_detail_t),

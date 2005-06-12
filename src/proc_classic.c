@@ -86,6 +86,7 @@ static chip_detail_t classic_cpu_chip_detail =
 {
   {
     "AC/CT",
+    CHIP_CPU,
     false  // There can only be one processor in the calculator.
   },
   sizeof (classic_cpu_reg_detail) / sizeof (reg_detail_t),

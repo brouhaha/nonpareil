@@ -166,6 +166,7 @@ static const chip_detail_t phineas_chip_detail =
 {
   {
     "Phineas clock",
+    CHIP_PHINEAS,
     false  // There can only be one Phineas on the bus.
   },
   sizeof (phineas_reg_detail) / sizeof (reg_detail_t),
