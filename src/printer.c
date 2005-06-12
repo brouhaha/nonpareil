@@ -28,7 +28,10 @@ MA 02111, USA.
 #include <gtk/gtk.h>
 
 #include "util.h"
+#include "display.h"
+#include "kml.h"
 #include "printer.h"
+#include "proc.h"
 #include "printer_gtk.h"
 
 
@@ -41,6 +44,8 @@ typedef struct
 
 struct gui_printer_t
 {
+  sim_t *sim;
+
   GtkWidget *window;
   GtkWidget *layout;
   GdkGC *white;  // for paper
@@ -222,6 +227,37 @@ static gboolean printer_window_destroy_callback (GtkWidget *widget,
 }
 
 
+static void gui_printer_set_mode (gui_printer_t *p, int mode)
+{
+  // $$$ more code needed here
+  printf ("mode %d\n", mode);
+}
+
+
+static void gui_printer_set_mode_man (GtkWidget *widget, gpointer data)
+{
+  gui_printer_t *p = data;
+  if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (widget)))
+    gui_printer_set_mode (p, PRINTER_MODE_MAN);
+}
+
+
+static void gui_printer_set_mode_trace (GtkWidget *widget, gpointer data)
+{
+  gui_printer_t *p = data;
+  if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (widget)))
+    gui_printer_set_mode (p, PRINTER_MODE_TRACE);
+}
+
+
+static void gui_printer_set_mode_norm (GtkWidget *widget, gpointer data)
+{
+  gui_printer_t *p = data;
+  if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (widget)))
+    gui_printer_set_mode (p, PRINTER_MODE_NORM);
+}
+
+
 static GtkWidget *gui_printer_create_mode_frame (gui_printer_t *p)
 {
   GtkWidget *mode_frame;
@@ -231,10 +267,25 @@ static GtkWidget *gui_printer_create_mode_frame (gui_printer_t *p)
   mode_frame = gtk_frame_new ("Mode");
 
   man = gtk_radio_button_new_with_label (NULL, "MAN");
+  g_signal_connect (G_OBJECT (man),
+		    "clicked",
+		    G_CALLBACK (gui_printer_set_mode_man),
+		    p);
+
   trace = gtk_radio_button_new_with_label_from_widget (GTK_RADIO_BUTTON (man),
 						       "TRACE");
+  g_signal_connect (G_OBJECT (trace),
+		    "clicked",
+		    G_CALLBACK (gui_printer_set_mode_trace),
+		    p);
+
   norm = gtk_radio_button_new_with_label_from_widget (GTK_RADIO_BUTTON (man),
 						      "NORM");
+  g_signal_connect (G_OBJECT (norm),
+		    "clicked",
+		    G_CALLBACK (gui_printer_set_mode_norm),
+		    p);
+
 
   box = gtk_hbox_new (FALSE, 0);
   gtk_box_pack_start (GTK_BOX (box), man, FALSE, FALSE, 0);
@@ -263,7 +314,7 @@ static GtkWidget *gui_printer_create_buttons (gui_printer_t *p)
 }
 
 
-gui_printer_t * gui_printer_init (void)
+gui_printer_t * gui_printer_init (sim_t *sim)
 {
   gui_printer_t *p;
   //GtkWidget *menubar;
@@ -273,6 +324,8 @@ gui_printer_t * gui_printer_init (void)
   GtkWidget *vbox;
 
   p = alloc (sizeof (gui_printer_t));
+
+  p->sim = sim;
 
   // create temp pixbuf used for rendering one printed line
   p->pixbuf = gdk_pixbuf_new (GDK_COLORSPACE_RGB,           // colorspace

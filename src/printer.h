@@ -20,6 +20,10 @@ MA 02111, USA.
 */
 
 
+#define PRINTER_MODE_MAN 0
+#define PRINTER_MODE_TRACE 1
+#define PRINTER_MODE_NORM 2
+
 #define PRINTER_WIDTH 168
 
 typedef struct

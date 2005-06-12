@@ -33,7 +33,7 @@ MA 02111, USA.
 typedef struct gui_printer_t gui_printer_t;
 
 
-gui_printer_t *gui_printer_init (void);
+gui_printer_t *gui_printer_init (sim_t *sim);
 
 
 void gui_printer_update (gui_printer_t *printer,

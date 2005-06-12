@@ -36,8 +36,8 @@ MA 02111, USA.
 #include "kml.h"
 #include "display_gtk.h"
 #include "printer.h"
-#include "printer_gtk.h"
 #include "proc.h"
+#include "printer_gtk.h"
 #include "keyboard.h"
 #include "slide_switch.h"
 #include "arch.h"
@@ -643,7 +643,7 @@ int main (int argc, char *argv[])
 			(display_update_callback_fn_t *) gui_display_update,
 			csim->gui_display);
 
-  csim->gui_printer = gui_printer_init ();
+  csim->gui_printer = gui_printer_init (csim->sim);
 
   sim_set_printer_callback (csim->sim,
 			    (printer_callback_fn_t *) gui_printer_update,
