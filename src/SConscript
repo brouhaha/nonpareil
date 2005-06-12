@@ -221,7 +221,7 @@ nonpareil_srcs = Split ("""proc.c glib_async_queue_source.c
                            proc_classic.c
                            proc_woodstock.c
                            proc_nut.c
-                           coconut_lcd.c helios.c phineas.c
+                           coconut_lcd.c phineas.c helios.c helios_chargen.c
                            voyager_lcd.c
                            mod1_file.c""")
 

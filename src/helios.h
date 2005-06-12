@@ -23,4 +23,6 @@ MA 02111, USA.
 
 #define HELIOS_NPIC_PERTCT_ADDR 9
 
+extern uint8_t helios_chargen [128][5];
+
 void helios_init (sim_t *sim);
