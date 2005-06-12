@@ -42,8 +42,6 @@ typedef struct
 struct gui_printer_t
 {
   GtkWidget *window;
-  GtkWidget *scrolled_window;  // may be able to make this a local
-                               //   in gui_printer_init ()
   GtkWidget *layout;
   GdkGC *white;  // for paper
   GdkGC *black;  // for "ink"
@@ -224,9 +222,55 @@ static gboolean printer_window_destroy_callback (GtkWidget *widget,
 }
 
 
+static GtkWidget *gui_printer_create_mode_frame (gui_printer_t *p)
+{
+  GtkWidget *mode_frame;
+  GtkWidget *box;
+  GtkWidget *man, *trace, *norm;
+
+  mode_frame = gtk_frame_new ("Mode");
+
+  man = gtk_radio_button_new_with_label (NULL, "MAN");
+  trace = gtk_radio_button_new_with_label_from_widget (GTK_RADIO_BUTTON (man),
+						       "TRACE");
+  norm = gtk_radio_button_new_with_label_from_widget (GTK_RADIO_BUTTON (man),
+						      "NORM");
+
+  box = gtk_hbox_new (FALSE, 0);
+  gtk_box_pack_start (GTK_BOX (box), man, FALSE, FALSE, 0);
+  gtk_box_pack_start (GTK_BOX (box), trace, FALSE, FALSE, 0);
+  gtk_box_pack_start (GTK_BOX (box), norm, FALSE, FALSE, 0);
+
+  gtk_container_add (GTK_CONTAINER (mode_frame), box);
+
+  return mode_frame;
+}
+
+
+static GtkWidget *gui_printer_create_buttons (gui_printer_t *p)
+{
+  GtkWidget *box;
+  GtkWidget *print, *advance;
+
+  print = gtk_button_new_with_label ("Print");
+  advance = gtk_button_new_with_label ("Paper Advance");
+
+  box = gtk_hbox_new (FALSE, 0);
+  gtk_box_pack_start (GTK_BOX (box), print, FALSE, FALSE, 0);
+  gtk_box_pack_start (GTK_BOX (box), advance, FALSE, FALSE, 0);
+ 
+  return box;
+}
+
+
 gui_printer_t * gui_printer_init (void)
 {
   gui_printer_t *p;
+  //GtkWidget *menubar;
+  GtkWidget *mode_frame;
+  GtkWidget *buttons;
+  GtkWidget *scrolled_window;
+  GtkWidget *vbox;
 
   p = alloc (sizeof (gui_printer_t));
 
@@ -251,29 +295,31 @@ gui_printer_t * gui_printer_init (void)
   p->line_count = 2;
 
   p->layout = gtk_layout_new (NULL, NULL);
-
   gtk_layout_set_size (GTK_LAYOUT (p->layout),
 		       PRINTER_WIDTH,
 		       PRINTER_WINDOW_INITIAL_HEIGHT);
-
   gtk_widget_set_size_request (p->layout,
 			       PRINTER_WIDTH,
 			       PRINTER_WINDOW_INITIAL_HEIGHT);
 
-  p->scrolled_window = gtk_scrolled_window_new (NULL, NULL);
-
-  gtk_container_add (GTK_CONTAINER (p->scrolled_window), p->layout);
-
-  gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (p->scrolled_window),
+  scrolled_window = gtk_scrolled_window_new (NULL, NULL);
+  gtk_container_add (GTK_CONTAINER (scrolled_window), p->layout);
+  gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (scrolled_window),
 				  GTK_POLICY_AUTOMATIC,
 				  GTK_POLICY_ALWAYS);
 
+  mode_frame = gui_printer_create_mode_frame (p);
+  buttons = gui_printer_create_buttons (p);
+
+  vbox = gtk_vbox_new (FALSE, 1);
+  //gtk_box_pack_start (GTK_BOX (vbox), menubar, FALSE, FALSE, 0);
+  gtk_box_pack_start (GTK_BOX (vbox), mode_frame, FALSE, FALSE, 0);
+  gtk_box_pack_start (GTK_BOX (vbox), buttons, FALSE, FALSE, 0);
+  gtk_box_pack_start_defaults (GTK_BOX (vbox), scrolled_window);
 
   p->window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
-
   gtk_window_set_title (GTK_WINDOW (p->window), "Printer");
-
-  gtk_container_add (GTK_CONTAINER (p->window), p->scrolled_window);
+  gtk_container_add (GTK_CONTAINER (p->window), vbox);
 
   g_signal_connect (G_OBJECT (p->layout),
 		    "expose_event",
