@@ -37,6 +37,7 @@ static char *credits_people [] =
 {
   "Maciej Bartosiak",
   "Timothee Basset",
+  "Les Bell",
   "Paul Davis",
   "Steven Elllis",
   "Bernhard Engl",

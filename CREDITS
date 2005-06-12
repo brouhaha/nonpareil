@@ -80,5 +80,9 @@ web site "Songs and callse of some New York State birds":
 John Hogerhuis helped get the keyboard support working again, and contributed
 better key bindings for the 12C.
 
+Les Bell provided a high-resolution greyscale scan of the 82143A character
+set, from which I was able to make corrections to my character generator
+table.
+
 If I've omitted anyone who should be listed here, I apologize, and
 please let me know so I can remedy the omission.
