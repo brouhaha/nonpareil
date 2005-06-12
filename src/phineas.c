@@ -495,9 +495,10 @@ static void phineas_reset (phineas_reg_t *phineas)
 }
 
 
-static void phineas_event_fn (sim_t *sim,
+static void phineas_event_fn (sim_t  *sim,
 			      chip_t *chip,
-			      int event)
+			      int    event,
+			      void   *data)
 {
   nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
   phineas_reg_t *phineas = get_chip_data (nut_reg->phineas_chip);

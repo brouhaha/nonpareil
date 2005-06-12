@@ -375,7 +375,7 @@ static void coconut_display_update (sim_t *sim,
 }
 
 
-static void coconut_display_event_fn (sim_t *sim, chip_t *chip, int event)
+static void coconut_display_event_fn (sim_t *sim, chip_t *chip, int event, void *data)
 {
   nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
   coconut_display_reg_t *display = get_chip_data (nut_reg->display_chip);

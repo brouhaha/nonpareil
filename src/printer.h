@@ -28,5 +28,6 @@ MA 02111, USA.
 
 typedef struct
 {
+  bool tear;
   uint8_t columns [PRINTER_WIDTH];
 } printer_line_data_t;

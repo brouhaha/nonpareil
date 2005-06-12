@@ -71,7 +71,6 @@ typedef struct
   GtkWidget *main_window;
   GtkWidget *menubar;  // actually a popup menu in transparency/shape mode
   gui_display_t *gui_display;
-  gui_printer_t *gui_printer;
   char state_fn [255];
 } csim_t;
 
@@ -643,11 +642,9 @@ int main (int argc, char *argv[])
 			(display_update_callback_fn_t *) gui_display_update,
 			csim->gui_display);
 
-  csim->gui_printer = gui_printer_init (csim->sim);
-
-  sim_set_printer_callback (csim->sim,
-			    (printer_callback_fn_t *) gui_printer_update,
-			    csim->gui_printer);  // ref
+  // $$$ should only do this when we load a module file that indicates
+  // that it uses the printer hardware
+  gui_printer_init (csim->sim);
 
 #ifdef HAS_DEBUGGER_GUI
   init_debugger_gui (csim->sim);

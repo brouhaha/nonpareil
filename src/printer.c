@@ -37,14 +37,8 @@ MA 02111, USA.
 
 typedef struct
 {
-  bool tear;
-  printer_line_data_t data;
-} gui_printer_line_t;
-
-
-struct gui_printer_t
-{
   sim_t *sim;
+  chip_t *chip;
 
   GtkWidget *window;
   GtkWidget *layout;
@@ -58,8 +52,8 @@ struct gui_printer_t
   int rowstride;
 
   int line_count;
-  gui_printer_line_t *line [PRINTER_MAX_BUFFER_LINES];
-};
+  printer_line_data_t *line [PRINTER_MAX_BUFFER_LINES];
+} gui_printer_t;
 
 
 static void gui_printer_draw_tear (gui_printer_t *p,
@@ -95,7 +89,7 @@ static void gui_printer_draw_tear (gui_printer_t *p,
 
 
 static void gui_printer_copy_pixels_to_pixbuf (gui_printer_t *p,
-					       gui_printer_line_t *line)
+					       printer_line_data_t *line)
 {
   int x, y;
   int val;
@@ -109,7 +103,7 @@ static void gui_printer_copy_pixels_to_pixbuf (gui_printer_t *p,
       for (x = 0; x < PRINTER_WIDTH; x++)
 	{
 	  if (y < PRINTER_CHARACTER_HEIGHT_PIXELS)
-	    val = (line->data.columns [x] & (1 << y)) ? 0x00 : 0xff;
+	    val = (line->columns [x] & (1 << y)) ? 0x00 : 0xff;
 	  else
 	    val = 0xff;
 	  *(pixel_ptr++) = val;
@@ -124,7 +118,7 @@ static void gui_printer_copy_pixels_to_pixbuf (gui_printer_t *p,
 static void gui_printer_update_line (gui_printer_t *p,
 				     int line_num)
 {
-  gui_printer_line_t *line;
+  printer_line_data_t *line;
   int y = line_num * PRINTER_LINE_HEIGHT_PIXELS;
 
   line = p->line [line_num];
@@ -181,10 +175,13 @@ static gboolean printer_window_expose_callback (GtkWidget *widget,
 }
 
 
-void gui_printer_update (gui_printer_t *p,
-			 printer_line_data_t *data)
+void gui_printer_update (sim_t  *sim,
+			 chip_t *chip,
+			 void   *ref,
+			 void   *data)
 {
-  gui_printer_line_t *line;
+  gui_printer_t *p = ref;
+  printer_line_data_t *line = data;
   GdkRectangle rect;
   int height;
 
@@ -194,9 +191,6 @@ void gui_printer_update (gui_printer_t *p,
       // $$$ scroll here
       // $$$ invalidate entire window
     }
-
-  line = alloc (sizeof (gui_printer_line_t));
-  memcpy (& line->data, data, sizeof (printer_line_data_t));
 
   p->line [p->line_count] = line;
 
@@ -314,7 +308,7 @@ static GtkWidget *gui_printer_create_buttons (gui_printer_t *p)
 }
 
 
-gui_printer_t * gui_printer_init (sim_t *sim)
+void gui_printer_init (sim_t *sim)
 {
   gui_printer_t *p;
   //GtkWidget *menubar;
@@ -326,6 +320,19 @@ gui_printer_t * gui_printer_init (sim_t *sim)
   p = alloc (sizeof (gui_printer_t));
 
   p->sim = sim;
+
+  p->chip = sim_add_chip (sim,
+			  CHIP_HELIOS,         // chip_type
+			  gui_printer_update,  // callback_fn
+			  p);                  // ref
+  if (! p->chip)
+    fatal (3, "can't add Helios chip\n");
+
+#if 0
+  sim_set_printer_callback (csim->sim,
+			    (printer_callback_fn_t *) gui_printer_update,
+			    csim->gui_printer);  // ref
+#endif
 
   // create temp pixbuf used for rendering one printed line
   p->pixbuf = gdk_pixbuf_new (GDK_COLORSPACE_RGB,           // colorspace
@@ -340,10 +347,10 @@ gui_printer_t * gui_printer_init (sim_t *sim)
 		    (3 * PRINTER_WIDTH));
 
   // create line 0 with tear
-  p->line [0] = alloc (sizeof (gui_printer_line_t));
+  p->line [0] = alloc (sizeof (printer_line_data_t));
   p->line [0]->tear = true;
 
-  p->line [1] = alloc (sizeof (gui_printer_line_t));
+  p->line [1] = alloc (sizeof (printer_line_data_t));
 
   p->line_count = 2;
 
@@ -391,6 +398,4 @@ gui_printer_t * gui_printer_init (sim_t *sim)
 
   p->white = p->layout->style->white_gc;
   g_object_ref (p->white);
-
-  return p;
 }

@@ -1142,7 +1142,7 @@ static void classic_new_processor (sim_t *sim, int ram_size)
 
   init_ops (cpu_reg);
 
-  chip_event (sim, event_reset);
+  chip_event (sim, event_reset, NULL, NULL);
 }
 
 
@@ -1152,7 +1152,7 @@ static void classic_free_processor (sim_t *sim)
 }
 
 
-static void classic_event_fn (sim_t *sim, chip_t *chip, int event)
+static void classic_event_fn (sim_t *sim, chip_t *chip, int event, void *data)
 {
   // classic_cpu_reg_t *cpu_reg = get_chip_data (sim->first_chip);
 

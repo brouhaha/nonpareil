@@ -1625,7 +1625,7 @@ static void woodstock_new_processor (sim_t *sim, int ram_size)
 
   init_ops (act_reg);
 
-  chip_event (sim, event_reset);
+  chip_event (sim, event_reset, NULL, NULL);
 }
 
 
@@ -1635,7 +1635,7 @@ static void woodstock_free_processor (sim_t *sim)
 }
 
 
-static void woodstock_event_fn (sim_t *sim, chip_t *chip, int event)
+static void woodstock_event_fn (sim_t *sim, chip_t *chip, int event, void *data)
 {
   // act_reg_t *act_reg = get_chip_data (sim->first_chip);
 

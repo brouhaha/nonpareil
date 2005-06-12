@@ -25,4 +25,4 @@ MA 02111, USA.
 
 extern uint8_t helios_chargen [128][5];
 
-void helios_init (sim_t *sim);
+chip_t *helios_init (sim_t *sim);

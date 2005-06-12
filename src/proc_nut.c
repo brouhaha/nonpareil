@@ -36,7 +36,6 @@ MA 02111, USA.
 #include "digit_ops.h"
 #include "coconut_lcd.h"
 #include "voyager_lcd.h"
-#include "helios.h"
 #include "phineas.h"
 #include "proc_nut.h"
 #include "dis_nut.h"
@@ -713,7 +712,7 @@ static void op_c_to_dadd (sim_t *sim, int opcode)
 			(nut_reg->c [1] << 4) |
 			(nut_reg->c [0])) & 0x3ff;
 
-  chip_event (sim, event_ram_select);
+  chip_event (sim, event_ram_select, NULL, NULL);
 }
 
 static void op_c_to_pfad (sim_t *sim, int opcode)
@@ -723,7 +722,7 @@ static void op_c_to_pfad (sim_t *sim, int opcode)
   nut_reg->pf_addr = ((nut_reg->c [1] << 4) |
 		       (nut_reg->c [0]));
 
-  chip_event (sim, event_periph_select);
+  chip_event (sim, event_periph_select, NULL, NULL);
 }
 
 static void op_read_reg_n (sim_t *sim, int opcode)
@@ -1301,7 +1300,7 @@ static void op_powoff (sim_t *sim, int opcode)
 #endif
   nut_reg->awake = false;
   nut_reg->pc = 0;
-  chip_event (sim, event_sleep);
+  chip_event (sim, event_sleep, NULL, NULL);
 }
 
 
@@ -1479,7 +1478,7 @@ static bool nut_execute_cycle (sim_t *sim)
   nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
   int opcode;
 
-  chip_event (sim, event_cycle);
+  chip_event (sim, event_cycle, NULL, NULL);
 
   if (! nut_reg->awake)
     return (false);
@@ -1631,7 +1630,7 @@ static void nut_press_key (sim_t *sim, int keycode)
     printf ("waking up!\n");
 #endif
   nut_reg->awake = true;
-  chip_event (sim, event_wake);
+  chip_event (sim, event_wake, NULL, NULL);
 }
 
 static void nut_release_key (sim_t *sim)
@@ -1804,8 +1803,6 @@ static void nut_new_processor (sim_t *sim, int ram_size)
 
       coconut_display_init (sim);
 
-      helios_init (sim);
-
       break;
 
     case PLATFORM_VOYAGER:
@@ -1832,7 +1829,7 @@ static void nut_new_processor (sim_t *sim, int ram_size)
       break;
     }
 
-  chip_event (sim, event_reset);
+  chip_event (sim, event_reset, NULL, NULL);
 }
 
 
@@ -1842,7 +1839,7 @@ static void nut_free_processor (sim_t *sim)
 }
 
 
-static void nut_event_fn (sim_t *sim, chip_t *chip, int event)
+static void nut_event_fn (sim_t *sim, chip_t *chip, int event, void *data)
 {
   // nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
 

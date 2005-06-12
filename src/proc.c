@@ -38,6 +38,7 @@ MA 02111, USA.
 #include "proc_int.h"
 #include "glib_async_queue_source.h"
 #include "mod1_file.h"
+#include "helios.h"
 
 
 // We try to schedule execution in "jiffies".
@@ -60,6 +61,9 @@ struct chip_t
 
   const chip_detail_t *chip_detail;
   void *chip_data;
+
+  chip_callback_fn_t *callback_fn;
+  void               *callback_ref;
 };
 
 
@@ -68,6 +72,8 @@ struct chip_t
 
 typedef enum
 {
+  CMD_ADD_CHIP,
+  CMD_REMOVE_CHIP,
   CMD_EVENT,
   CMD_QUIT,
   CMD_RESET,
@@ -111,6 +117,7 @@ typedef struct
   bool          b;
   uint64_t      cycle_count;
   addr_t        addr;
+  chip_type_t   chip_type;
   chip_t        *chip;
   int           arg1;   // reg_num, keycode, flag number, bank, bank group, etc.
   int           arg2;   // index (in read/write register)
@@ -125,7 +132,7 @@ typedef struct
 typedef enum
 {
   CMD_DISPLAY_UPDATE,
-  CMD_PRINT,
+  CMD_CHIP_ASYNC_MSG,
   CMD_BREAKPOINT_HIT
 } gui_cmd_t;
 
@@ -133,16 +140,14 @@ typedef struct
 {
   sim_t            *sim;
   gui_cmd_t        cmd;
+  chip_t           *chip;
+  void             *data;
   union
   {
     struct
     {
       int              display_digits;
       segment_bitmap_t display_segments [MAX_DIGIT_POSITION];
-    };
-    struct
-    {
-      printer_line_data_t printer_line;
     };
   };
 } gui_msg_t;
@@ -535,13 +540,48 @@ static void cmd_write_ram (sim_t *sim, sim_msg_t *msg)
 }
 
 
+static void cmd_event (sim_t *sim, sim_msg_t *msg)
+{
+  chip_event (sim, msg->arg1, msg->chip, msg->data);
+}
+
+
+static void cmd_add_chip (sim_t *sim, sim_msg_t *msg)
+{
+  msg->reply = ARG_RANGE_ERROR;
+  msg->chip = NULL;
+  switch (msg->chip_type)
+    {
+    case CHIP_HELIOS:
+      msg->chip = helios_init (sim);
+      break;
+    default:
+      fatal (3, "don't know how to add chip of type %d\n", msg->chip_type);
+    }
+  if (msg->chip)
+    msg->reply = OK;
+}
+
+
+static void cmd_remove_chip (sim_t *sim, sim_msg_t *msg)
+{
+  // $$$ more code needed here
+}
+
+
 static void handle_sim_cmd (sim_t *sim, sim_msg_t *msg)
 {
   msg->reply = UNIMPLEMENTED;
   switch (msg->cmd)
     {
+    case CMD_ADD_CHIP:
+      cmd_add_chip (sim, msg);
+      break;
+    case CMD_REMOVE_CHIP:
+      cmd_remove_chip (sim, msg);
+      break;
     case CMD_EVENT:
-      chip_event (sim, msg->arg1);
+      cmd_event (sim, msg);
       msg->reply = OK;
       break;
     case CMD_QUIT:
@@ -757,9 +797,12 @@ static gboolean gui_cmd_callback (gpointer data)
 				    msg->display_digits,
 				    msg->display_segments);
       break;
-    case CMD_PRINT:
-      sim->printer_callback (sim->printer_callback_ref,
-			     & msg->printer_line);
+    case CMD_CHIP_ASYNC_MSG:
+      if (msg->chip->callback_fn)
+	msg->chip->callback_fn (sim,
+				msg->chip,
+				msg->chip->callback_ref,
+				msg->data);
       break;
     case CMD_BREAKPOINT_HIT:
       break;
@@ -827,29 +870,24 @@ sim_t *sim_init  (int model,
 }
 
 
-void sim_set_printer_callback (sim_t *sim,
-			       printer_callback_fn_t *printer_callback,
-			       void *printer_callback_ref)
-{
-  sim->printer_callback = printer_callback;
-  sim->printer_callback_ref = printer_callback_ref;
-}
-
-
-
 int sim_get_model (sim_t *sim)
 {
   return sim->model;
 }
 
 
-void sim_event (sim_t *sim, int event)
+void sim_event (sim_t  *sim,
+		int    event,
+		chip_t *chip,
+		void   *data)
 {
   sim_msg_t msg;
 
   memset (& msg, 0, sizeof (sim_msg_t));
   msg.cmd = CMD_EVENT;
+  msg.chip = chip;
   msg.arg1 = event;
+  msg.data = data;
   send_cmd_to_sim_thread (sim, (gpointer) & msg);
 }
 
@@ -947,6 +985,35 @@ bool sim_get_io_pause_flag (sim_t *sim)
   send_cmd_to_sim_thread (sim, (gpointer) & msg);
   return msg.b;
 }
+
+
+chip_t *sim_add_chip (sim_t              *sim,
+		      chip_type_t        type,
+		      chip_callback_fn_t *callback_fn,
+		      void               *callback_ref)
+{
+  sim_msg_t msg;
+
+  memset (& msg, 0, sizeof (sim_msg_t));
+  msg.cmd = CMD_ADD_CHIP;
+  msg.chip_type = type;
+  send_cmd_to_sim_thread (sim, (gpointer) & msg);
+  if ((msg.reply == OK) && msg.chip)
+    {
+      msg.chip->callback_fn  = callback_fn;
+      msg.chip->callback_ref = callback_ref;
+      return (msg.chip);
+    }
+  return NULL;
+}
+
+
+void sim_remove_chip (sim_t  *sim,
+		      chip_t *chip)
+{
+  fatal (3, "sim_remove_chip() unimplemented\n");
+}
+
 
 
 // Returns NULL if there are no chips (should never happen).
@@ -1254,7 +1321,9 @@ void sim_send_display_update_to_gui (sim_t *sim)
 }
 
 
-void sim_send_printer_line_to_gui (sim_t *sim, printer_line_data_t *line)
+void sim_send_chip_msg_to_gui (sim_t  *sim,
+			       chip_t *chip,
+			       void   *data)
 {
   gui_msg_t *msg;
 
@@ -1263,8 +1332,9 @@ void sim_send_printer_line_to_gui (sim_t *sim, printer_line_data_t *line)
     msg = alloc (sizeof (gui_msg_t));
 
   msg->sim = sim;
-  msg->cmd = CMD_PRINT;
-  memcpy (& msg->printer_line, line, sizeof (printer_line_data_t));
+  msg->cmd = CMD_CHIP_ASYNC_MSG;
+  msg->chip = chip;
+  msg->data = data;
 
   g_async_queue_source_push (sim->thread_vars->gui_cmd_q_source, msg);
 }
@@ -1437,13 +1507,21 @@ void remove_chip (chip_t *chip)
 }
 
 
-void chip_event (sim_t *sim, int event)
+void chip_event (sim_t *sim, int event, chip_t *chip, void *data)
 {
-  chip_t *chip;
-
-  for (chip = sim->first_chip; chip; chip = chip->next)
-    if (chip->chip_detail->chip_event_fn)
-      chip->chip_detail->chip_event_fn (sim, chip, event);
+  if (chip)
+    {
+      if (chip->chip_detail->chip_event_fn)
+	chip->chip_detail->chip_event_fn (sim, chip, event, data);
+    }
+  else
+    {
+      for (chip = sim->first_chip; chip; chip = chip->next)
+	if (chip->chip_detail->chip_event_fn)
+	  chip->chip_detail->chip_event_fn (sim, chip, event, data);
+    }
+  if (data)
+    free (data);
 }
 
 

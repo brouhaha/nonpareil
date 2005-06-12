@@ -255,9 +255,10 @@ static void helios_reset (helios_reg_t *helios)
 }
 
 
-static void helios_event_fn (sim_t *sim,
-			      chip_t *chip,
-			      int event)
+static void helios_event_fn (sim_t  *sim,
+			     chip_t *chip,
+			     int    event,
+			     void   *data)
 {
   nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
   helios_reg_t *helios = get_chip_data (nut_reg->helios_chip);
@@ -329,10 +330,10 @@ static void helios_eol (sim_t *sim, bool right_justify)
   int old_mode, mode;
   int buf_idx;  // index into printer buffer
   int col_idx;  // index into graphic line buffer
-  printer_line_data_t line;  // graphic line buffer
+  printer_line_data_t *line;  // graphic line buffer
 
   // init graphic output buffer
-  memset (& line, 0, sizeof (line));
+  line = alloc (sizeof (printer_line_data_t));
   col_idx = 0;
 
   // get saved mode from start of buffer
@@ -348,13 +349,13 @@ static void helios_eol (sim_t *sim, bool right_justify)
 	{
 	  if (mode & HM_GRAPHICS)
 	    {
-	      if (! helios_add_column (& line, & col_idx, byte))
+	      if (! helios_add_column (line, & col_idx, byte))
 		break;  // not room for another column
 	      buf_idx++;
 	    }
 	  else
 	    {
-	      if (! helios_add_char (& line, & col_idx, byte, mode))
+	      if (! helios_add_char (line, & col_idx, byte, mode))
 		break;
 	      buf_idx++;
 	    }
@@ -366,13 +367,13 @@ static void helios_eol (sim_t *sim, bool right_justify)
 	}
       else if ((byte > 0xa0) && (byte <= 0xb7))
 	{
-	  if (! helios_add_char (& line, & col_idx, ' ', mode))
+	  if (! helios_add_char (line, & col_idx, ' ', mode))
 	    break;
 	  helios->buffer [buf_idx]--;
 	}
       else if ((byte > 0xb8) && (byte <= 0xbf))
 	{
-	  if (! helios_add_column (& line, & col_idx, 0x00))
+	  if (! helios_add_column (line, & col_idx, 0x00))
 	    break;
 	  helios->buffer [buf_idx]--;
 	}
@@ -388,13 +389,13 @@ static void helios_eol (sim_t *sim, bool right_justify)
   if (right_justify && (col_idx < PRINTER_WIDTH))
     {
       // shift output data to right justify
-      memmove (& line.columns + (PRINTER_WIDTH - col_idx),
-	       & line.columns,
+      memmove (line->columns + (PRINTER_WIDTH - col_idx),
+	       line->columns,
 	       col_idx);
-      memset (& line.columns, 0, PRINTER_WIDTH - col_idx);
+      memset (line->columns, 0, PRINTER_WIDTH - col_idx);
     }
 
-  sim_send_printer_line_to_gui (sim, & line);
+  sim_send_chip_msg_to_gui (sim, nut_reg->helios_chip, line);
 
   if (buf_idx != helios->count)
     {
@@ -557,7 +558,7 @@ static void helios_init_ops (sim_t *sim)
 }
 
 
-void helios_init (sim_t *sim)
+chip_t *helios_init (sim_t *sim)
 {
   nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
   helios_reg_t *helios;
@@ -569,4 +570,6 @@ void helios_init (sim_t *sim)
 				       helios);
 
   helios_init_ops (sim);
+
+  return (nut_reg->helios_chip);
 }

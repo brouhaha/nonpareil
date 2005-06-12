@@ -23,7 +23,6 @@ User interface:
       mode switch, power switch
       left and right margins
       double-size display option
-      set reasonable initial window size
       automatic vertical scrolling to track end of tape when written
       handle closing window, provide way to reopen
       start "tape" at bottom of window

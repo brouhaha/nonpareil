@@ -376,7 +376,7 @@ void state_read_xml (sim_t *sim, char *fn)
   sax_data_t sdata;
 
   sim_set_io_pause_flag (sim, true);
-  sim_event (sim, event_restore_starting);
+  sim_event (sim, event_restore_starting, NULL, NULL);
 
   memset (& sdata, 0, sizeof (sdata));
 
@@ -386,6 +386,6 @@ void state_read_xml (sim_t *sim, char *fn)
 		       & sdata,
 		       fn);
 
-  sim_event (sim, event_restore_completed);
+  sim_event (sim, event_restore_completed, NULL, NULL);
   sim_set_io_pause_flag (sim, false);
 }

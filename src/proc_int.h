@@ -52,9 +52,10 @@ typedef struct
 
 
 
-typedef void chip_event_fn_t (sim_t *sim,
+typedef void chip_event_fn_t (sim_t  *sim,
 			      chip_t *chip,
-			      int event);
+			      int    event,
+			      void   *data);
 
 
 typedef struct chip_detail_t
@@ -172,9 +173,6 @@ struct sim_t
   // callbacks into GUI
   display_update_callback_fn_t *display_update_callback;
   void *display_update_callback_ref;
-
-  printer_callback_fn_t *printer_callback;
-  void *printer_callback_ref;
 };
 
 
@@ -186,7 +184,7 @@ chip_t *install_chip (sim_t *sim,
 void remove_chip (chip_t *chip);
 
 // Notify all chips of an event.
-void chip_event (sim_t *sim, int event);
+void chip_event (sim_t *sim, int event, chip_t *chip, void *data);
 
 const chip_detail_t *get_chip_detail (chip_t *chip);
 

@@ -38,7 +38,9 @@ enum
   event_restore_starting,
   event_restore_completed,
 
-  first_arch_event = 0x100
+  first_arch_event = 0x100,  // CPU architecture specific events
+
+  first_dev_event = 0x200    // chip specific events
 };
 
 
@@ -96,10 +98,6 @@ typedef void display_update_callback_fn_t (void *ref,
 					   segment_bitmap_t *segments);
 
 
-typedef void printer_callback_fn_t (void *ref,
-				    printer_line_data_t *data);
-
-
 /*
  * Create the sim thread, initially in idle state
  *
@@ -112,11 +110,6 @@ sim_t *sim_init  (int model,
 		  segment_bitmap_t *char_gen,
 		  display_update_callback_fn_t *display_update_callback,
 		  void *display_update_callback_ref);
-
-
-void sim_set_printer_callback (sim_t *sim,
-			       printer_callback_fn_t *printer_callback,
-			       void *printer_callback_ref);
 
 
 int sim_get_model (sim_t *sim);
@@ -133,7 +126,11 @@ bool sim_read_listing_file (struct sim_t *sim,
  * the simulator thread, and wait for a reply.
  */
 
-void sim_event        (sim_t *sim, int event);
+// If data is passed, chip becomes responsible for freeing it.
+void sim_event        (sim_t  *sim,
+		       int    event,
+		       chip_t *chip,  // NULL for all chips
+		       void   *data);
 
 void sim_quit         (sim_t *sim);  // kill the sim thread
 
@@ -188,6 +185,23 @@ bool sim_write_ram (sim_t *sim,
 
 
 // Chip access routines
+
+// Callback function used when chip sends asynchronous commands and/or data
+// to GUI.  If data != NULL, callback should free it.
+typedef void chip_callback_fn_t (sim_t  *sim,
+				 chip_t *chip,
+				 void   *ref,
+				 void   *data);
+
+
+chip_t *sim_add_chip (sim_t              *sim,
+		      chip_type_t        type,
+		      chip_callback_fn_t *callback_fn,
+		      void               *callback_ref);
+
+void sim_remove_chip (sim_t  *sim,
+		      chip_t *chip);
+
 
 // Returns NULL if there are no chips (should never happen).
 chip_t *sim_get_first_chip (sim_t *sim);
@@ -276,4 +290,6 @@ void sim_clear_breakpoint (sim_t  *sim,
 
 void sim_send_display_update_to_gui (sim_t *sim);
 
-void sim_send_printer_line_to_gui (sim_t *sim, printer_line_data_t *line);
+void sim_send_chip_msg_to_gui (sim_t  *sim,
+			       chip_t *chip,
+			       void   *data);
