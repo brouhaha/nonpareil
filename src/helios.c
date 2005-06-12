@@ -307,10 +307,7 @@ static bool helios_add_char (printer_line_data_t *line,
 
   for (col = 0; col < 5; col++)
     {
-      uint8_t col_data = 0;
-
-      // $$$ look up character data here
-
+      uint8_t col_data = helios_chargen [c] [col];
       line->columns [(* col_idx)++] = col_data;
       if (mode & HM_DOUBLE_WIDE)
 	line->columns [(* col_idx)++] = col_data;
@@ -396,7 +393,7 @@ static void helios_eol (sim_t *sim, bool right_justify)
       memset (& line.columns, 0, PRINTER_WIDTH - col_idx);
     }
 
-  // print graphic line buffer here
+  sim_send_printer_line_to_gui (sim, & line);
 
   if (buf_idx != helios->count)
     {
@@ -435,6 +432,14 @@ static uint8_t helios_get_mode (helios_reg_t *helios)
 }
 
 
+#undef HELIOS_EOL_HAS_MODE_BITS
+
+#ifdef HELIOS_EOL_HAS_MODE_BITS
+#define HIGHEST_VAL_TO_BUFFER 0xef
+#else
+#define HIGHEST_VAL_TO_BUFFER 0xdf
+#endif
+
 static void helios_npic_write (sim_t *sim)
 {
   nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
@@ -449,12 +454,17 @@ static void helios_npic_write (sim_t *sim)
   printf ("helios output byte %02x\n", byte);
 #endif
 
+#ifdef HELIOS_EOL_HAS_MODE_BITS
   eol = (byte >= 0xe0) && (byte <= 0xef);
+#else
+  eol = (byte == 0xe0) || (byte == 0xe8);
+#endif
+
   right_just = (byte >> 3) & 1;
   
   helios_set_status_bit (helios, HS_LAST_BYTE_EOL, eol);
 
-  if (byte < 0xf0)
+  if (byte <= HIGHEST_VAL_TO_BUFFER)
     {
       if (! helios->count)
 	{
@@ -463,7 +473,7 @@ static void helios_npic_write (sim_t *sim)
 	}
       helios->buffer [helios->count++] = byte;
 
-      if ((byte >= 0xd0) && (byte <= 0xef))
+      if (byte >= 0xd0)
 	helios_set_mode (helios, byte & 7);
 
       if (helios->count == HELIOS_BUF_MAX)
@@ -475,6 +485,8 @@ static void helios_npic_write (sim_t *sim)
       if (eol)
 	helios_eol (sim, right_just);
     }
+  else if (eol)
+    helios_eol (sim, right_just);
   else if (byte >= 0xfe)
     helios_set_status_bit (helios, HS_IGNORE_ADV, byte & 1);
   else if (byte >= 0xfc)

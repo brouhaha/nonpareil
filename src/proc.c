@@ -1254,6 +1254,20 @@ void sim_send_display_update_to_gui (sim_t *sim)
 }
 
 
+void sim_send_printer_line_to_gui (sim_t *sim, printer_line_data_t *line)
+{
+  gui_msg_t *msg;
+
+  msg = g_async_queue_try_pop (sim->thread_vars->gui_cmd_free_q);
+  if (! msg)
+    msg = alloc (sizeof (gui_msg_t));
+
+  msg->sim = sim;
+  msg->cmd = CMD_PRINT;
+  memcpy (& msg->printer_line, line, sizeof (printer_line_data_t));
+}
+
+
 extern processor_dispatch_t classic_processor;
 extern processor_dispatch_t woodstock_processor;
 extern processor_dispatch_t nut_processor;

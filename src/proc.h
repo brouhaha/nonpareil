@@ -262,4 +262,4 @@ void sim_clear_breakpoint (sim_t  *sim,
 
 void sim_send_display_update_to_gui (sim_t *sim);
 
-
+void sim_send_printer_line_to_gui (sim_t *sim, printer_line_data_t *line);

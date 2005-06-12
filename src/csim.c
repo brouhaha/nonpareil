@@ -645,6 +645,10 @@ int main (int argc, char *argv[])
 
   csim->gui_printer = gui_printer_init ();
 
+  sim_set_printer_callback (csim,
+			    gui_printer_update,  // callback
+			    csim->gui_printer);  // ref
+
 #ifdef HAS_DEBUGGER_GUI
   init_debugger_gui (csim->sim);
 #endif
