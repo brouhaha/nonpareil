@@ -284,7 +284,7 @@ static GtkWidget *gui_printer_create_mode_frame (gui_printer_t *p)
 		    p);
 
 
-  box = gtk_hbox_new (FALSE, 0);
+  box = gtk_hbox_new (FALSE, 0);  // $$$ Should we use a GtkHButtonBox?
   gtk_box_pack_start (GTK_BOX (box), man, FALSE, FALSE, 0);
   gtk_box_pack_start (GTK_BOX (box), trace, FALSE, FALSE, 0);
   gtk_box_pack_start (GTK_BOX (box), norm, FALSE, FALSE, 0);
@@ -292,6 +292,54 @@ static GtkWidget *gui_printer_create_mode_frame (gui_printer_t *p)
   gtk_container_add (GTK_CONTAINER (mode_frame), box);
 
   return mode_frame;
+}
+
+
+static void gui_printer_print_button_pressed (GtkWidget *widget,
+					      gpointer data)
+{
+  gui_printer_t *p = data;
+  sim_event (p->sim,
+	     event_printer_print_button,
+	     p->chip,
+	     1,
+	     NULL);
+}
+
+
+static void gui_printer_print_button_released (GtkWidget *widget,
+					       gpointer data)
+{
+  gui_printer_t *p = data;
+  sim_event (p->sim,
+	     event_printer_print_button,
+	     p->chip,
+	     0,
+	     NULL);
+}
+
+
+static void gui_printer_advance_button_pressed (GtkWidget *widget,
+						gpointer data)
+{
+  gui_printer_t *p = data;
+  sim_event (p->sim,
+	     event_printer_paper_advance_button,
+	     p->chip,
+	     1,
+	     NULL);
+}
+
+
+static void gui_printer_advance_button_released (GtkWidget *widget,
+						 gpointer data)
+{
+  gui_printer_t *p = data;
+  sim_event (p->sim,
+	     event_printer_paper_advance_button,
+	     p->chip,
+	     0,
+	     NULL);
 }
 
 
@@ -303,7 +351,27 @@ static GtkWidget *gui_printer_create_buttons (gui_printer_t *p)
   print = gtk_button_new_with_label ("Print");
   advance = gtk_button_new_with_label ("Paper Advance");
 
-  box = gtk_hbox_new (FALSE, 0);
+  g_signal_connect (G_OBJECT (print),
+		    "pressed",
+		    G_CALLBACK (gui_printer_print_button_pressed),
+		    p);
+
+  g_signal_connect (G_OBJECT (print),
+		    "released",
+		    G_CALLBACK (gui_printer_print_button_released),
+		    p);
+
+  g_signal_connect (G_OBJECT (advance),
+		    "pressed",
+		    G_CALLBACK (gui_printer_advance_button_pressed),
+		    p);
+
+  g_signal_connect (G_OBJECT (advance),
+		    "released",
+		    G_CALLBACK (gui_printer_advance_button_released),
+		    p);
+
+  box = gtk_hbox_new (FALSE, 0);  // $$$ Should we use a GtkHButtonBox?
   gtk_box_pack_start (GTK_BOX (box), print, FALSE, FALSE, 0);
   gtk_box_pack_start (GTK_BOX (box), advance, FALSE, FALSE, 0);
  

@@ -287,6 +287,14 @@ static void helios_event_fn (sim_t  *sim,
 	  warning ("helios: invalid mode %d\n", arg);
 	}
       break;
+    case event_printer_print_button:
+      helios_set_status_bit (helios, HS_PRT_KEY, arg != 0);
+      helios_update_ext_flags (nut_reg, helios);
+      break;
+    case event_printer_paper_advance_button:
+      helios_set_status_bit (helios, HS_ADV_KEY, arg != 0);
+      helios_update_ext_flags (nut_reg, helios);
+      break;
     default:
       // warning ("helios: unknown event %d\n", event);
       break;
