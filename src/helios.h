@@ -21,6 +21,42 @@ MA 02111, USA.
 
 // Helios printer (82143A) using NPIC interface chip
 
+// Public definitions, for both sim and GUI threads:
+
+#define PRINTER_MODE_MAN 0
+#define PRINTER_MODE_TRACE 1
+#define PRINTER_MODE_NORM 2
+
+
+#define PRINTER_CHARACTER_WIDTH_PIXELS 7
+#define PRINTER_WIDTH_CHARS 24
+#define PRINTER_WIDTH (PRINTER_WIDTH_CHARS * PRINTER_CHARACTER_WIDTH_PIXELS)
+
+#define PRINTER_CHARACTER_HEIGHT_PIXELS 7
+#define PRINTER_LINE_HEIGHT_PIXELS 12
+
+#define PRINTER_WINDOW_INITIAL_HEIGHT (10 * PRINTER_LINE_HEIGHT_PIXELS)
+
+#define PRINTER_MAX_BUFFER_LINES (80 * 12 * 6)  // 80 ft of 6 lines per inch
+
+
+enum
+{
+  event_printer_set_mode = first_chip_event,
+  event_printer_print_button,
+  event_printer_paper_advance_button
+};
+
+
+typedef struct
+{
+  bool tear;
+  uint8_t columns [PRINTER_WIDTH];
+} printer_line_data_t;
+
+
+// Private definitions for sim thread only:
+
 #define HELIOS_NPIC_PERTCT_ADDR 9
 
 extern uint8_t helios_chargen [128][5];

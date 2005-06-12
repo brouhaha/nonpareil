@@ -32,7 +32,6 @@ MA 02111, USA.
 #include "digit_ops.h"
 #include "proc_int.h"
 #include "proc_nut.h"
-#include "printer.h"
 #include "helios.h"
 
 

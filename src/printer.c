@@ -31,6 +31,7 @@ MA 02111, USA.
 #include "display.h"
 #include "kml.h"
 #include "proc.h"
+#include "helios.h"
 #include "printer.h"
 
 
