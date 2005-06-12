@@ -256,6 +256,10 @@ gui_printer_t * gui_printer_init (void)
 		       PRINTER_WIDTH,
 		       PRINTER_WINDOW_INITIAL_HEIGHT);
 
+  gtk_widget_set_size_request (p->layout,
+			       PRINTER_WIDTH,
+			       PRINTER_WINDOW_INITIAL_HEIGHT);
+
   p->scrolled_window = gtk_scrolled_window_new (NULL, NULL);
 
   gtk_container_add (GTK_CONTAINER (p->scrolled_window), p->layout);
