@@ -183,6 +183,7 @@ void gui_printer_update (gui_printer_t *p,
 {
   gui_printer_line_t *line;
   GdkRectangle rect;
+  int height;
 
   if (p->line_count >= PRINTER_MAX_BUFFER_LINES)
     {
@@ -205,6 +206,13 @@ void gui_printer_update (gui_printer_t *p,
 			      FALSE);
 
   p->line_count++;
+
+  height = p->line_count * PRINTER_LINE_HEIGHT_PIXELS;
+
+  if (height > PRINTER_WINDOW_INITIAL_HEIGHT)
+    gtk_layout_set_size (GTK_LAYOUT (p->layout),
+			 PRINTER_WIDTH,
+			 height);
 }
 
 
