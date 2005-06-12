@@ -268,6 +268,25 @@ static void helios_event_fn (sim_t  *sim,
     case event_reset:
       helios_reset (helios);
       break;
+    case event_printer_set_mode:
+      switch (arg)
+	{
+	case PRINTER_MODE_MAN:
+	  helios_set_status_bit (helios, HS_MODE_TRACE, false);
+	  helios_set_status_bit (helios, HS_MODE_NORM,  false);
+	  break;
+	case PRINTER_MODE_TRACE:
+	  helios_set_status_bit (helios, HS_MODE_TRACE, true);
+	  helios_set_status_bit (helios, HS_MODE_NORM,  false);
+	  break;
+	case PRINTER_MODE_NORM:
+	  helios_set_status_bit (helios, HS_MODE_TRACE, false);
+	  helios_set_status_bit (helios, HS_MODE_NORM,  true);
+	  break;
+	default:
+	  warning ("helios: invalid mode %d\n", arg);
+	}
+      break;
     default:
       // warning ("helios: unknown event %d\n", event);
       break;

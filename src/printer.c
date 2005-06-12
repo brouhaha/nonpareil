@@ -223,8 +223,11 @@ static gboolean printer_window_destroy_callback (GtkWidget *widget,
 
 static void gui_printer_set_mode (gui_printer_t *p, int mode)
 {
-  // $$$ more code needed here
-  printf ("mode %d\n", mode);
+  sim_event (p->sim,
+	     event_printer_set_mode,
+	     p->chip,
+	     mode,
+	     NULL);
 }
 
 
