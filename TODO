@@ -18,12 +18,13 @@ Build process:
 User interface:
 
   Printer
-      plug/unplug
+      plug/unplug (load/unload module)
       menu bar
       mode switch, power switch
       left and right margins
-      double-size display
+      double-size display option
       set reasonable initial window size
+      vertical scrolling
       handle closing window, provide way to reopen
       start "tape" at bottom of window
       save as (text, PNG, multi-column PDF)

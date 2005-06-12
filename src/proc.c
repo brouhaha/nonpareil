@@ -1265,6 +1265,8 @@ void sim_send_printer_line_to_gui (sim_t *sim, printer_line_data_t *line)
   msg->sim = sim;
   msg->cmd = CMD_PRINT;
   memcpy (& msg->printer_line, line, sizeof (printer_line_data_t));
+
+  g_async_queue_source_push (sim->thread_vars->gui_cmd_q_source, msg);
 }
 
 

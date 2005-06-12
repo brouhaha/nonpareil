@@ -6,7 +6,7 @@ $Id$
 
 News:
 
-Release 0.71 of Nonpareil is an interim development release.
+Release 0.72 of Nonpareil is an interim development release.
 
 In this release, the following calculators are simulated:
 	HP-35, HP-45, HP-55, HP-80
@@ -14,6 +14,9 @@ In this release, the following calculators are simulated:
 	HP-31E, HP-33C, HP-34C, HP-37E, HP-38E, HP-38C
 	HP-41CV, HP-41CX
 	HP-11C, HP-12C, HP-15C, HP-16C
+
+In addition, there is very preliminary support for the HP 82143A printer
+for the HP-41C family.  See the 82143A printer notes below.
 
 Many menu commands are not yet implemented.
 
@@ -25,6 +28,31 @@ Known bugs and deficiencies:
 * The code is written to run the HP-41CX clock at very close to real time,
   but it does not currently initialize the calculator time and date from
   the host, nor track the host time and date.
+
+-----------------------------------------------------------------------------
+
+82143A Printer Notes:
+
+Nonpareil can now simulate an 82143A printer, though the printer support
+should be considered to be of pre-alpha quality.  The printer output is
+shown in a window, and there is not yet any means to save the printer output
+to a file, or to copy it.  There is not yet any way to change the
+MAN/TRACE/NORM mode switch setting (currently in MAN mode), nor to press
+the printer's PRINT or ADV buttons.
+
+To use the printer, you need a copy of the printer module's ROM in a
+.MOD file.  Currently this is not provided with Nonpareil, but it may
+be found as part of Warren Furlow's V41 program on www.hp41.org.
+
+Start up Nonpareil with the command "nonpareil 41cv".  The normal 41CV
+window will appear, along with a small "Printer" window, which you should
+resize larger.  The printer is not yet ready.
+
+Turn off the HP-41.  On the Configure menu, select "Load Module", and choose
+the module file containing the printer firmware.
+
+Turn the HP-41 back on.  Now the printer should be ready; if you execute
+"FS? 55" the display should show "YES".
 
 -----------------------------------------------------------------------------
 
