@@ -284,7 +284,7 @@ static GtkWidget *gui_printer_create_mode_frame (gui_printer_t *p)
 		    p);
 
 
-  box = gtk_hbox_new (FALSE, 0);  // $$$ Should we use a GtkHButtonBox?
+  box = gtk_vbox_new (FALSE, 0);  // $$$ Should we use a Gtk[HV]ButtonBox?
   gtk_box_pack_start (GTK_BOX (box), man, FALSE, FALSE, 0);
   gtk_box_pack_start (GTK_BOX (box), trace, FALSE, FALSE, 0);
   gtk_box_pack_start (GTK_BOX (box), norm, FALSE, FALSE, 0);
@@ -371,10 +371,26 @@ static GtkWidget *gui_printer_create_buttons (gui_printer_t *p)
 		    G_CALLBACK (gui_printer_advance_button_released),
 		    p);
 
-  box = gtk_hbox_new (FALSE, 0);  // $$$ Should we use a GtkHButtonBox?
+  box = gtk_vbox_new (FALSE, 0);  // $$$ Should we use a Gtk[HV]ButtonBox?
   gtk_box_pack_start (GTK_BOX (box), print, FALSE, FALSE, 0);
   gtk_box_pack_start (GTK_BOX (box), advance, FALSE, FALSE, 0);
  
+  return box;
+}
+
+
+static GtkWidget *gui_printer_create_controls (gui_printer_t *p)
+{
+  GtkWidget *mode_frame;
+  GtkWidget *buttons;
+  GtkWidget *box;
+
+  mode_frame = gui_printer_create_mode_frame (p);
+  buttons = gui_printer_create_buttons (p);
+  box = gtk_hbox_new (FALSE, 1);
+  gtk_box_pack_start (GTK_BOX (box), mode_frame, FALSE, FALSE, 0);
+  gtk_box_pack_start (GTK_BOX (box), buttons, FALSE, FALSE, 0);
+
   return box;
 }
 
@@ -383,8 +399,7 @@ void gui_printer_init (sim_t *sim)
 {
   gui_printer_t *p;
   //GtkWidget *menubar;
-  GtkWidget *mode_frame;
-  GtkWidget *buttons;
+  GtkWidget *controls;
   GtkWidget *scrolled_window;
   GtkWidget *vbox;
 
@@ -439,13 +454,12 @@ void gui_printer_init (sim_t *sim)
 				  GTK_POLICY_AUTOMATIC,
 				  GTK_POLICY_ALWAYS);
 
-  mode_frame = gui_printer_create_mode_frame (p);
-  buttons = gui_printer_create_buttons (p);
+
+  controls = gui_printer_create_controls (p);
 
   vbox = gtk_vbox_new (FALSE, 1);
   //gtk_box_pack_start (GTK_BOX (vbox), menubar, FALSE, FALSE, 0);
-  gtk_box_pack_start (GTK_BOX (vbox), mode_frame, FALSE, FALSE, 0);
-  gtk_box_pack_start (GTK_BOX (vbox), buttons, FALSE, FALSE, 0);
+  gtk_box_pack_start (GTK_BOX (vbox), controls, FALSE, FALSE, 0);
   gtk_box_pack_start_defaults (GTK_BOX (vbox), scrolled_window);
 
   p->window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
