@@ -35,6 +35,14 @@ MA 02111, USA.
 #include "printer.h"
 
 
+#define PRINTER_MODE_BUTTONS
+#undef  PRINTER_MODE_MENU
+
+#if defined(PRINTER_MODE_BUTTONS) && defined(PRINTER_MODE_MENU)
+  #error "PRINTER_MODE_BUTTONS and PRINTER_MODE_MENU are mutually exclusive."
+#endif
+
+
 typedef struct
 {
   sim_t *sim;
@@ -304,6 +312,7 @@ static void gui_printer_set_mode (gui_printer_t *p, int mode)
 }
 
 
+#ifdef PRINTER_MODE_BUTTONS
 static void gui_printer_set_mode_man (GtkWidget *widget, gpointer data)
 {
   gui_printer_t *p = data;
@@ -366,6 +375,7 @@ static GtkWidget *gui_printer_create_mode_frame (gui_printer_t *p)
 
   return mode_frame;
 }
+#endif // PRINTER_MODE_BUTTONS
 
 
 static void gui_printer_print_button_pressed (GtkWidget *widget,
@@ -444,7 +454,12 @@ static GtkWidget *gui_printer_create_buttons (gui_printer_t *p)
 		    G_CALLBACK (gui_printer_advance_button_released),
 		    p);
 
+#ifdef PRINTER_MODE_BUTTONS
   box = gtk_vbox_new (FALSE, 0);  // $$$ Should we use a Gtk[HV]ButtonBox?
+#else
+  box = gtk_hbox_new (FALSE, 0);  // $$$ Should we use a Gtk[HV]ButtonBox?
+#endif
+
   gtk_box_pack_start (GTK_BOX (box), print, FALSE, FALSE, 0);
   gtk_box_pack_start (GTK_BOX (box), advance, FALSE, FALSE, 0);
  
@@ -454,14 +469,20 @@ static GtkWidget *gui_printer_create_buttons (gui_printer_t *p)
 
 static GtkWidget *gui_printer_create_controls (gui_printer_t *p)
 {
+#ifdef PRINTER_MODE_BUTTONS
   GtkWidget *mode_frame;
+#endif // PRINTER_MODE_BUTTONS
   GtkWidget *buttons;
   GtkWidget *box;
 
-  mode_frame = gui_printer_create_mode_frame (p);
-  buttons = gui_printer_create_buttons (p);
   box = gtk_hbox_new (FALSE, 1);
+
+#ifdef PRINTER_MODE_BUTTONS
+  mode_frame = gui_printer_create_mode_frame (p);
   gtk_box_pack_start (GTK_BOX (box), mode_frame, FALSE, FALSE, 0);
+#endif // PRINTER_MODE_BUTTONS
+
+  buttons = gui_printer_create_buttons (p);
   gtk_box_pack_start (GTK_BOX (box), buttons, FALSE, FALSE, 0);
 
   return box;
@@ -487,6 +508,35 @@ static void gui_printer_edit_copy_callback (gpointer callback_data,
 }
 
 
+#ifdef PRINTER_MODE_MENU
+static void gui_printer_mode_man (gpointer  callback_data,
+				  guint     callback_action,
+				  GtkWidget *widget)
+{
+  gui_printer_t *p = callback_data;
+  gui_printer_set_mode (p, PRINTER_MODE_MAN);
+}
+
+
+static void gui_printer_mode_trace (gpointer  callback_data,
+				    guint     callback_action,
+				    GtkWidget *widget)
+{
+  gui_printer_t *p = callback_data;
+  gui_printer_set_mode (p, PRINTER_MODE_TRACE);
+}
+
+
+static void gui_printer_mode_norm (gpointer  callback_data,
+				   guint     callback_action,
+				   GtkWidget *widget)
+{
+  gui_printer_t *p = callback_data;
+  gui_printer_set_mode (p, PRINTER_MODE_NORM);
+}
+#endif // PRINTER_MODE_MENU
+
+
 static GtkItemFactoryEntry gui_printer_menu_items [] =
   {
     { "/_File",         NULL,         NULL,          0, "<Branch>" },
@@ -495,6 +545,15 @@ static GtkItemFactoryEntry gui_printer_menu_items [] =
     { "/_Edit",         NULL,         NULL,          0, "<Branch>" },
     { "/Edit/_Copy",    "<control>C", gui_printer_edit_copy_callback,
       1, "<StockItem>", GTK_STOCK_COPY },
+#ifdef PRINTER_MODE_MENU
+    { "/_Mode",         NULL,         NULL,          0, "<Branch>" },
+    { "/Mode/_Man",     NULL,         gui_printer_mode_man,
+      1, "<RadioItem>" },
+    { "/Mode/_Trace",   NULL,         gui_printer_mode_trace,
+      1, "/Mode/Man" },
+    { "/Mode/_Norm",    NULL,         gui_printer_mode_norm,
+      1, "/Mode/Trace" },
+#endif // PRINTER_MODE_MENU
   };
 
 static gint n_gui_printer_menu_items = (sizeof (gui_printer_menu_items) /

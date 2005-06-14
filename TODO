@@ -18,13 +18,16 @@ Build process:
 User interface:
 
   Printer
+      make arrows on vertical scroll bar work
+      should mode switch be a menu?
       plug/unplug (load/unload module)
-      make mode switch a menu?
       power switch?
       automatic vertical scrolling to track end of tape when written
       handle closing window, provide way to reopen
       start "tape" at bottom of window
       save as (text, PNG, multi-column PDF)
+      signal out-of-paper when scroll buffer is full
+      menu item to install fresh paper
 
   Replace use of GtkItemFactory (deprecated) with GTKUIManager.
 
