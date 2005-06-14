@@ -18,7 +18,6 @@ Build process:
 User interface:
 
   Printer
-      make arrows on vertical scroll bar work
       should mode switch be a menu?
       plug/unplug (load/unload module)
       power switch?

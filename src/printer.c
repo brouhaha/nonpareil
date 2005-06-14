@@ -585,6 +585,8 @@ void gui_printer_init (sim_t *sim)
   GtkWidget *controls;
   GtkWidget *scrolled_window;
   GtkWidget *vbox;
+  GtkAdjustment *hadj;
+  GtkAdjustment *vadj;
 
   p = alloc (sizeof (gui_printer_t));
 
@@ -618,12 +620,18 @@ void gui_printer_init (sim_t *sim)
   gui_printer_set_scale (p, 1);  // default 1x scale
 
   scrolled_window = gtk_scrolled_window_new (NULL, NULL);
-  gtk_container_add (GTK_CONTAINER (scrolled_window), p->layout);
   gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (scrolled_window),
 				  GTK_POLICY_AUTOMATIC,
 				  GTK_POLICY_ALWAYS);
 
+  gtk_container_add (GTK_CONTAINER (scrolled_window), p->layout);
 
+  hadj = gtk_layout_get_hadjustment (GTK_LAYOUT (p->layout));
+  hadj->step_increment = PRINTER_CHARACTER_WIDTH_PIXELS;
+
+  vadj = gtk_layout_get_vadjustment (GTK_LAYOUT (p->layout));
+  vadj->step_increment = PRINTER_LINE_HEIGHT_PIXELS;
+  
   menubar = gui_printer_create_menubar (p);
 
   controls = gui_printer_create_controls (p);
