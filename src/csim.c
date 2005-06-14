@@ -244,7 +244,7 @@ static void file_save (gpointer callback_data,
       return;
     }
 
-  dialog = gtk_file_chooser_dialog_new ("Save Calculator State",
+  dialog = gtk_file_chooser_dialog_new ("Save calculator state",
 					GTK_WINDOW (csim->main_window),
 					GTK_FILE_CHOOSER_ACTION_SAVE,
 					GTK_STOCK_CANCEL,
