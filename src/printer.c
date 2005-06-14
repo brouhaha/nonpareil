@@ -63,7 +63,7 @@ static void gui_printer_draw_tear (gui_printer_t *p,
   GdkPoint points [3];
 
   // draw a series of white triangles
-  for (x = 0; x < PRINTER_WIDTH; x += PRINTER_CHARACTER_WIDTH_PIXELS)
+  for (x = 0; x < PRINTER_WIDTH_WITH_MARGINS; x += PRINTER_CHARACTER_WIDTH_PIXELS)
     {
       points [0].x = x;
       points [0].y = y + PRINTER_LINE_HEIGHT_PIXELS / 2;
@@ -83,7 +83,7 @@ static void gui_printer_draw_tear (gui_printer_t *p,
 		      TRUE,        // filled
 		      0,           // x
 		      y + PRINTER_LINE_HEIGHT_PIXELS / 2,  // y
-		      PRINTER_WIDTH,
+		      PRINTER_WIDTH_WITH_MARGINS,
 		      PRINTER_LINE_HEIGHT_PIXELS - (PRINTER_LINE_HEIGHT_PIXELS / 2));
 }
 
@@ -92,7 +92,6 @@ static void gui_printer_copy_pixels_to_pixbuf (gui_printer_t *p,
 					       printer_line_data_t *line)
 {
   int x, y;
-  int val;
   guchar *line_ptr;
 
   memset (p->pixels, 0, p->pixels_size);
@@ -100,12 +99,16 @@ static void gui_printer_copy_pixels_to_pixbuf (gui_printer_t *p,
   for (y = 0; y < PRINTER_LINE_HEIGHT_PIXELS; y++)
     {
       guchar *pixel_ptr = line_ptr;
-      for (x = 0; x < PRINTER_WIDTH; x++)
+      for (x = 0; x < PRINTER_WIDTH_WITH_MARGINS; x++)
 	{
-	  if (y < PRINTER_CHARACTER_HEIGHT_PIXELS)
-	    val = (line->columns [x] & (1 << y)) ? 0x00 : 0xff;
+	  uint8_t col, val;
+	  if ((y < PRINTER_CHARACTER_HEIGHT_PIXELS) &&
+	      ((x >= PRINTER_LEFT_MARGIN_PIXELS) &&
+	       (x < PRINTER_WIDTH + PRINTER_LEFT_MARGIN_PIXELS)))
+	    col = line->columns [x - PRINTER_LEFT_MARGIN_PIXELS];
 	  else
-	    val = 0xff;
+	    col = 0x00;  // white
+	  val = (col & (1 << y)) ? 0x00 : 0xff;
 	  *(pixel_ptr++) = val;
 	  *(pixel_ptr++) = val;
 	  *(pixel_ptr++) = val;
@@ -141,7 +144,7 @@ static void gui_printer_update_line (gui_printer_t *p,
 		   0,           // src_y
 		   0,           // dest_x
 		   line_num * PRINTER_LINE_HEIGHT_PIXELS,  // dest_y
-		   PRINTER_WIDTH,                          // width
+		   PRINTER_WIDTH_WITH_MARGINS,             // width
 		   PRINTER_LINE_HEIGHT_PIXELS,             // height
 		   GDK_RGB_DITHER_NONE,                    // dither
 		   0,                                      // x_dither
@@ -196,7 +199,7 @@ void gui_printer_update (sim_t  *sim,
 
   rect.x = 0;
   rect.y = p->line_count * PRINTER_LINE_HEIGHT_PIXELS;
-  rect.width = PRINTER_WIDTH;
+  rect.width = PRINTER_WIDTH_WITH_MARGINS;
   rect.height = PRINTER_LINE_HEIGHT_PIXELS;
   gdk_window_invalidate_rect (GTK_LAYOUT (p->layout)->bin_window,
 			      & rect,
@@ -208,7 +211,7 @@ void gui_printer_update (sim_t  *sim,
 
   if (height > PRINTER_WINDOW_INITIAL_HEIGHT)
     gtk_layout_set_size (GTK_LAYOUT (p->layout),
-			 PRINTER_WIDTH,
+			 PRINTER_WIDTH_WITH_MARGINS,
 			 height);
 }
 
@@ -424,13 +427,13 @@ void gui_printer_init (sim_t *sim)
   p->pixbuf = gdk_pixbuf_new (GDK_COLORSPACE_RGB,           // colorspace
 			      FALSE,                        // has_alpha
 			      8,                            // bits_per_sample
-			      PRINTER_WIDTH,                // width,
+			      PRINTER_WIDTH_WITH_MARGINS,   // width,
 			      PRINTER_LINE_HEIGHT_PIXELS);  // height
   g_assert (gdk_pixbuf_get_n_channels (p->pixbuf) == 3);
   p->rowstride = gdk_pixbuf_get_rowstride (p->pixbuf);
   p->pixels = gdk_pixbuf_get_pixels (p->pixbuf);
   p->pixels_size = (((PRINTER_LINE_HEIGHT_PIXELS - 1) * p->rowstride) +
-		    (3 * PRINTER_WIDTH));
+		    (3 * PRINTER_WIDTH_WITH_MARGINS));
 
   // create line 0 with tear
   p->line [0] = alloc (sizeof (printer_line_data_t));
@@ -442,10 +445,10 @@ void gui_printer_init (sim_t *sim)
 
   p->layout = gtk_layout_new (NULL, NULL);
   gtk_layout_set_size (GTK_LAYOUT (p->layout),
-		       PRINTER_WIDTH,
+		       PRINTER_WIDTH_WITH_MARGINS,
 		       PRINTER_WINDOW_INITIAL_HEIGHT);
   gtk_widget_set_size_request (p->layout,
-			       PRINTER_WIDTH,
+			       PRINTER_WIDTH_WITH_MARGINS,
 			       PRINTER_WINDOW_INITIAL_HEIGHT);
 
   scrolled_window = gtk_scrolled_window_new (NULL, NULL);
