@@ -523,31 +523,22 @@ static void gui_printer_edit_copy_callback (gpointer callback_data,
 }
 
 
+// handles save (action==1) and save as (action==2)
+static void gui_printer_save (gpointer callback_data,
+			      guint    callback_action,
+			      GtkWidget *widget)
+{
+  gui_printer_t *p = callback_data;
+}
+
+
 #ifdef PRINTER_MODE_MENU
-static void gui_printer_mode_man (gpointer  callback_data,
-				  guint     callback_action,
-				  GtkWidget *widget)
+static void gui_printer_mode_callback (gpointer  callback_data,
+				       guint     callback_action,
+				       GtkWidget *widget)
 {
   gui_printer_t *p = callback_data;
-  gui_printer_set_mode (p, PRINTER_MODE_MAN);
-}
-
-
-static void gui_printer_mode_trace (gpointer  callback_data,
-				    guint     callback_action,
-				    GtkWidget *widget)
-{
-  gui_printer_t *p = callback_data;
-  gui_printer_set_mode (p, PRINTER_MODE_TRACE);
-}
-
-
-static void gui_printer_mode_norm (gpointer  callback_data,
-				   guint     callback_action,
-				   GtkWidget *widget)
-{
-  gui_printer_t *p = callback_data;
-  gui_printer_set_mode (p, PRINTER_MODE_NORM);
+  gui_printer_set_mode (p, callback_action);
 }
 #endif // PRINTER_MODE_MENU
 
@@ -555,20 +546,23 @@ static void gui_printer_mode_norm (gpointer  callback_data,
 static GtkItemFactoryEntry gui_printer_menu_items [] =
   {
     { "/_File",         NULL,         NULL,          0, "<Branch>" },
-    { "/File/Double size", NULL,      gui_printer_size_toggle_callback,
-      1, "<ToggleItem>" },
+    { "/File/_Save",    "<control>S", gui_printer_save,     1, "<StockItem>", GTK_STOCK_SAVE },
+    { "/File/Save _As", NULL,         gui_printer_save,     2, "<Item>" },
     { "/_Edit",         NULL,         NULL,          0, "<Branch>" },
     { "/Edit/_Copy",    "<control>C", gui_printer_edit_copy_callback,
       1, "<StockItem>", GTK_STOCK_COPY },
 #ifdef PRINTER_MODE_MENU
     { "/_Mode",         NULL,         NULL,          0, "<Branch>" },
-    { "/Mode/_Man",     NULL,         gui_printer_mode_man,
-      1, "<RadioItem>" },
-    { "/Mode/_Trace",   NULL,         gui_printer_mode_trace,
-      1, "/Mode/Man" },
-    { "/Mode/_Norm",    NULL,         gui_printer_mode_norm,
-      1, "/Mode/Trace" },
+    { "/Mode/_Man",     NULL,         gui_printer_mode_callback,
+      PRINTER_MODE_MAN, "<RadioItem>" },
+    { "/Mode/_Trace",   NULL,         gui_printer_mode_callback,
+      PRINTER_MODE_TRACE, "/Mode/Man" },
+    { "/Mode/_Norm",    NULL,         gui_printer_mode_callback,
+      PRINTER_MODE_NORM, "/Mode/Trace" },
 #endif // PRINTER_MODE_MENU
+    { "/_View",         NULL,         NULL,          0, "<Branch>" },
+    { "/View/Double size", NULL,      gui_printer_size_toggle_callback,
+      1, "<ToggleItem>" },
   };
 
 static gint n_gui_printer_menu_items = (sizeof (gui_printer_menu_items) /
