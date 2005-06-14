@@ -249,11 +249,6 @@ static gboolean printer_window_expose_callback (GtkWidget *widget,
 
   gdk_region_get_clipbox (event->region, & rect);
 
-#if 0
-  printf ("printer expose x=%d, y=%d, width=%d, height=%d\n",
-	  rect.x, rect.y, rect.width,rect.height);
-#endif
-
   first_line = rect.y / (p->scale * PRINTER_LINE_HEIGHT_PIXELS);
   last_line = (rect.y + rect.height - 1) / (p->scale * PRINTER_LINE_HEIGHT_PIXELS);
 
@@ -616,12 +611,6 @@ void gui_printer_init (sim_t *sim)
 			  p);                  // ref
   if (! p->chip)
     fatal (3, "can't add Helios chip\n");
-
-#if 0
-  sim_set_printer_callback (csim->sim,
-			    (printer_callback_fn_t *) gui_printer_update,
-			    csim->gui_printer);  // ref
-#endif
 
   // create line 0 with tear
   p->line [0] = alloc (sizeof (printer_line_data_t));
