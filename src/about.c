@@ -40,6 +40,7 @@ static char *credits_people [] =
   "Les Bell",
   "Paul Davis",
   "Steven Elllis",
+  "Florian Engelhardt",
   "Bernhard Engl",
   "Christophe Gottheimer",
   "Warren Furlow",

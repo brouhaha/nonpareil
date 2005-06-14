@@ -195,7 +195,6 @@ static int nut_disassemble_00 (int op1, int op2, char *buf, int len)
       break;
     case 0x020:
       snprintf (buf, len, "%s", nut_op20 [op1 >> 6]);
-      inst_len = 2;
       break;
     case 0x024:
       snprintf (buf, len, "selprf %d", arg);
