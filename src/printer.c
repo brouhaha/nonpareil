@@ -52,6 +52,10 @@ typedef struct
 
   GtkWidget *window;
   GtkWidget *layout;
+
+  GtkAdjustment *hadj;
+  GtkAdjustment *vadj;
+
   GdkGC *white;  // for paper
   GdkGC *black;  // for "ink"
 
@@ -265,6 +269,10 @@ void gui_printer_update (sim_t  *sim,
   printer_line_data_t *line = data;
   GdkRectangle rect;
   int height;
+  bool was_at_end;
+
+  was_at_end = ((p->v_adjustment->value + p->v_adjustment->page_size) >=
+		p->v_adjustment->upper);
 
   if (p->line_count >= PRINTER_MAX_BUFFER_LINES)
     {
@@ -287,10 +295,17 @@ void gui_printer_update (sim_t  *sim,
 
   height = p->line_count * PRINTER_LINE_HEIGHT_PIXELS;
 
-  if (height > PRINTER_WINDOW_INITIAL_HEIGHT_PIXELS)
-    gtk_layout_set_size (GTK_LAYOUT (p->layout),
-			 p->scale * PRINTER_WIDTH_WITH_MARGINS,
-			 p->scale * height);
+  if (height <= PRINTER_WINDOW_INITIAL_HEIGHT_PIXELS)
+    return;
+
+  gtk_layout_set_size (GTK_LAYOUT (p->layout),
+		       p->scale * PRINTER_WIDTH_WITH_MARGINS,
+		       p->scale * height);
+
+  if (was_at_end)
+    {
+      ;
+    }
 }
 
 
@@ -585,8 +600,6 @@ void gui_printer_init (sim_t *sim)
   GtkWidget *controls;
   GtkWidget *scrolled_window;
   GtkWidget *vbox;
-  GtkAdjustment *hadj;
-  GtkAdjustment *vadj;
 
   p = alloc (sizeof (gui_printer_t));
 
@@ -626,11 +639,16 @@ void gui_printer_init (sim_t *sim)
 
   gtk_container_add (GTK_CONTAINER (scrolled_window), p->layout);
 
-  hadj = gtk_layout_get_hadjustment (GTK_LAYOUT (p->layout));
-  hadj->step_increment = PRINTER_CHARACTER_WIDTH_PIXELS;
+  p->h_adjustment = gtk_layout_get_hadjustment (GTK_LAYOUT (p->layout));
+  p->h_adjustment->step_increment = PRINTER_CHARACTER_WIDTH_PIXELS;
 
-  vadj = gtk_layout_get_vadjustment (GTK_LAYOUT (p->layout));
-  vadj->step_increment = PRINTER_LINE_HEIGHT_PIXELS;
+  p->v_adjustment = gtk_layout_get_vadjustment (GTK_LAYOUT (p->layout));
+  p->v_adjustment->step_increment = PRINTER_LINE_HEIGHT_PIXELS;
+  printf ("lower %g, upper %d, value %g, page_size %g\n",
+	  p->v_adjustment->lower,
+	  p->v_adjustment->upper,
+	  p->v_adjustment->value,
+	  p->v_adjustment->page_size);
   
   menubar = gui_printer_create_menubar (p);
 
