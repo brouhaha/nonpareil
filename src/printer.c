@@ -121,18 +121,22 @@ void gui_printer_set_scale (gui_printer_t *p, int scale)
   gtk_widget_set_size_request (p->layout,
 			       p->scale * PRINTER_WIDTH_WITH_MARGINS,
 			       p->scale * PRINTER_WINDOW_INITIAL_HEIGHT_PIXELS);
-  // During initialization, there isn't yet a window to invalidate.
-  if (! GTK_LAYOUT (p->layout)->bin_window)
-    return;
+  // During initialization, we don't yet have an adjustment.
+  if (p->v_adjustment)
+    p->v_adjustment->step_increment = p->scale * PRINTER_LINE_HEIGHT_PIXELS;
 
-  // invalidate entire layout
-  rect.x = 0;
-  rect.y = 0;
-  rect.width = p->scale * PRINTER_WIDTH_WITH_MARGINS;
-  rect.height = p->line_count *  p->scale * PRINTER_LINE_HEIGHT_PIXELS;
-  gdk_window_invalidate_rect (GTK_LAYOUT (p->layout)->bin_window,
-			      & rect,
-			      FALSE);
+  // During initialization, there isn't yet a window to invalidate.
+  if (GTK_LAYOUT (p->layout)->bin_window)
+    {
+      // invalidate entire layout
+      rect.x = 0;
+      rect.y = 0;
+      rect.width = p->scale * PRINTER_WIDTH_WITH_MARGINS;
+      rect.height = p->line_count *  p->scale * PRINTER_LINE_HEIGHT_PIXELS;
+      gdk_window_invalidate_rect (GTK_LAYOUT (p->layout)->bin_window,
+				  & rect,
+				  FALSE);
+    }
 }
 
 
@@ -641,10 +645,10 @@ void gui_printer_init (sim_t *sim)
   gtk_container_add (GTK_CONTAINER (scrolled_window), p->layout);
 
   p->h_adjustment = gtk_layout_get_hadjustment (GTK_LAYOUT (p->layout));
-  p->h_adjustment->step_increment = PRINTER_CHARACTER_WIDTH_PIXELS;
+  p->h_adjustment->step_increment = p->scale * PRINTER_CHARACTER_WIDTH_PIXELS;
 
   p->v_adjustment = gtk_layout_get_vadjustment (GTK_LAYOUT (p->layout));
-  p->v_adjustment->step_increment = PRINTER_LINE_HEIGHT_PIXELS;
+  p->v_adjustment->step_increment = p->scale * PRINTER_LINE_HEIGHT_PIXELS;
   
   menubar = gui_printer_create_menubar (p);
 
