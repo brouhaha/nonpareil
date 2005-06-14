@@ -19,10 +19,8 @@ User interface:
 
   Printer
       plug/unplug (load/unload module)
-      menu bar
-      mode switch, power switch
-      left and right margins
-      double-size display option
+      make mode switch a menu?
+      power switch?
       automatic vertical scrolling to track end of tape when written
       handle closing window, provide way to reopen
       start "tape" at bottom of window
