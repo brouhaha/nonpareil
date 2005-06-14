@@ -35,10 +35,15 @@ MA 02111, USA.
 #include "printer.h"
 
 
+#define SCALE(p) (p->double_size ? 2 : 1)
+
+
 typedef struct
 {
   sim_t *sim;
   chip_t *chip;
+
+  bool double_size;
 
   GtkWidget *window;
   GtkWidget *layout;
@@ -63,14 +68,16 @@ static void gui_printer_draw_tear (gui_printer_t *p,
   GdkPoint points [3];
 
   // draw a series of white triangles
-  for (x = 0; x < PRINTER_WIDTH_WITH_MARGINS; x += PRINTER_CHARACTER_WIDTH_PIXELS)
+  for (x = 0;
+       x < SCALE (p) * PRINTER_WIDTH_WITH_MARGINS;
+       x += SCALE (p) * PRINTER_CHARACTER_WIDTH_PIXELS)
     {
       points [0].x = x;
-      points [0].y = y + PRINTER_LINE_HEIGHT_PIXELS / 2;
-      points [1].x = x + (PRINTER_CHARACTER_WIDTH_PIXELS / 2);
+      points [0].y = y + SCALE (p) * PRINTER_LINE_HEIGHT_PIXELS / 2;
+      points [1].x = x + SCALE (p) * PRINTER_CHARACTER_WIDTH_PIXELS / 2;
       points [1].y = y;
-      points [2].x = x + PRINTER_CHARACTER_WIDTH_PIXELS - 1;
-      points [2].y = y + PRINTER_LINE_HEIGHT_PIXELS / 2;
+      points [2].x = x + SCALE (p) * PRINTER_CHARACTER_WIDTH_PIXELS - 1;
+      points [2].y = y + SCALE (p) * PRINTER_LINE_HEIGHT_PIXELS / 2;
       gdk_draw_polygon (GTK_LAYOUT (p->layout)->bin_window,
 			p->white,   // gc
 			TRUE,       // filled
@@ -82,9 +89,9 @@ static void gui_printer_draw_tear (gui_printer_t *p,
 		      p->white,    // gc
 		      TRUE,        // filled
 		      0,           // x
-		      y + PRINTER_LINE_HEIGHT_PIXELS / 2,  // y
-		      PRINTER_WIDTH_WITH_MARGINS,
-		      PRINTER_LINE_HEIGHT_PIXELS - (PRINTER_LINE_HEIGHT_PIXELS / 2));
+		      y + SCALE (p) * PRINTER_LINE_HEIGHT_PIXELS / 2,  // y
+		      SCALE (p) * PRINTER_WIDTH_WITH_MARGINS,
+		      SCALE (p) * (PRINTER_LINE_HEIGHT_PIXELS - (PRINTER_LINE_HEIGHT_PIXELS / 2)));
 }
 
 
@@ -96,19 +103,19 @@ static void gui_printer_copy_pixels_to_pixbuf (gui_printer_t *p,
 
   memset (p->pixels, 0, p->pixels_size);
   line_ptr = p->pixels;
-  for (y = 0; y < PRINTER_LINE_HEIGHT_PIXELS; y++)
+  for (y = 0; y < SCALE (p) * PRINTER_LINE_HEIGHT_PIXELS; y++)
     {
       guchar *pixel_ptr = line_ptr;
-      for (x = 0; x < PRINTER_WIDTH_WITH_MARGINS; x++)
+      for (x = 0; x < SCALE (p) * PRINTER_WIDTH_WITH_MARGINS; x++)
 	{
 	  uint8_t col, val;
-	  if ((y < PRINTER_CHARACTER_HEIGHT_PIXELS) &&
-	      ((x >= PRINTER_LEFT_MARGIN_PIXELS) &&
-	       (x < PRINTER_WIDTH + PRINTER_LEFT_MARGIN_PIXELS)))
-	    col = line->columns [x - PRINTER_LEFT_MARGIN_PIXELS];
+	  if (((y / SCALE (p)) < PRINTER_CHARACTER_HEIGHT_PIXELS) &&
+	      (((x / SCALE (p)) >= PRINTER_LEFT_MARGIN_PIXELS) &&
+	       ((x / SCALE (p)) < PRINTER_WIDTH + PRINTER_LEFT_MARGIN_PIXELS)))
+	    col = line->columns [(x / SCALE (p)) - PRINTER_LEFT_MARGIN_PIXELS];
 	  else
 	    col = 0x00;  // white
-	  val = (col & (1 << y)) ? 0x00 : 0xff;
+	  val = (col & (1 << (y / SCALE (p)))) ? 0x00 : 0xff;
 	  *(pixel_ptr++) = val;
 	  *(pixel_ptr++) = val;
 	  *(pixel_ptr++) = val;
@@ -122,7 +129,7 @@ static void gui_printer_update_line (gui_printer_t *p,
 				     int line_num)
 {
   printer_line_data_t *line;
-  int y = line_num * PRINTER_LINE_HEIGHT_PIXELS;
+  int y = line_num * SCALE (p) * PRINTER_LINE_HEIGHT_PIXELS;
 
   line = p->line [line_num];
 
@@ -143,9 +150,9 @@ static void gui_printer_update_line (gui_printer_t *p,
 		   0,           // src_x
 		   0,           // src_y
 		   0,           // dest_x
-		   line_num * PRINTER_LINE_HEIGHT_PIXELS,  // dest_y
-		   PRINTER_WIDTH_WITH_MARGINS,             // width
-		   PRINTER_LINE_HEIGHT_PIXELS,             // height
+		   line_num * SCALE (p) * PRINTER_LINE_HEIGHT_PIXELS, // dest_y
+		   SCALE (p) * PRINTER_WIDTH_WITH_MARGINS,            // width
+		   SCALE (p) * PRINTER_LINE_HEIGHT_PIXELS,            // height
 		   GDK_RGB_DITHER_NONE,                    // dither
 		   0,                                      // x_dither
 		   0);                                     // y_dither
@@ -168,8 +175,8 @@ static gboolean printer_window_expose_callback (GtkWidget *widget,
 	  rect.x, rect.y, rect.width,rect.height);
 #endif
 
-  first_line = rect.y / PRINTER_LINE_HEIGHT_PIXELS;
-  last_line = (rect.y + rect.height - 1) / PRINTER_LINE_HEIGHT_PIXELS;
+  first_line = rect.y / (SCALE (p) * PRINTER_LINE_HEIGHT_PIXELS);
+  last_line = (rect.y + rect.height - 1) / (SCALE (p) * PRINTER_LINE_HEIGHT_PIXELS);
 
   for (line = first_line; line <= last_line; line++)
     gui_printer_update_line (p, line);
@@ -198,20 +205,20 @@ void gui_printer_update (sim_t  *sim,
   p->line [p->line_count] = line;
 
   rect.x = 0;
-  rect.y = p->line_count * PRINTER_LINE_HEIGHT_PIXELS;
-  rect.width = PRINTER_WIDTH_WITH_MARGINS;
-  rect.height = PRINTER_LINE_HEIGHT_PIXELS;
+  rect.y = p->line_count * SCALE (p) * PRINTER_LINE_HEIGHT_PIXELS;
+  rect.width = SCALE (p) * PRINTER_WIDTH_WITH_MARGINS;
+  rect.height = SCALE (p) * PRINTER_LINE_HEIGHT_PIXELS;
   gdk_window_invalidate_rect (GTK_LAYOUT (p->layout)->bin_window,
 			      & rect,
 			      FALSE);
 
   p->line_count++;
 
-  height = p->line_count * PRINTER_LINE_HEIGHT_PIXELS;
+  height = p->line_count * SCALE (p) * PRINTER_LINE_HEIGHT_PIXELS;
 
   if (height > PRINTER_WINDOW_INITIAL_HEIGHT)
     gtk_layout_set_size (GTK_LAYOUT (p->layout),
-			 PRINTER_WIDTH_WITH_MARGINS,
+			 SCALE (p) * PRINTER_WIDTH_WITH_MARGINS,
 			 height);
 }
 
@@ -398,6 +405,33 @@ static GtkWidget *gui_printer_create_controls (gui_printer_t *p)
 }
 
 
+void gui_printer_create_pixbuf (gui_printer_t *p)
+{
+  int full_lines;
+  int pixels_per_line;
+
+  // If there already is one (for instance, if we're turning double_size
+  // on or off), free it.
+  if (p->pixbuf)
+    g_object_unref (p->pixbuf);
+
+  // create temp pixbuf used for rendering one printed line
+  p->pixbuf = gdk_pixbuf_new (GDK_COLORSPACE_RGB,           // colorspace
+			      FALSE,                        // has_alpha
+			      8,                            // bits_per_sample
+			      SCALE (p) * PRINTER_WIDTH_WITH_MARGINS,   // width,
+			      SCALE (p) * PRINTER_LINE_HEIGHT_PIXELS);  // height
+  g_assert (gdk_pixbuf_get_n_channels (p->pixbuf) == 3);
+  p->rowstride = gdk_pixbuf_get_rowstride (p->pixbuf);
+  p->pixels = gdk_pixbuf_get_pixels (p->pixbuf);
+
+  // Computing the total size of the raw data in the pixbuf is tricky because
+  // the last row of pixels may not have the full rowstride allocated.
+  full_lines = SCALE (p) * PRINTER_LINE_HEIGHT_PIXELS - 1;
+  pixels_per_line = SCALE (p) * PRINTER_WIDTH_WITH_MARGINS;
+  p->pixels_size = (full_lines * p->rowstride) + (pixels_per_line * 3);
+}
+
 void gui_printer_init (sim_t *sim)
 {
   gui_printer_t *p;
@@ -407,6 +441,8 @@ void gui_printer_init (sim_t *sim)
   GtkWidget *vbox;
 
   p = alloc (sizeof (gui_printer_t));
+
+  p->double_size = true;  // test - should set with menu or from state save
 
   p->sim = sim;
 
@@ -423,17 +459,7 @@ void gui_printer_init (sim_t *sim)
 			    csim->gui_printer);  // ref
 #endif
 
-  // create temp pixbuf used for rendering one printed line
-  p->pixbuf = gdk_pixbuf_new (GDK_COLORSPACE_RGB,           // colorspace
-			      FALSE,                        // has_alpha
-			      8,                            // bits_per_sample
-			      PRINTER_WIDTH_WITH_MARGINS,   // width,
-			      PRINTER_LINE_HEIGHT_PIXELS);  // height
-  g_assert (gdk_pixbuf_get_n_channels (p->pixbuf) == 3);
-  p->rowstride = gdk_pixbuf_get_rowstride (p->pixbuf);
-  p->pixels = gdk_pixbuf_get_pixels (p->pixbuf);
-  p->pixels_size = (((PRINTER_LINE_HEIGHT_PIXELS - 1) * p->rowstride) +
-		    (3 * PRINTER_WIDTH_WITH_MARGINS));
+  gui_printer_create_pixbuf (p);
 
   // create line 0 with tear
   p->line [0] = alloc (sizeof (printer_line_data_t));
@@ -445,11 +471,11 @@ void gui_printer_init (sim_t *sim)
 
   p->layout = gtk_layout_new (NULL, NULL);
   gtk_layout_set_size (GTK_LAYOUT (p->layout),
-		       PRINTER_WIDTH_WITH_MARGINS,
-		       PRINTER_WINDOW_INITIAL_HEIGHT);
+		       SCALE (p) * PRINTER_WIDTH_WITH_MARGINS,
+		       SCALE (p) * PRINTER_WINDOW_INITIAL_HEIGHT);
   gtk_widget_set_size_request (p->layout,
-			       PRINTER_WIDTH_WITH_MARGINS,
-			       PRINTER_WINDOW_INITIAL_HEIGHT);
+			       SCALE (p) * PRINTER_WIDTH_WITH_MARGINS,
+			       SCALE (p) * PRINTER_WINDOW_INITIAL_HEIGHT);
 
   scrolled_window = gtk_scrolled_window_new (NULL, NULL);
   gtk_container_add (GTK_CONTAINER (scrolled_window), p->layout);
