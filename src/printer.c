@@ -43,6 +43,21 @@ MA 02111, USA.
 #endif
 
 
+typedef enum
+{
+  PSFT_PNG,
+  PSFT_TEXT,
+  PSFT_MAX    // must be last
+} printer_save_file_type_t;
+
+
+static char *printer_save_file_type_name [] =
+{
+  [PSFT_PNG] = "PNG",
+  [PSFT_TEXT] = "TEXT",
+};
+
+
 typedef struct
 {
   sim_t *sim;
@@ -67,6 +82,9 @@ typedef struct
 
   int line_count;
   printer_line_data_t *line [PRINTER_MAX_BUFFER_LINES];
+
+  printer_save_file_type_t printer_save_file_type;
+  char *printer_save_file_name;
 } gui_printer_t;
 
 
@@ -523,12 +541,59 @@ static void gui_printer_edit_copy_callback (gpointer callback_data,
 }
 
 
+static void gui_printer_write_save_file (gui_printer_t *p)
+{
+  ; // $$$ not yet implemented
+}
+
+
 // handles save (action==1) and save as (action==2)
 static void gui_printer_save (gpointer callback_data,
 			      guint    callback_action,
 			      GtkWidget *widget)
 {
   gui_printer_t *p = callback_data;
+  GtkWidget *dialog;
+  GtkWidget *file_type_combo_box;
+  int i;
+
+  if ((callback_action == 1) && (p->printer_save_file_name))
+    {
+      gui_printer_write_save_file (p);
+      return;
+    }
+
+  dialog = gtk_file_chooser_dialog_new ("Save printer output",
+					GTK_WINDOW (p->window),
+					GTK_FILE_CHOOSER_ACTION_SAVE,
+					GTK_STOCK_CANCEL,
+					GTK_RESPONSE_CANCEL,
+					GTK_STOCK_SAVE,
+					GTK_RESPONSE_ACCEPT,
+					NULL);
+
+  file_type_combo_box = gtk_combo_box_new_text ();
+
+  for (i = 0; i < PSFT_MAX; i++)
+    gtk_combo_box_append_text (GTK_COMBO_BOX (file_type_combo_box),
+			       printer_save_file_type_name [i]);
+
+  gtk_combo_box_set_active (GTK_COMBO_BOX (file_type_combo_box),
+			    p->printer_save_file_type);
+
+  gtk_file_chooser_set_extra_widget (GTK_FILE_CHOOSER (dialog),
+				     file_type_combo_box);
+
+  if (gtk_dialog_run (GTK_DIALOG (dialog)) == GTK_RESPONSE_ACCEPT)
+    {
+      if (p->printer_save_file_name)
+	g_free (p->printer_save_file_name);
+      p->printer_save_file_name = gtk_file_chooser_get_filename (GTK_FILE_CHOOSER (dialog));
+      p->printer_save_file_type = gtk_combo_box_get_active (GTK_COMBO_BOX (file_type_combo_box));
+      gui_printer_write_save_file (p);
+    }
+
+  gtk_widget_destroy (dialog);
 }
 
 
