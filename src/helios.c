@@ -597,6 +597,7 @@ chip_t *helios_init (sim_t *sim)
 				       helios);
 
   helios_init_ops (sim);
+  helios_reset (helios);
 
   return (nut_reg->helios_chip);
 }
