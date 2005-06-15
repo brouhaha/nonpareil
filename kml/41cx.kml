@@ -602,7 +602,7 @@ scancode 122 map 122 72 end # z
 scancode 61 map 61 73 end # =
 scancode 63 map 63 74 end # ?
 
-
+scancode 65288 map 65288 44 end  # backspace
 scancode 65293 map 65293 41 end  # ENTER
 #scancode 99 map 99 42 end  # c - CHS
 #scancode 101 map 101 43 end  # e - EEX
