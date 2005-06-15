@@ -23,7 +23,7 @@ User interface:
       power switch?
       handle closing window, provide way to reopen
       start "tape" at bottom of window
-      save as (text, PNG, multi-column PDF)
+      more "save as" types (text, multi-column PDF?)
       signal out-of-paper when scroll buffer is full
       menu item to install fresh paper
 

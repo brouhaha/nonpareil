@@ -235,6 +235,8 @@ nonpareil_packages = "gtk+-2.0 gdk-2.0 gdk-pixbuf-2.0 glib-2.0 gthread-2.0"
 
 nonpareil_objs = []
 
+nonpareil_env.Append (LIBS = 'png')
+
 if env ['has_debugger_gui'] or env ['has_debugger_cli']:
     nonpareil_env.Append (CPPDEFINES = {'HAS_DEBUGGER': 1})
 
@@ -316,6 +318,17 @@ modutil_srcs = Split ("""modutil.c""")
 
 modutil = env.Program (target = 'modutil',
                        source = modutil_srcs + common_objs)
+
+#-----------------------------------------------------------------------------
+# genhash
+#-----------------------------------------------------------------------------
+
+genhash_srcs = Split ("""genhash.c""")
+
+genhash = env.Program (target = 'genhash',
+                       source = (genhash_srcs +
+                                 kml_objs +
+                                 common_objs))
 
 #-----------------------------------------------------------------------------
 # default targets

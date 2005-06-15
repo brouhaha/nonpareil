@@ -24,8 +24,11 @@ MA 02111, USA.
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
 #include <gdk/gdk.h>
 #include <gtk/gtk.h>
+
+#include <png.h>
 
 #include "util.h"
 #include "display.h"
@@ -49,13 +52,6 @@ typedef enum
   PSFT_TEXT,
   PSFT_MAX    // must be last
 } printer_save_file_type_t;
-
-
-static char *printer_save_file_type_name [] =
-{
-  [PSFT_PNG] = "PNG",
-  [PSFT_TEXT] = "TEXT",
-};
 
 
 typedef struct
@@ -541,10 +537,112 @@ static void gui_printer_edit_copy_callback (gpointer callback_data,
 }
 
 
-static void gui_printer_write_save_file (gui_printer_t *p)
+static void gui_printer_write_png_line (gui_printer_t *p,
+					int y,
+					png_structp png_ptr)
 {
-  ; // $$$ not yet implemented
+  int x, y_line, y_pixel;
+  uint8_t row_data [PRINTER_WIDTH];
+
+  y_line = y / PRINTER_LINE_HEIGHT_PIXELS;
+  y_pixel = y % PRINTER_LINE_HEIGHT_PIXELS;
+
+  if (y_pixel < PRINTER_CHARACTER_HEIGHT_PIXELS)
+    {
+      for (x = 0; x < PRINTER_WIDTH; x++)
+	{
+          uint8_t col = p->line [y_line]->columns [x];
+	  row_data [x] = (col & (1 << y_pixel)) ? 0x01 : 0x00;
+	}
+    }
+  else
+    memset (row_data, 0, sizeof (row_data));
+
+  png_write_row (png_ptr, row_data);
 }
+
+
+static bool gui_printer_save_png (gui_printer_t *p)
+{
+  int height, y;
+  FILE *f;
+  png_structp png_ptr;
+  png_infop info_ptr;
+
+  height = p->line_count * PRINTER_LINE_HEIGHT_PIXELS;
+
+  f = fopen (p->printer_save_file_name, "wb");
+  if (! f)
+    return false;
+
+  png_ptr = png_create_write_struct (PNG_LIBPNG_VER_STRING,
+				     NULL,
+				     NULL,
+				     NULL);
+  if (! png_ptr)
+    return false;
+
+  info_ptr = png_create_info_struct (png_ptr);
+  if (! info_ptr)
+    return false;
+
+  if (setjmp (png_jmpbuf (png_ptr)))
+    {
+      png_destroy_write_struct (& png_ptr, & info_ptr);
+      fclose (f);
+      return false;
+    }
+
+  png_init_io (png_ptr, f);
+  png_set_compression_level (png_ptr, Z_BEST_COMPRESSION);
+
+  png_set_IHDR (png_ptr,
+		info_ptr,
+		PRINTER_WIDTH,                 // width
+		height,
+		1,                             // bit_depth
+		PNG_COLOR_TYPE_GRAY,           // color_type
+		PNG_INTERLACE_NONE,            // interlace_type
+		PNG_COMPRESSION_TYPE_DEFAULT,  // compression_type
+		PNG_FILTER_TYPE_DEFAULT);      // filter_method
+
+  png_write_info (png_ptr, info_ptr);
+  png_set_packing (png_ptr);
+  png_set_invert_mono (png_ptr);
+
+  for (y = 0; y < height; y++)
+    gui_printer_write_png_line (p, y, png_ptr);
+
+  png_write_end (png_ptr, info_ptr);
+  png_destroy_write_struct (& png_ptr, & info_ptr);
+  fclose (f);
+
+  return true;
+}
+
+
+static bool gui_printer_save_text (gui_printer_t *p)
+{
+  // $$$ more code needed here
+  printf ("text save not yet implemented\n");
+  return false;
+}
+
+
+typedef bool gui_printer_save_fn_t (gui_printer_t *p);
+
+typedef struct
+{
+  char *name;
+  gui_printer_save_fn_t *save_fn;
+} printer_save_file_type_info_t;
+
+
+static printer_save_file_type_info_t printer_save_file_type_info [] =
+{
+  [PSFT_PNG]  = { "PNG",  gui_printer_save_png },
+  [PSFT_TEXT] = { "text", gui_printer_save_text },
+};
 
 
 // handles save (action==1) and save as (action==2)
@@ -559,7 +657,7 @@ static void gui_printer_save (gpointer callback_data,
 
   if ((callback_action == 1) && (p->printer_save_file_name))
     {
-      gui_printer_write_save_file (p);
+      printer_save_file_type_info [p->printer_save_file_type].save_fn (p);
       return;
     }
 
@@ -576,7 +674,7 @@ static void gui_printer_save (gpointer callback_data,
 
   for (i = 0; i < PSFT_MAX; i++)
     gtk_combo_box_append_text (GTK_COMBO_BOX (file_type_combo_box),
-			       printer_save_file_type_name [i]);
+			       printer_save_file_type_info [i].name);
 
   gtk_combo_box_set_active (GTK_COMBO_BOX (file_type_combo_box),
 			    p->printer_save_file_type);
@@ -590,7 +688,7 @@ static void gui_printer_save (gpointer callback_data,
 	g_free (p->printer_save_file_name);
       p->printer_save_file_name = gtk_file_chooser_get_filename (GTK_FILE_CHOOSER (dialog));
       p->printer_save_file_type = gtk_combo_box_get_active (GTK_COMBO_BOX (file_type_combo_box));
-      gui_printer_write_save_file (p);
+      printer_save_file_type_info [p->printer_save_file_type].save_fn (p);
     }
 
   gtk_widget_destroy (dialog);
