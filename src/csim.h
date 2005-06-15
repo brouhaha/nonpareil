@@ -1,6 +1,6 @@
 /*
 $Id$
-Copyright 2004, 2005 Eric L. Smith <eric@brouhaha.com>
+Copyright 1995, 2004, 2005 Eric L. Smith <eric@brouhaha.com>
 
 Nonpareil is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License version 2 as
@@ -20,8 +20,30 @@ MA 02111, USA.
 */
 
 
-void add_keys (csim_t *csim);
+typedef struct
+{
+  gboolean scancode_debug;
+  kml_t *kml;
+  sim_t *sim;
+  GtkWidget *main_window;
+  GdkPixbuf *background_pixbuf;  // window background (subset of file_pixbuf)
+  GtkWidget *fixed;
+  GtkWidget *menubar;  // actually a popup menu in transparency/shape mode
+  gui_display_t *gui_display;
+  char state_fn [255];
+
+  // keyboard vars:
+  bool key_down_flag;
+  int key_down_keycode;
+  struct button_info_t *button_info [KML_MAX_BUTTON];
+} csim_t;
 
 
-// Presses the specified key.  Returns false if key doesn't exist.
-bool set_key_state (csim_t *csim, int keycode, bool pressed);
+typedef struct button_info_t
+{
+  csim_t *csim;
+  GtkWidget *widget;
+  kml_button_t *kml_button;
+} button_info_t;
+
+

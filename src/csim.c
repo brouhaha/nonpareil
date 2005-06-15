@@ -36,7 +36,6 @@ MA 02111, USA.
 #include "kml.h"
 #include "display_gtk.h"
 #include "proc.h"
-#include "keyboard.h"
 #include "slide_switch.h"
 #include "arch.h"
 #include "platform.h"
@@ -45,6 +44,8 @@ MA 02111, USA.
 #include "about.h"
 #include "sound.h"
 #include "printer.h"
+#include "csim.h"
+#include "keyboard.h"
 
 
 #ifdef HAS_DEBUGGER_GUI
@@ -61,18 +62,6 @@ MA 02111, USA.
 
 
 char *default_path = MAKESTR(DEFAULT_PATH);
-
-
-typedef struct
-{
-  gboolean scancode_debug;
-  kml_t *kml;
-  sim_t *sim;
-  GtkWidget *main_window;
-  GtkWidget *menubar;  // actually a popup menu in transparency/shape mode
-  gui_display_t *gui_display;
-  char state_fn [255];
-} csim_t;
 
 
 void usage (FILE *f)
@@ -121,7 +110,7 @@ void process_command (csim_t *csim,
 		   scancode, command->arg1);
 	  return;
 	}
-      if (! set_key_state (command->arg2, pressed))
+      if (! set_key_state (csim, command->arg2, pressed))
 	{
 	  fprintf (stderr, "scancode %d has map command for nonexistent key %d\n",
 		   scancode, command->arg2);
@@ -463,11 +452,9 @@ int main (int argc, char *argv[])
   GtkWidget *event_box;
 
   GtkWidget *vbox;
-  GtkWidget *fixed;
 
   GdkPixbuf *file_pixbuf;  /* the entire image loaded from the file */
 
-  GdkPixbuf *background_pixbuf;  /* window background (subset of file_pixbuf) */
   GError *error = NULL;
   GtkWidget *image;
 
@@ -566,11 +553,11 @@ int main (int argc, char *argv[])
       csim->kml->background_size.height = gdk_pixbuf_get_height (file_pixbuf) - csim->kml->background_offset.y;
     }
 
-  background_pixbuf = gdk_pixbuf_new_subpixbuf (file_pixbuf,
-						csim->kml->background_offset.x,
-						csim->kml->background_offset.y,
-						csim->kml->background_size.width,
-						csim->kml->background_size.height);
+  csim->background_pixbuf = gdk_pixbuf_new_subpixbuf (file_pixbuf,
+						      csim->kml->background_offset.x,
+						      csim->kml->background_offset.y,
+						      csim->kml->background_size.width,
+						      csim->kml->background_size.height);
 
   csim->main_window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
 
@@ -611,16 +598,16 @@ int main (int argc, char *argv[])
       gtk_box_pack_start (GTK_BOX (vbox), csim->menubar, FALSE, TRUE, 0);
     }
 
-  fixed = gtk_fixed_new ();
-  gtk_widget_set_size_request (fixed,
+  csim->fixed = gtk_fixed_new ();
+  gtk_widget_set_size_request (csim->fixed,
 			       csim->kml->background_size.width,
 			       csim->kml->background_size.height);
-  gtk_box_pack_end (GTK_BOX (vbox), fixed, FALSE, TRUE, 0);
+  gtk_box_pack_end (GTK_BOX (vbox), csim->fixed, FALSE, TRUE, 0);
 
-  if (background_pixbuf != NULL)
+  if (csim->background_pixbuf != NULL)
     {
-      image = gtk_image_new_from_pixbuf (background_pixbuf);
-      gtk_fixed_put (GTK_FIXED (fixed), image, 0, 0);
+      image = gtk_image_new_from_pixbuf (csim->background_pixbuf);
+      gtk_fixed_put (GTK_FIXED (csim->fixed), image, 0, 0);
     }
 
   // Have to show everything here, or gui_display_init() can't construct the
@@ -630,7 +617,7 @@ int main (int argc, char *argv[])
   csim->gui_display = gui_display_init (csim->kml,
 					csim->main_window,
 					event_box,
-					fixed,
+					csim->fixed,
 					file_pixbuf);
   if (! csim->gui_display)
     fatal (2, "can't initialize display\n");
@@ -650,8 +637,8 @@ int main (int argc, char *argv[])
   init_debugger_gui (csim->sim);
 #endif
 
-  add_slide_switches (csim->sim, csim->kml, background_pixbuf, fixed);
-  add_keys (csim->sim, csim->kml, background_pixbuf, fixed);
+  add_slide_switches (csim->sim, csim->kml, csim->background_pixbuf, csim->fixed);
+  add_keys (csim);
 
   if (image_mask_bitmap)
     {

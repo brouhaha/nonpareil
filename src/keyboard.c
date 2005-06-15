@@ -32,21 +32,26 @@ MA 02111, USA.
 #include "display.h"
 #include "kml.h"
 #include "proc.h"
+#include "display_gtk.h"
+#include "csim.h"
 #include "keyboard.h"
-
-
-typedef struct
-{
-  sim_t *sim;
-  GtkWidget *widget;
-  GtkWidget *fixed;
-  kml_button_t *kml_button;
-} button_info_t;
 
 
 static void button_widget_pressed (GtkWidget *widget, button_info_t *button)
 {
-  sim_press_key (button->sim, button->kml_button->keycode);
+  csim_t *csim = button->csim;
+
+  if (csim->key_down_flag &&
+      (csim->key_down_keycode != button->kml_button->keycode))
+    {
+      sim_release_key (csim->sim);
+#ifdef KEYBOARD_DEBUG
+      printf ("rollover release %d\n", button->kml_button->keycode);
+#endif
+    }
+  csim->key_down_flag = true;
+  csim->key_down_keycode = button->kml_button->keycode;
+  sim_press_key (csim->sim, button->kml_button->keycode);
 #ifdef KEYBOARD_DEBUG
   printf ("pressed %d\n", button->kml_button->keycode);
 #endif
@@ -55,36 +60,38 @@ static void button_widget_pressed (GtkWidget *widget, button_info_t *button)
 
 static void button_widget_released (GtkWidget *widget, button_info_t *button)
 {
-  sim_release_key (button->sim);
+  csim_t *csim = button->csim;
+
+  if (csim->key_down_flag &&
+      (csim->key_down_keycode == button->kml_button->keycode))
+    {
+       csim->key_down_flag = false;
+       sim_release_key (csim->sim);
 #ifdef KEYBOARD_DEBUG
-  printf ("released %d\n", button->kml_button->keycode);
+       printf ("released %d\n", button->kml_button->keycode);
 #endif
+    }
 }
 
 
-static void add_key (sim_t *sim,
-		     kml_t *kml,
-		     GtkWidget *fixed,
-		     GdkPixbuf *window_pixbuf,
+static void add_key (csim_t *csim,
 		     kml_button_t *kml_button,
 		     button_info_t *button_info)
 {
   GdkPixbuf *button_pixbuf;
   GtkWidget *button_image;
 
-  button_info->sim = sim;
+  button_info->csim = csim;
   button_info->kml_button = kml_button;
 
-  button_pixbuf = gdk_pixbuf_new_subpixbuf (window_pixbuf,
-					    kml_button->offset.x - kml->background_offset.x,
-					    kml_button->offset.y - kml->background_offset.y,
+  button_pixbuf = gdk_pixbuf_new_subpixbuf (csim->background_pixbuf,
+					    kml_button->offset.x - csim->kml->background_offset.x,
+					    kml_button->offset.y - csim->kml->background_offset.y,
 					    kml_button->size.width,
 					    kml_button->size.height);
 
   button_image = gtk_image_new_from_pixbuf (button_pixbuf);
 
-  button_info->fixed = fixed;
-  
   button_info->widget = gtk_button_new ();
 
   gtk_button_set_relief (GTK_BUTTON (button_info->widget), GTK_RELIEF_NONE);
@@ -93,10 +100,10 @@ static void add_key (sim_t *sim,
 			       kml_button->size.width,
 			       kml_button->size.height);
 
-  gtk_fixed_put (GTK_FIXED (fixed),
+  gtk_fixed_put (GTK_FIXED (csim->fixed),
 		 button_info->widget,
-		 kml_button->offset.x - kml->background_offset.x,
-		 kml_button->offset.y - kml->background_offset.y);
+		 kml_button->offset.x - csim->kml->background_offset.x,
+		 kml_button->offset.y - csim->kml->background_offset.y);
 
   g_signal_connect (G_OBJECT (button_info->widget),
 		    "pressed",
@@ -112,40 +119,31 @@ static void add_key (sim_t *sim,
 }
 
 
-static button_info_t *button_info [KML_MAX_BUTTON];
-
-
-void add_keys (sim_t *sim,
-	       kml_t *kml,
-	       GdkPixbuf *window_pixbuf,
-	       GtkWidget *fixed)
+void add_keys (csim_t *csim)
 {
   int i;
 
   for (i = 0; i < KML_MAX_BUTTON; i++)
-    if (kml->button [i])
+    if (csim->kml->button [i])
       {
-	button_info [i] = alloc (sizeof (button_info_t));
-	add_key (sim,
-		 kml,
-		 fixed,
-		 window_pixbuf,
-		 kml->button [i],
-		 button_info [i]);
+	csim->button_info [i] = alloc (sizeof (button_info_t));
+	add_key (csim,
+		 csim->kml->button [i],
+		 csim->button_info [i]);
       }
 }
 
 
 // Presses the specified key.  Returns false if key doesn't exist.
-bool set_key_state (int keycode, bool pressed)
+bool set_key_state (csim_t *csim, int keycode, bool pressed)
 {
-  if (! button_info [keycode])
+  if (! csim->button_info [keycode])
     return false;
   if (pressed)
-    button_widget_pressed (button_info [keycode]->widget,
-			   button_info [keycode]);
+    button_widget_pressed (csim->button_info [keycode]->widget,
+			   csim->button_info [keycode]);
   else
-    button_widget_released (button_info [keycode]->widget,
-			    button_info [keycode]);
+    button_widget_released (csim->button_info [keycode]->widget,
+			    csim->button_info [keycode]);
   return true;
 }
