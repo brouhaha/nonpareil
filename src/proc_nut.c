@@ -1130,26 +1130,12 @@ static void op_keys_to_rom_addr (sim_t *sim, int opcode)
 }
 
 
-#ifdef VOYAGER_SELF_TEST_KEY_HACK
-static int kp = 0;
-static uint8_t keys [] = { 0x18, 0x17 };
-#endif
-
-
 static void op_keys_to_c (sim_t *sim, int opcode)
 {
   nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
 
-#ifdef VOYAGER_SELF_TEST_KEY_HACK
-  nut_reg->c [4] = keys [kp] >> 4; /* nut_reg->key_buf >> 4; */
-  nut_reg->c [3] = keys [kp] & 0xf; /* nut_reg->key_buf & 0x0f; */
-  kp++;
-  if (kp == sizeof (keys))
-    kp = 0;
-#else
   nut_reg->c [4] = nut_reg->key_buf >> 4;
   nut_reg->c [3] = nut_reg->key_buf & 0x0f;
-#endif
 }
 
 static void op_test_kb (sim_t *sim, int opcode)
