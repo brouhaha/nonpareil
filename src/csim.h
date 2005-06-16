@@ -33,8 +33,10 @@ typedef struct
   char state_fn [255];
 
   // keyboard vars:
-  bool key_down_flag;
-  int key_down_keycode;
+  int button_pressed_count;    // how many keyboard buttons are pressed
+  int button_pressed_first;  // 0..KML_MAX_BUTTON-1, remembers which button
+                             // was pressed first if multiple are pressed
+                             // simultaneusly, used for two-key rollover
   struct button_info_t *button_info [KML_MAX_BUTTON];
 } csim_t;
 
@@ -42,8 +44,8 @@ typedef struct
 typedef struct button_info_t
 {
   csim_t *csim;
-  GtkWidget *widget;
   kml_button_t *kml_button;
+  int number;  // 0..KML_MAX_BUTTON-1
+  GtkWidget *widget;
+  bool pressed;
 } button_info_t;
-
-

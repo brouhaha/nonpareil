@@ -37,45 +37,99 @@ MA 02111, USA.
 #include "keyboard.h"
 
 
+#undef KEYBOARD_DEBUG
+
+
+// The real hardware has two-key rollover.  If one key is pressed, the
+// hardware recognizes it immediately.  But if additional keys are
+// pressed before the first key is released, none are recognized until
+// all but one are released, and if all but the first one are released,
+// the first one is not recognized a second time.
+
+
 static void button_widget_pressed (GtkWidget *widget, button_info_t *button)
 {
   csim_t *csim = button->csim;
 
-  if (csim->key_down_flag &&
-      (csim->key_down_keycode != button->kml_button->keycode))
+  if (! button->pressed)
     {
-      sim_release_key (csim->sim);
+      button->pressed = true;
+      if (++csim->button_pressed_count == 1)
+	{
 #ifdef KEYBOARD_DEBUG
-      printf ("rollover release %d\n", button->kml_button->keycode);
+	  printf ("first button press, keycode %d\n", button->kml_button->keycode);
+#endif
+	  csim->button_pressed_first = button->number;
+	  sim_press_key (csim->sim, button->kml_button->keycode);
+	}
+#ifdef KEYBOARD_DEBUG
+      else
+	printf ("additional button press, keycode=%d\n", button->kml_button->keycode);
 #endif
     }
-  csim->key_down_flag = true;
-  csim->key_down_keycode = button->kml_button->keycode;
-  sim_press_key (csim->sim, button->kml_button->keycode);
-#ifdef KEYBOARD_DEBUG
-  printf ("pressed %d\n", button->kml_button->keycode);
-#endif
 }
 
+
+static int find_pressed_button (csim_t *csim)
+{
+  int i;
+  for (i = 0; i < KML_MAX_BUTTON; i++)
+    if (csim->button_info [i] && csim->button_info [i]->pressed)
+      return csim->button_info [i]->number;
+  fatal (3, "keyboard rollover error\n");
+}
 
 static void button_widget_released (GtkWidget *widget, button_info_t *button)
 {
   csim_t *csim = button->csim;
+  int i;
 
-  if (csim->key_down_flag &&
-      (csim->key_down_keycode == button->kml_button->keycode))
+  if (! button->pressed)
+    return;  // should never happen
+
+  button->pressed = false;
+  switch (--csim->button_pressed_count)
     {
-       csim->key_down_flag = false;
-       sim_release_key (csim->sim);
+    case 0:
+      // Released the last (or only) key that was pressed.
 #ifdef KEYBOARD_DEBUG
-       printf ("released %d\n", button->kml_button->keycode);
+      printf ("last key release, keycode=%d\n", button->kml_button->keycode);
 #endif
+      sim_release_key (csim->sim);
+      break;
+    case 1:
+      // There were multiple keys pressed, and all but one have been
+      // released.  If that one was the first one pressed, do nothing,
+      // but if it's a different one, release the first one and press then
+      // last remaining one.
+#ifdef KEYBOARD_DEBUG
+      printf ("next-to-last key release, keycode=%d\n", button->kml_button->keycode);
+#endif
+      i = find_pressed_button (csim);
+      if (i != csim->button_pressed_first)
+	{
+#ifdef KEYBOARD_DEBUG
+	  printf ("rollover pressing keycode=%d\n", 
+		  csim->button_info [i]->kml_button->keycode);
+#endif
+	  sim_release_key (csim->sim);  // release the first one
+	  sim_press_key (csim->sim,
+			 csim->button_info [i]->kml_button->keycode);
+	}
+      break;
+    default:
+      // There are still at least two keys pressed.  Do nothing.
+#ifdef KEYBOARD_DEBUG
+      printf ("key release, keycode=%d\n", button->kml_button->keycode);
+#endif
+      break;
     }
 }
 
 
 static void add_key (csim_t *csim,
 		     kml_button_t *kml_button,
+		     int number,
 		     button_info_t *button_info)
 {
   GdkPixbuf *button_pixbuf;
@@ -83,6 +137,7 @@ static void add_key (csim_t *csim,
 
   button_info->csim = csim;
   button_info->kml_button = kml_button;
+  button_info->number = number;
 
   button_pixbuf = gdk_pixbuf_new_subpixbuf (csim->background_pixbuf,
 					    kml_button->offset.x - csim->kml->background_offset.x,
@@ -129,6 +184,7 @@ void add_keys (csim_t *csim)
 	csim->button_info [i] = alloc (sizeof (button_info_t));
 	add_key (csim,
 		 csim->kml->button [i],
+		 i,
 		 csim->button_info [i]);
       }
 }

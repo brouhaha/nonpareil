@@ -152,6 +152,11 @@ gboolean key_event_callback (GtkWidget *widget,
       (event->type != GDK_KEY_RELEASE))
     return (FALSE);  /* why are we here? */
 
+#if 0
+  printf ("key_event_callback, keycode=%d, type=%s\n",
+	  event->keyval, (event->type == GDK_KEY_PRESS) ? "press" : "release");
+#endif
+
   for (scancode = csim->kml->first_scancode; scancode; scancode = scancode->next)
     {
       if (event->keyval == scancode->scancode)
