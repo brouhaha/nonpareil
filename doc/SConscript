@@ -24,7 +24,7 @@ Import('env source_release_dir snapshot_dir')
 # Install image files
 #-----------------------------------------------------------------------------
 
-diagrams = Split ("""hla.dia""")
+diagrams = Split ("""hla.dia keyboard_fsm.dia""")
 
 
 #-----------------------------------------------------------------------------
