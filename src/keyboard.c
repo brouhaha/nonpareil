@@ -113,6 +113,7 @@ static void button_widget_released (GtkWidget *widget, button_info_t *button)
 		  csim->button_info [i]->kml_button->keycode);
 #endif
 	  sim_release_key (csim->sim);  // release the first one
+	  csim->button_pressed_first = csim->button_info [i]->number;
 	  sim_press_key (csim->sim,
 			 csim->button_info [i]->kml_button->keycode);
 	}

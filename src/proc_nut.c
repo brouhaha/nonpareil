@@ -40,10 +40,10 @@ MA 02111, USA.
 #include "dis_nut.h"
 
 
-static void print_reg (reg_t reg);
-
-
 #undef WARN_STRAY_WRITE
+
+
+static void print_reg (reg_t reg);
 
 
 #define NR(name, field, bits, radix, get, set, arg) \
@@ -91,7 +91,7 @@ static reg_detail_t nut_cpu_reg_detail [] =
   NR  ("carry",   carry,   1,      2,   NULL,      NULL,      0),
   NR  ("awake",   awake,   1,      2,   NULL,      NULL,      0),
   // key_down
-  // key_flag
+  // kb_state
   // key_buf
   NR  ("pf_addr", pf_addr, 8,     16,   NULL,      NULL,      0),
   NR  ("ram_addr", ram_addr, 10,  16,   NULL,      NULL,      0),
@@ -1138,18 +1138,29 @@ static void op_keys_to_c (sim_t *sim, int opcode)
   nut_reg->c [3] = nut_reg->key_buf & 0x0f;
 }
 
+
 static void op_test_kb (sim_t *sim, int opcode)
 {
   nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
 
-  nut_reg->carry = nut_reg->key_flag;
+  nut_reg->carry = ((nut_reg->kb_state == KB_PRESSED) ||
+		    (nut_reg->kb_state == KB_RELEASED));
+  if (nut_reg->kb_state == KB_WAIT_CHK)
+    {
+      if (nut_reg->key_down)
+	nut_reg->kb_state = KB_PRESSED;
+      else
+	nut_reg->kb_state = KB_IDLE;
+    }
 }
+
 
 static void op_reset_kb (sim_t *sim, int opcode)
 {
   nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
 
-  nut_reg->key_flag = nut_reg->key_down;
+  if (nut_reg->kb_state == KB_RELEASED)
+    nut_reg->kb_state = KB_WAIT_CHK;
 }
 
 
@@ -1609,7 +1620,8 @@ static void nut_press_key (sim_t *sim, int keycode)
 #endif
   nut_reg->key_buf = keycode;
   nut_reg->key_down = true;
-  nut_reg->key_flag = true;
+  if (nut_reg->kb_state == KB_IDLE)
+    nut_reg->kb_state = KB_PRESSED;
 #ifdef SLEEP_DEBUG
   if (! nut_reg->awake)
     printf ("waking up!\n");
@@ -1623,6 +1635,8 @@ static void nut_release_key (sim_t *sim)
   nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
 
   nut_reg->key_down = false;
+  if (nut_reg->kb_state == KB_PRESSED)
+    nut_reg->kb_state = KB_RELEASED;
 }
 
 static void nut_set_ext_flag (sim_t *sim, int flag, bool state)
@@ -1663,7 +1677,7 @@ static void nut_reset (sim_t *sim)
   nut_reg->inst_state = norm;
   nut_reg->carry = 1;
 
-  nut_reg->key_flag = 0;
+  nut_reg->kb_state = KB_IDLE;
 }
 
 

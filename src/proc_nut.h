@@ -52,6 +52,15 @@ typedef digit_t reg_t [WSIZE];
 #define MAX_BANK 4
 
 
+typedef enum
+{
+  KB_IDLE,
+  KB_PRESSED,
+  KB_RELEASED,
+  KB_WAIT_CHK
+} keyboard_state_t;
+
+
 enum
 {
   event_periph_select = first_arch_event,
@@ -113,8 +122,8 @@ typedef struct nut_reg_t
   rom_word_t first_word;   /* long branch: remember first word */
   bool long_branch_carry;  /* and carry */
 
-  bool key_down;      /* true if a key is down */
-  bool key_flag;
+  bool key_down;      /* true while a key is down */
+  keyboard_state_t kb_state;
   int key_buf;        /* most recently pressed key */
 
   bool awake;
