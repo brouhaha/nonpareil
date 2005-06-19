@@ -606,12 +606,12 @@ int main (int argc, char *argv[])
       gtk_box_pack_start (GTK_BOX (vbox), csim->menubar, FALSE, TRUE, 0);
     }
 
+  // Only the Coconut platform (41C family) is configurable, so remove
+  // the Configure menu if the platform isn't a Coconut.
   if (model_info->platform != PLATFORM_COCONUT)
-    {
-      gtk_widget_set_sensitive (gtk_item_factory_get_item (csim->main_menu_item_factory,
-							   "/Configure/Load Module"),
-				false);
-    }
+    gtk_container_remove (GTK_CONTAINER (csim->menubar),
+			  gtk_item_factory_get_item (csim->main_menu_item_factory,
+						     "/Configure"));
 
   csim->fixed = gtk_fixed_new ();
   gtk_widget_set_size_request (csim->fixed,
