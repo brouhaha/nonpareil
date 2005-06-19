@@ -195,6 +195,7 @@ void debug_add_reg_all_chips (sim_t *sim,
 			      GtkWidget *notebook)
 {
   GtkWidget *table;
+  GtkWidget *scrolled_window;
   chip_t *chip = NULL;
   const chip_info_t *chip_info;
 
@@ -202,13 +203,15 @@ void debug_add_reg_all_chips (sim_t *sim,
     {
       chip_info = sim_get_chip_info (sim, chip);
 
-      // $$$ add a table to the tab
       table = gtk_table_new (1, 2, FALSE);
 
-      // $$$ add a tab to the notebook
+      scrolled_window = gtk_scrolled_window_new (NULL, NULL);
+
+      gtk_scrolled_window_add_with_viewport (GTK_SCROLLED_WINDOW (scrolled_window),
+					     table);
       
       gtk_notebook_append_page (GTK_NOTEBOOK (notebook),
-				table,
+				scrolled_window,
 				gtk_label_new (chip_info->name));
 
       debug_add_reg_chip (sim, chip, table);
