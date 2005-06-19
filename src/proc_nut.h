@@ -57,7 +57,9 @@ typedef enum
   KB_IDLE,
   KB_PRESSED,
   KB_RELEASED,
-  KB_WAIT_CHK
+  KB_WAIT_CHK,
+  KB_WAIT_CYC,
+  KB_STATE_MAX  // must be last
 } keyboard_state_t;
 
 
@@ -124,6 +126,7 @@ typedef struct nut_reg_t
 
   bool key_down;      /* true while a key is down */
   keyboard_state_t kb_state;
+  int kb_debounce_cycle_counter;
   int key_buf;        /* most recently pressed key */
 
   bool awake;

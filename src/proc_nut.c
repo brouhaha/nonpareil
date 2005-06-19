@@ -40,6 +40,22 @@ MA 02111, USA.
 #include "dis_nut.h"
 
 
+#define KBD_RELEASE_DEBOUNCE_CYCLES 32
+
+#undef KEYBOARD_DEBUG
+
+#ifdef KEYBOARD_DEBUG
+static char *kbd_state_name [KB_STATE_MAX] =
+  {
+    [KB_IDLE]     = "idle",
+    [KB_PRESSED]  = "pressed",
+    [KB_RELEASED] = "released",
+    [KB_WAIT_CHK] = "wait_chk",
+    [KB_WAIT_CYC] = "wait_cyc"
+  };
+#endif
+
+
 #undef WARN_STRAY_WRITE
 
 
@@ -1143,14 +1159,16 @@ static void op_test_kb (sim_t *sim, int opcode)
 {
   nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
 
+#ifdef KEYBOARD_DEBUG
+  printf ("kb test, addr %04x, state %s\n", nut_reg->prev_pc, kbd_state_name [nut_reg->kb_state]);
+#endif
+
   nut_reg->carry = ((nut_reg->kb_state == KB_PRESSED) ||
 		    (nut_reg->kb_state == KB_RELEASED));
   if (nut_reg->kb_state == KB_WAIT_CHK)
     {
-      if (nut_reg->key_down)
-	nut_reg->kb_state = KB_PRESSED;
-      else
-	nut_reg->kb_state = KB_IDLE;
+      nut_reg->kb_state = KB_WAIT_CYC;
+      nut_reg->kb_debounce_cycle_counter = KBD_RELEASE_DEBOUNCE_CYCLES;
     }
 }
 
@@ -1159,8 +1177,64 @@ static void op_reset_kb (sim_t *sim, int opcode)
 {
   nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
 
+#ifdef KEYBOARD_DEBUG
+  printf ("kb reset, addr %04x, state %s\n", nut_reg->prev_pc, kbd_state_name [nut_reg->kb_state]);
+#endif
+
   if (nut_reg->kb_state == KB_RELEASED)
     nut_reg->kb_state = KB_WAIT_CHK;
+}
+
+
+static void nut_kbd_scanner_cycle (nut_reg_t *nut_reg)
+{
+  if ((nut_reg->kb_state == KB_WAIT_CYC) &&
+      (--nut_reg->kb_debounce_cycle_counter == 0))
+    {
+      if (nut_reg->key_down)
+	{
+	  nut_reg->kb_state = KB_PRESSED;
+#ifdef SLEEP_DEBUG
+	  if (! nut_reg->awake)
+	    printf ("waking up!\n");
+#endif
+	  nut_reg->awake = true;
+	}
+      else
+	nut_reg->kb_state = KB_IDLE;
+    }
+}
+
+
+static void nut_kbd_scanner_sleep (nut_reg_t *nut_reg)
+{
+#ifdef KEYBOARD_DEBUG
+  printf ("nut_kbd_scanner_sleep, state=%s\n", kbd_state_name [nut_reg->kb_state]);
+#endif
+
+  if (nut_reg->kb_state == KB_PRESSED)
+    {
+      // $$$ This shouldn't happen, should it?
+#if defined(KEYBOARD_DEBUG) || defined(SLEEP_DEBUG)
+      if (! nut_reg->awake)
+	printf ("waking up!\n");
+#endif
+      nut_reg->awake = true;
+    }
+  if (nut_reg->kb_state == KB_WAIT_CYC)
+    {
+      if (nut_reg->key_down)
+	{
+	  nut_reg->kb_state = KB_PRESSED;
+#if defined(KEYBOARD_DEBUG) || defined(SLEEP_DEBUG)
+	  if (! nut_reg->awake)
+	    printf ("waking up!\n");
+#endif
+	  nut_reg->awake = true;
+	}
+      else
+	nut_reg->kb_state = KB_IDLE;
+    }
 }
 
 
@@ -1614,6 +1688,10 @@ static void nut_press_key (sim_t *sim, int keycode)
 {
   nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
 
+#ifdef KEYBOARD_DEBUG
+  printf ("key %o press, addr %04x, state %s\n", keycode, nut_reg->prev_pc, kbd_state_name [nut_reg->kb_state]);
+#endif
+
 #if 0
   if ((! nut_reg->awake) && (! nut_reg->display_enable) && (keycode != 0x18))
     return;
@@ -1633,6 +1711,10 @@ static void nut_press_key (sim_t *sim, int keycode)
 static void nut_release_key (sim_t *sim)
 {
   nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
+
+#ifdef KEYBOARD_DEBUG
+  printf ("key release, addr %04x, state %s\n", nut_reg->prev_pc, kbd_state_name [nut_reg->kb_state]);
+#endif
 
   nut_reg->key_down = false;
   if (nut_reg->kb_state == KB_PRESSED)
@@ -1844,13 +1926,19 @@ static void nut_event_fn (sim_t  *sim,
 			  int    arg,
 			  void   *data)
 {
-  // nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
+  nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
 
   switch (event)
     {
+    case event_cycle:
+      nut_kbd_scanner_cycle (nut_reg);
+      break;
+    case event_sleep:
+      nut_kbd_scanner_sleep (nut_reg);
+      break;
     case event_reset:
-       nut_reset (sim);
-       break;
+      nut_reset (sim);
+      break;
     default:
       // warning ("proc_nut: unknown event %d\n", event);
       break;
