@@ -537,6 +537,8 @@ static void helios_npic_read (sim_t *sim)
 #endif
 #endif
 
+  reg_zero (nut_reg->c, 0, WSIZE);
+
   for (i = 3; i >= 0; i--)
     nut_reg->c [i + 10] = ((helios_get_status_bit (helios, i * 4 + 3) << 3) +
 			   (helios_get_status_bit (helios, i * 4 + 2) << 2) +
