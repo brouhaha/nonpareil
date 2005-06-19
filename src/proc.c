@@ -1037,18 +1037,14 @@ void sim_remove_chip (sim_t  *sim,
 }
 
 
-
-// Returns NULL if there are no chips (should never happen).
-chip_t *sim_get_first_chip (sim_t *sim)
-{
-  return sim->first_chip;
-}
-
-
+// Pass in NULL for chip to get first chip.
 // Returns NULL if there are no more chips.
 chip_t *sim_get_next_chip (sim_t *sim, chip_t *chip)
 {
-  return chip->next;
+  if (chip)
+    return chip->next;
+  else
+    return sim->first_chip;
 }
 
 

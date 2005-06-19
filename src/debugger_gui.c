@@ -83,7 +83,7 @@ static void update_register_window (void)
       const reg_info_t *info = reg_display [i].info;
 
       if (sim_read_register (dsim,
-			     sim_get_first_chip (dsim),  // $$$ CPU only for now
+			     sim_get_next_chip (dsim, NULL),  // $$$ CPU only for now
 			     reg_display [i].reg_num,
 			     reg_display [i].index,
 			     & val))
@@ -119,7 +119,7 @@ static bool debug_window_add_register (GtkWidget *table, int reg_num)
   char reg_name [80];
 
   r = sim_get_register_info (dsim,
-			     sim_get_first_chip (dsim),  // $$$ CPU only for now
+			     sim_get_next_chip (dsim, NULL),  // $$$ CPU only for now
 			     reg_num);
   if (! r)
     return false;

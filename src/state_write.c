@@ -226,9 +226,9 @@ static void write_chip_address (sim_t *sim,
 
 static void write_chips (sim_t *sim, xmlTextWriterPtr writer)
 {
-  chip_t *chip;
+  chip_t *chip = NULL;
 
-  for (chip = sim_get_first_chip (sim); chip; chip = sim_get_next_chip (sim, chip))
+  while ((chip = sim_get_next_chip (sim, chip)))
     {
       int first_reg = 0;
       int register_count;
