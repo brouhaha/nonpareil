@@ -35,8 +35,6 @@ MA 02111, USA.
 #include "proc.h"
 
 
-static sim_t *dsim;  // $$$ ugly!
-
 static GtkWidget *reg_window;
 static gboolean reg_window_visible;
 
@@ -44,6 +42,8 @@ static gboolean reg_window_visible;
 
 typedef struct
 {
+  sim_t *sim;
+  chip_t *chip;
   int reg_num;
   const reg_info_t *info;
   int index;  // for arrays
@@ -80,10 +80,12 @@ static void update_register_window (void)
 
   for (i = 0; i < max_reg; i++)
     {
+      sim_t *sim = reg_display [i].sim;
+      chip_t *chip = reg_display [i].chip;
       const reg_info_t *info = reg_display [i].info;
 
-      if (sim_read_register (dsim,
-			     sim_get_next_chip (dsim, NULL),  // $$$ CPU only for now
+      if (sim_read_register (sim,
+			     chip,
 			     reg_display [i].reg_num,
 			     reg_display [i].index,
 			     & val))
@@ -111,16 +113,17 @@ static int log2tab [17] =
   { 1, 1, 1, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 4, 4  };
 
 
-static bool debug_window_add_register (GtkWidget *table, int reg_num)
+static bool debug_window_add_register (sim_t *sim,
+				       chip_t *chip,
+				       int reg_num,
+				       GtkWidget *table)
 {
   const reg_info_t *r;
   int index;
   int l2radix, width;
   char reg_name [80];
 
-  r = sim_get_register_info (dsim,
-			     sim_get_next_chip (dsim, NULL),  // $$$ CPU only for now
-			     reg_num);
+  r = sim_get_register_info (sim, chip, reg_num);
   if (! r)
     return false;
 
@@ -129,6 +132,8 @@ static bool debug_window_add_register (GtkWidget *table, int reg_num)
 
   for (index = 0; index < r->array_element_count; index++)
     {
+      reg_display [max_reg].sim = sim;
+      reg_display [max_reg].chip = chip;
       reg_display [max_reg].reg_num = reg_num;
       reg_display [max_reg].info = r;
       reg_display [max_reg].index = index;
@@ -175,12 +180,51 @@ static gboolean on_destroy_reg_window_event (GtkWidget *widget,
 }
 
 
+void debug_add_reg_chip (sim_t *sim,
+			 chip_t *chip,
+			 GtkWidget *table)
+{
+  int reg_num = 0;
+
+  while (debug_window_add_register (sim, chip, reg_num, table))
+    reg_num++;
+}
+
+
+void debug_add_reg_all_chips (sim_t *sim,
+			      GtkWidget *notebook)
+{
+  GtkWidget *table;
+  chip_t *chip = NULL;
+  const chip_info_t *chip_info;
+
+  while ((chip = sim_get_next_chip (sim, chip)))
+    {
+      chip_info = sim_get_chip_info (sim, chip);
+
+      // $$$ add a table to the tab
+      table = gtk_table_new (1, 2, FALSE);
+
+      // $$$ add a tab to the notebook
+      
+      gtk_notebook_append_page (GTK_NOTEBOOK (notebook),
+				table,
+				gtk_label_new (chip_info->name));
+
+      debug_add_reg_chip (sim, chip, table);
+    }
+}
+			  
+
+
+static sim_t *dsim;  // $$$ ugly!
+
+
 void debug_show_reg  (gpointer callback_data,
 		      guint    callback_action,
 		      GtkWidget *widget)
 {
-  GtkWidget *table;
-  int reg_num = 0;
+  GtkWidget *notebook;
   
   if (! reg_window)
     {
@@ -193,13 +237,13 @@ void debug_show_reg  (gpointer callback_data,
 			GTK_SIGNAL_FUNC (on_destroy_reg_window_event),
 			NULL);
 
-      table = gtk_table_new (1, 2, FALSE);
-      gtk_container_add (GTK_CONTAINER (reg_window), table);
+      notebook = gtk_notebook_new ();
+
+      gtk_container_add (GTK_CONTAINER (reg_window), notebook);
 
       max_reg = 0;
 
-      while (debug_window_add_register (table, reg_num))
-	reg_num++;
+      debug_add_reg_all_chips (dsim, notebook);
     }
 
   reg_window_visible = ! reg_window_visible;
