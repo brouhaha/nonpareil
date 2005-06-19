@@ -368,15 +368,18 @@ static GtkWidget *create_menus (csim_t *csim,
 				GtkType container_type)
 {
   GtkAccelGroup *accel_group;
-  GtkItemFactory *item_factory;
 
   accel_group = gtk_accel_group_new ();
-  item_factory = gtk_item_factory_new (container_type,
-				       "<main>",
-				       accel_group);
-  gtk_item_factory_create_items (item_factory, nmenu_items, menu_items, csim);
+  csim->main_menu_item_factory = gtk_item_factory_new (container_type,
+						       "<main>",
+						       accel_group);
+  gtk_item_factory_create_items (csim->main_menu_item_factory,
+				 nmenu_items,
+				 menu_items,
+				 csim);
   gtk_window_add_accel_group (GTK_WINDOW (csim->main_window), accel_group);
-  return (gtk_item_factory_get_widget (item_factory, "<main>"));
+  return (gtk_item_factory_get_widget (csim->main_menu_item_factory,
+				       "<main>"));
 }
 
 
@@ -601,6 +604,13 @@ int main (int argc, char *argv[])
     {
       csim->menubar = create_menus (csim, GTK_TYPE_MENU_BAR);
       gtk_box_pack_start (GTK_BOX (vbox), csim->menubar, FALSE, TRUE, 0);
+    }
+
+  if (model_info->platform != PLATFORM_COCONUT)
+    {
+      gtk_widget_set_sensitive (gtk_item_factory_get_item (csim->main_menu_item_factory,
+							   "/Configure/Load Module"),
+				false);
     }
 
   csim->fixed = gtk_fixed_new ();

@@ -28,6 +28,7 @@ typedef struct
   GtkWidget *main_window;
   GdkPixbuf *background_pixbuf;  // window background (subset of file_pixbuf)
   GtkWidget *fixed;
+  GtkItemFactory *main_menu_item_factory;
   GtkWidget *menubar;  // actually a popup menu in transparency/shape mode
   gui_display_t *gui_display;
   char state_fn [255];
