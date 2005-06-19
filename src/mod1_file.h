@@ -178,6 +178,9 @@ typedef struct
 } mod1_file_page_t;
 
 
+extern char *mod1_hardware_name [HARDWARE_MAX + 1];
+
+
 bool mod1_read_file_header (FILE *f, mod1_file_header_t *header);
 
 bool mod1_validate_file_header (mod1_file_header_t *header, size_t file_size);
@@ -185,3 +188,4 @@ bool mod1_validate_file_header (mod1_file_header_t *header, size_t file_size);
 bool mod1_read_page (FILE *f, mod1_file_page_t *page);
 
 bool mod1_validate_page (mod1_file_page_t *page);
+

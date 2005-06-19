@@ -38,6 +38,7 @@ MA 02111, USA.
 #include "glib_async_queue_source.h"
 #include "mod1_file.h"
 #include "helios.h"
+#include "printer.h"
 
 
 // We try to schedule execution in "jiffies".
@@ -282,6 +283,26 @@ static bool sim_read_mod1_file (sim_t *sim, FILE *f)
   if (! mod1_validate_file_header (& header, file_size))
     {
       fprintf (stderr, "Unrecognized or inconsistent values in MOD1 file header\n");
+      return false;
+    }
+
+  switch (header.Hardware)
+    {
+    case HARDWARE_NONE:
+      break;
+    case HARDWARE_PRINTER:
+      // $$$ We need a callback to ask GUI to install the hardware instead
+      // of doing it here.
+      gui_printer_init (sim);
+      break;
+    default:
+      if ((header.Hardware <= HARDWARE_MAX) &&
+	  mod1_hardware_name [header.Hardware])
+	fprintf (stderr, "Unsupported hardware: %s\n",
+		 mod1_hardware_name [header.Hardware]);
+      else
+	fprintf (stderr, "Unsupported hardware type %d\n",
+		 header.Hardware);
       return false;
     }
 

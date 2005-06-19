@@ -32,6 +32,22 @@ MA 02111, USA.
 #include "mod1_file.h"
 
 
+char *mod1_hardware_name [HARDWARE_MAX + 1] =
+  {
+    [HARDWARE_NONE]       = "none",
+    [HARDWARE_PRINTER]    = "82143A Printer",
+    [HARDWARE_CARDREADER] = "82104A Card Reader",
+    [HARDWARE_TIMER]      = "82182A Time Module",
+    [HARDWARE_WAND]       = "82153A Barcode Wand",
+    [HARDWARE_HPIL]       = "82160A HP-IL Module",
+    [HARDWARE_INFRARED]   = "82242A Infrared Printer Module",
+    [HARDWARE_HEPAX]      = "HEPAX Module",
+    [HARDWARE_WWRAMBOX]   = "W&W RAMBOX",
+    [HARDWARE_MLDL2000]   = "MLDL2000",
+    [HARDWARE_CLONIX]     = "CLONIX-41 Module",
+  };
+
+
 #define MOD_DEBUG
 
 
@@ -170,4 +186,3 @@ bool mod1_validate_page (mod1_file_page_t *page)
   // $$$ should validate checksum here
   return status;
 }
-

@@ -634,10 +634,6 @@ int main (int argc, char *argv[])
 			(display_update_callback_fn_t *) gui_display_update,
 			csim->gui_display);
 
-  // $$$ should only do this when we load a module file that indicates
-  // that it uses the printer hardware
-  gui_printer_init (csim->sim);
-
 #ifdef HAS_DEBUGGER_GUI
   init_debugger_gui (csim->sim);
 #endif
