@@ -361,7 +361,6 @@ headers = Split ("""util.h
                     voyager_lcd.h
                     coconut_lcd.h helios.h phineas.h
                     csim.h about.h goose.h pixbuf_util.h sound.h
-                    slide_switch.h
                     asm.h symtab.h
                     nsim_conv.h
                     mod1_file.h""")
