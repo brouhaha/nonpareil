@@ -35,7 +35,6 @@ MA 02111, USA.
 #include "display.h"
 #include "kml.h"
 #include "proc.h"
-#include "slide_switch.h"
 #include "arch.h"
 #include "platform.h"
 #include "model.h"

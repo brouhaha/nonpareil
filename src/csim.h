@@ -53,6 +53,21 @@ typedef struct
 } csim_t;
 
 
+// Display:
+
+gui_display_t *gui_display_init (csim_t *csim);
+
+void gui_display_update (gui_display_t *display,
+			 int digit_count,
+			 segment_bitmap_t *segments);
+
+
+void add_slide_switches (sim_t *sim,
+			 kml_t *kml,
+			 GdkPixbuf *window_pixbuf,
+			 GtkWidget *fixed);
+
+
 // Keyboard:
 
 void add_keys (csim_t *csim);
@@ -61,10 +76,10 @@ void add_keys (csim_t *csim);
 bool set_key_state (csim_t *csim, int keycode, bool pressed);
 
 
-// Display:
+// Slide switches:
 
-gui_display_t *gui_display_init (csim_t *csim);
+void init_slide_switches (void);
 
-void gui_display_update (gui_display_t *display,
-			 int digit_count,
-			 segment_bitmap_t *segments);
+void set_slide_switch_position (int number, int position);
+
+bool get_slide_switch_position (int number, int *position);
