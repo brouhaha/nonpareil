@@ -750,7 +750,7 @@ GtkWidget *gui_printer_create_menubar (gui_printer_t *p)
 }
 
 
-void gui_printer_init (sim_t *sim)
+chip_t *gui_printer_init (sim_t *sim)
 {
   gui_printer_t *p;
   GtkWidget *menubar;
@@ -767,7 +767,10 @@ void gui_printer_init (sim_t *sim)
 			  gui_printer_update,  // callback_fn
 			  p);                  // ref
   if (! p->chip)
-    fatal (3, "can't add Helios chip\n");
+    {
+      warning ("can't add Helios chip\n");
+      return NULL;
+    }
 
   // create line 0 with tear
   p->line [0] = alloc (sizeof (printer_line_data_t));
@@ -825,4 +828,6 @@ void gui_printer_init (sim_t *sim)
 
   p->white = p->layout->style->white_gc;
   g_object_ref (p->white);
+
+  return (p->chip);
 }

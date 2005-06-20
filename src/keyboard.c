@@ -32,12 +32,20 @@ MA 02111, USA.
 #include "display.h"
 #include "kml.h"
 #include "proc.h"
-#include "display_gtk.h"
 #include "csim.h"
-#include "keyboard.h"
 
 
 #undef KEYBOARD_DEBUG
+
+
+struct button_info_t
+{
+  csim_t *csim;
+  kml_button_t *kml_button;
+  int number;  // 0..KML_MAX_BUTTON-1
+  GtkWidget *widget;
+  bool pressed;
+};
 
 
 // The real hardware has two-key rollover.  If one key is pressed, the

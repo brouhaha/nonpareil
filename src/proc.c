@@ -291,9 +291,7 @@ static bool sim_read_mod1_file (sim_t *sim, FILE *f)
     case HARDWARE_NONE:
       break;
     case HARDWARE_PRINTER:
-      // $$$ We need a callback to ask GUI to install the hardware instead
-      // of doing it here.
-      gui_printer_init (sim);
+      sim->install_hardware_callback (sim->gui_ref, CHIP_HELIOS);
       break;
     default:
       if ((header.Hardware <= HARDWARE_MAX) &&
@@ -835,9 +833,11 @@ static gboolean gui_cmd_callback (gpointer data)
 // $$$ Some of the initialization here should be moved into
 // the thread function.
 
-sim_t *sim_init  (int model,
+sim_t *sim_init  (void *ref,  // passed to callbacks
+		  int model,
 		  int clock_frequency,  /* Hz */
 		  int ram_size,
+		  install_hardware_callback_fn_t *install_hardware_callback,
 		  segment_bitmap_t *char_gen,
 		  display_update_callback_fn_t *display_update_callback,
 		  void *display_update_callback_ref)
@@ -848,6 +848,9 @@ sim_t *sim_init  (int model,
 
   sim = alloc (sizeof (sim_t));
   sim->thread_vars = alloc (sizeof (sim_thread_vars_t));
+
+  sim->gui_ref = ref;
+  sim->install_hardware_callback = install_hardware_callback;
 
   // save display callback info
   sim->display_update_callback = display_update_callback;

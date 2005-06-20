@@ -65,7 +65,9 @@ typedef enum
 
   // coconut & peripherals
   CHIP_PHINEAS,
-  CHIP_HELIOS
+  CHIP_HELIOS,
+
+  MAX_CHIP_TYPE  // must be last
 } chip_type_t;
 
 
@@ -92,6 +94,11 @@ typedef struct
 } reg_info_t;
 
 
+typedef bool install_hardware_callback_fn_t (void *ref,
+					     chip_type_t chip_type);
+					     
+
+
 // callback function that will be used for display updates
 typedef void display_update_callback_fn_t (void *ref,
 					   int digit_count,
@@ -104,9 +111,11 @@ typedef void display_update_callback_fn_t (void *ref,
  * ram_size is the count of RAM registers external to the ARC chip,
  * 10 for HP-45, 30 for HP-55.
  */
-sim_t *sim_init  (int model,
+sim_t *sim_init  (void *ref,  // passed to callbacks
+		  int model,
 		  int clock_frequency,  /* Hz */
 		  int ram_size,
+		  install_hardware_callback_fn_t *install_hardware_callback,
 		  segment_bitmap_t *char_gen,
 		  display_update_callback_fn_t *display_update_callback,
 		  void *display_update_callback_ref);

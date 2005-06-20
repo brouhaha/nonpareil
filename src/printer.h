@@ -42,4 +42,4 @@ MA 02111, USA.
     (PRINTER_WINDOW_INITIAL_HEIGHT_LINES * PRINTER_LINE_HEIGHT_PIXELS)
 
 
-void gui_printer_init (sim_t *sim);
+chip_t *gui_printer_init (sim_t *sim);

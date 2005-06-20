@@ -34,7 +34,6 @@ MA 02111, USA.
 #include "util.h"
 #include "display.h"
 #include "kml.h"
-#include "display_gtk.h"
 #include "proc.h"
 #include "slide_switch.h"
 #include "arch.h"
@@ -45,7 +44,6 @@ MA 02111, USA.
 #include "sound.h"
 #include "printer.h"
 #include "csim.h"
-#include "keyboard.h"
 
 
 #ifdef HAS_DEBUGGER_GUI
@@ -439,6 +437,37 @@ void set_default_state_path (csim_t *csim)
 }
 
 
+bool gui_install_hardware (void *ref,
+			   chip_type_t chip_type)
+{
+  csim_t *csim = ref;
+
+  switch (chip_type)
+    {
+    case CHIP_HELIOS:
+      if (csim->peripheral_chip [CHIP_HELIOS])
+	{
+	  warning ("Helios printer already installed\n");
+	  return false;
+	}
+      csim->peripheral_chip [CHIP_HELIOS] = gui_printer_init (csim->sim);
+      break;
+    default:
+      warning ("unknown chip type %d\n", chip_type);
+      return false;
+    }
+
+  return true;
+}
+
+
+bool gui_remove_hardware (void *ref,
+			  chip_type_t chip_type)
+{
+  return false;  // $$$ not yet implemented
+}
+
+
 int main (int argc, char *argv[])
 {
   csim_t *csim;
@@ -457,11 +486,7 @@ int main (int argc, char *argv[])
   int model;
   model_info_t *model_info;
 
-  GtkWidget *event_box;
-
   GtkWidget *vbox;
-
-  GdkPixbuf *file_pixbuf;  /* the entire image loaded from the file */
 
   GError *error = NULL;
   GtkWidget *image;
@@ -551,17 +576,17 @@ int main (int argc, char *argv[])
   if (! image_fn)
     fatal (2, "can't find image file '%s'\n", csim->kml->image);
 
-  file_pixbuf = gdk_pixbuf_new_from_file (image_fn, & error);
-  if (! file_pixbuf)
+  csim->file_pixbuf = gdk_pixbuf_new_from_file (image_fn, & error);
+  if (! csim->file_pixbuf)
     fatal (2, "can't load image '%s'\n", image_fn);
 
   if (! csim->kml->has_background_size)
     {
-      csim->kml->background_size.width = gdk_pixbuf_get_width (file_pixbuf) - csim->kml->background_offset.x;
-      csim->kml->background_size.height = gdk_pixbuf_get_height (file_pixbuf) - csim->kml->background_offset.y;
+      csim->kml->background_size.width = gdk_pixbuf_get_width (csim->file_pixbuf) - csim->kml->background_offset.x;
+      csim->kml->background_size.height = gdk_pixbuf_get_height (csim->file_pixbuf) - csim->kml->background_offset.y;
     }
 
-  csim->background_pixbuf = gdk_pixbuf_new_subpixbuf (file_pixbuf,
+  csim->background_pixbuf = gdk_pixbuf_new_subpixbuf (csim->file_pixbuf,
 						      csim->kml->background_offset.x,
 						      csim->kml->background_offset.y,
 						      csim->kml->background_size.width,
@@ -575,7 +600,7 @@ int main (int argc, char *argv[])
 							csim->kml->background_size.width,
 							csim->kml->background_size.height,
 							1);
-      gdk_pixbuf_render_threshold_alpha (file_pixbuf,
+      gdk_pixbuf_render_threshold_alpha (csim->file_pixbuf,
 					 image_mask_bitmap,
 					 csim->kml->background_offset.x,  /* src_x */
 					 csim->kml->background_offset.y,  /* src_y */
@@ -590,11 +615,11 @@ int main (int argc, char *argv[])
   gtk_window_set_title (GTK_WINDOW (csim->main_window),
 			csim->kml->title ? csim->kml->title : "Nonpareil");
 
-  event_box = gtk_event_box_new ();
-  gtk_container_add (GTK_CONTAINER (csim->main_window), event_box);
+  csim->event_box = gtk_event_box_new ();
+  gtk_container_add (GTK_CONTAINER (csim->main_window), csim->event_box);
 
   vbox = gtk_vbox_new (FALSE, 1);
-  gtk_container_add (GTK_CONTAINER (event_box), vbox);
+  gtk_container_add (GTK_CONTAINER (csim->event_box), vbox);
 
   if (image_mask_bitmap)
     {
@@ -629,17 +654,15 @@ int main (int argc, char *argv[])
   // GCs for the annunciators.
   gtk_widget_show_all (csim->main_window);
 
-  csim->gui_display = gui_display_init (csim->kml,
-					csim->main_window,
-					event_box,
-					csim->fixed,
-					file_pixbuf);
+  csim->gui_display = gui_display_init (csim);
   if (! csim->gui_display)
     fatal (2, "can't initialize display\n");
 
-  csim->sim = sim_init (model,
+  csim->sim = sim_init (csim,
+			model,
 			model_info->clock_frequency,
 			model_info->ram_size,
+			gui_install_hardware,
 			csim->kml->character_segment_map,
 			(display_update_callback_fn_t *) gui_display_update,
 			csim->gui_display);
