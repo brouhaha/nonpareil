@@ -6,7 +6,10 @@ $Id$
 
 News:
 
-Release 0.72 of Nonpareil is an interim development release.
+Release 0.72 of Nonpareil is an interim development release, adding
+support for the HP 82143A printer (used with the HP-41C family).  The
+keyboard support for the HP-41C family and Voyager calculators now
+have two-key rollover.
 
 In this release, the following calculators are simulated:
 	HP-35, HP-45, HP-55, HP-80
@@ -15,9 +18,6 @@ In this release, the following calculators are simulated:
 	HP-41CV, HP-41CX
 	HP-11C, HP-12C, HP-15C, HP-16C
 
-In addition, there is very preliminary support for the HP 82143A printer
-for the HP-41C family.  See the 82143A printer notes below.
-
 Many menu commands are not yet implemented.
 
 Known bugs and deficiencies:
@@ -25,42 +25,21 @@ Known bugs and deficiencies:
 * The HP-55 simulation does not correctly support user registers
   .0 through .9.
 
-* The code is written to run the HP-41CX clock at very close to real time,
-  but it does not currently initialize the calculator time and date from
-  the host, nor track the host time and date.
+* The HP-41CX clock runs at very close to real time, but it does not
+  currently initialize the calculator time and date from the host,
+  nor track the host time and date.
+
+* The HP 82143A printer paper advance button does not work correctly in
+  program mode.
 
 -----------------------------------------------------------------------------
 
-82143A Printer Notes:
-
-Nonpareil can now simulate an 82143A printer, though the printer support
-should be considered to be of pre-alpha quality.  The printer output is
-shown in a window, and there is not yet any means to save the printer output
-to a file, or to copy it.  There is not yet any way to change the
-MAN/TRACE/NORM mode switch setting (currently in MAN mode), nor to press
-the printer's PRINT or ADV buttons.
-
-To use the printer, you need a copy of the printer module's ROM in a
-.MOD file.  Currently this is not provided with Nonpareil, but it may
-be found as part of Warren Furlow's V41 program on www.hp41.org.
-
-Start up Nonpareil with the command "nonpareil 41cv".  The normal 41CV
-window will appear, along with a small "Printer" window, which you should
-resize larger.  The printer is not yet ready.
-
-Turn off the HP-41.  On the Configure menu, select "Load Module", and choose
-the module file containing the printer firmware.
-
-Turn the HP-41 back on.  Now the printer should be ready; if you execute
-"FS? 55" the display should show "YES".
-
------------------------------------------------------------------------------
 
 Background:
 
 Nonpareil is a microcode-level simulator for electronic calculators.
-Currently it is able to simulate some of the HP Classic and Woodstock
-series calculators.
+Currently it is able to simulate some of the HP calculators introduced
+between 1972 and 1982.
 
 The HP-35, the first of HP's classic series of handheld calculators,
 was introduced in 1972 and described as the "Electronic Slide Rule".
@@ -108,16 +87,6 @@ the Nut processor architecture, which was also used in the Voyager series
 -----------------------------------------------------------------------------
 
 Nonpareil simulator:
-
-Nonpareil is a microcode-level simulator for the hardware of the HP
-Classic and Woodstock series of calculators.  It should be capable of
-simulating the following calculators:
-
-  Classic series:    HP-35, HP-45, HP-55, HP-70, HP-80
-  Woodstock series:  HP-21, HP-22, HP-25, HP-25C, HP-27, HP-29C
-  Spice series:      HP-31E, HP-32E, HP-33E, HP-33C, HP-37E, HP-38E, HP-38C
-  Coconut:           HP-41C, HP-41CV
-  Voyager:           HP-10C, HP-11C, HP-12C, HP-15C, HP-16C
 
 Nonpareil uses the GTK+ 2.x toolkit and the Glib 2.x and libxml2 libraries.
 
@@ -189,6 +158,27 @@ The file "hp55.asm" when assembled with uasm will produce one warning,
 which will be printed to standard out twice (once during each pass).
 This warning can be ignored as it is the result of uasm being pickier
 than the HP assembler about forms of the "go to" instruction.
+
+-----------------------------------------------------------------------------
+
+82143A Printer Notes:
+
+Nonpareil can now simulate an 82143A printer, though the printer
+support should be considered to be of pre-alpha quality.  The printer
+output is shown in a window, and can be saved as a PNG file.  The
+MAN/TRACE/NORM mode switch and PRINT and PAPER ADVANCE buttons are
+shown in the printer window.  Do not use the PAPER ADVANCE button in
+program mode, as it does not work correctly and will result in a
+persistent "paper out" error.
+
+To use the printer, you need a copy of the printer module's ROM in a
+.MOD file.  Currently this is not provided with Nonpareil, but it may
+be found as part of Warren Furlow's V41 program on www.hp41.org.
+
+Start up Nonpareil with the command "nonpareil 41cv".  On the Configure menu,
+select "Load Module", and choose the module file containing the printer
+firmware.  A "Printer" window will appear.  If you execute "FS? 55" the
+display should show "YES".
 
 -----------------------------------------------------------------------------
 

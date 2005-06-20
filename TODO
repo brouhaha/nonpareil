@@ -17,6 +17,12 @@ Build process:
 
 User interface:
 
+  Startup:
+      Save path of KML file in state save file.
+      Allow starting Nonpareil with state save file as command line argument.
+      If no command line argument, provide dialog for user to choose
+      calculator.
+
   Printer
       should mode switch be a menu?
       plug/unplug (load/unload module)
@@ -27,14 +33,14 @@ User interface:
       signal out-of-paper when scroll buffer is full
       menu item to install fresh paper
 
-  Replace use of GtkItemFactory (deprecated) with GTKUIManager.
+  Replace use of GtkItemFactory (deprecated) with GTKUIManager?
 
-  Make slide switches look better.
+  Visual improvements
+      slide switches
+      keyboard button hilighting
 
   Implement edit menu commands:
       Edit - Copy, Paste
-
-  Make button highlighting look better.
 
   Add ability to read kml, image, microcode from zip file.
       GSF: http://www.gnome.org/projects/libgsf/
@@ -48,14 +54,10 @@ User interface:
 
   Improve keyboard support:
       Release key when focus is lost.
-      Ignore key release and hold key for a fixed (configurable?) number of
-          simulation cycles?
 
   Add help.
 
   Create an icon.
-
-  Calculator model selection at runtime.
 
   Create a fancier About box.  Use GtkAboutDialog, which allows for
   clickable website URLs and email addresses, license window, etc.
@@ -78,10 +80,12 @@ User interface:
 
 Internals:
 
-  Change Phineas to store vars in binary, convert to BCD only for
-      Nut read/write instructions
-
   Display improvements:
+     Change Classic and Woodstock to use display "chip".
+ 
+     Eliminate dedicated display callback and initialization args to
+     sim_init() by using generic chip interface infrastructure.
+
      Sim thread:
          Use io_count, etc. to improve display update timing.  (done in Nut.)
          Only send display update message to GUI thread if display has changed.
@@ -98,6 +102,8 @@ Internals:
       GDK pixmaps.  Create offscreen pixmap from pixbuf with
       gdk_draw_pixbuf().  Use gdk_draw_drawable() to blit to display.
 
+  Change Phineas to store vars in binary, convert to BCD only for
+      Nut read/write instructions
 
   Split proc.c into separate GUI thread and simulator thread portions.
 
