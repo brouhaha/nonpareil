@@ -23,4 +23,4 @@ MA 02111, USA.
 
 #define PFADDR_PHINEAS 0xfb
 
-void phineas_init (sim_t *sim);
+chip_t *phineas_init (sim_t *sim);

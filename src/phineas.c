@@ -543,7 +543,7 @@ static void phineas_init_ops (sim_t *sim)
 }
 
 
-void phineas_init (sim_t *sim)
+chip_t *phineas_init (sim_t *sim)
 {
   nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
   phineas_reg_t *clock;
@@ -560,4 +560,6 @@ void phineas_init (sim_t *sim)
 					clock);
 
   phineas_init_ops (sim);
+
+  return nut_reg->phineas_chip;
 }

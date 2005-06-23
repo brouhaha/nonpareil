@@ -35,7 +35,6 @@ MA 02111, USA.
 #include "digit_ops.h"
 #include "coconut_lcd.h"
 #include "voyager_lcd.h"
-#include "phineas.h"
 #include "proc_nut.h"
 #include "dis_nut.h"
 
@@ -1877,7 +1876,6 @@ static void nut_new_processor (sim_t *sim, int ram_size)
 	  // Base extended memory of 41CX
 	  nut_new_ram (sim, 0x40, 128);
 	  ram_size = 320;
-	  phineas_init (sim);
 	}
 
       nut_new_ram (sim, 0x0c0, ram_size);

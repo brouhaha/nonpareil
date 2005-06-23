@@ -38,6 +38,7 @@ MA 02111, USA.
 #include "glib_async_queue_source.h"
 #include "mod1_file.h"
 #include "helios.h"
+#include "phineas.h"
 #include "printer.h"
 
 
@@ -290,9 +291,15 @@ static bool sim_read_mod1_file (sim_t *sim, FILE *f)
     {
     case HARDWARE_NONE:
       break;
+
+    case HARDWARE_TIMER:
+      (void) sim_add_chip (sim, CHIP_PHINEAS, NULL, NULL);
+      break;
+
     case HARDWARE_PRINTER:
       sim->install_hardware_callback (sim->gui_ref, CHIP_HELIOS);
       break;
+
     default:
       if ((header.Hardware <= HARDWARE_MAX) &&
 	  mod1_hardware_name [header.Hardware])
@@ -572,6 +579,9 @@ static void cmd_add_chip (sim_t *sim, sim_msg_t *msg)
     {
     case CHIP_HELIOS:
       msg->chip = helios_init (sim);
+      break;
+    case CHIP_PHINEAS:
+      msg->chip = phineas_init (sim);
       break;
     default:
       fatal (3, "don't know how to add chip of type %d\n", msg->chip_type);
