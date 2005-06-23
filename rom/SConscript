@@ -27,7 +27,7 @@ Import('env source_release_dir snapshot_dir')
 roms = Split ("""21.obj 25.obj
                  67.obj
                  32e.obj 33c.obj 34c.obj 37e.obj 38c.obj 38e.obj
-                 41cv.mod 41cx.mod
+                 41cv.mod 41cx.mod 82143a.mod 82182a.mod
                  11c.obj 12c.obj 15c.obj 16c.obj""")
 
 env.Alias (target = 'install',
