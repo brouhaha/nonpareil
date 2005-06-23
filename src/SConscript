@@ -176,7 +176,7 @@ for var in [ 'DISPLAY', 'XAUTHORITY' ]:
         str2png_env ['ENV'][var] = os.environ [var]
 
 title_env = str2png_env.Copy (STR2PNG_STRING = 'NONPAREIL',
-                              STR2PNG_OPTS = '-x 40 -y 44')
+                              STR2PNG_OPTS = '-x 40 -y 44 -m 10')
 
 title_env.STR2PNG (target = 'nonpareil_title',
                    source = env ['KML_41CV'].abspath)

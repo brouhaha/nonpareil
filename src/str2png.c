@@ -356,7 +356,7 @@ static void init_segments (void)
 }
 
 
-void draw_char (int x, char c)
+void draw_char (int x, int y, char c)
 {
   unsigned char m;
   int i;
@@ -378,11 +378,11 @@ void draw_char (int x, char c)
 	gdk_pixbuf_composite (segment_pixbuf [i],
 			      render_pixbuf,
 			      x,
-			      0,
+			      y,
 			      kml->digit_size.width,
 			      kml->digit_size.height,
 			      x,  // offset_x
-			      0,  // offset_y
+			      y,  // offset_y
 			      1,  // scale_x
 			      1,  // scale_y
 			      GDK_INTERP_NEAREST,  // scale is 1:1
@@ -399,6 +399,7 @@ int main (int argc, char *argv[])
   char *png_fn = NULL;
   int x_size = 0;
   int y_size = 0;
+  int margin = 0;
 
   char *kml_fn;
   char *image_fn;
@@ -426,6 +427,13 @@ int main (int argc, char *argv[])
 		fatal (1, NULL);
 	      argv++;
 	      y_size = atoi (argv [0]);
+	    }
+	  else if (strcmp (argv [0], "-m") == 0)
+	    {
+	      if (! --argc)
+		fatal (1, NULL);
+	      argv++;
+	      margin = atoi (argv [0]);
 	    }
 	  else
 	    fatal (1, "unrecognized option '%s'\n", argv [0]);
@@ -473,8 +481,8 @@ int main (int argc, char *argv[])
   render_pixbuf = gdk_pixbuf_new (GDK_COLORSPACE_RGB,
 				  TRUE,
 				  8,
-				  strlen (str) * kml->digit_size.width,
-				  kml->digit_size.height);
+				  2 * margin + strlen (str) * kml->digit_size.width,
+				  2 * margin + kml->digit_size.height);
 
   // fill pixbuf with color kml->display_color [0]
   fill_pixbuf (render_pixbuf,
@@ -485,7 +493,7 @@ int main (int argc, char *argv[])
 
   // render segments with color kml->display_color [2]
   for (i = 0; i < strlen (str); i++)
-    draw_char (i * kml->digit_size.width, str [i]);
+    draw_char (margin + i * kml->digit_size.width, margin, str [i]);
 
   gdk_pixbuf_save (render_pixbuf,
 		   png_fn,
