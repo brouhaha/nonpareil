@@ -6,6 +6,12 @@ $Id$
 
 News:
 
+Release 0.73 fixes a problem that prevented 41CX simulation from
+working in 0.72.  The Phineas (timer) chip is now only "installed"
+when the .mod file requests it; in the case of the 41CX this occurs
+when the mainframe microcode is loaded.  Suitable .mod files of the
+82143A Printer and 82182A Time Module are now provided.
+
 Release 0.72 of Nonpareil is an interim development release, adding
 support for the HP 82143A printer (used with the HP-41C family).  The
 keyboard support for the HP-41C family and Voyager calculators now
@@ -171,14 +177,11 @@ shown in the printer window.  Do not use the PAPER ADVANCE button in
 program mode, as it does not work correctly and will result in a
 persistent "paper out" error.
 
-To use the printer, you need a copy of the printer module's ROM in a
-.MOD file.  Currently this is not provided with Nonpareil, but it may
-be found as part of Warren Furlow's V41 program on www.hp41.org.
-
-Start up Nonpareil with the command "nonpareil 41cv".  On the Configure menu,
-select "Load Module", and choose the module file containing the printer
-firmware.  A "Printer" window will appear.  If you execute "FS? 55" the
-display should show "YES".
+Start up Nonpareil with the command "nonpareil 41cv".  On the
+Configure menu, select "Load Module", and choose the module file
+containing the printer firmware, normally "82143a.mod".  A "Printer"
+window will appear.  If you execute "FS? 55" the display should show
+"YES", indicating that the 41 recognizes the printer.
 
 -----------------------------------------------------------------------------
 
