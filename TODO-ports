@@ -4,7 +4,7 @@ $Id$
 
 Build process:
 
-  Create an NSIS instller script for Windows.
+  Create an NSIS installer script for Windows.
 
 
 Ports:
@@ -25,6 +25,10 @@ Ports:
       NSIS:        http://nsis.sourceforge.net/
       MAKEMSI:     http://www.labyrinth.net.au/~dbareis/makemsi.htm
       WiX:         http://sourceforge.net/projects/wix/
+
+    Note that the Windows version of GAIM uses GTK+ and NSIS, so it may
+    be a useful reference:
+      http://gaim.sourceforge.net/win32/
 
   MacOS X
     http://www.macgimp.org/index.php?topic=gtk
