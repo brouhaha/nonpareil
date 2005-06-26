@@ -11,8 +11,10 @@ Ports:
 
   Windows
     Cross-develompent tools:
-      MinGW cross-compiler:  http://www.mingw.org/
-      http://members.lycos.co.uk/alexv6/Cross_mingw_building_HOWTO.html
+      MinGW cross-compiler:
+        http://www.mingw.org/
+        http://www.mingw.org/MinGWiki/index.php/build%20a%20Win32%20x-compiler%20for%20Linux
+        http://members.lycos.co.uk/alexv6/Cross_mingw_building_HOWTO.html
 
     Toolkits:
       GTK+ for Windows:      http://www.gimp.org/~tml/gimp/win32/

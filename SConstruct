@@ -18,7 +18,7 @@
 # the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
 # Boston, MA 02111, USA.
 
-release = '0.73'  # should get from a file, and use only if a release option
+release = '0.74'  # should get from a file, and use only if a release option
                   # is specified
 
 conf_file = 'nonpareil.conf'
@@ -29,10 +29,16 @@ conf_file = 'nonpareil.conf'
 
 opts = Options (conf_file)
 
-opts.AddOptions (EnumOption ('target',
-			     help = 'execution target',
-			     allowed_values = ('native', 'windows'),
-			     default = 'native',
+opts.AddOptions (EnumOption ('host',
+			     help = 'host build platform',
+			     allowed_values = ('posix', 'win32'),
+			     default = 'posix',
+			     ignorecase = 1),
+
+		 EnumOption ('target',
+			     help = 'execution target platform',
+			     allowed_values = ('posix', 'win32'),
+			     default = 'posix',
 			     ignorecase = 1),
 
 		 PathOption ('prefix',
@@ -98,17 +104,6 @@ Help (opts.GenerateHelpText (env))
 SConsignFile ()
 
 env ['RELEASE'] = release
-
-if env ['target'] == 'windows':
-	build_dir = 'wbuild'
-else:
-	build_dir = 'build'
-
-if not env ['bindir']:
-	env ['bindir'] = env ['prefix'] + '/bin'
-
-if not env ['libdir']:
-	env ['libdir'] = env ['prefix'] + '/lib/nonpareil'
 
 #-----------------------------------------------------------------------------
 # Source tar file builder by Paul Davis
@@ -197,6 +192,16 @@ env.Alias ('snap', snapshot_tarball)
 env.AddPostAction (snapshot_tarball, Delete (snapshot_dir))
 
 #-----------------------------------------------------------------------------
+# Installation paths
+#-----------------------------------------------------------------------------
+
+if not env ['bindir']:
+	env ['bindir'] = env ['prefix'] + '/bin'
+
+if not env ['libdir']:
+	env ['libdir'] = env ['prefix'] + '/lib/nonpareil'
+
+#-----------------------------------------------------------------------------
 # Prepare for SConscription
 #-----------------------------------------------------------------------------
 
@@ -206,26 +211,43 @@ Export ('env source_release_dir snapshot_dir')
 # KML, image, firmware files
 #-----------------------------------------------------------------------------
 
-SConscript ('rom/SConscript')
-SConscript ('kml/SConscript')
-SConscript ('image/SConscript')
-SConscript ('sound/SConscript')
+SConscript (['rom/SConscript',
+	     'kml/SConscript',
+	     'image/SConscript',
+	     'sound/SConscript'])
 
 #-----------------------------------------------------------------------------
-# code
+# host platform code
 #-----------------------------------------------------------------------------
 
+native_env = env.Copy ()
+native_env ['build_target_only'] = 0
 SConscript ('src/SConscript',
-            build_dir=build_dir,
-            duplicate=0)
+            build_dir = 'build/' + env ['host'],
+            duplicate = 0,
+	    exports = {'build_env' : native_env,
+		       'native_env' : env})
 
 #-----------------------------------------------------------------------------
-# ROM sources
+# ROM sources - assemble with host tools
 #-----------------------------------------------------------------------------
 
 SConscript ('asm/SConscript',
 	    build_dir='obj',
 	    duplicate=0)
+
+#-----------------------------------------------------------------------------
+# target platform code if cross-compiling
+#-----------------------------------------------------------------------------
+
+if (env ['host'] != env ['target']):
+	cross_build_env = env.Copy ()
+	cross_build_env ['build_target_only'] = 1
+	SConscript ('src/SConscript',
+		    build_dir = 'build/' + env ['target'],
+		    duplicate = 0,
+		    exports = {'build_env': cross_build_env,
+			       'native_env' : env})
 
 #-----------------------------------------------------------------------------
 # documentation
