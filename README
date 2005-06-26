@@ -6,7 +6,8 @@ $Id$
 
 News:
 
-Release 0.74 can cross-compiled to produce Windows (win32) executables.
+Release 0.74 will prompt for a KML file if none is given on the command
+line.  There is now alpha-level support for Windows (win32).
 
 Release 0.73 fixes a problem that prevented 41CX simulation from
 working in 0.72.  The Phineas (timer) chip is now only "installed"
