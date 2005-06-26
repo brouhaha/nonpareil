@@ -28,14 +28,14 @@ import os.path
 import zipfile
 
 def unzip_action (target, source, env):
-    found = 0
     zf = zipfile.ZipFile (str (source [0]), 'r')
     for name in zf.namelist ():
         if os.path.basename (str (target [0])) == os.path.basename (name):
             open (str (target [0]), 'w').write (zf.read (name))
-            found = 1
+            zf.close ()
+            return 0   # OK
     zf.close ()
-    return not found
+    return 1   # error - target wasn't found
 
 UNZIP = Builder (action = unzip_action,
                  suffix = '.dll',
