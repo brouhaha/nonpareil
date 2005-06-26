@@ -157,9 +157,12 @@ env.Append (BUILDERS = {'Tarball' : tarball_bld})
 # package a release source tarball
 #-----------------------------------------------------------------------------
 
-files = Split ("""README COPYING CREDITS INSTALL DEBUGGING TODO SConstruct""")
+bin_dist_files = Split ("""README COPYING CREDITS""")
 
-source_release_dir = env.Distribute ('nonpareil-' + release, files)
+src_dist_files = Split ("""INSTALL DEBUGGING TODO SConstruct""")
+
+source_release_dir = env.Distribute ('nonpareil-' + release,
+				     bin_dist_files + src_dist_files)
 
 # Not only does this preaction not work, it causes the files from the root
 # directory to not get included in the release!
@@ -168,7 +171,7 @@ source_release_dir = env.Distribute ('nonpareil-' + release, files)
 source_release_tarball = env.Tarball ('nonpareil-' + release + '.tar.gz',
                                       source_release_dir)
 
-env.Alias ('dist', source_release_tarball)
+env.Alias ('srcdist', source_release_tarball)
 
 env.AddPostAction (source_release_tarball, Delete (source_release_dir))
 
@@ -178,7 +181,7 @@ env.AddPostAction (source_release_tarball, Delete (source_release_dir))
 
 snap_date = time.strftime ("%Y.%m.%d")
 
-snapshot_dir = env.Distribute ('nonpareil-' + snap_date, files)
+snapshot_dir = env.Distribute ('nonpareil-' + snap_date, src_dist_files)
 
 # Not only does this preaction not work, it causes the files from the root
 # directory to not get included in the snapshot!
@@ -187,9 +190,18 @@ snapshot_dir = env.Distribute ('nonpareil-' + snap_date, files)
 snapshot_tarball = env.Tarball ('nonpareil-' + snap_date + '.tar.gz',
                                 snapshot_dir)
 
-env.Alias ('snap', snapshot_tarball)
+env.Alias ('srcsnap', snapshot_tarball)
 
 env.AddPostAction (snapshot_tarball, Delete (snapshot_dir))
+
+#-----------------------------------------------------------------------------
+# package a Windows distribution ZIP file
+#-----------------------------------------------------------------------------
+
+if env ['target'] == 'win32':
+    zip_file = Zip ('nonpareil-' + release + '.zip', bin_dist_files)
+    Export ('zip_file')
+    env.Alias ('dist', zip_file)
 
 #-----------------------------------------------------------------------------
 # Installation paths

@@ -57,7 +57,7 @@ if cross and ming and build_target_only:
     build_env.Append (LIBPATH = ['/usr/local/gtkwin/SDL-1.2.8/lib'])
     build_env.Append (LIBS = ['libSDL'])
 
-if ming:
+if ming and (build_target_only or not cross):
     build_env.Append (CPPDEFINES = { 'MINGW': '1' })
 
 #-----------------------------------------------------------------------------
@@ -87,7 +87,6 @@ build_env.ParseConfig(pkg_config_cmd + state_io_packages)
 #-----------------------------------------------------------------------------
 
 if build_env ['build_target_only'] == 0:
-    print "building str2png"
     str2png_env = build_env.Copy ()
 
     str2png_env.Append (CPPDEFINES = {'DEFAULT_PATH': 'image'})
@@ -276,7 +275,7 @@ if build_env ['has_debugger_gui']:
     nonpareil_objs.append (nonpareil_env.Object (nonpareil_debugger_gui_srcs))
 
 nonpareil_env.ParseConfig (pkg_config_cmd + nonpareil_packages)
-if build_env ['target'] != 'win32':
+if (not ming) or (cross and not build_target_only):
     nonpareil_env.ParseConfig (sdl_pkg_config_cmd)
 
 csim_env = nonpareil_env.Copy ()
@@ -363,9 +362,11 @@ if build_env ['build_target_only'] == 0:
 # default targets
 #-----------------------------------------------------------------------------
 
+default_targets = [nonpareil, uasm, modutil]
+# omit udis, nsim_conv for now
+
 if (not cross) or build_target_only:
-    Default ([nonpareil, uasm, modutil])
-    # omit udis, nsim_conv for now
+    Default (default_targets)
     
 #-----------------------------------------------------------------------------
 # install
@@ -412,3 +413,11 @@ if build_env ['build_target_only'] == 0:
     native_env.Distribute (source_release_dir, dist_files)
 
     native_env.Distribute (snapshot_dir, dist_files)
+
+#-----------------------------------------------------------------------------
+# Windows distribution ZIP file
+#-----------------------------------------------------------------------------
+
+if ming and (build_target_only or not cross):
+    Import ('zip_file')
+    Zip (zip_file, default_targets)

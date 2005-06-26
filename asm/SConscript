@@ -44,3 +44,10 @@ env.Distribute (source_release_dir, dist_files)
 
 env.Distribute (snapshot_dir, dist_files)
 
+#-----------------------------------------------------------------------------
+# Windows distribution ZIP file
+#-----------------------------------------------------------------------------
+
+if env ['target'] == 'win32':
+    Import ('zip_file')
+    Zip (zip_file, asm_objs)
