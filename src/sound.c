@@ -24,7 +24,7 @@ MA 02111, USA.
 #include <stdlib.h>
 #include <string.h>
 
-#include "SDL_audio.h"
+#include "SDL/SDL_audio.h"
 
 #include "util.h"
 #include "sound.h"
