@@ -419,5 +419,5 @@ if build_env ['build_target_only'] == 0:
 #-----------------------------------------------------------------------------
 
 if ming and (build_target_only or not cross):
-    Import ('zip_file')
-    Zip (zip_file, default_targets)
+    Import ('win32_bin_dist_dir')
+    Install (win32_bin_dist_dir, default_targets)

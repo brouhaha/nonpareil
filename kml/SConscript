@@ -52,5 +52,5 @@ env.Distribute (snapshot_dir, dist_files)
 #-----------------------------------------------------------------------------
 
 if env ['target'] == 'win32':
-    Import ('zip_file')
-    Zip (zip_file, kmls)
+    Import ('win32_bin_dist_dir')
+    Install (win32_bin_dist_dir, kmls)

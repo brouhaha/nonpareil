@@ -199,9 +199,12 @@ env.AddPostAction (snapshot_tarball, Delete (snapshot_dir))
 #-----------------------------------------------------------------------------
 
 if env ['target'] == 'win32':
-    zip_file = Zip ('nonpareil-' + release + '.zip', bin_dist_files)
-    Export ('zip_file')
-    env.Alias ('dist', zip_file)
+    win32_bin_dist_dir = Dir ('nonpareil-' + release + '-win32')
+    Export ('win32_bin_dist_dir')
+    Install (win32_bin_dist_dir, bin_dist_files)
+    win32_bin_dist_zip = Zip ('nonpareil-' + release + '-win32.zip', win32_bin_dist_dir)
+    env.Alias ('dist', win32_bin_dist_zip)
+    env.AddPostAction (win32_bin_dist_zip, Delete (win32_bin_dist_dir.path))
 
 #-----------------------------------------------------------------------------
 # Installation paths
