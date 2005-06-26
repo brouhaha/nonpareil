@@ -40,7 +40,7 @@ pkg_config_cmd += ' --cflags --libs '
 sdl_pkg_config_cmd = 'sdl-config --cflags --libs'
 
 build_env.Append (CPPPATH = ['.'])
-build_env.Append (CPPPATH = ['#/build/include'])  # generated includes
+build_env.Append (CPPPATH = ['#/build/common'])  # generated includes
 build_env.Append (CCFLAGS = ['-Wall'])
 build_env.Append (YACCFLAGS = [ '-d', '-v' ])
 
@@ -120,39 +120,42 @@ if build_env ['build_target_only'] == 0:
 
     bin2c = build_env.Program (target = 'bin2c',
                                source = (bin2c_srcs +
-                                     common_objs))
+                                         common_objs))
     
     def basename (fullpath):
         return os.path.splitext (os.path.basename (fullpath)) [0]
 
-    def PNG2H_Generator (source, target, env, for_signature):
-        return '%s %s %s >%s' % (bin2c [0],
-                                 source [0],
-                                 basename (str(source [0])) + '_png',
-                                 target [0])
+    def PNG2C_Generator (source, target, env, for_signature):
+        return '%s %s %s -c %s -h %s' % (bin2c [0],
+                                         source [0],
+                                         basename (str(source [0])) + '_png',
+                                         target [0],
+                                         target [1])
 
     def BIN2C_Emitter (target, source, env):
+        target.append (os.path.splitext (str (target [0])) [0] + '.h')
         env.Depends (target, "$BIN2C")
         return (target, source)
 
-    PNG2H = Builder (generator = PNG2H_Generator,
-                     suffix = '_png.h',
+    PNG2C = Builder (generator = PNG2C_Generator,
+                     suffix = '_png.c',
                      src_suffix = '.png',
                      emitter = BIN2C_Emitter)
 
-    def WAV2H_Generator (source, target, env, for_signature):
-        return '%s %s %s >%s' % (bin2c [0],
-                                 source [0],
-                                 basename (str(source [0])) + '_wav',
-                                 target [0])
+    def WAV2C_Generator (source, target, env, for_signature):
+        return '%s %s %s -c %s -h %s' % (bin2c [0],
+                                         source [0],
+                                         basename (str(source [0])) + '_wav',
+                                         target [0],
+                                         target [1])
 
-    WAV2H = Builder (generator = WAV2H_Generator,
-                     suffix = '_wav.h',
+    WAV2C = Builder (generator = WAV2C_Generator,
+                     suffix = '_wav.c',
                      src_suffix = '.wav',
                      emitter = BIN2C_Emitter)
 
-    native_env.Append (BUILDERS = { 'PNG2H': PNG2H,
-                                    'WAV2H': WAV2H},
+    native_env.Append (BUILDERS = { 'PNG2C': PNG2C,
+                                    'WAV2C': WAV2C},
                        BIN2C = bin2c)
 
 
@@ -190,7 +193,7 @@ if build_env ['build_target_only'] == 0:
 # prepare graphics
 #-----------------------------------------------------------------------------
 
-if build_env ['build_target_only'] == 0:
+if not build_target_only:
     str2png_env = native_env.Copy ()
 
     # pull in X11-related environment variables to make gdk-pixbuf library happy
@@ -199,38 +202,38 @@ if build_env ['build_target_only'] == 0:
             str2png_env ['ENV'][var] = os.environ [var]
 
     title_env = str2png_env.Copy (STR2PNG_STRING = 'NONPAREIL',
-                                          STR2PNG_OPTS = '-x 40 -y 44 -m 10')
+                                  STR2PNG_OPTS = '-x 40 -y 44 -m 10')
 
     title_env.STR2PNG (target = 'nonpareil_title',
-                       source = build_env ['KML_41CV'].abspath)
+                       source = build_env ['KML_41CV'])
 
-    native_env.PNG2H (target = '#build/include/nonpareil_title_png.h',
-                     source = 'nonpareil_title.png')
+    native_env.PNG2C (target = '#build/common/nonpareil_title_png.c',
+                      source = 'nonpareil_title.png')
             
-    rgoose_env =str2png_env.Copy (STR2PNG_STRING = '.',
-                                  STR2PNG_OPTS = '-x 40 -y 44')
+    rgoose_env = str2png_env.Copy (STR2PNG_STRING = '.',
+                                   STR2PNG_OPTS = '-x 40 -y 44')
 
     rgoose_env.STR2PNG (target = 'rgoose',
                         source = build_env ['KML_41CV'])
 
-    native_env.PNG2H (target = '#build/include/rgoose_png.h',
-                     source = 'rgoose.png')
+    native_env.PNG2C (target = '#build/common/rgoose_png.c',
+                      source = 'rgoose.png')
             
-    lgoose_env =str2png_env.Copy (STR2PNG_STRING = ',',
-                                  STR2PNG_OPTS = '-x 40 -y 44')
+    lgoose_env = str2png_env.Copy (STR2PNG_STRING = ',',
+                                   STR2PNG_OPTS = '-x 40 -y 44')
 
     lgoose_env.STR2PNG (target = 'lgoose',
                         source = build_env ['KML_41CV'])
 
-    native_env.PNG2H (target = '#build/include/lgoose_png.h',
-                     source = 'lgoose.png')
+    native_env.PNG2C (target = '#build/common/lgoose_png.c',
+                      source = 'lgoose.png')
 
 #-----------------------------------------------------------------------------
 # prepare sounds
 #-----------------------------------------------------------------------------
 
-if build_env ['build_target_only'] == 0:
-    native_env.WAV2H (target = '#build/include/canada_goose_wav.h',
+if not build_target_only:
+    native_env.WAV2C (target = '#build/common/canada_goose_wav.c',
                       source = native_env ['SND_GOOSE'])
 
 #-----------------------------------------------------------------------------
@@ -261,6 +264,14 @@ nonpareil_debugger_cli_srcs = Split ("""debugger_cli.c""")
 nonpareil_packages = "gtk+-2.0 gdk-2.0 gdk-pixbuf-2.0 glib-2.0 gthread-2.0"
 
 nonpareil_objs = []
+
+# compile generated sources (platform-specific)
+for gen in ["nonpareil_title_png",
+            "rgoose_png",
+            "lgoose_png",
+            "canada_goose_wav"]:
+    nonpareil_objs.append (build_env.Object (target = gen + '.o',
+                                             source = '#build/common/' + gen + '.c'))
 
 nonpareil_env.Append (LIBS = 'png')
 

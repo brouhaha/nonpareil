@@ -31,9 +31,7 @@ MA 02111, USA.
 #include "sound.h"
 #include "pixbuf_util.h"
 
-
 #include "canada_goose_wav.h"
-
 #include "rgoose_png.h"
 #include "lgoose_png.h"
 
@@ -92,7 +90,7 @@ static void goose_click_callback (GtkWidget *widget,
   goose_t *goose = data;
 
   fly_goose (goose, false, true);
-  play_sound (canada_goose_wav, sizeof (canada_goose_wav));
+  play_sound (canada_goose_wav, canada_goose_wav_size);
 }
 
 
@@ -156,11 +154,9 @@ GtkWidget *new_goose (int positions)
 
   g_object_set_data_full (G_OBJECT (goose->table), "goose", goose, destroy_goose);
 
-  goose->event_box [0] = init_goose_from_image (rgoose_png,
-						sizeof (rgoose_png));
+  goose->event_box [0] = init_goose_from_image (rgoose_png, rgoose_png_size);
 
-  goose->event_box [1] = init_goose_from_image (lgoose_png,
-						sizeof (lgoose_png));
+  goose->event_box [1] = init_goose_from_image (lgoose_png, lgoose_png_size);
 
   for (i = 0; i < 2; i++)
     g_signal_connect (G_OBJECT (goose->event_box [i]),

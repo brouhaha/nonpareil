@@ -32,6 +32,8 @@ MA 02111, USA.
 #include "kml.h"
 #include "goose.h"
 
+#include "nonpareil_title_png.h"
+
 
 static char *credits_people [] =
 {
@@ -99,9 +101,6 @@ static void add_credits (GtkWidget *widget)
 }
 
 
-#include "nonpareil_title_png.h"
-
-
 void about_dialog (GtkWidget *main_window, kml_t *kml)
 {
   GtkWidget *dialog;
@@ -117,7 +116,7 @@ void about_dialog (GtkWidget *main_window, kml_t *kml)
   gtk_dialog_set_has_separator (GTK_DIALOG (dialog), TRUE);
 
   title_pixbuf = new_pixbuf_from_png_array (nonpareil_title_png,
-					    sizeof (nonpareil_title_png));
+					    nonpareil_title_png_size);
 
   gtk_container_add (GTK_CONTAINER (GTK_DIALOG (dialog)->vbox),
 		     gtk_image_new_from_pixbuf (title_pixbuf));

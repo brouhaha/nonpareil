@@ -24,6 +24,7 @@ MA 02111, USA.
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "util.h"
 
@@ -35,7 +36,7 @@ void usage (FILE *f)
   fprintf (f, "Copyright 2005 Eric L. Smith\n");
   fprintf (f, "http://nonpareil.brouhaha.com/\n");
   fprintf (f, "\n");
-  fprintf (f, "usage: %s binfile arrayname >cfile\n", progname);
+  fprintf (f, "usage: %s binfile arrayname [-h header] [-c source]\n", progname);
 }
 
 
@@ -43,45 +44,102 @@ void usage (FILE *f)
 
 int main (int argc, char *argv[])
 {
-  FILE *f;
+  FILE *bin_f;
+  char *bin_fn = NULL;
+  char *array_name = NULL;
+  char *header_fn = NULL;
+  char *source_fn = NULL;
   bool need_comma = false;
   int line_pos = 0;
+  int size = 0;
 
   progname = newstr (argv [0]);
 
-  if (argc != 3)
-    fatal (1, NULL);
-
-  f = fopen (argv [1], "rb");
-  if (! f)
-    fatal (2, "Can't open input file\n");
-
-  printf ("const unsigned char %s [] =\n", argv [2]);
-  printf ("{\n");
-
-  while (true)
+  while (--argc)
     {
-      int b = fgetc (f);
-      if (b == EOF)
+      argv++;
+      if (*argv [0] == '-')
 	{
-	  if (ferror (f))
-	    fatal (3, "Error reading input file\n");
-	  break;
+	  if (strcmp (argv [0], "-h") == 0)
+	    {
+	      if (--argc == 0)
+		fatal (1, "-h option must be followed by filename\n");
+	      header_fn = argv [1];
+	      argv++;
+	    }
+	  else if (strcmp (argv [0], "-c") == 0)
+	    {
+	      if (--argc == 0)
+		fatal (1, "-c option must be followed by filename\n");
+	      source_fn = argv [1];
+	      argv++;
+	    }
+	  else
+	    fatal (1, "unrecognized option '%s'\n", argv [0]);
 	}
-      if (need_comma)
-	printf (",");
-      if (line_pos == LINE_MAX_BYTES)
-	{
-	  printf ("\n");
-	  line_pos = 0;
-	}
-      if (line_pos == 0)
-	printf ("  ");
-      printf ("0x%02x", b & 0xff);
-      line_pos++;
-      need_comma = true;
+      else if (! bin_fn)
+	bin_fn = argv [0];
+      else if (! array_name)
+	array_name = argv [0];
+      else
+	fatal (1, NULL);
     }
 
-  printf ("\n};\n");
+  if (! (bin_fn && array_name))
+    fatal (1, "Input filename and array name must be specified.\n");
+
+  bin_f = fopen (bin_fn, "rb");
+  if (! bin_f)
+    fatal (2, "Can't open input file\n");
+
+  if (header_fn)
+    {
+      FILE *header_f = fopen (header_fn, "w");
+      if (! header_f)
+	fatal (2, "Can't open output header file\n");
+
+      fprintf (header_f, "extern const unsigned char %s [];\n", array_name);
+      fprintf (header_f, "extern unsigned long %s_size;\n", array_name);
+      fclose (header_f);
+    }
+
+  if (source_fn)
+    {
+      FILE *source_f = fopen (source_fn, "w");
+      if (! source_f)
+	fatal (2, "Can't open output source file\n");
+
+      fprintf (source_f, "const unsigned char %s [] =\n", array_name);
+      fprintf (source_f, "{\n");
+
+      while (true)
+	{
+	  int b = fgetc (bin_f);
+	  if (b == EOF)
+	    {
+	      if (ferror (bin_f))
+		fatal (3, "Error reading input file\n");
+	      break;
+	    }
+	  size++;
+	  if (need_comma)
+	    fprintf (source_f, ",");
+	  if (line_pos == LINE_MAX_BYTES)
+	    {
+	      fprintf (source_f, "\n");
+	      line_pos = 0;
+	    }
+	  if (line_pos == 0)
+	    fprintf (source_f, "  ");
+	  fprintf (source_f, "0x%02x", b & 0xff);
+	  line_pos++;
+	  need_comma = true;
+	}
+
+      fprintf (source_f, "\n};\n");
+      fprintf (source_f, "unsigned long %s_size = %d;\n", array_name, size);
+      fclose (source_f);
+    }
+
   exit (0);
 }
