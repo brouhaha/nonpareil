@@ -244,6 +244,7 @@ nonpareil_env = build_env.Copy ()
 
 nonpareil_srcs = Split ("""proc.c glib_async_queue_source.c
                            about.c goose.c pixbuf_util.c
+                           calc_chooser.c
                            sound.c
                            display.c keyboard.c slide_switch.c printer.c
                            platform.c model.c
@@ -394,6 +395,7 @@ if build_env ['build_target_only'] == 0:
 
 if build_env ['build_target_only'] == 0:
     headers = Split ("""util.h
+                        calc_chooser.h
                         arch.h model.h platform.h kml.h
                         proc.h proc_int.h glib_async_queue_source.h
                         digit_ops.h

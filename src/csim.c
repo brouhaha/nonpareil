@@ -43,6 +43,7 @@ MA 02111, USA.
 #include "sound.h"
 #include "printer.h"
 #include "csim.h"
+#include "calc_chooser.h"
 
 
 #ifdef HAS_DEBUGGER_GUI
@@ -467,6 +468,36 @@ bool gui_remove_hardware (void *ref,
 }
 
 
+char *find_kml_file (char *kml_name)
+{
+  char *kml_fn;
+  char *p;
+
+  if (kml_name)
+    {
+      kml_fn = find_file_in_path_list (kml_name, ".kml", default_path);
+      if (! kml_fn)
+	fatal (2, "can't find KML file '%s'\n", kml_name);
+      return kml_fn;
+    }
+
+  // $$$ following is not portable!
+  p = strrchr (progname, '/');
+  if (p)
+    p++;
+  else
+    p = progname;
+
+  kml_name = newstrcat (p, ".kml");
+  kml_fn = find_file_in_path_list (kml_name, NULL, default_path);
+  if (kml_fn)
+    return kml_fn;
+
+  kml_fn = calculator_chooser (default_path);
+  return kml_fn;
+}
+
+
 int main (int argc, char *argv[])
 {
   csim_t *csim;
@@ -526,25 +557,9 @@ int main (int argc, char *argv[])
 	kml_name = argv [0];
     }
 
-  if (kml_name)
-    {
-      kml_fn = find_file_in_path_list (kml_name, ".kml", default_path);
-      if (! kml_fn)
-	fatal (2, "can't find KML file '%s'\n", kml_name);
-    }
-  else
-    {
-      char *p = strrchr (progname, '/');
-      if (p)
-	p++;
-      else
-	p = progname;
-      kml_name = newstrcat (p, ".kml");
-      kml_fn = find_file_in_path_list (kml_name, NULL, default_path);
-      if (! kml_fn)
-	fatal (1, "can't find KML file '%s'\n", kml_name);
-    }
-
+  kml_fn = find_kml_file (kml_name);
+  if (! kml_fn)
+    fatal (1, "no KML file\n");
 
   csim->kml = read_kml_file (kml_fn);
   if (! csim->kml)
