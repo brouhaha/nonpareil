@@ -347,10 +347,17 @@ bool sim_read_object_file (sim_t *sim, char *fn)
   if (strncmp (magic, "MOD1", sizeof (magic)) == 0)
     return sim_read_mod1_file (sim, f);
 
-  f = freopen (NULL, "r", f);  // switch from binary to text mode, and rewind
+  // switch from binary to text mode, and rewind
+#ifdef MINGW
+  f = freopen (fn, "r", f);
+  // Microsoft freopen() isn't compliant with the C standard, which allows
+  // NULL for the filename if you're reopening an existing file handle.
+#else
+  f = freopen (NULL, "r", f);
+#endif
   if (! f)
     {
-      fprintf (stderr, "error opening object file\n");
+      fprintf (stderr, "error reopening object file\n");
       return (false);
     }
 
