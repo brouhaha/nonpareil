@@ -16,12 +16,11 @@ Ports:
         http://www.mingw.org/MinGWiki/index.php/build%20a%20Win32%20x-compiler%20for%20Linux
         http://members.lycos.co.uk/alexv6/Cross_mingw_building_HOWTO.html
 
-    Toolkits:
+    Libraries and Toolkits:
       GTK+ for Windows:      http://www.gimp.org/~tml/gimp/win32/
       GTK+ for Windows runtime installer:  http://members.lycos.co.uk/alexv6/
-
-      Other libraries needed for Windows:  http://gnuwin32.sourceforge.net/
-	(freetype, jpeg, libpng, tiff)
+      libxml2 for Windows:   http://www.zlatkovic.com/libxml.en.html
+      SDL for Windows:       http://www.libsdl.org/
 
     Installers:
       NSIS:        http://nsis.sourceforge.net/
