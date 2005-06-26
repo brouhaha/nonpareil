@@ -59,7 +59,11 @@ MA 02111, USA.
 #endif
 
 
+#ifdef DEFAULT_PATH
 char *default_path = MAKESTR(DEFAULT_PATH);
+#else
+char *default_path = NULL;
+#endif
 
 
 void usage (FILE *f)

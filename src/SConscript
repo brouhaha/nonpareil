@@ -291,7 +291,8 @@ if (not ming) or (cross and not build_target_only):
     nonpareil_env.ParseConfig (sdl_pkg_config_cmd)
 
 csim_env = nonpareil_env.Copy ()
-csim_env.Append (CPPDEFINES = {'DEFAULT_PATH': build_env ['libdir']})
+if not ming:
+    csim_env.Append (CPPDEFINES = {'DEFAULT_PATH': build_env ['libdir']})
 
 if build_env ['target'] == 'win32':
     csim_env.Append (CPPDEFINES = {'SHAPE_DEFAULT': "false"})

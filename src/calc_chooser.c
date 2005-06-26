@@ -77,8 +77,9 @@ char *calculator_chooser (char *path)
   gtk_file_chooser_set_filter (GTK_FILE_CHOOSER (file_chooser),
 			       kml_filter);
 
-  gtk_file_chooser_set_current_folder (GTK_FILE_CHOOSER (file_chooser),
-				       path);
+  if (path)
+    gtk_file_chooser_set_current_folder (GTK_FILE_CHOOSER (file_chooser),
+					 path);
 
   gtk_container_add (GTK_CONTAINER (GTK_DIALOG (dialog)->vbox),
 		     file_chooser);
