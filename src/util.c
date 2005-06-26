@@ -225,7 +225,11 @@ bool dir_exists (char *fn)
 
 bool create_dir (char *fn)
 {
+#ifdef MINGW
+  return mkdir (fn) == 0;
+#else
   return mkdir (fn, DEF_DIR_MODE) == 0;
+#endif
 }
 
 
