@@ -281,6 +281,7 @@ static void configure_load_module (gpointer callback_data,
 {
   csim_t *csim = callback_data;
   GtkWidget *dialog;
+  GtkFileFilter *mod_filter;
   char *fn;
 
   dialog = gtk_file_chooser_dialog_new ("Load Module",
@@ -291,6 +292,12 @@ static void configure_load_module (gpointer callback_data,
 					GTK_STOCK_OPEN,
 					GTK_RESPONSE_ACCEPT,
 					NULL);
+
+  mod_filter = gtk_file_filter_new ();
+
+  gtk_file_filter_add_pattern (mod_filter, "*.mod");
+
+  gtk_file_chooser_set_filter (GTK_FILE_CHOOSER (dialog), mod_filter);
 
   if (gtk_dialog_run (GTK_DIALOG (dialog)) != GTK_RESPONSE_ACCEPT)
     {
