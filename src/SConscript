@@ -56,6 +56,7 @@ if cross and ming and build_target_only:
     build_env.Append (CPPPATH = ['/usr/local/gtkwin/SDL-1.2.8/include'])
     build_env.Append (LIBPATH = ['/usr/local/gtkwin/SDL-1.2.8/lib'])
     build_env.Append (LIBS = ['libSDL'])
+    build_env.Replace (PROGSUFFIX = '.exe')
 
 if ming and (build_target_only or not cross):
     build_env.Append (CPPDEFINES = { 'MINGW': '1' })
