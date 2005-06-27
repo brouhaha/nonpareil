@@ -1,8 +1,8 @@
-; HP-35 ROM code disassembled from dump by Peter Monta
-; Copyright 2004 Eric L. Smith <eric@brouhaha.com>
+; 35 ROM code disassembled from dump by Peter Monta
+; Copyright 2004, 2005 Eric L. Smith <eric@brouhaha.com>
 ; $Id$
 
-; Much of the code is similar to the HP-45 ROM source code, so labels
+; Much of the code is similar to the 45 ROM source code, so labels
 ; have been copied from that.
 ;
 ; Some conditional branch instructions ("if no carry go to") may
@@ -13,7 +13,7 @@
 
 	.rom @00
 
-	jsb l00067
+	jsb l00067		; JSB used as unconditional goto
 	go to l00277
 	
 l00002:	0 -> s8
