@@ -59,7 +59,8 @@ if cross and ming and build_target_only:
     build_env.Replace (PROGSUFFIX = '.exe')
 
 if ming and (build_target_only or not cross):
-    build_env.Append (CPPDEFINES = { 'MINGW': '1' })
+    build_env.Append (CPPDEFINES = { 'MINGW': '1',
+                                     'MS_WINDOWS' : '1'})
 
 #-----------------------------------------------------------------------------
 # common components
@@ -317,6 +318,9 @@ for src in nonpareil_csim_srcs:
 
 for src in nonpareil_srcs:
     nonpareil_objs.append (nonpareil_env.Object (src))
+
+if cross and ming and build_target_only:
+    nonpareil_env.Append (LINKFLAGS = ['-mwindows'])
 
 nonpareil = nonpareil_env.Program (target = 'nonpareil',
                                    source = (nonpareil_objs +

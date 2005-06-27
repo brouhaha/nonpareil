@@ -483,7 +483,14 @@ void set_default_state_path (csim_t *csim)
   strcpy (csim->state_fn, p);
   // $$$ not sure whether we're supposed to g_free() the home dir string
 
-  max_strncat (csim->state_fn, "/.nonpareil", sizeof (csim->state_fn));
+  max_strncat (csim->state_fn, G_DIR_SEPARATOR_S, sizeof (csim->state_fn));
+
+#ifdef MS_WINDOWS
+  max_strncat (csim->state_fn, "nonpareil", sizeof (csim->state_fn));
+#else
+  max_strncat (csim->state_fn, ".nonpareil", sizeof (csim->state_fn));
+#endif
+
   if (! dir_exists (csim->state_fn))
     {
       if (! create_dir (csim->state_fn))
