@@ -6,8 +6,11 @@ $Id$
 
 News:
 
-Release 0.75 has a minor fix to the build process so that the Windows
-executables will have a '.exe.' extension.  There is no code change.
+Release 0.76 has a minor fix to the build process so that the Windows
+executables will have a '.exe.' extension.  The HP-67 files that were
+inadventently included in the last several releases have been removed
+as Nonpareil is not yet able to simulate it correctly.  There are no
+code changes from release 0.74.
 
 Release 0.74 will prompt for a KML file if none is given on the command
 line.  There is now alpha-level support for Windows (win32).
