@@ -241,7 +241,7 @@ static void op_arith (sim_t *sim, int opcode)
       reg_test_nonequal (cpu_reg->c, NULL, first, last, & cpu_reg->carry);
       break;
     case 0x0e:  /* a + c -> c[f] */
-      reg_add (cpu_reg->a, cpu_reg->a, cpu_reg->c,
+      reg_add (cpu_reg->c, cpu_reg->a, cpu_reg->c,
 	       first, last,
 	       & cpu_reg->carry, arithmetic_base (cpu_reg));
       break;
