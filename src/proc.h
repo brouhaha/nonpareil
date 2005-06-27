@@ -28,6 +28,7 @@ MA 02111, USA.
 enum
 {
   event_reset,
+  event_clear_memory,
   event_power_down,
   event_power_up,
   event_sleep,
@@ -145,6 +146,7 @@ void sim_event        (sim_t  *sim,
 void sim_quit         (sim_t *sim);  // kill the sim thread
 
 void sim_reset        (sim_t *sim);  // resets simulated processor
+void sim_clear_memory (sim_t *sim);  // clears all writeable memory
 void sim_single_cycle (sim_t *sim);  // executes one "cycle"
 void sim_single_inst  (sim_t *sim);  // executes one instruction
 void sim_start        (sim_t *sim);  // starts executing instructions (set run flag)

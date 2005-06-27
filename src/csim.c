@@ -279,6 +279,51 @@ static void edit_paste (gpointer callback_data,
 }
 
 
+static void reset (sim_t *sim, bool obdurate)
+{
+  bool run_flag;
+
+  run_flag = sim_running (sim);
+  if (run_flag)
+    sim_stop (sim);
+
+  sim_reset (sim);
+  if (obdurate)
+    sim_clear_memory (sim);
+  
+  if (run_flag)
+    sim_start (sim);
+}
+
+
+static char reset_message [] =
+  "Resetting the calculator may erase any data and programs you have "
+  "entered.  Are you sure you want to reset the calculator?";
+
+static void edit_reset (gpointer callback_data,
+			guint    callback_action,
+			GtkWidget *widget)
+{
+  csim_t *csim = callback_data;
+  GtkWidget *dialog;
+  bool obdurate = callback_action != 0;
+  GtkResponseType response;
+
+  dialog = gtk_message_dialog_new (GTK_WINDOW (csim->main_window),
+				   GTK_DIALOG_DESTROY_WITH_PARENT,
+				   GTK_MESSAGE_QUESTION,
+				   GTK_BUTTONS_YES_NO,
+				   reset_message);
+
+  response = gtk_dialog_run (GTK_DIALOG (dialog));
+
+  gtk_widget_destroy (dialog);
+
+  if (response == GTK_RESPONSE_YES)
+    reset (csim->sim, obdurate);
+}
+
+
 static void configure_load_module (gpointer callback_data,
 		       guint    callback_action,
 		       GtkWidget *widget)
@@ -349,6 +394,9 @@ static GtkItemFactoryEntry menu_items [] =
     { "/_Edit",         NULL,         NULL,          0, "<Branch>" },
     { "/Edit/_Copy",    "<control>C", edit_copy,     1, "<StockItem>", GTK_STOCK_COPY },
     { "/Edit/_Paste",   "<control>V", edit_paste,    1, "<StockItem>", GTK_STOCK_PASTE },
+    { "/Edit/sep1",     NULL,         NULL,          0, "<Separator>" },
+    { "/Edit/Hard Reset", NULL,       edit_reset,    0, "<Item>" },
+    { "/Edit/Obdurate Reset", NULL,   edit_reset,    1, "<Item>" },
     { "/_Configure",    NULL,         NULL,          0, "<Branch>" },
     { "/Configure/Load Module", NULL, configure_load_module, 1, "<Item>" },
 #ifdef HAS_DEBUGGER

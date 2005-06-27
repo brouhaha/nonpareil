@@ -1762,6 +1762,17 @@ static void nut_reset (sim_t *sim)
 }
 
 
+static void nut_clear_memory (sim_t *sim)
+{
+  nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
+  int addr;
+
+  for (addr = 0; addr < sim->max_ram; addr++)
+    if (nut_reg->ram_exists [addr])
+      reg_zero (& nut_reg->ram [addr], 0, WSIZE - 1);
+}
+
+
 static bool nut_read_ram (sim_t *sim, int addr, uint64_t *val)
 {
   nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
@@ -1936,6 +1947,9 @@ static void nut_event_fn (sim_t  *sim,
       break;
     case event_reset:
       nut_reset (sim);
+      break;
+    case event_clear_memory:
+      nut_clear_memory (sim);
       break;
     default:
       // warning ("proc_nut: unknown event %d\n", event);

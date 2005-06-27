@@ -77,7 +77,6 @@ typedef enum
   CMD_REMOVE_CHIP,
   CMD_EVENT,
   CMD_QUIT,
-  CMD_RESET,
   CMD_GET_IO_PAUSE_FLAG,
   CMD_SET_IO_PAUSE_FLAG,
   CMD_WRITE_REGISTER,
@@ -623,11 +622,6 @@ static void handle_sim_cmd (sim_t *sim, sim_msg_t *msg)
       sim->quit_flag = true;
       msg->reply = OK;
       break;
-    case CMD_RESET:
-      // $$$ what to do
-      // $$$ Allow reset while runflag is true?
-      msg->reply = OK;
-      break;
     case CMD_SET_IO_PAUSE_FLAG:
       sim->io_pause_flag = msg->b;
       g_get_current_time (& sim->thread_vars->last_run_time);
@@ -954,10 +948,13 @@ void sim_quit (sim_t *sim)
 
 void sim_reset (sim_t *sim)
 {
-  sim_msg_t msg;
-  memset (& msg, 0, sizeof (sim_msg_t));
-  msg.cmd = CMD_RESET;
-  send_cmd_to_sim_thread (sim, (gpointer) & msg);
+  sim_event (sim, event_reset, NULL, 0, NULL);
+}
+
+
+void sim_clear_memory (sim_t *sim)
+{
+  sim_event (sim, event_clear_memory, NULL, 0, NULL);
 }
 
 

@@ -1040,6 +1040,16 @@ static void classic_reset (sim_t *sim)
 }
 
 
+static void classic_clear_memory (sim_t *sim)
+{
+  classic_cpu_reg_t *cpu_reg = get_chip_data (sim->first_chip);
+  int addr;
+
+  for (addr = 0; addr < sim->max_ram; addr++)
+    reg_zero (cpu_reg->ram [addr], 0, WSIZE - 1);
+}
+
+
 static bool classic_read_ram (sim_t *sim, int addr, uint64_t *val)
 {
   classic_cpu_reg_t *cpu_reg = get_chip_data (sim->first_chip);
@@ -1163,6 +1173,9 @@ static void classic_event_fn (sim_t  *sim,
     {
     case event_reset:
        classic_reset (sim);
+       break;
+    case event_clear_memory:
+       classic_clear_memory (sim);
        break;
     default:
       // warning ("proc_classic: unknown event %d\n", event);

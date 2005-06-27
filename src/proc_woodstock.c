@@ -1561,6 +1561,16 @@ static void woodstock_reset (sim_t *sim)
 }
 
 
+static void woodstock_clear_memory (sim_t *sim)
+{
+  act_reg_t *act_reg = get_chip_data (sim->first_chip);
+  int addr;
+
+  for (addr = 0; addr < sim->max_ram; addr++)
+    reg_zero (act_reg->ram [addr], 0, WSIZE - 1);
+}
+
+
 static void woodstock_new_rom_addr_space (sim_t *sim,
 					  int max_bank,
 					  int max_page,
@@ -1646,6 +1656,9 @@ static void woodstock_event_fn (sim_t  *sim,
     {
     case event_reset:
        woodstock_reset (sim);
+       break;
+    case event_clear_memory:
+       woodstock_clear_memory (sim);
        break;
     case event_restore_completed:
       // force display update
