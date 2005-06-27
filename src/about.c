@@ -41,6 +41,7 @@ static char *credits_people [] =
   "Timothee Basset",
   "Les Bell",
   "Paul Davis",
+  "Bob Edelen",
   "Steven Elllis",
   "Florian Engelhardt",
   "Bernhard Engl",
@@ -51,7 +52,9 @@ static char *credits_people [] =
   "HrastProgrammer",
   "Steven Knight",
   "Allen Kossow",
+  "Wlodek Mier-J\u0119drzejowicz",
   "Peter Monta",
+  "Richard Nelson",
   "Thomas Olesen",
   "Richard Ottosen",
   "Jim Phillips",
@@ -59,13 +62,14 @@ static char *credits_people [] =
   "Hedley Rainnie",
   "Chris Rocatti",
   "Adam Sampson",
+  "Jake Schwartz",
   "Nelson Sicuro",
   "Randy Sloyer",
   "Kenneth Sumrall",
 };
 
 
-#define CREDITS_COLUMNS 3
+#define CREDITS_COLUMNS 4
 
 static void add_credits (GtkWidget *widget)
 {
