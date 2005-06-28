@@ -84,7 +84,7 @@ all_dll          = [libxml2_dll,      sdl_dll]
 # source tarball
 #-----------------------------------------------------------------------------
 
-dist_files = ['SConscript'] + all_dll_src_dist + all_dll_bin_dist
+dist_files = ['SConscript'] + all_dll
 
 env.Distribute (source_release_dir, dist_files)
 
