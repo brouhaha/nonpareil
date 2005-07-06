@@ -17,15 +17,19 @@ Build process:
 
 User interface:
 
+  Custom menu from KML file (e.g., "ON-x" commands)
+
   Startup:
       Save path of KML file in state save file.
       Allow starting Nonpareil with state save file as command line argument.
       If no command line argument, provide dialog for user to choose
-      calculator.
+           calculator (KML done, should show state saves as well).
 
-  Printer
+  Configuration:
+      Implement "remove module"
+
+  Printer:
       should mode switch be a menu?
-      plug/unplug (load/unload module)
       power switch?
       handle closing window, provide way to reopen
       start "tape" at bottom of window
@@ -170,23 +174,52 @@ Debugger:
 
 Better model support:
 
-  Complete 41C Phineas (timer chip in Time Module/41CX).  Make stopwatch work
-      (TESTB mode?)
-
   Add 41C HEPAX support.
 
   Scan images at uniform scale and without JPEG compression.
 
   Dump actual ROMs:
-      Classic:    HP-45, HP-55, HP-65, HP-70, HP-80
-      Classic/printing:  HP-46, HP-81, HP 9805A
-      Woodstock:  HP-22, HP-27, HP-29C
-      Topcat:     HP-91, HP-92, HP-95C, HP-97
-      Sting:      HP-10, HP-19C
-      Spice:      HP-31E, HP-33E
-      Cricket:    HP-01
 
-  Compare actual HP-45, HP-55, and HP-80 ROMs to CASM output.
+      Classic:
+		HP-35 (early 1818-0006/17/20, late 24/26/28)
+                HP-45 (early 1818-0058?)
+                HP-55
+                HP-65
+                HP-70
+                HP-80
+
+      Classic/printing:
+		HP-46
+		HP-81
+		HP 9805A
+
+      Woodstock:
+		HP-22
+		HP-27
+		HP-29C
+		HP-67 (0227: early rev not compatible with 1820-1596 AMI ACT)
+                      (0550, 0551: late rev to fix trig bugs)
+
+      Topcat:
+		HP-91
+		HP-92
+		HP-95C
+		HP-97 (0225: early rev not compatible with 1820-1596 AMI ACT)
+                      (0267: late ev compatible with 1820-1596 AMI ACT)
+                      (0550, 0551: late rev to fix trig bugs)
+                      (0233, 0229, 0230: common)
+
+      Sting:	HP-10 (decap?)
+		HP-19C
+
+      Spice:
+		HP-31E
+		HP-33E
+
+      Cricket:
+		HP-01 (decap?)
+
+  Compare actual HP-55, and HP-80 ROMs to CASM output.
 
   Add Woodstock microinstructions for card reader (HP-67, HP-97)
 
