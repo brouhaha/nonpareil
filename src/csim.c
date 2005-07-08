@@ -738,14 +738,12 @@ int main (int argc, char *argv[])
   if (! csim->gui_display)
     fatal (2, "can't initialize display\n");
 
-  csim->sim = sim_init (csim,
-			model,
-			model_info->clock_frequency,
-			model_info->ram_size,
+  csim->sim = sim_init (model,
+			csim->kml->character_segment_map,  // char_gen
 			gui_install_hardware,
-			csim->kml->character_segment_map,
+			csim,  // install_hardware_callback_ref
 			(display_update_callback_fn_t *) gui_display_update,
-			csim->gui_display);
+			csim->gui_display);  // display_update_callback_ref
 
 #ifdef HAS_DEBUGGER_GUI
   init_debugger_gui (csim->sim);

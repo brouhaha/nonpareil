@@ -296,7 +296,7 @@ static bool sim_read_mod1_file (sim_t *sim, FILE *f)
       break;
 
     case HARDWARE_PRINTER:
-      sim->install_hardware_callback (sim->gui_ref, CHIP_HELIOS);
+      sim->install_hardware_callback (sim->install_hardware_callback_ref, CHIP_HELIOS);
       break;
 
     default:
@@ -844,12 +844,10 @@ static gboolean gui_cmd_callback (gpointer data)
 // $$$ Some of the initialization here should be moved into
 // the thread function.
 
-sim_t *sim_init  (void *ref,  // passed to callbacks
-		  int model,
-		  int clock_frequency,  /* Hz */
-		  int ram_size,
-		  install_hardware_callback_fn_t *install_hardware_callback,
+sim_t *sim_init  (int model,
 		  segment_bitmap_t *char_gen,
+		  install_hardware_callback_fn_t *install_hardware_callback,
+		  void *install_hardware_callback_ref,
 		  display_update_callback_fn_t *display_update_callback,
 		  void *display_update_callback_ref)
 {
@@ -860,8 +858,8 @@ sim_t *sim_init  (void *ref,  // passed to callbacks
   sim = alloc (sizeof (sim_t));
   sim->thread_vars = alloc (sizeof (sim_thread_vars_t));
 
-  sim->gui_ref = ref;
   sim->install_hardware_callback = install_hardware_callback;
+  sim->install_hardware_callback_ref = install_hardware_callback_ref;
 
   // save display callback info
   sim->display_update_callback = display_update_callback;
@@ -875,7 +873,7 @@ sim_t *sim_init  (void *ref,  // passed to callbacks
   sim->arch = model_info->cpu_arch;
   sim->proc = processor_dispatch [model_info->cpu_arch];
 
-  sim->words_per_usec = clock_frequency / (1.0e6 * arch_info->word_length);
+  sim->words_per_usec = model_info->clock_frequency / (1.0e6 * arch_info->word_length);
 
   sim->thread_vars->cmd_q = g_async_queue_new ();
   sim->thread_vars->reply_q = g_async_queue_new ();
@@ -892,7 +890,7 @@ sim_t *sim_init  (void *ref,  // passed to callbacks
 
   sim->source = alloc (sim->proc->max_bank * sim->proc->max_rom * sizeof (char *));
 
-  sim->proc->new_processor (sim, ram_size);
+  sim->proc->new_processor (sim, model_info->ram_size);
 
   sim->char_gen = char_gen;
 

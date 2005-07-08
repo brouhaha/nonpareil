@@ -129,9 +129,6 @@ typedef struct sim_thread_vars_t sim_thread_vars_t;
 
 struct sim_t
 {
-  void *gui_ref;       // passed to GUI callbacks
-  install_hardware_callback_fn_t *install_hardware_callback;
-
   chip_t *first_chip;  // opaque, but always the CPU
   chip_t *last_chip;   // opaque
 
@@ -177,6 +174,9 @@ struct sim_t
   // callbacks into GUI
   display_update_callback_fn_t *display_update_callback;
   void *display_update_callback_ref;
+
+  install_hardware_callback_fn_t *install_hardware_callback;
+  void *install_hardware_callback_ref;
 };
 
 
