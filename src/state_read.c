@@ -176,7 +176,10 @@ static void parse_chip (sax_data_t *sdata, char **attrs)
     fatal (3, "chip element with no name\n");
   sdata->chip = sim_find_chip (sdata->sim, name, addr);
   if (! sdata->chip)
-    fatal (3, "can't find chip '%s' addr %" PRIx64, name, addr);
+    {
+      warning ("can't find chip '%s' addr %" PRIx64 ", skipping\n", name, addr);
+      return;
+    }
   chip_info = sim_get_chip_info (sdata->sim, sdata->chip);
   if (! chip_info)
     fatal (3, "can't get info on chip '%s' addr %" PRIx64 "\n,", name, addr);
@@ -227,6 +230,9 @@ static void parse_reg (sax_data_t *sdata, char **attrs)
   if (! got_data)
     warning ("register with no data\n");
   if (! (got_name && got_data))
+    return;
+
+  if(! sdata->chip)  // if the register belongs to a chip not present, skip it
     return;
 
   // find register
