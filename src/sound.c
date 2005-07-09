@@ -99,6 +99,9 @@ bool play_sound (const uint8_t *buf, size_t len)
   uint8_t channels;
   int freq;
 
+  if (! sound_open)
+    return false;
+
   for (index = 0; index < MAX_SOUNDS; index++)
     if (sounds [index].pos == sounds [index].len)
       break;
