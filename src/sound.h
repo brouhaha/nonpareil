@@ -19,6 +19,30 @@ Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
 MA 02111, USA.
 */
 
+
+#define SAMPLE_TYPE AUDIO_S16
+typedef int16_t sample_t;
+
+
 bool init_sound (void);
 
-bool play_sound (const uint8_t *buf, size_t len);
+
+// Returns a non-negative integer reference number for the sound,
+// or a negative value for an error condition.
+int play_sound (const uint8_t *buf, size_t len);
+
+
+int synth_sound (float    frequency,  // Hz
+		 uint32_t amplitude,  // not yet implemented
+		 float    duration,   // s, or zero for indefinite
+		 sample_t *waveform_table,
+		 uint32_t waveform_table_length);  // samples in table
+
+
+bool stop_sound (int id);
+
+
+extern sample_t squarewave_waveform_table [];
+extern uint32_t squarewave_waveform_table_length;
+
+

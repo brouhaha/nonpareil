@@ -34,12 +34,34 @@ MA 02111, USA.
 static bool sound_open = false;
 
 
+#define SAMPLE_RATE 22050
+
+#define MAX_SAMPLE 1024
+
+
 #define MAX_SOUNDS 4
+
+
+typedef enum { SOUND_NONE, SOUND_RECORDED, SOUND_SYNTH } sound_type_t;
+
+#define SYNTH_FRAC_BITS 8
+
+
 typedef struct
 {
-  uint8_t  *data;
-  uint32_t pos;
-  uint32_t len;
+  sound_type_t type;
+
+  // The following are for SOUND_RECORDED only:
+  uint8_t      *data;
+  uint32_t     len;        // length of data
+  uint32_t     pos;
+
+  // The following are for SOUND_SYNTH only:
+  int16_t      *waveform_table;
+  uint32_t     waveform_table_length;
+  uint32_t     waveform_pos;        // fractional
+  uint32_t     waveform_inc;        // fractional
+  int32_t      waveform_duration;   // in samples
 } sound_info_t;
 
 sound_info_t sounds [MAX_SOUNDS];
@@ -47,24 +69,75 @@ sound_info_t sounds [MAX_SOUNDS];
 SDL_AudioSpec hw_fmt;
 
 
-void sound_callback (void *unused UNUSED,
-		     uint8_t *stream,
-		     int len)
+static void sound_mix_recorded (sound_info_t *sound,
+				uint8_t *stream,
+				int len)
 {
-  int i;
   int count;
 
-  for (i = 0; i < MAX_SOUNDS; i++)
+  count = sound->len - sound->pos;
+  if (count > len)
+    count = len;
+  SDL_MixAudio (stream,
+		& sound->data [sound->pos],
+		count,
+		SDL_MIX_MAXVOLUME);
+  sound->pos += count;
+  if (sound->pos >= sound->len)
+    sound->type = SOUND_NONE;
+}
+
+
+static void sound_mix_synth (sound_info_t *sound,
+			     uint8_t *stream,
+			     int len)
+{
+  int i;
+  int16_t sample [MAX_SAMPLE];
+
+  if (sound->waveform_duration && (len > sound->waveform_duration))
+    len = sound->waveform_duration;
+
+  for (i = 0; i < len; i++)
     {
-      count = sounds [i].len - sounds [i].pos;
-      if (count > len)
-	count = len;
-      SDL_MixAudio (stream,
-		    & sounds [i].data [sounds [i].pos],
-		    count,
-		    SDL_MIX_MAXVOLUME);
-      sounds [i].pos += count;
+      // $$$ might be nice to interpolate
+      sample [i] = sound->waveform_table [sound->waveform_pos >> SYNTH_FRAC_BITS];
+      sound->waveform_pos += sound->waveform_inc;
+      if (sound->waveform_pos >= (sound->waveform_table_length << SYNTH_FRAC_BITS))
+	sound->waveform_pos -= (sound->waveform_table_length << SYNTH_FRAC_BITS);
+      
     }
+  SDL_MixAudio (stream,
+		(uint8_t *) & sample [0],
+		len,
+		SDL_MIX_MAXVOLUME);
+  if (sound->waveform_duration)
+    {
+      sound->waveform_duration -= len;
+      if (! sound->waveform_duration)
+	sound->type = SOUND_NONE;
+    }
+}
+
+
+static void sound_callback (void *unused UNUSED,
+			    uint8_t *stream,
+			    int len)
+{
+  int i;
+
+  for (i = 0; i < MAX_SOUNDS; i++)
+    switch (sounds [i].type)
+      {
+      case SOUND_NONE:
+	break;
+      case SOUND_RECORDED:
+	sound_mix_recorded (& sounds [i], stream, len);
+	break;
+      case SOUND_SYNTH:
+	sound_mix_synth (& sounds [i], stream, len);
+	break;
+      }
 }
 
 
@@ -75,10 +148,10 @@ bool init_sound (void)
   if (sound_open)
     return true;
 
-  req_fmt.freq = 22050;
-  req_fmt.format = AUDIO_S16,
+  req_fmt.freq = SAMPLE_RATE;
+  req_fmt.format = SAMPLE_TYPE;
   req_fmt.channels = 1;
-  req_fmt.samples = 8192;
+  req_fmt.samples = MAX_SAMPLE;
   req_fmt.callback = sound_callback;
   req_fmt.userdata = NULL;
 
@@ -89,11 +162,37 @@ bool init_sound (void)
 
   SDL_PauseAudio (0);
 
+  sound_open = true;
+
   return true;
 }
 
 
-bool play_sound (const uint8_t *buf, size_t len)
+static int find_open_sound_slot (void)
+{
+  int index;
+
+  if (! sound_open)
+    return -1;
+
+  for (index = 0; index < MAX_SOUNDS; index++)
+    if (sounds [index].type == SOUND_NONE)
+      break;
+
+  if (index >= MAX_SOUNDS)
+    return -1;
+
+  if (sounds [index].data)
+    {
+      free (sounds [index].data);
+      sounds [index].data = NULL;
+    }
+
+  return index;
+}
+
+
+int play_sound (const uint8_t *buf, size_t len)
 {
   int index;
   SDL_AudioCVT cvt;
@@ -101,18 +200,9 @@ bool play_sound (const uint8_t *buf, size_t len)
   uint8_t channels;
   int freq;
 
-  if (! sound_open)
-    return false;
-
-  for (index = 0; index < MAX_SOUNDS; index++)
-    if (sounds [index].pos == sounds [index].len)
-      break;
-
-  if (index >= MAX_SOUNDS)
-    return false;
-
-  if (sounds [index].data)
-    free (sounds [index].data);
+  index = find_open_sound_slot ();
+  if (index < 0)
+    return index;
 
   buf += 44;  // skip wave, data chunk header
   len -= 44;
@@ -124,7 +214,7 @@ bool play_sound (const uint8_t *buf, size_t len)
   if (SDL_BuildAudioCVT (& cvt,
 			 format, channels, freq,
 			 hw_fmt.format, hw_fmt.channels, hw_fmt.freq) < 0)
-    return false;
+    return -1;
 
   cvt.buf = alloc (len * cvt.len_mult);
   cvt.len = len;
@@ -133,6 +223,7 @@ bool play_sound (const uint8_t *buf, size_t len)
   SDL_ConvertAudio (& cvt);
 
   SDL_LockAudio ();
+  sounds [index].type = SOUND_RECORDED;
   sounds [index].data = cvt.buf;
   sounds [index].len = cvt.len * cvt.len_mult;
   sounds [index].pos = 0;
@@ -140,5 +231,60 @@ bool play_sound (const uint8_t *buf, size_t len)
 
   SDL_PauseAudio (0);
 
+  return index;
+}
+
+
+// duration can be zero for continuous
+int synth_sound (float    frequency,  // Hz
+		 uint32_t amplitude,  // not yet implemented
+		 float    duration,   // s, or zero for indefinite
+		 sample_t *waveform_table,
+		 uint32_t waveform_table_length)
+{
+  int index;
+  float inc;
+
+  index = find_open_sound_slot ();
+  if (index < 0)
+    return index;
+
+  inc = (waveform_table_length * frequency) / SAMPLE_RATE;
+
+  SDL_LockAudio ();
+  sounds [index].type = SOUND_SYNTH;
+
+  sounds [index].waveform_table = waveform_table;
+  sounds [index].waveform_table_length  = waveform_table_length;
+  sounds [index].waveform_pos = 0;
+  sounds [index].waveform_inc = inc * (1 << SYNTH_FRAC_BITS) + 0.5;
+  sounds [index].waveform_duration = duration * SAMPLE_RATE;
+  SDL_UnlockAudio ();
+
+  return index;
+}
+
+
+bool stop_sound (int id)
+{
+  if (id > MAX_SOUNDS)
+    return false;
+
+  SDL_LockAudio ();
+  sounds [id].type = SOUND_NONE;
+  SDL_UnlockAudio ();
+
+  if (sounds [id].data)
+    {
+      free (sounds [id].data);
+      sounds [id].data = NULL;
+    }
+
   return true;
 }
+
+
+sample_t squarewave_waveform_table [] = { -32767, 32767 };
+uint32_t squarewave_waveform_table_length = sizeof (squarewave_waveform_table) / sizeof (sample_t);
+
+
