@@ -69,7 +69,7 @@ static void slide_switch_toggled (GtkWidget *widget, slide_switch_info_t *sw)
 static void add_slide_switch (sim_t *sim,
 			      kml_t *kml,
 			      GtkWidget *fixed,
-			      GdkPixbuf *window_pixbuf,
+			      GdkPixbuf *window_pixbuf UNUSED,
 			      kml_switch_t *kml_switch,
 			      slide_switch_info_t *slide_switch_info)
 {
