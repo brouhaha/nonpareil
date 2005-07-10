@@ -83,8 +83,8 @@ static void fly_goose (goose_t *goose, bool move, bool reverse)
 }
 
 
-static void goose_click_callback (GtkWidget *widget,
-				  GdkEventButton *event,
+static void goose_click_callback (GtkWidget *widget     UNUSED,
+				  GdkEventButton *event UNUSED,
 				  gpointer data)
 {
   goose_t *goose = data;

@@ -24,6 +24,9 @@ MA 02111, USA.
 #include "glib_async_queue_source.h"
 
 
+#define UNUSED __attribute__ ((unused))
+
+
 struct GAsyncQueueSource
 {
   GSource      source;
@@ -52,7 +55,7 @@ static gboolean g_async_queue_source_check (GSource *source)
 
 static gboolean g_async_queue_source_dispatch (GSource *source,
 					       GSourceFunc callback,
-					       gpointer user_data)
+					       gpointer user_data UNUSED)
 {
   GAsyncQueueSource *s = (GAsyncQueueSource *) source;
   gpointer msg = g_async_queue_pop (s->msg_q);
@@ -70,10 +73,12 @@ static gboolean g_async_queue_source_dispatch (GSource *source,
 
 static GSourceFuncs g_async_queue_source_fns =
 {
-  g_async_queue_source_prepare,
-  g_async_queue_source_check,
-  g_async_queue_source_dispatch,
-  NULL
+  .prepare  = g_async_queue_source_prepare,
+  .check    = g_async_queue_source_check,
+  .dispatch = g_async_queue_source_dispatch,
+  .finalize = NULL,
+  .closure_callback = NULL,
+  .closure_marshal  = NULL
 };
 
 

@@ -125,7 +125,8 @@ static void xml_write_attribute_string (xmlTextWriterPtr writer,
 }
 
 
-static void write_slide_switches (sim_t *sim, xmlTextWriterPtr writer)
+static void write_slide_switches (sim_t *sim UNUSED,
+				  xmlTextWriterPtr writer)
 {
   int switch_number;
   int switch_position;

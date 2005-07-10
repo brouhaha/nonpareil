@@ -28,7 +28,7 @@ MA 02111, USA.
 
 model_info_t model_info [] =
   {
-    { "unknown", PLATFORM_UNKNOWN< ARCH_UNKNOWN,    0,      0 },
+    { "unknown", PLATFORM_UNKNOWN, ARCH_UNKNOWN,    0,      0 },
     { "01",   PLATFORM_CRICKET,   ARCH_CRICKET,     0,  38400 }, /* osc > bit time? */
     { "10",   PLATFORM_KISS,      ARCH_WOODSTOCK,   0, 185000 },
     { "10C",  PLATFORM_VOYAGER,   ARCH_NUT,        40, 215000 },
@@ -70,7 +70,7 @@ model_info_t model_info [] =
 
 int find_model_by_name (char *s)
 {
-  int i;
+  unsigned int i;
 
   for (i = 0; i < (sizeof (model_info) / sizeof (model_info_t)); i++)
     {

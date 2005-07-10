@@ -83,7 +83,8 @@ static reg_detail_t coconut_display_reg_detail [] =
 };
 
 
-static void coconut_op_display_off (sim_t *sim, int opcode)
+static void coconut_op_display_off (sim_t *sim,
+				    int opcode UNUSED)
 {
   nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
   coconut_display_reg_t *display = get_chip_data (nut_reg->display_chip);
@@ -95,7 +96,8 @@ static void coconut_op_display_off (sim_t *sim, int opcode)
 }
 
 
-static void coconut_op_display_toggle (sim_t *sim, int opcode)
+static void coconut_op_display_toggle (sim_t *sim,
+				       int opcode UNUSED)
 {
   nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
   coconut_display_reg_t *display = get_chip_data (nut_reg->display_chip);
@@ -105,7 +107,8 @@ static void coconut_op_display_toggle (sim_t *sim, int opcode)
 }
 
 
-static void coconut_op_display_compensation (sim_t *sim, int opcode)
+static void coconut_op_display_compensation (sim_t *sim UNUSED,
+					     int opcode UNUSED)
 {
   /* The real hardware uses this instruction for temperature compensation.
      For the simulator, don't do anything. */
@@ -282,17 +285,19 @@ static bool coconut_lcd_wr (sim_t *sim)
   return true;
 }
 
-static bool halfnut_lcd_rd_n (sim_t *sim, int n)
+static bool halfnut_lcd_rd_n (sim_t *sim UNUSED,
+			      int n UNUSED)
 {
   return true;
 }
 
-static bool halfnut_lcd_wr_n (sim_t *sim, int n)
+static bool halfnut_lcd_wr_n (sim_t *sim UNUSED,
+			      int n UNUSED)
 {
   return true;
 }
 
-static bool halfnut_lcd_wr (sim_t *sim)
+static bool halfnut_lcd_wr (sim_t *sim UNUSED)
 {
   return true;
 }
@@ -375,10 +380,10 @@ static void coconut_display_update (sim_t *sim,
 
 
 static void coconut_display_event_fn (sim_t  *sim,
-				      chip_t *chip,
+				      chip_t *chip UNUSED,
 				      int    event,
-				      int    arg,
-				      void   *data)
+				      int    arg UNUSED,
+				      void   *data UNUSED)
 {
   nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
   coconut_display_reg_t *display = get_chip_data (nut_reg->display_chip);

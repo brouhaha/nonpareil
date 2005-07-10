@@ -441,7 +441,8 @@ static void send_cmd_to_sim_thread (sim_t *sim, gpointer msg)
 }
 
 
-static void cmd_read_register (sim_t *sim, sim_msg_t *msg)
+static void cmd_read_register (sim_t *sim UNUSED,
+			       sim_msg_t *msg)
 {
   const chip_detail_t *chip_detail;
   const reg_detail_t *reg_detail;
@@ -483,7 +484,8 @@ static void cmd_read_register (sim_t *sim, sim_msg_t *msg)
 }
 
 
-static void cmd_write_register (sim_t *sim, sim_msg_t *msg)
+static void cmd_write_register (sim_t *sim UNUSED,
+				sim_msg_t *msg)
 {
   const chip_detail_t *chip_detail;
   const reg_detail_t *reg_detail;
@@ -597,7 +599,8 @@ static void cmd_add_chip (sim_t *sim, sim_msg_t *msg)
 }
 
 
-static void cmd_remove_chip (sim_t *sim, sim_msg_t *msg)
+static void cmd_remove_chip (sim_t *sim     UNUSED,
+			     sim_msg_t *msg UNUSED)
 {
   // $$$ more code needed here
 }
@@ -1045,8 +1048,8 @@ chip_t *sim_add_chip (sim_t              *sim,
 }
 
 
-void sim_remove_chip (sim_t  *sim,
-		      chip_t *chip)
+void sim_remove_chip (sim_t  *sim  UNUSED,
+		      chip_t *chip UNUSED)
 {
   fatal (3, "sim_remove_chip() unimplemented\n");
 }
@@ -1067,7 +1070,7 @@ chip_t *sim_get_next_chip (sim_t *sim, chip_t *chip)
 // (and address for chips that support multiple instances).
 chip_t *sim_find_chip (sim_t *sim,
 		       const char *name,
-		       uint64_t addr)
+		       uint64_t addr UNUSED)
 {
   chip_t *chip;
 
@@ -1085,20 +1088,21 @@ chip_t *sim_find_chip (sim_t *sim,
 }
 
 
-const chip_info_t *sim_get_chip_info (sim_t *sim,
+const chip_info_t *sim_get_chip_info (sim_t *sim UNUSED,
 				      chip_t *chip)
 {
   return & chip->chip_detail->info;
 }
 
 
-int sim_get_reg_count (sim_t *sim, chip_t *chip)
+int sim_get_reg_count (sim_t *sim UNUSED,
+		       chip_t *chip)
 {
   return chip->chip_detail->reg_count;
 }
 
 
-int sim_find_register (sim_t *sim,
+int sim_find_register (sim_t *sim UNUSED,
 		       chip_t *chip,
 		       char  *name)
 {
@@ -1117,7 +1121,7 @@ int sim_find_register (sim_t *sim,
 }
 
 
-const reg_info_t *sim_get_register_info (sim_t *sim,
+const reg_info_t *sim_get_register_info (sim_t *sim UNUSED,
 					 chip_t *chip,
 					 int   reg_num)
 {
@@ -1187,7 +1191,7 @@ bool sim_write_register (sim_t   *sim,
 
 
 // Bank switching routines
-int sim_create_bank_group (sim_t *sim)
+int sim_create_bank_group (sim_t *sim UNUSED)
 {
   static int bank_group = 0;
 

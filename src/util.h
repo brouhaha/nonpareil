@@ -20,6 +20,9 @@ MA 02111, USA.
 */
 
 
+#define UNUSED __attribute__ ((unused))
+
+
 #define QMAKESTR(x) #x
 #define MAKESTR(x) QMAKESTR(x)
 

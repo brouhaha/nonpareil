@@ -55,7 +55,8 @@ struct button_info_t
 // the first one is not recognized a second time.
 
 
-static void button_widget_pressed (GtkWidget *widget, button_info_t *button)
+static void button_widget_pressed (GtkWidget *widget UNUSED,
+				   button_info_t *button)
 {
   csim_t *csim = button->csim;
 
@@ -87,7 +88,8 @@ static int find_pressed_button (csim_t *csim)
   fatal (3, "keyboard rollover error\n");
 }
 
-static void button_widget_released (GtkWidget *widget, button_info_t *button)
+static void button_widget_released (GtkWidget *widget UNUSED,
+				    button_info_t *button)
 {
   csim_t *csim = button->csim;
   int i;

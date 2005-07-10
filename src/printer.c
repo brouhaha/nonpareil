@@ -252,7 +252,7 @@ static void gui_printer_update_line (gui_printer_t *p,
 }
 
 
-static gboolean printer_window_expose_callback (GtkWidget *widget,
+static gboolean printer_window_expose_callback (GtkWidget *widget UNUSED,
 						GdkEventExpose *event,
 						gpointer data)
 {
@@ -273,8 +273,8 @@ static gboolean printer_window_expose_callback (GtkWidget *widget,
 }
 
 
-void gui_printer_update (sim_t  *sim,
-			 chip_t *chip,
+void gui_printer_update (sim_t  *sim  UNUSED,
+			 chip_t *chip UNUSED,
 			 void   *ref,
 			 void   *data)
 {
@@ -323,8 +323,8 @@ void gui_printer_update (sim_t  *sim,
 }
 
 
-static gboolean printer_window_destroy_callback (GtkWidget *widget,
-						 GdkEventAny *event)
+static gboolean printer_window_destroy_callback (GtkWidget *widget  UNUSED,
+						 GdkEventAny *event UNUSED)
 {
   // $$$ more code needed here
   return FALSE;
@@ -407,7 +407,7 @@ static GtkWidget *gui_printer_create_mode_frame (gui_printer_t *p)
 #endif // PRINTER_MODE_BUTTONS
 
 
-static void gui_printer_print_button_pressed (GtkWidget *widget,
+static void gui_printer_print_button_pressed (GtkWidget *widget UNUSED,
 					      gpointer data)
 {
   gui_printer_t *p = data;
@@ -419,7 +419,7 @@ static void gui_printer_print_button_pressed (GtkWidget *widget,
 }
 
 
-static void gui_printer_print_button_released (GtkWidget *widget,
+static void gui_printer_print_button_released (GtkWidget *widget UNUSED,
 					       gpointer data)
 {
   gui_printer_t *p = data;
@@ -431,7 +431,7 @@ static void gui_printer_print_button_released (GtkWidget *widget,
 }
 
 
-static void gui_printer_advance_button_pressed (GtkWidget *widget,
+static void gui_printer_advance_button_pressed (GtkWidget *widget UNUSED,
 						gpointer data)
 {
   gui_printer_t *p = data;
@@ -443,7 +443,7 @@ static void gui_printer_advance_button_pressed (GtkWidget *widget,
 }
 
 
-static void gui_printer_advance_button_released (GtkWidget *widget,
+static void gui_printer_advance_button_released (GtkWidget *widget UNUSED,
 						 gpointer data)
 {
   gui_printer_t *p = data;
@@ -519,8 +519,8 @@ static GtkWidget *gui_printer_create_controls (gui_printer_t *p)
 
 
 static void gui_printer_size_toggle_callback (gpointer callback_data,
-					      guint    callback_action,
-					      GtkWidget *widget)
+					      guint    callback_action UNUSED,
+					      GtkWidget *widget        UNUSED)
 {
   gui_printer_t *p = callback_data;
 
@@ -529,10 +529,10 @@ static void gui_printer_size_toggle_callback (gpointer callback_data,
 
 
 static void gui_printer_edit_copy_callback (gpointer callback_data,
-					    guint    callback_action,
-					    GtkWidget *widget)
+					    guint    callback_action UNUSED,
+					    GtkWidget *widget        UNUSED)
 {
-  gui_printer_t *p = callback_data;
+  gui_printer_t *p UNUSED = callback_data;
   // $$$ not yet implemented
 }
 
@@ -621,7 +621,7 @@ static bool gui_printer_save_png (gui_printer_t *p)
 }
 
 
-static bool gui_printer_save_text (gui_printer_t *p)
+static bool gui_printer_save_text (gui_printer_t *p UNUSED)
 {
   // $$$ more code needed here
   printf ("text save not yet implemented\n");
@@ -648,7 +648,7 @@ static printer_save_file_type_info_t printer_save_file_type_info [] =
 // handles save (action==1) and save as (action==2)
 static void gui_printer_save (gpointer callback_data,
 			      guint    callback_action,
-			      GtkWidget *widget)
+			      GtkWidget *widget UNUSED)
 {
   gui_printer_t *p = callback_data;
   GtkWidget *dialog;
@@ -708,24 +708,24 @@ static void gui_printer_mode_callback (gpointer  callback_data,
 
 static GtkItemFactoryEntry gui_printer_menu_items [] =
   {
-    { "/_File",         NULL,         NULL,          0, "<Branch>" },
+    { "/_File",         NULL,         NULL,          0, "<Branch>", 0 },
     { "/File/_Save",    "<control>S", gui_printer_save,     1, "<StockItem>", GTK_STOCK_SAVE },
-    { "/File/Save _As", NULL,         gui_printer_save,     2, "<Item>" },
-    { "/_Edit",         NULL,         NULL,          0, "<Branch>" },
+    { "/File/Save _As", NULL,         gui_printer_save,     2, "<Item>", 0 },
+    { "/_Edit",         NULL,         NULL,          0, "<Branch>", 0 },
     { "/Edit/_Copy",    "<control>C", gui_printer_edit_copy_callback,
       1, "<StockItem>", GTK_STOCK_COPY },
 #ifdef PRINTER_MODE_MENU
-    { "/_Mode",         NULL,         NULL,          0, "<Branch>" },
+    { "/_Mode",         NULL,         NULL,          0, "<Branch>", 0 },
     { "/Mode/_Man",     NULL,         gui_printer_mode_callback,
-      PRINTER_MODE_MAN, "<RadioItem>" },
+      PRINTER_MODE_MAN, "<RadioItem>", 0 },
     { "/Mode/_Trace",   NULL,         gui_printer_mode_callback,
-      PRINTER_MODE_TRACE, "/Mode/Man" },
+      PRINTER_MODE_TRACE, "/Mode/Man", 0 },
     { "/Mode/_Norm",    NULL,         gui_printer_mode_callback,
-      PRINTER_MODE_NORM, "/Mode/Trace" },
+      PRINTER_MODE_NORM, "/Mode/Trace", 0 },
 #endif // PRINTER_MODE_MENU
-    { "/_View",         NULL,         NULL,          0, "<Branch>" },
+    { "/_View",         NULL,         NULL,          0, "<Branch>", 0 },
     { "/View/Double size", NULL,      gui_printer_size_toggle_callback,
-      1, "<ToggleItem>" },
+      1, "<ToggleItem>", 0 },
   };
 
 static gint n_gui_printer_menu_items = (sizeof (gui_printer_menu_items) /

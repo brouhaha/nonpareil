@@ -432,7 +432,8 @@ static void op_jsb (sim_t *sim, int opcode)
 }
 
 
-static void op_return (sim_t *sim, int opcode)
+static void op_return (sim_t *sim,
+		       int opcode UNUSED)
 {
   act_reg_t *act_reg = get_chip_data (sim->first_chip);
 
@@ -448,12 +449,14 @@ static void op_return (sim_t *sim, int opcode)
 }
 
 
-static void op_nop (sim_t *sim, int opcode)
+static void op_nop (sim_t *sim UNUSED,
+		    int opcode UNUSED)
 {
 }
 
 
-static void op_binary (sim_t *sim, int opcode)
+static void op_binary (sim_t *sim,
+		       int opcode UNUSED)
 {
   act_reg_t *act_reg = get_chip_data (sim->first_chip);
 
@@ -461,7 +464,8 @@ static void op_binary (sim_t *sim, int opcode)
 }
 
 
-static void op_decimal (sim_t *sim, int opcode)
+static void op_decimal (sim_t *sim,
+			int opcode UNUSED)
 {
   act_reg_t *act_reg = get_chip_data (sim->first_chip);
 
@@ -472,7 +476,8 @@ static void op_decimal (sim_t *sim, int opcode)
 /* $$$ woodstock doc says when increment or decrement P wraps,
  * P "disappears for one word time". */
 
-static void op_dec_p (sim_t *sim, int opcode)
+static void op_dec_p (sim_t *sim,
+		      int opcode UNUSED)
 {
   act_reg_t *act_reg = get_chip_data (sim->first_chip);
 
@@ -483,7 +488,8 @@ static void op_dec_p (sim_t *sim, int opcode)
 }
 
 
-static void op_inc_p (sim_t *sim, int opcode)
+static void op_inc_p (sim_t *sim,
+		      int opcode UNUSED)
 {
   act_reg_t *act_reg = get_chip_data (sim->first_chip);
 
@@ -493,7 +499,8 @@ static void op_inc_p (sim_t *sim, int opcode)
 }
 
 
-static void op_clear_s (sim_t *sim, int opcode)
+static void op_clear_s (sim_t *sim,
+			int opcode UNUSED)
 {
   act_reg_t *act_reg = get_chip_data (sim->first_chip);
   int i;
@@ -504,7 +511,8 @@ static void op_clear_s (sim_t *sim, int opcode)
 }
 
 
-static void op_m1_exch_c (sim_t *sim, int opcode)
+static void op_m1_exch_c (sim_t *sim,
+			  int opcode UNUSED)
 {
   act_reg_t *act_reg = get_chip_data (sim->first_chip);
 
@@ -512,7 +520,8 @@ static void op_m1_exch_c (sim_t *sim, int opcode)
 }
 
 
-static void op_m1_to_c (sim_t *sim, int opcode)
+static void op_m1_to_c (sim_t *sim,
+			int opcode UNUSED)
 {
   act_reg_t *act_reg = get_chip_data (sim->first_chip);
 
@@ -520,7 +529,8 @@ static void op_m1_to_c (sim_t *sim, int opcode)
 }
 
 
-static void op_m2_exch_c (sim_t *sim, int opcode)
+static void op_m2_exch_c (sim_t *sim,
+			  int opcode UNUSED)
 {
   act_reg_t *act_reg = get_chip_data (sim->first_chip);
 
@@ -528,7 +538,8 @@ static void op_m2_exch_c (sim_t *sim, int opcode)
 }
 
 
-static void op_m2_to_c (sim_t *sim, int opcode)
+static void op_m2_to_c (sim_t *sim,
+			int opcode UNUSED)
 {
   act_reg_t *act_reg = get_chip_data (sim->first_chip);
 
@@ -536,7 +547,8 @@ static void op_m2_to_c (sim_t *sim, int opcode)
 }
 
 
-static void op_f_to_a (sim_t *sim, int opcode)
+static void op_f_to_a (sim_t *sim,
+		       int opcode UNUSED)
 {
   act_reg_t *act_reg = get_chip_data (sim->first_chip);
 
@@ -544,7 +556,8 @@ static void op_f_to_a (sim_t *sim, int opcode)
 }
 
 
-static void op_f_exch_a (sim_t *sim, int opcode)
+static void op_f_exch_a (sim_t *sim,
+			 int opcode UNUSED)
 {
   act_reg_t *act_reg = get_chip_data (sim->first_chip);
   int t;
@@ -555,7 +568,8 @@ static void op_f_exch_a (sim_t *sim, int opcode)
 }
 
 
-static void op_circulate_a_left (sim_t *sim, int opcode)
+static void op_circulate_a_left (sim_t *sim,
+				 int opcode UNUSED)
 {
   act_reg_t *act_reg = get_chip_data (sim->first_chip);
   int i, t;
@@ -567,7 +581,8 @@ static void op_circulate_a_left (sim_t *sim, int opcode)
 }
 
 
-static void op_bank_switch (sim_t *sim, int opcode)
+static void op_bank_switch (sim_t *sim,
+			    int opcode UNUSED)
 {
   act_reg_t *act_reg = get_chip_data (sim->first_chip);
 
@@ -579,7 +594,8 @@ static void op_bank_switch (sim_t *sim, int opcode)
 }
 
 
-static void op_rom_selftest (sim_t *sim, int opcode)
+static void op_rom_selftest (sim_t *sim,
+			     int opcode UNUSED)
 {
   act_reg_t *act_reg = get_chip_data (sim->first_chip);
 
@@ -621,7 +637,8 @@ static void crc_update (sim_t *sim, int word)
 }
 
 
-static void op_c_to_addr (sim_t *sim, int opcode)
+static void op_c_to_addr (sim_t *sim,
+			  int opcode UNUSED)
 {
   act_reg_t *act_reg = get_chip_data (sim->first_chip);
 
@@ -635,7 +652,8 @@ static void op_c_to_addr (sim_t *sim, int opcode)
 }
 
 
-static void op_c_to_data (sim_t *sim, int opcode)
+static void op_c_to_data (sim_t *sim,
+			  int opcode UNUSED)
 {
   act_reg_t *act_reg = get_chip_data (sim->first_chip);
   int i;
@@ -659,7 +677,8 @@ static void op_c_to_data (sim_t *sim, int opcode)
 }
 
 
-static void op_data_to_c (sim_t *sim, int opcode)
+static void op_data_to_c (sim_t *sim,
+			  int opcode UNUSED)
 {
   act_reg_t *act_reg = get_chip_data (sim->first_chip);
   int i;
@@ -741,7 +760,8 @@ static void op_register_to_c (sim_t *sim, int opcode)
 }
 
 
-static void op_clear_data_regs (sim_t *sim, int opcode)
+static void op_clear_data_regs (sim_t *sim,
+				int opcode UNUSED)
 {
   act_reg_t *act_reg = get_chip_data (sim->first_chip);
   int base;
@@ -758,7 +778,8 @@ static void op_clear_data_regs (sim_t *sim, int opcode)
 }
 
 
-static void op_c_to_stack (sim_t *sim, int opcode)
+static void op_c_to_stack (sim_t *sim,
+			   int opcode UNUSED)
 {
   act_reg_t *act_reg = get_chip_data (sim->first_chip);
   int i;
@@ -772,7 +793,8 @@ static void op_c_to_stack (sim_t *sim, int opcode)
 }
 
 
-static void op_stack_to_a (sim_t *sim, int opcode)
+static void op_stack_to_a (sim_t *sim,
+			   int opcode UNUSED)
 {
   act_reg_t *act_reg = get_chip_data (sim->first_chip);
   int i;
@@ -786,7 +808,8 @@ static void op_stack_to_a (sim_t *sim, int opcode)
 }
 
 
-static void op_y_to_a (sim_t *sim, int opcode)
+static void op_y_to_a (sim_t *sim,
+		       int opcode UNUSED)
 {
   act_reg_t *act_reg = get_chip_data (sim->first_chip);
   int i;
@@ -798,7 +821,8 @@ static void op_y_to_a (sim_t *sim, int opcode)
 }
 
 
-static void op_down_rotate (sim_t *sim, int opcode)
+static void op_down_rotate (sim_t *sim,
+			    int opcode UNUSED)
 {
   act_reg_t *act_reg = get_chip_data (sim->first_chip);
   int i, t;
@@ -814,7 +838,8 @@ static void op_down_rotate (sim_t *sim, int opcode)
 }
 
 
-static void op_clear_reg (sim_t *sim, int opcode)
+static void op_clear_reg (sim_t *sim,
+			  int opcode UNUSED)
 {
   act_reg_t *act_reg = get_chip_data (sim->first_chip);
   int i;
@@ -938,7 +963,8 @@ static void op_del_sel_rom (sim_t *sim, int opcode)
 }
 
 
-static void op_keys_to_rom_addr (sim_t *sim, int opcode)
+static void op_keys_to_rom_addr (sim_t *sim,
+				 int opcode UNUSED)
 {
   act_reg_t *act_reg = get_chip_data (sim->first_chip);
 
@@ -953,7 +979,8 @@ static void op_keys_to_rom_addr (sim_t *sim, int opcode)
 }
 
 
-static void op_keys_to_a (sim_t *sim, int opcode)
+static void op_keys_to_a (sim_t *sim,
+			  int opcode UNUSED)
 {
   act_reg_t *act_reg = get_chip_data (sim->first_chip);
 
@@ -969,7 +996,8 @@ static void op_keys_to_a (sim_t *sim, int opcode)
 }
 
 
-static void op_a_to_rom_addr (sim_t *sim, int opcode)
+static void op_a_to_rom_addr (sim_t *sim,
+			      int opcode UNUSED)
 {
   act_reg_t *act_reg = get_chip_data (sim->first_chip);
 
@@ -979,7 +1007,8 @@ static void op_a_to_rom_addr (sim_t *sim, int opcode)
 }
 
 
-static void op_display_off (sim_t *sim, int opcode)
+static void op_display_off (sim_t *sim,
+			    int opcode UNUSED)
 {
   act_reg_t *act_reg = get_chip_data (sim->first_chip);
 
@@ -987,7 +1016,8 @@ static void op_display_off (sim_t *sim, int opcode)
 }
 
 
-static void op_display_toggle (sim_t *sim, int opcode)
+static void op_display_toggle (sim_t *sim,
+			       int opcode UNUSED)
 {
   act_reg_t *act_reg = get_chip_data (sim->first_chip);
 
@@ -995,7 +1025,8 @@ static void op_display_toggle (sim_t *sim, int opcode)
 }
 
 
-static void op_display_reset_twf (sim_t *sim, int opcode)
+static void op_display_reset_twf (sim_t *sim,
+				  int opcode UNUSED)
 {
   act_reg_t *act_reg = get_chip_data (sim->first_chip);
 
@@ -1004,7 +1035,8 @@ static void op_display_reset_twf (sim_t *sim, int opcode)
 }
 
 
-static void op_crc_clear_f1 (sim_t *sim, int opcode)
+static void op_crc_clear_f1 (sim_t *sim UNUSED,
+			     int opcode UNUSED)
 {
   // don't do anything, as CRC F1 is controlled by hardware
   // (in our case, ext_flag [1])
@@ -1012,7 +1044,8 @@ static void op_crc_clear_f1 (sim_t *sim, int opcode)
 }
 
 
-static void op_crc_test_f1 (sim_t *sim, int opcode)
+static void op_crc_test_f1 (sim_t *sim,
+			    int opcode UNUSED)
 {
   act_reg_t *act_reg = get_chip_data (sim->first_chip);
 
@@ -1645,10 +1678,10 @@ static void woodstock_free_processor (sim_t *sim)
 
 
 static void woodstock_event_fn (sim_t  *sim,
-				chip_t *chip,
+				chip_t *chip UNUSED,
 				int    event,
-				int    arg,
-				void   *data)
+				int    arg   UNUSED,
+				void   *data UNUSED)
 {
   // act_reg_t *act_reg = get_chip_data (sim->first_chip);
 

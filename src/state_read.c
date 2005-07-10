@@ -43,9 +43,6 @@ MA 02111, USA.
 #include "state_io.h"
 
 
-#define unused __attribute__((unused))
-
-
 typedef struct
 {
   sim_t *sim;
@@ -111,13 +108,15 @@ static void parse_state (sax_data_t *sdata, char **attrs)
 }
 
 
-static void parse_ui (sax_data_t *sdata, char **attrs)
+static void parse_ui (sax_data_t *sdata UNUSED,
+		      char **attrs UNUSED)
 {
   ; // don't need to do anything
 }
 
 
-static void parse_switch (sax_data_t *sdata, char **attrs)
+static void parse_switch (sax_data_t *sdata UNUSED,
+			  char **attrs)
 {
   int i;
   uint32_t number;
@@ -188,7 +187,8 @@ static void parse_chip (sax_data_t *sdata, char **attrs)
 }
 
 
-static void parse_registers (sax_data_t *sdata, char **attrs)
+static void parse_registers (sax_data_t *sdata UNUSED,
+			     char **attrs UNUSED)
 {
   ; // don't need to do anything
 }
@@ -249,7 +249,8 @@ static void parse_reg (sax_data_t *sdata, char **attrs)
 }
 
 
-static void parse_memory (sax_data_t *sdata, char **attrs)
+static void parse_memory (sax_data_t *sdata UNUSED,
+			  char **attrs UNUSED)
 {
   ; // don't need to do anything
   // someday we'll want to check the "as" attribute (address space)
@@ -290,27 +291,34 @@ static void parse_loc (sax_data_t *sdata, char **attrs)
 }
 
 
+int xml_strcmp (const xmlChar *s1, const char *s2)
+{
+  const char *s1c = (const char *) s1;
+  return strcmp (s1c, s2);
+}
+
+
 static void sax_start_element (void *ref,
 			       const xmlChar *name,
 			       const xmlChar **attrs)
 {
   sax_data_t *sdata = ref;
 
-  if (strcmp (name, "state") == 0)
+  if (xml_strcmp (name, "state") == 0)
     parse_state (sdata, (char **) attrs);
-  else if (strcmp (name, "ui") == 0)
+  else if (xml_strcmp (name, "ui") == 0)
     parse_ui (sdata, (char **) attrs);
-  else if (strcmp (name, "switch") == 0)
+  else if (xml_strcmp (name, "switch") == 0)
     parse_switch (sdata, (char **) attrs);
-  else if (strcmp (name, "chip") == 0)
+  else if (xml_strcmp (name, "chip") == 0)
     parse_chip (sdata, (char **) attrs);
-  else if (strcmp (name, "registers") == 0)
+  else if (xml_strcmp (name, "registers") == 0)
     parse_registers (sdata, (char **) attrs);
-  else if (strcmp (name, "reg") == 0)
+  else if (xml_strcmp (name, "reg") == 0)
     parse_reg (sdata, (char **) attrs);
-  else if (strcmp (name, "memory") == 0)
+  else if (xml_strcmp (name, "memory") == 0)
     parse_memory (sdata, (char **) attrs);
-  else if (strcmp (name, "loc") == 0)
+  else if (xml_strcmp (name, "loc") == 0)
     parse_loc (sdata, (char **) attrs);
   else
     warning ("unknown element '%s'\n", name);
@@ -319,7 +327,7 @@ static void sax_start_element (void *ref,
 static xmlEntityPtr sax_get_entity (void *ref,
 				    const xmlChar *name)
 {
-  sax_data_t *sdata unused = ref;
+  sax_data_t *sdata UNUSED = ref;
   return xmlGetPredefinedEntity (name);
 }
 
@@ -328,7 +336,7 @@ static void sax_warning (void *ref,
 			 const char *msg,
 			 ...)
 {
-  sax_data_t *sdata unused = ref;
+  sax_data_t *sdata UNUSED = ref;
   va_list ap;
 
   va_start (ap, msg);
@@ -342,7 +350,7 @@ static void sax_error (void *ref,
 		       const char *msg,
 		       ...)
 {
-  sax_data_t *sdata unused = ref;
+  sax_data_t *sdata UNUSED = ref;
   va_list ap;
 
   va_start (ap, msg);
@@ -356,7 +364,7 @@ static void sax_fatal_error (void *ref,
 			     const char *msg,
 			     ...)
 {
-  sax_data_t *sdata unused = ref;
+  sax_data_t *sdata UNUSED = ref;
   va_list ap;
 
   va_start (ap, msg);

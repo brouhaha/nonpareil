@@ -356,7 +356,7 @@ char *find_file_in_path_list (char *name, char *opt_suffix, char *path_list)
 void hex_dump (FILE *f, void *p, size_t count)
 {
   uint8_t *q = p;
-  int i, j;
+  unsigned int i, j;
 
   for (i = 0; i < count; i += 16)
     {

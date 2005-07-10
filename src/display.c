@@ -568,7 +568,7 @@ static void pixbuf_map_all_pixels (GdkPixbuf *pixbuf,
 static void color_key (uint8_t *r,
 		       uint8_t *g,
 		       uint8_t *b,
-		       uint8_t *a,
+		       uint8_t *a UNUSED,
 		       void *data)
 {
   kml_color_t *color = data;
@@ -594,7 +594,7 @@ static void grey_to_alpha (uint8_t *r,
 			   uint8_t *g,
 			   uint8_t *b,
 			   uint8_t *a,
-			   void *data)
+			   void *data UNUSED)
 {
   uint16_t level;
 

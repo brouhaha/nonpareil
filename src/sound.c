@@ -47,7 +47,9 @@ sound_info_t sounds [MAX_SOUNDS];
 SDL_AudioSpec hw_fmt;
 
 
-void sound_callback (void *unused, uint8_t *stream, int len)
+void sound_callback (void *unused UNUSED,
+		     uint8_t *stream,
+		     int len)
 {
   int i;
   int count;

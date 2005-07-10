@@ -255,10 +255,10 @@ static void helios_reset (helios_reg_t *helios)
 
 
 static void helios_event_fn (sim_t  *sim,
-			     chip_t *chip,
+			     chip_t *chip UNUSED,
 			     int    event,
 			     int    arg,
-			     void   *data)
+			     void   *data UNUSED)
 {
   nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
   helios_reg_t *helios = get_chip_data (nut_reg->helios_chip);

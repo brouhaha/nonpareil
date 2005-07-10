@@ -143,7 +143,7 @@ void process_commands (csim_t *csim,
 }
 
 
-gboolean key_event_callback (GtkWidget *widget,
+gboolean key_event_callback (GtkWidget *widget UNUSED,
 			     GdkEventKey *event,
 			     gpointer data)
 {
@@ -176,7 +176,8 @@ gboolean key_event_callback (GtkWidget *widget,
 }
 
 
-static void main_window_destroy_callback (GtkWidget *widget, gpointer data)
+static void main_window_destroy_callback (GtkWidget *widget UNUSED,
+					  gpointer data)
 {
   csim_t *csim = data;
 
@@ -187,8 +188,8 @@ static void main_window_destroy_callback (GtkWidget *widget, gpointer data)
 
 
 static void quit_callback (gpointer callback_data,
-			   guint    callback_action,
-			   GtkWidget *widget)
+			   guint    callback_action UNUSED,
+			   GtkWidget *widget        UNUSED)
 {
   csim_t *csim = callback_data;
 
@@ -199,8 +200,8 @@ static void quit_callback (gpointer callback_data,
 
 
 static void file_open (gpointer callback_data,
-		       guint    callback_action,
-		       GtkWidget *widget)
+		       guint    callback_action UNUSED,
+		       GtkWidget *widget        UNUSED)
 {
   csim_t *csim = callback_data;
   GtkWidget *dialog;
@@ -229,7 +230,7 @@ static void file_open (gpointer callback_data,
 // handles save (action==1) and save as (action==2)
 static void file_save (gpointer callback_data,
 		       guint    callback_action,
-		       GtkWidget *widget)
+		       GtkWidget *widget UNUSED)
 {
   csim_t *csim = callback_data;
   GtkWidget *dialog;
@@ -261,18 +262,18 @@ static void file_save (gpointer callback_data,
 }
 
 
-static void edit_copy (gpointer callback_data,
-		       guint    callback_action,
-		       GtkWidget *widget)
+static void edit_copy (gpointer callback_data   UNUSED,
+		       guint    callback_action UNUSED,
+		       GtkWidget *widget        UNUSED)
 {
   // csim_t *csim = callback_data;
   // $$$ not yet implemented
 }
 
 
-static void edit_paste (gpointer callback_data,
-			guint    callback_action,
-			GtkWidget *widget)
+static void edit_paste (gpointer callback_data   UNUSED,
+			guint    callback_action UNUSED,
+			GtkWidget *widget        UNUSED)
 {
   // csim_t *csim = callback_data;
   // $$$ not yet implemented
@@ -302,7 +303,7 @@ static char reset_message [] =
 
 static void edit_reset (gpointer callback_data,
 			guint    callback_action,
-			GtkWidget *widget)
+			GtkWidget *widget UNUSED)
 {
   csim_t *csim = callback_data;
   GtkWidget *dialog;
@@ -325,8 +326,8 @@ static void edit_reset (gpointer callback_data,
 
 
 static void configure_load_module (gpointer callback_data,
-		       guint    callback_action,
-		       GtkWidget *widget)
+				   guint    callback_action UNUSED,
+				   GtkWidget *widget        UNUSED)
 {
   csim_t *csim = callback_data;
   GtkWidget *dialog;
@@ -374,8 +375,8 @@ static void configure_load_module (gpointer callback_data,
 
 
 static void help_about (gpointer callback_data,
-			guint    callback_action,
-			GtkWidget *widget)
+			guint    callback_action UNUSED,
+			GtkWidget *widget        UNUSED)
 {
   csim_t *csim = callback_data;
 
@@ -385,37 +386,37 @@ static void help_about (gpointer callback_data,
 
 static GtkItemFactoryEntry menu_items [] =
   {
-    { "/_File",         NULL,         NULL,          0, "<Branch>" },
+    { "/_File",         NULL,         NULL,          0, "<Branch>", 0 },
     { "/File/_Open",    "<control>O", file_open,     1, "<StockItem>", GTK_STOCK_OPEN },
     { "/File/_Save",    "<control>S", file_save,     1, "<StockItem>", GTK_STOCK_SAVE },
-    { "/File/Save _As", NULL,         file_save,     2, "<Item>" },
-    { "/File/sep1",     NULL,         NULL,          0, "<Separator>" },
+    { "/File/Save _As", NULL,         file_save,     2, "<Item>", 0 },
+    { "/File/sep1",     NULL,         NULL,          0, "<Separator>", 0 },
     { "/File/_Quit",    "<CTRL>Q",    quit_callback, 1, "<StockItem>", GTK_STOCK_QUIT },
-    { "/_Edit",         NULL,         NULL,          0, "<Branch>" },
+    { "/_Edit",         NULL,         NULL,          0, "<Branch>", 0 },
     { "/Edit/_Copy",    "<control>C", edit_copy,     1, "<StockItem>", GTK_STOCK_COPY },
     { "/Edit/_Paste",   "<control>V", edit_paste,    1, "<StockItem>", GTK_STOCK_PASTE },
-    { "/Edit/sep1",     NULL,         NULL,          0, "<Separator>" },
-    { "/Edit/Hard Reset", NULL,       edit_reset,    0, "<Item>" },
-    { "/Edit/Obdurate Reset", NULL,   edit_reset,    1, "<Item>" },
-    { "/_Configure",    NULL,         NULL,          0, "<Branch>" },
-    { "/Configure/Load Module", NULL, configure_load_module, 1, "<Item>" },
+    { "/Edit/sep1",     NULL,         NULL,          0, "<Separator>", 0 },
+    { "/Edit/Hard Reset", NULL,       edit_reset,    0, "<Item>", 0 },
+    { "/Edit/Obdurate Reset", NULL,   edit_reset,    1, "<Item>", 0 },
+    { "/_Configure",    NULL,         NULL,          0, "<Branch>", 0 },
+    { "/Configure/Load Module", NULL, configure_load_module, 1, "<Item>", 0 },
 #ifdef HAS_DEBUGGER
-    { "/_Debug",        NULL,         NULL,          0, "<Branch>" },
+    { "/_Debug",        NULL,         NULL,          0, "<Branch>", 0 },
 #endif
 #ifdef HAS_DEBUGGER_GUI
-    { "/Debug/Show Reg", NULL,        debug_show_reg, 1, "<Item>" },
-    { "/Debug/Show RAM", NULL,        debug_show_ram, 1, "<Item>" },
-    { "/Debug/Run",     NULL,         debug_run,     1, "<Item>" },
-    { "/Debug/Step",    NULL,         debug_step,    1, "<Item>" },
-    { "/Debug/Trace",   NULL,         debug_trace,   1, "<ToggleItem>" },
-    { "/Debug/Key Trace", NULL,     debug_key_trace, 1, "<ToggleItem>" },
-    { "/Debug/RAM Trace", NULL,     debug_ram_trace, 1, "<ToggleItem>" },
+    { "/Debug/Show Reg", NULL,        debug_show_reg, 1, "<Item>", 0 },
+    { "/Debug/Show RAM", NULL,        debug_show_ram, 1, "<Item>", 0 },
+    { "/Debug/Run",     NULL,         debug_run,     1, "<Item>", 0 },
+    { "/Debug/Step",    NULL,         debug_step,    1, "<Item>", 0 },
+    { "/Debug/Trace",   NULL,         debug_trace,   1, "<ToggleItem>", 0 },
+    { "/Debug/Key Trace", NULL,     debug_key_trace, 1, "<ToggleItem>", 0 },
+    { "/Debug/RAM Trace", NULL,     debug_ram_trace, 1, "<ToggleItem>", 0 },
 #endif // HAS_DEBUGGER
 #ifdef HAS_DEBUGGER_CLI
-    { "/Debug/Command Window", NULL,     debug_cmd_win, 1, "<ToggleItem>" },
+    { "/Debug/Command Window", NULL,     debug_cmd_win, 1, "<ToggleItem>", 0 },
 #endif // HAS_DEBUGGER_CLI
-    { "/_Help",         NULL,         NULL,          0, "<Branch>" },
-    { "/_Help/About",   NULL,         help_about,    1, "<Item>" }
+    { "/_Help",         NULL,         NULL,          0, "<Branch>", 0 },
+    { "/_Help/About",   NULL,         help_about,    1, "<Item>", 0 }
   };
 
 static gint nmenu_items = sizeof (menu_items) / sizeof (GtkItemFactoryEntry);
@@ -440,7 +441,7 @@ static GtkWidget *create_menus (csim_t *csim,
 }
 
 
-gboolean move_window_callback (GtkWidget *widget,
+gboolean move_window_callback (GtkWidget *widget UNUSED,
 			       GdkEventButton *event,
 			       gpointer data)
 {
@@ -527,8 +528,8 @@ bool gui_install_hardware (void *ref,
 }
 
 
-bool gui_remove_hardware (void *ref,
-			  chip_type_t chip_type)
+bool gui_remove_hardware (void *ref             UNUSED,
+			  chip_type_t chip_type UNUSED)
 {
   return false;  // $$$ not yet implemented
 }

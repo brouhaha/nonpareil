@@ -390,7 +390,7 @@ static bool phineas_wr_n (sim_t *sim, int n)
 }
 
 
-static bool phineas_wr (sim_t *sim)
+static bool phineas_wr (sim_t *sim UNUSED)
 {
   return false; // Phineas doesn't use the generic write
 }
@@ -495,10 +495,10 @@ static void phineas_reset (phineas_reg_t *phineas)
 
 
 static void phineas_event_fn (sim_t  *sim,
-			      chip_t *chip,
+			      chip_t *chip UNUSED,
 			      int    event,
-			      int    arg,
-			      void   *data)
+			      int    arg UNUSED,
+			      void   *data UNUSED)
 {
   nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
   phineas_reg_t *phineas = get_chip_data (nut_reg->phineas_chip);
@@ -538,7 +538,7 @@ static void phineas_event_fn (sim_t  *sim,
 }
 
 
-static void phineas_init_ops (sim_t *sim)
+static void phineas_init_ops (sim_t *sim UNUSED)
 {
 }
 

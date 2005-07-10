@@ -234,7 +234,7 @@ static void pixbuf_map_all_pixels (GdkPixbuf *pixbuf,
 static void color_key (uint8_t *r,
 		       uint8_t *g,
 		       uint8_t *b,
-		       uint8_t *a,
+		       uint8_t *a UNUSED,
 		       void *data)
 {
   kml_color_t *color = data;
@@ -260,7 +260,7 @@ static void grey_to_alpha (uint8_t *r,
 			   uint8_t *g,
 			   uint8_t *b,
 			   uint8_t *a,
-			   void *data)
+			   void *data UNUSED)
 {
   uint16_t level;
 
@@ -492,7 +492,7 @@ int main (int argc, char *argv[])
 	       0);  // alpha 0 = transparent, 255 = opaque
 
   // render segments with color kml->display_color [2]
-  for (i = 0; i < strlen (str); i++)
+  for (i = 0; str [i]; i++)
     draw_char (margin + i * kml->digit_size.width, margin, str [i]);
 
   gdk_pixbuf_save (render_pixbuf,

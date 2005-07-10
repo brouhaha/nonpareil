@@ -41,7 +41,11 @@ sdl_pkg_config_cmd = 'sdl-config --cflags --libs'
 
 build_env.Append (CPPPATH = ['.'])
 build_env.Append (CPPPATH = ['#/build/common'])  # generated includes
-build_env.Append (CCFLAGS = ['-Wall'])
+
+# Use gnu99 because we use a few GCC extensions such as unnamed struct/union
+# fields within structs/unions.
+build_env.Append (CCFLAGS = ['-std=gnu99', '-Wall', '-Wextra'])
+
 build_env.Append (YACCFLAGS = [ '-d', '-v' ])
 
 if build_env ['debug'] :
