@@ -49,8 +49,11 @@ if build_env ['debug'] :
 else:
     build_env.Append (CCFLAGS = ['-O2'])
 
+build_env ['STRIP'] = 'strip'
+
 if cross and ming and build_target_only:
     build_env.Replace (CC = '/usr/local/mingw/bin/i586-mingw32msvc-gcc')
+    build_env.Replace (STRIP = '/usr/local/mingw/bin/i586-mingw32msvc-strip')
     build_env.Append (CCFLAGS = ['-mms-bitfields'])
     build_env.Append (CPPPATH = ['/usr/local/gtkwin/include'])  # libpng
     build_env.Append (CPPPATH = ['/usr/local/gtkwin/SDL-1.2.8/include'])
@@ -383,6 +386,10 @@ if build_env ['build_target_only'] == 0:
 default_targets = [nonpareil, uasm, modutil]
 # omit udis, nsim_conv for now
 
+if not build_env ['debug']:
+    for target in default_targets:
+        build_env.AddPostAction (target, "$STRIP $TARGET")
+
 if (not cross) or build_target_only:
     Default (default_targets)
     
@@ -393,7 +400,7 @@ if (not cross) or build_target_only:
 if build_env ['build_target_only'] == 0:
     native_env.Alias (target = 'install',
                       source = native_env.Install (dir = native_env ['destdir'] + native_env ['bindir'],
-                                                   source = [uasm, nonpareil, modutil]))
+                                                   source = default_targets))
 
 #-----------------------------------------------------------------------------
 # source tarball

@@ -222,6 +222,13 @@ if not env ['libdir']:
 
 Export ('env source_release_dir snapshot_dir')
 
+host_build_dir = 'build/' + env ['host']
+target_build_dir = 'build/' + env ['target']
+
+if env ['debug']:
+	host_build_dir += '-debug'
+	target_build_dir += '-debug'
+
 #-----------------------------------------------------------------------------
 # KML, image, firmware files
 #-----------------------------------------------------------------------------
@@ -238,7 +245,7 @@ SConscript (['rom/SConscript',
 native_env = env.Copy ()
 native_env ['build_target_only'] = 0
 SConscript ('src/SConscript',
-            build_dir = 'build/' + env ['host'],
+            build_dir = host_build_dir,
             duplicate = 0,
 	    exports = {'build_env' : native_env,
 		       'native_env' : env})
@@ -259,7 +266,7 @@ if (env ['host'] != env ['target']):
 	cross_build_env = env.Copy ()
 	cross_build_env ['build_target_only'] = 1
 	SConscript ('src/SConscript',
-		    build_dir = 'build/' + env ['target'],
+		    build_dir = target_build_dir,
 		    duplicate = 0,
 		    exports = {'build_env': cross_build_env,
 			       'native_env' : env})
@@ -269,7 +276,7 @@ if (env ['host'] != env ['target']):
 #-----------------------------------------------------------------------------
 
 SConscript ('win32/dll/SConscript',
-	    build_dir = 'build/win32/dll',
+	    build_dir = target_build_dir + '/dll',
 	    duplicate = 0)
 
 #-----------------------------------------------------------------------------
