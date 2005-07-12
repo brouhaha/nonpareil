@@ -140,6 +140,31 @@ static rom_word_t woodstock_get_ucode (act_reg_t *act_reg, rom_addr_t addr)
 }
 
 
+int woodstock_get_max_rom_bank (sim_t *sim)
+{
+  return MAX_BANK;
+}
+
+int woodstock_get_rom_page_size (sim_t *sim)
+{
+  return PAGE_SIZE;
+}
+
+int woodstock_get_max_rom_addr (sim_t *sim)
+{
+  return MAX_PAGE * PAGE_SIZE;
+}
+
+bool woodstock_page_exists (sim_t   *sim,
+			    uint8_t bank,
+			    uint8_t page)
+{
+  act_reg_t *act_reg = get_chip_data (sim->first_chip);
+
+  return (act_reg->bank_exists [page] & (1 << bank)) != 0;
+}
+
+
 static bool woodstock_read_rom (sim_t      *sim,
 				uint8_t    bank,
 				addr_t     addr,
@@ -1722,6 +1747,10 @@ processor_dispatch_t woodstock_processor =
     .set_ext_flag        = woodstock_set_ext_flag,
 
     .set_bank_group      = NULL,
+    .get_max_rom_bank    = woodstock_get_max_rom_bank,
+    .get_rom_page_size   = woodstock_get_rom_page_size,
+    .get_max_rom_addr    = woodstock_get_max_rom_addr,
+    .page_exists         = woodstock_page_exists,
     .read_rom            = woodstock_read_rom,
     .write_rom           = woodstock_write_rom,
 

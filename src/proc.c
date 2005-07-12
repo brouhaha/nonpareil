@@ -1213,6 +1213,26 @@ bool sim_set_bank_group (sim_t  *sim,
 
 
 // ROM access routines
+int sim_get_max_rom_bank  (sim_t *sim)
+{
+  return sim->proc->get_max_rom_bank (sim);
+}
+
+int sim_get_rom_page_size (sim_t *sim)
+{
+  return sim->proc->get_rom_page_size (sim);
+}
+
+int sim_get_max_rom_addr  (sim_t *sim)
+{
+  return sim->proc->get_max_rom_addr (sim);
+}
+
+bool sim_page_exists      (sim_t *sim, uint8_t bank, uint8_t page)
+{
+  return sim->proc->page_exists (sim, bank, page);
+}
+
 bool sim_read_rom  (sim_t      *sim,
 		    uint8_t    bank,
 		    addr_t     addr,

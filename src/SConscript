@@ -71,8 +71,18 @@ if ming and (build_target_only or not cross):
 # common components
 #-----------------------------------------------------------------------------
 
-common_srcs = Split ("""util.c arch.c""")
+common_srcs = Split ("""util.c arch.c model.c platform.c""")
 common_objs = [build_env.Object(src) for src in common_srcs]
+
+sim_core_srcs = Split ("""proc.c glib_async_queue_source.c
+                          digit_ops.c
+                          proc_classic.c
+                          proc_woodstock.c
+                          proc_nut.c
+                          coconut_lcd.c phineas.c helios.c helios_chargen.c
+                          voyager_lcd.c
+                          mod1_file.c""")
+sim_core_objs = [build_env.Object(src) for src in sim_core_srcs];
 
 common_dis_srcs = Split ("""dis_woodstock.c dis_nut.c""")
 common_dis_objs = [build_env.Object(src) for src in common_dis_srcs];
@@ -249,19 +259,10 @@ if not build_target_only:
 
 nonpareil_env = build_env.Copy ()
 
-nonpareil_srcs = Split ("""proc.c glib_async_queue_source.c
-                           about.c goose.c pixbuf_util.c
+nonpareil_srcs = Split ("""about.c goose.c pixbuf_util.c
                            calc_chooser.c
                            sound.c
-                           display.c keyboard.c slide_switch.c printer.c
-                           platform.c model.c
-                           digit_ops.c
-                           proc_classic.c
-                           proc_woodstock.c
-                           proc_nut.c
-                           coconut_lcd.c phineas.c helios.c helios_chargen.c
-                           voyager_lcd.c
-                           mod1_file.c""")
+                           display.c keyboard.c slide_switch.c printer.c""")
 
 nonpareil_csim_srcs = Split ("""csim.c""")
 
@@ -331,6 +332,7 @@ nonpareil = nonpareil_env.Program (target = 'nonpareil',
                                    source = (nonpareil_objs +
                                              kml_objs +
                                              common_objs +
+                                             sim_core_objs +
                                              state_io_objs +
                                              common_dis_objs))
 
@@ -340,10 +342,17 @@ nonpareil = nonpareil_env.Program (target = 'nonpareil',
 
 udis_env = build_env.Copy ()
 
+udis_packages = "gthread-2.0"
+
+udis_env.ParseConfig (pkg_config_cmd + udis_packages)
+
 udis_srcs = Split ("""dis.c""")
 
 udis = udis_env.Program (target = 'udis',
-                         source = common_objs + common_dis_objs + udis_srcs)
+                         source = (common_objs +
+                                   sim_core_objs +
+                                   common_dis_objs +
+                                   udis_srcs))
 
 #-----------------------------------------------------------------------------
 # nsim_conv
@@ -385,8 +394,8 @@ if build_env ['build_target_only'] == 0:
 # default targets
 #-----------------------------------------------------------------------------
 
-default_targets = [nonpareil, uasm, modutil]
-# omit udis, nsim_conv for now
+default_targets = [nonpareil, uasm, udis, modutil]
+# omit nsim_conv for now
 
 if (not cross) or build_target_only:
     Default (default_targets)

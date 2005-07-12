@@ -162,6 +162,7 @@ void sim_set_cycle_count (sim_t *sim,
 			  uint64_t count);
 
 // Bank switching routines
+// $$$ should be replaced by new memory API
 int sim_create_bank_group (sim_t *sim);
 
 bool sim_set_bank_group (sim_t   *sim,
@@ -169,6 +170,12 @@ bool sim_set_bank_group (sim_t   *sim,
 			 addr_t  addr);
 
 // ROM access routines
+// $$$ should be replaced by new memory API
+int sim_get_max_rom_bank  (sim_t *sim);
+int sim_get_rom_page_size (sim_t *sim);
+int sim_get_max_rom_addr  (sim_t *sim);
+bool sim_page_exists      (sim_t *sim, uint8_t bank, uint8_t page);
+
 bool sim_read_rom  (sim_t      *sim,
 		    uint8_t    bank,
 		    addr_t     addr,
@@ -180,6 +187,7 @@ bool sim_write_rom (sim_t      *sim,
 		    rom_word_t *val);
 
 // RAM access routines
+// $$$ should be replaced by new memory API
 addr_t sim_get_max_ram (sim_t *sim);
 
 bool sim_read_ram (sim_t *sim,

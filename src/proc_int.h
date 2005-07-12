@@ -99,6 +99,16 @@ typedef struct
 				int        bank_group,
 				addr_t     addr);
 
+  int (* get_max_rom_bank)     (sim_t      *sim);
+
+  int (* get_rom_page_size)    (sim_t      *sim);
+
+  int (* get_max_rom_addr)     (sim_t      *sim);
+
+  bool (* page_exists)         (sim_t      *sim,
+				uint8_t    bank,
+				uint8_t    page);
+
   bool (* read_rom)            (sim_t      *sim,
 				uint8_t    bank,
 				addr_t     addr,
