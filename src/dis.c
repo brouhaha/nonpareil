@@ -96,7 +96,10 @@ int main (int argc, char *argv[])
 	      fatal (2, "can't read ROM bank %d addr %05o\n", bank, addr);
 
 	    if (! sim_read_rom (sim, bank, (addr + 1) % max_addr, & op2))
-	      fatal (2, "can't read ROM bank %d addr %05o\n", bank, (addr + 1) % max_addr);
+	      {
+		warning ("can't read ROM bank %d addr %05o\n", bank, (addr + 1) % max_addr);
+		op2 = 0;
+	      }
 
 	    switch (model_info->cpu_arch)
 	      {
