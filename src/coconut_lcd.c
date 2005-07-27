@@ -84,9 +84,6 @@ static void coconut_set_display_state (sim_t *sim,
   nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
   coconut_display_reg_t *display = get_chip_data (nut_reg->display_chip);
 
-  if (display->enable == new_state)
-    return;
-
   display->enable = new_state;
   chip_event (sim, event_display_state_change, NULL, new_state, NULL);
 }
