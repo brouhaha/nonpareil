@@ -33,6 +33,7 @@ MA 02111, USA.
 #include "goose.h"
 
 #include "nonpareil_title_png.h"
+#include "gpl_v2_txt.h"
 
 
 static char *credits_people [] =
@@ -69,17 +70,42 @@ static char *credits_people [] =
 };
 
 
-#define CREDITS_COLUMNS 4
-
-static void add_credits (GtkWidget *widget)
+static GtkWidget *intro_page (void)
 {
+  GtkWidget *vbox;
+
+  vbox = gtk_vbox_new (FALSE, 0);
+
+  gtk_box_pack_start (GTK_BOX (vbox),
+		      gtk_label_new ("Nonpareil achieves high simulation fidelity by simulating\n"
+				     "the actual processor architectures that were used in the\n"
+				     "original calculators, and running identical or very slightly\n"
+				     "modified calculator firmware."),
+		      FALSE,  // expand
+		      FALSE,  // fill
+		      0);     // padding
+
+  return vbox;
+}
+
+
+#define CREDITS_COLUMNS 3
+
+static GtkWidget *credits_page (void)
+{
+  GtkWidget *vbox;
   GtkWidget *table;
   int count;
   int rows;
   int row, column, index;
 
-  gtk_container_add (GTK_CONTAINER (widget),
-		     gtk_label_new ("The Nonpareil project has received assistance and contributions from:"));
+  vbox = gtk_vbox_new (FALSE, 0);
+
+  gtk_box_pack_start (GTK_BOX (vbox),
+		      gtk_label_new ("The Nonpareil project has received assistance and contributions from:"),
+		      FALSE,  // expand
+		      FALSE,  // fill
+		      0);     // padding
 
   count = sizeof (credits_people) / sizeof (char *);
   rows = (count + CREDITS_COLUMNS - 1) / CREDITS_COLUMNS;
@@ -97,17 +123,60 @@ static void add_credits (GtkWidget *widget)
 				   row + 1,
 				   row + 2);
 
-  gtk_container_add (GTK_CONTAINER (widget), table);
+  gtk_box_pack_start (GTK_BOX (vbox),
+		      table,
+		      FALSE,  // expand
+		      FALSE,  // fill
+		      0);     // padding
 
-  gtk_container_add (GTK_CONTAINER (widget),
-		     gtk_label_new ("My apologies if I've forgotten to list anyone!"));
+  gtk_box_pack_start (GTK_BOX (vbox),
+		      gtk_label_new ("My apologies if I've forgotten to list anyone!"),
+		      FALSE,  // expand
+		      FALSE,  // fill
+		      0);     // padding
 
+  return vbox;
+}
+
+
+static GtkWidget *license_page (void)
+{
+  GtkWidget *vbox;
+  GtkWidget *scrolled_window;
+  GtkWidget *label;
+
+  vbox = gtk_vbox_new (FALSE, 0);
+
+  gtk_box_pack_start (GTK_BOX (vbox),
+		      gtk_label_new ("Nonpareil is licensed under the terms of the Free Software\n"
+				     "Foundation's General Public License:"),
+		      FALSE,  // expand
+		      FALSE,  // fill
+		      0);     // padding
+
+  scrolled_window = gtk_scrolled_window_new (NULL, NULL);
+
+  label = gtk_label_new ("GPL v2");
+
+  gtk_label_set_text (GTK_LABEL (label), gpl_v2_txt);
+
+  gtk_scrolled_window_add_with_viewport (GTK_SCROLLED_WINDOW (scrolled_window),
+					 label);
+
+  gtk_box_pack_start (GTK_BOX (vbox),
+		      scrolled_window,
+		      TRUE,   // expand
+		      TRUE,  // fill
+		      0);     // padding
+
+  return vbox;
 }
 
 
 void about_dialog (GtkWidget *main_window, kml_t *kml)
 {
   GtkWidget *dialog;
+  GtkWidget *notebook;
   GdkPixbuf *title_pixbuf;
 
   dialog = gtk_dialog_new_with_buttons ("About Nonpareil",
@@ -129,13 +198,31 @@ void about_dialog (GtkWidget *main_window, kml_t *kml)
 		     gtk_label_new (nonpareil_release));
 
   gtk_container_add (GTK_CONTAINER (GTK_DIALOG (dialog)->vbox),
-		     gtk_label_new ("Microcode-level calculator simulator\n"
+		     gtk_label_new ("High-fidelity calculator simulator\n"
 				    "Copyright 1995, 2003, 2004, 2005 Eric L. Smith\n"
 				    "http://nonpareil.brouhaha.com/"));
 
-  gtk_container_add (GTK_CONTAINER (GTK_DIALOG (dialog)->vbox),
-		     gtk_hseparator_new ());
+  notebook = gtk_notebook_new ();
 
+  // I'd like to put the tabs on the left, but with the text rotated.
+  // But this won't rotate the labels for me.
+  //
+  // gtk_notebook_set_tab_pos (GTK_NOTEBOOK (notebook),
+  //			       GTK_POS_LEFT);
+
+  gtk_notebook_append_page (GTK_NOTEBOOK (notebook),
+			    intro_page (),
+			    gtk_label_new ("Introduction"));
+
+  gtk_notebook_append_page (GTK_NOTEBOOK (notebook),
+			    credits_page (),
+			    gtk_label_new ("Credits"));
+
+  gtk_notebook_append_page (GTK_NOTEBOOK (notebook),
+			    license_page (),
+			    gtk_label_new ("License"));
+
+#if 0
   add_credits (GTK_DIALOG (dialog)->vbox);
 
   if (kml && (kml->title || kml->author))
@@ -151,6 +238,10 @@ void about_dialog (GtkWidget *main_window, kml_t *kml)
 	gtk_container_add (GTK_CONTAINER (GTK_DIALOG (dialog)->vbox),
 			   gtk_label_new (kml->author));
     }
+#endif
+
+  gtk_container_add (GTK_CONTAINER (GTK_DIALOG (dialog)->vbox),
+		     notebook);
 
   gtk_container_add (GTK_CONTAINER (GTK_DIALOG (dialog)->vbox),
 		     gtk_hseparator_new ());

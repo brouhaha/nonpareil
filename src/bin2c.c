@@ -36,8 +36,32 @@ void usage (FILE *f)
   fprintf (f, "Copyright 2005 Eric L. Smith\n");
   fprintf (f, "http://nonpareil.brouhaha.com/\n");
   fprintf (f, "\n");
-  fprintf (f, "usage: %s binfile arrayname [-h header] [-c source]\n", progname);
+  fprintf (f, "usage: %s [options] binfile arrayname\n", progname);
+  fprintf (f, "\n");
+  fprintf (f, "options:\n");
+  fprintf (f, "    -h header-file   output a C header file\n");
+  fprintf (f, "    -c source-file   output a C source file\n");
+  fprintf (f, "    -n               null terminate the array (useful for text)\n");
+  fprintf (f, "    --unsigned       unsigned character type (default)\n");
+  fprintf (f, "    --signed         signed character type\n");
+  fprintf (f, "    --char           unspecified (bare) character type\n");
 }
+
+
+typedef enum
+{
+  ch_unsigned,
+  ch_signed,
+  ch_unspecified
+} char_type_t;
+
+
+char *char_type_name [3] =
+{
+  [ch_unsigned]    = "unsigned char",
+  [ch_signed]      = "signed char",
+  [ch_unspecified] = "char"
+};
 
 
 #define LINE_MAX_BYTES 8
@@ -50,8 +74,11 @@ int main (int argc, char *argv[])
   char *header_fn = NULL;
   char *source_fn = NULL;
   bool need_comma = false;
+  bool null_terminate = false;
+  bool done = false;
   int line_pos = 0;
   int size = 0;
+  char_type_t char_type = ch_unsigned;
 
   progname = newstr (argv [0]);
 
@@ -60,7 +87,15 @@ int main (int argc, char *argv[])
       argv++;
       if (*argv [0] == '-')
 	{
-	  if (strcmp (argv [0], "-h") == 0)
+	  if (strcmp (argv [0], "-n") == 0)
+	    null_terminate = true;
+	  else if (strcmp (argv [0], "--char") == 0)
+	    char_type = ch_unspecified;
+	  else if (strcmp (argv [0], "--signed") == 0)
+	    char_type = ch_signed;
+	  else if (strcmp (argv [0], "--unsigned") == 0)
+	    char_type = ch_unsigned;
+	  else if (strcmp (argv [0], "-h") == 0)
 	    {
 	      if (--argc == 0)
 		fatal (1, "-h option must be followed by filename\n");
@@ -98,7 +133,7 @@ int main (int argc, char *argv[])
       if (! header_f)
 	fatal (2, "Can't open output header file\n");
 
-      fprintf (header_f, "extern const unsigned char %s [];\n", array_name);
+      fprintf (header_f, "extern const %s %s [];\n", char_type_name [char_type], array_name);
       fprintf (header_f, "extern unsigned long %s_size;\n", array_name);
       fclose (header_f);
     }
@@ -109,17 +144,25 @@ int main (int argc, char *argv[])
       if (! source_f)
 	fatal (2, "Can't open output source file\n");
 
-      fprintf (source_f, "const unsigned char %s [] =\n", array_name);
+      fprintf (source_f, "const %s %s [] =\n", char_type_name [char_type], array_name);
       fprintf (source_f, "{\n");
 
-      while (true)
+      while (! done)
 	{
 	  int b = fgetc (bin_f);
+	  if ((b == 0) && null_terminate)
+	    fatal (3, "NULL character in input file\n");
 	  if (b == EOF)
 	    {
 	      if (ferror (bin_f))
 		fatal (3, "Error reading input file\n");
-	      break;
+	      if (null_terminate)
+		{
+		  b = 0;        // add a NULL character at end
+		  done = true;  // and don't loop any more
+		}
+	      else
+		break;  // exit loop immediately
 	    }
 	  size++;
 	  if (need_comma)

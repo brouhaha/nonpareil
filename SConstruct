@@ -230,13 +230,20 @@ if env ['debug']:
 	target_build_dir += '-debug'
 
 #-----------------------------------------------------------------------------
-# KML, image, firmware files
+# KML, firmware, image, sound, text files
 #-----------------------------------------------------------------------------
 
 SConscript (['rom/SConscript',
 	     'kml/SConscript',
 	     'image/SConscript',
 	     'sound/SConscript'])
+
+env.Append (GPLv2 = File ('COPYING'))
+
+#-----------------------------------------------------------------------------
+# KML, image, firmware files
+#-----------------------------------------------------------------------------
+
 
 #-----------------------------------------------------------------------------
 # host platform code

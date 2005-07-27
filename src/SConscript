@@ -171,8 +171,21 @@ if build_env ['build_target_only'] == 0:
                      src_suffix = '.wav',
                      emitter = BIN2C_Emitter)
 
+    def TXT2C_Generator (source, target, env, for_signature):
+        return '%s %s %s -n --char -c %s -h %s' % (bin2c [0],
+                                                   source [0],
+                                                   basename (str(target [0])),
+                                                   target [0],
+                                                   target [1])
+
+    TXT2C = Builder (generator = TXT2C_Generator,
+                     suffix = '_txt.c',
+                     src_suffix = '.txt',
+                     emitter = BIN2C_Emitter)
+
     native_env.Append (BUILDERS = { 'PNG2C': PNG2C,
-                                    'WAV2C': WAV2C},
+                                    'WAV2C': WAV2C,
+                                    'TXT2C': TXT2C},
                        BIN2C = bin2c)
 
 
@@ -254,6 +267,14 @@ if not build_target_only:
                       source = native_env ['SND_GOOSE'])
 
 #-----------------------------------------------------------------------------
+# prepare text
+#-----------------------------------------------------------------------------
+
+if not build_target_only:
+    native_env.TXT2C (target = '#build/common/gpl_v2_txt.c',
+                      source = native_env ['GPLv2'])
+
+#-----------------------------------------------------------------------------
 # nonpareil
 #-----------------------------------------------------------------------------
 
@@ -278,7 +299,8 @@ nonpareil_objs = []
 for gen in ["nonpareil_title_png",
             "rgoose_png",
             "lgoose_png",
-            "canada_goose_wav"]:
+            "canada_goose_wav",
+            "gpl_v2_txt"]:
     nonpareil_objs.append (build_env.Object (target = gen + '.o',
                                              source = '#build/common/' + gen + '.c'))
 
