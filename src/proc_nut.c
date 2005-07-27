@@ -1750,10 +1750,11 @@ static void nut_press_key (sim_t *sim, int keycode)
   printf ("key %o press, addr %04x, state %s\n", keycode, nut_reg->prev_pc, kbd_state_name [nut_reg->kb_state]);
 #endif
 
-#if 0
+
+  // In deep sleep (display off), only the ON key can wake us.
   if ((! nut_reg->awake) && (! nut_reg->display_enable) && (keycode != 0x18))
     return;
-#endif
+
   nut_reg->key_buf = keycode;
   nut_reg->key_down = true;
   if (nut_reg->kb_state == KB_IDLE)
