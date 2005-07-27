@@ -167,6 +167,13 @@ typedef struct nut_reg_t
   // a selprf instruction:
   bool (* selprf_fcn [16])(struct sim_t *sim, rom_word_t opcode);
 
+  // Bender:
+  uint64_t bender_last_transition_cycle;  // or 0 if a long time ago
+  uint64_t bender_last_pulse_width;       // to detect frequency changes
+  int bender_sound_ref;
+
+  // Other chips:
+
   chip_t *display_chip;   // opaque
   bool   display_enable;  // slaved from display using an event
 

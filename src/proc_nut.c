@@ -37,6 +37,7 @@ MA 02111, USA.
 #include "voyager_lcd.h"
 #include "proc_nut.h"
 #include "dis_nut.h"
+#include "sound.h"
 
 
 #define KBD_RELEASE_DEBOUNCE_CYCLES 32
@@ -1014,12 +1015,73 @@ static void op_c_exch_s (sim_t *sim,
   nut_reg->c [1] = t;
 }
 
-static void op_sb_to_f (sim_t *sim,
-			int opcode UNUSED)
+
+// Standard 41C tones have pulse widths of 3 to 18 word times, and are
+// symmetric for a total cycle time of 6 to 36 word times.  Allow for
+// tones of slightly lower frequency.
+#define BENDER_MAX_PULSE_WIDTH 20
+
+
+static void bender_off (sim_t *sim)
 {
   nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
 
-  nut_reg->fo = get_s_bits (sim, 0, 8);
+  // $$$ stop sound if playing
+  if (nut_reg->bender_sound_ref >= 0)
+    stop_sound (nut_reg->bender_sound_ref);
+  nut_reg->bender_sound_ref = -1;
+
+  nut_reg->bender_last_transition_cycle = 0;  // a long time ago
+  nut_reg->bender_last_pulse_width = 0;       // will never match
+
+  printf ("bender off\n");
+}
+
+
+static void bender_pulse (sim_t *sim, uint64_t pulse_width)
+{
+  nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
+
+  if (pulse_width == nut_reg->bender_last_pulse_width)
+    return;
+
+  nut_reg->bender_last_pulse_width = pulse_width;
+
+  if (nut_reg->bender_sound_ref >= 0)
+    stop_sound (nut_reg->bender_sound_ref);
+  nut_reg->bender_sound_ref = -1;
+
+  if (pulse_width <= BENDER_MAX_PULSE_WIDTH)
+    printf ("bender pulse width %" PRId64 " cycles\n", pulse_width);
+
+  nut_reg->bender_sound_ref = synth_sound (880,  // frequency
+					   0,    // amplitude
+					   0.0,  // duration - indefinite
+					   squarewave_waveform_table,
+					   squarewave_waveform_table_length);
+}
+
+
+static void set_fo (sim_t *sim, uint8_t val)
+{
+  nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
+
+  if (nut_reg->fo == val)
+    return;  // no change
+
+  if (nut_reg->bender_last_transition_cycle)
+    bender_pulse (sim,
+		  sim->cycle_count - nut_reg->bender_last_transition_cycle);
+
+  nut_reg->bender_last_transition_cycle = sim->cycle_count;
+  nut_reg->fo = val;
+}
+
+
+static void op_sb_to_f (sim_t *sim,
+			int opcode UNUSED)
+{
+  set_fo (sim, get_s_bits (sim, 0, 8));
 }
 
 static void op_f_to_sb (sim_t *sim,
@@ -1038,7 +1100,7 @@ static void op_f_exch_sb (sim_t *sim,
 
   t = get_s_bits (sim, 0, 8);
   set_s_bits (sim, 0, 8, nut_reg->fo);
-  nut_reg->fo = t;
+  set_fo (sim, t);
 }
 
 /*
@@ -1609,6 +1671,11 @@ static bool nut_execute_cycle (sim_t *sim)
   if (! nut_reg->awake)
     return (false);
 
+  // bender
+  if (nut_reg->bender_last_transition_cycle &&
+      ((sim->cycle_count - nut_reg->bender_last_transition_cycle) > BENDER_MAX_PULSE_WIDTH))
+    bender_off (sim);
+
   if (nut_reg->inst_state == cxisa)
     nut_reg->prev_pc = nut_reg->cxisa_addr;
   else
@@ -1821,6 +1888,9 @@ static void nut_reset (sim_t *sim)
   nut_reg->carry = 1;
 
   nut_reg->kb_state = KB_IDLE;
+
+  nut_reg->bender_last_transition_cycle = 0;
+  nut_reg->bender_sound_ref = -1;  // no sound playing
 }
 
 
