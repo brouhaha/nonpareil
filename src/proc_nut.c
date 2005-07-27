@@ -120,6 +120,8 @@ static reg_detail_t nut_cpu_reg_detail [] =
   // long_branch_carry
   // prev_carry
   // NR  ("selprf",  selprf,  4,     16,   NULL,      NULL,      0),
+
+  // display_enable
 };
 
 
@@ -1991,7 +1993,7 @@ static void nut_free_processor (sim_t *sim)
 static void nut_event_fn (sim_t  *sim,
 			  chip_t *chip UNUSED,
 			  int    event,
-			  int    arg   UNUSED,
+			  int    arg,
 			  void   *data UNUSED)
 {
   nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
@@ -2009,6 +2011,9 @@ static void nut_event_fn (sim_t  *sim,
       break;
     case event_clear_memory:
       nut_clear_memory (sim);
+      break;
+    case event_display_state_change:
+      nut_reg->display_enable = arg;
       break;
     default:
       // warning ("proc_nut: unknown event %d\n", event);

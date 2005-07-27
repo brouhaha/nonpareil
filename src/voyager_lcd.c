@@ -81,13 +81,27 @@ static chip_detail_t voyager_display_chip_detail =
 };
 
 
+static void voyager_set_display_state (sim_t *sim,
+				       bool new_state)
+{
+  nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
+  voyager_display_reg_t *display = get_chip_data (nut_reg->display_chip);
+
+  if (display->enable == new_state)
+    return;
+
+  display->enable = new_state;
+  chip_event (sim, event_display_state_change, NULL, new_state, NULL);
+}
+
+
 static void voyager_op_display_off (sim_t *sim,
 				    int opcode UNUSED)
 {
   nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
   voyager_display_reg_t *display = get_chip_data (nut_reg->display_chip);
 
-  display->enable = 0;
+  voyager_set_display_state (sim, false);
   display->blink = 0;
   display->count = 2;
   // Don't change immediately, as the next instruction might be a
@@ -101,7 +115,7 @@ static void voyager_op_display_toggle (sim_t *sim,
   nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
   voyager_display_reg_t *display = get_chip_data (nut_reg->display_chip);
 
-  display->enable = ! display->enable;
+  voyager_set_display_state (sim, ! display->enable);
   display->count = 0;  // force immediate display update
 }
 
@@ -112,7 +126,7 @@ static void voyager_op_display_blink (sim_t *sim,
   nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
   voyager_display_reg_t *display = get_chip_data (nut_reg->display_chip);
 
-  display->enable = 1;
+  voyager_set_display_state (sim, true);
   display->blink = 1;
   display->blink_state = 1;
   display->blink_count = VOYAGER_DISPLAY_BLINK_DIVISOR;
@@ -131,8 +145,12 @@ static void voyager_display_init_ops (sim_t *sim)
 }
 
 
-static void voyager_display_reset (voyager_display_reg_t *display)
+static void voyager_display_reset (sim_t *sim)
 {
+  nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
+  voyager_display_reg_t *display = get_chip_data (nut_reg->display_chip);
+
+  voyager_set_display_state (sim, false);
   display->enable = 0;
   display->blink = 0;
   display->count = 0;
@@ -264,7 +282,7 @@ static void voyager_display_event_fn (sim_t  *sim,
   switch (event)
     {
     case event_reset:
-       voyager_display_reset (display);
+       voyager_display_reset (sim);
        break;
     case event_cycle:
       if (display->count == 0)
@@ -299,6 +317,7 @@ static void voyager_display_event_fn (sim_t  *sim,
     case event_wake:
     case event_restore_completed:
       // force display update
+      voyager_set_display_state (sim, display->enable);
       voyager_display_update (sim, display);
       sim_send_display_update_to_gui (sim);
       display->count = 15;

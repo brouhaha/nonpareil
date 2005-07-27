@@ -42,10 +42,6 @@ typedef struct
   bool enable;
   int count;
 
-  bool blink;
-  bool blink_state;
-  int blink_count;
-
   digit_t a [COCONUT_DISPLAY_DIGITS];
   digit_t b [COCONUT_DISPLAY_DIGITS];
   digit_t c [COCONUT_DISPLAY_DIGITS];
@@ -71,7 +67,6 @@ static reg_detail_t coconut_display_reg_detail [] =
 {
   //    name      field   bits radix get   set   arg
   CLR  ("enable", enable, 1,   2,    NULL, NULL, 0),
-  CLR  ("blink",  blink,  1,   2,    NULL, NULL, 0),
 
   //    name     field  digits
   CLRD ("a",     a,     COCONUT_DISPLAY_DIGITS),
@@ -83,13 +78,27 @@ static reg_detail_t coconut_display_reg_detail [] =
 };
 
 
+static void coconut_set_display_state (sim_t *sim,
+				       bool new_state)
+{
+  nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
+  coconut_display_reg_t *display = get_chip_data (nut_reg->display_chip);
+
+  if (display->enable == new_state)
+    return;
+
+  display->enable = new_state;
+  chip_event (sim, event_display_state_change, NULL, new_state, NULL);
+}
+
+
 static void coconut_op_display_off (sim_t *sim,
 				    int opcode UNUSED)
 {
   nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
   coconut_display_reg_t *display = get_chip_data (nut_reg->display_chip);
 
-  display->enable = false;
+  coconut_set_display_state (sim, false);
   display->count = 2;
   // Don't change immediately, as the next instruction might be a
   // display toggle.
@@ -102,7 +111,7 @@ static void coconut_op_display_toggle (sim_t *sim,
   nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
   coconut_display_reg_t *display = get_chip_data (nut_reg->display_chip);
 
-  display->enable = ! display->enable;
+  coconut_set_display_state (sim, ! display->enable);
   display->count = 0;  // force immediate display update
 }
 
@@ -330,12 +339,13 @@ static chip_detail_t coconut_display_chip_detail =
 };
 
 
-static void coconut_display_reset (coconut_display_reg_t *display)
+static void coconut_display_reset (sim_t *sim)
 {
+  nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
+  coconut_display_reg_t *display = get_chip_data (nut_reg->display_chip);
   int i;
 
-  display->enable = false;
-  display->blink = false;
+  coconut_set_display_state (sim, false);
   display->count = 0;
 
   for (i = 0; i < COCONUT_DISPLAY_DIGITS; i++)
@@ -391,7 +401,7 @@ static void coconut_display_event_fn (sim_t  *sim,
   switch (event)
     {
     case event_reset:
-       coconut_display_reset (display);
+       coconut_display_reset (sim);
        break;
     case event_cycle:
       if (display->count == 0)
@@ -425,6 +435,7 @@ static void coconut_display_event_fn (sim_t  *sim,
     case event_wake:
     case event_restore_completed:
       // force display update
+      coconut_set_display_state (sim, display->enable);
       coconut_display_update (sim, display);
       sim_send_display_update_to_gui (sim);
       display->count = 15;

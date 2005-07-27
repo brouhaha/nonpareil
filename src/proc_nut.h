@@ -66,7 +66,8 @@ typedef enum
 enum
 {
   event_periph_select = first_arch_event,
-  event_ram_select
+  event_ram_select,
+  event_display_state_change
 };
 
 
@@ -166,7 +167,10 @@ typedef struct nut_reg_t
   // a selprf instruction:
   bool (* selprf_fcn [16])(struct sim_t *sim, rom_word_t opcode);
 
-  chip_t *display_chip;  // opaque
-  chip_t *phineas_chip;  // opaque
-  chip_t *helios_chip;   // opaque
+  chip_t *display_chip;   // opaque
+  bool   display_enable;  // slaved from display using an event
+
+  chip_t *phineas_chip;   // opaque
+
+  chip_t *helios_chip;    // opaque
 } nut_reg_t;
