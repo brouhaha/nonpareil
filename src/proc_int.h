@@ -203,3 +203,12 @@ void chip_event (sim_t *sim, int event, chip_t *chip, int arg, void *data);
 const chip_detail_t *get_chip_detail (chip_t *chip);
 
 void *get_chip_data (chip_t *chip);
+
+
+// plugin modules:
+
+struct plugin_module_t
+{
+  int port;
+  chip_t *chip;
+};

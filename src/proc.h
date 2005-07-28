@@ -126,6 +126,16 @@ bool sim_read_object_file (sim_t *sim,
 bool sim_read_listing_file (struct sim_t *sim,
 			    char *fn);
 
+
+// Plugin modules:
+
+typedef struct plugin_module_t plugin_module_t;
+
+plugin_module_t *sim_install_module (sim_t *sim, char *fn, int port);
+
+bool sim_remove_module (plugin_module_t *module);
+
+
 /*
  * The following functions all send messages from the GUI thread to
  * the simulator thread, and wait for a reply.

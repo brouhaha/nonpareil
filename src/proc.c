@@ -261,7 +261,9 @@ static bool sim_read_mod1_page (sim_t *sim, FILE *f)
 }
 
 
-static bool sim_read_mod1_file (sim_t *sim, FILE *f)
+static bool sim_read_mod1_file (sim_t *sim,
+				FILE *f,
+				int port)   // -1 for not port-based
 {
   mod1_file_header_t header;
   size_t file_size;
@@ -307,7 +309,11 @@ static bool sim_read_mod1_file (sim_t *sim, FILE *f)
       else
 	fprintf (stderr, "Unsupported hardware type %d\n",
 		 header.Hardware);
+#if 1
+      break;  // for debugging, allow unsupported hardware
+#else
       return false;
+#endif
     }
 
   for (i = 0; i < header.NumPages; i++)
@@ -344,7 +350,7 @@ bool sim_read_object_file (sim_t *sim, char *fn)
     }
 
   if (strncmp (magic, "MOD1", sizeof (magic)) == 0)
-    return sim_read_mod1_file (sim, f);
+    return sim_read_mod1_file (sim, f, -1);
 
   // switch from binary to text mode, and rewind
 #ifdef MINGW
@@ -426,6 +432,40 @@ bool sim_read_listing_file (sim_t *sim, char *fn)
   fprintf (stderr, "read %d words from '%s'\n", count, fn);
 #endif
   return (true);
+}
+
+
+plugin_module_t *sim_install_module (sim_t *sim, char *fn, int port)
+{
+  FILE *f;
+  plugin_module_t *module;
+
+  f = fopen (fn, "rb");
+  if (! f)
+    return false;
+
+  module = alloc (sizeof (plugin_module_t));
+
+  if (! sim_read_mod1_file (sim, f, port))
+    {
+      free (module);
+      fclose (f);
+      return NULL;
+    }
+
+  fclose (f);
+
+  module->port = port;
+
+  return module;
+}
+
+
+bool sim_remove_module (plugin_module_t *module)
+{
+  free (module);
+
+  return false;  // $$$ not yet implemented
 }
 
 
