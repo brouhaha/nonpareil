@@ -44,7 +44,7 @@ static bool sound_open = false;
 
 typedef enum { SOUND_NONE, SOUND_RECORDED, SOUND_SYNTH } sound_type_t;
 
-#define SYNTH_FRAC_BITS 8
+#define SYNTH_FRAC_BITS 16
 
 
 typedef struct
@@ -259,6 +259,12 @@ int synth_sound (float    frequency,  // Hz
   sounds [index].waveform_pos = 0;
   sounds [index].waveform_inc = inc * (1 << SYNTH_FRAC_BITS) + 0.5;
   sounds [index].waveform_duration = duration * SAMPLE_RATE;
+
+#ifdef SYNTH_DEBUG
+  printf ("frequency = %f, inc = %f, waveform_inc = %d\n",
+	  frequency, inc, sounds [index].waveform_inc);
+#endif
+
   SDL_UnlockAudio ();
 
   return index;
