@@ -28,6 +28,7 @@ MA 02111, USA.
 
 #include "arch.h"
 #include "platform.h"
+#include "model.h"
 #include "util.h"
 #include "display.h"
 #include "proc.h"
@@ -1034,13 +1035,17 @@ static void bender_off (sim_t *sim)
   nut_reg->bender_last_transition_cycle = 0;  // a long time ago
   nut_reg->bender_last_pulse_width = 0;       // will never match
 
+#ifdef SOUND_DEBUG
   printf ("bender off\n");
+#endif
 }
 
 
 static void bender_pulse (sim_t *sim, uint64_t pulse_width)
 {
   nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
+  float frequency;
+  model_info_t *model_info;
 
   if (pulse_width == nut_reg->bender_last_pulse_width)
     return;
@@ -1051,10 +1056,20 @@ static void bender_pulse (sim_t *sim, uint64_t pulse_width)
     stop_sound (nut_reg->bender_sound_ref);
   nut_reg->bender_sound_ref = -1;
 
+#ifdef SOUND_DEBUG
   if (pulse_width <= BENDER_MAX_PULSE_WIDTH)
     printf ("bender pulse width %" PRId64 " cycles\n", pulse_width);
+#endif
 
-  nut_reg->bender_sound_ref = synth_sound (880,  // frequency
+  model_info = get_model_info (sim->model);
+
+  frequency = model_info->clock_frequency / (112.0 * pulse_width);
+
+#ifdef SOUND_DEBUG
+  printf ("frequency: %f\n", frequency);
+#endif
+
+  nut_reg->bender_sound_ref = synth_sound (frequency,
 					   0,    // amplitude
 					   0.0,  // duration - indefinite
 					   squarewave_waveform_table,
