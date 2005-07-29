@@ -19,6 +19,7 @@ Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
 MA 02111, USA.
 */
 
+#include <math.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -67,6 +68,9 @@ typedef struct
 sound_info_t sounds [MAX_SOUNDS];
 
 SDL_AudioSpec hw_fmt;
+
+
+void sinewave_init (void);
 
 
 static void sound_mix_recorded (sound_info_t *sound,
@@ -159,6 +163,8 @@ bool init_sound (void)
     return false;
 
   memset (& sounds, 0, sizeof (sounds));
+
+  sinewave_init ();
 
   SDL_PauseAudio (0);
 
@@ -294,3 +300,22 @@ sample_t squarewave_waveform_table [] = { -32767, 32767 };
 uint32_t squarewave_waveform_table_length = sizeof (squarewave_waveform_table) / sizeof (sample_t);
 
 
+#define SINEWAVE_SAMPLE_COUNT 256
+
+sample_t sinewave_waveform_table [SINEWAVE_SAMPLE_COUNT];
+uint32_t sinewave_waveform_table_length = SINEWAVE_SAMPLE_COUNT;
+
+
+void sinewave_init (void)
+{
+  int i;
+  double angle;
+  double val;
+
+  for (i = 0; i < SINEWAVE_SAMPLE_COUNT; i++)
+    {
+      angle = i * M_2_PI / SINEWAVE_SAMPLE_COUNT;
+      val = sin (angle);
+      sinewave_waveform_table [i] = (32767 * val) + 0.5;
+    }
+}

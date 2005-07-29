@@ -45,4 +45,5 @@ bool stop_sound (int id);
 extern sample_t squarewave_waveform_table [];
 extern uint32_t squarewave_waveform_table_length;
 
-
+extern sample_t sinewave_waveform_table [];
+extern uint32_t sinewave_waveform_table_length;
