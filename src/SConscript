@@ -347,7 +347,7 @@ for src in nonpareil_csim_srcs:
 for src in nonpareil_srcs:
     nonpareil_objs.append (nonpareil_env.Object (src))
 
-if cross and ming and build_target_only:
+if cross and ming and build_target_only and not build_env ['debug']:
     nonpareil_env.Append (LINKFLAGS = ['-mwindows'])
 
 nonpareil = nonpareil_env.Program (target = 'nonpareil',
