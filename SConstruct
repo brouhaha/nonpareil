@@ -106,52 +106,14 @@ SConsignFile ()
 env ['RELEASE'] = release
 
 #-----------------------------------------------------------------------------
-# Source tar file builder by Paul Davis
-# Posted to scons-users on 1-May-2005
-# Changed to use "-z" option to tar rather than "-j", to get gzip output.
-# Removed the exclude of '*~' (emacs backup files), not needed since we
-# explicitly list exactly what files we want packaged.
+# Add some builders to the environment:
+#   tarball
+#   NSIS
 #-----------------------------------------------------------------------------
 
-import os, errno, time, SCons
-
-def distcopy (target, source, env):
-    treedir = str (target[0])
-
-    try:
-        os.mkdir (treedir)
-    except OSError, (errnum, strerror):
-        if errnum != errno.EEXIST:
-            print 'mkdir ', treedir, ':', strerror
-
-    cmd = 'tar cf - '
-    #
-    # we don't know what characters might be in the file names
-    # so quote them all before passing them to the shell
-    #
-    all_files = ([ str(s) for s in source ])
-    cmd += " ".join ([ "'%s'" % quoted for quoted in all_files])
-    cmd += ' | (cd ' + treedir + ' && tar xf -)'
-    p = os.popen (cmd)
-    return p.close ();
-
-def tarballer (target, source, env):            
-    cmd = 'tar -czf ' + str (target[0]) +  ' ' + str(source[0])
-    print 'running ', cmd, ' ... '
-    p = os.popen (cmd)
-    return p.close ()
-
-dist_bld = Builder (action = distcopy,
-                    target_factory = SCons.Node.FS.default_fs.Entry,
-                    source_factory = SCons.Node.FS.default_fs.Entry,
-                    multi = 1)
-
-tarball_bld = Builder (action = tarballer,
-                       target_factory = SCons.Node.FS.default_fs.Entry,
-                       source_factory = SCons.Node.FS.default_fs.Entry)
-
-env.Append (BUILDERS = {'Distribute' : dist_bld})
-env.Append (BUILDERS = {'Tarball' : tarball_bld})
+Export ('env')
+SConscript ('scons-builders/tarball.py')
+# SConscript ('scons-builders/nsis.py')
 
 #-----------------------------------------------------------------------------
 # package a release source tarball
@@ -164,10 +126,6 @@ src_dist_files = Split ("""INSTALL DEBUGGING TODO SConstruct""")
 source_release_dir = env.Distribute ('nonpareil-' + release,
 				     bin_dist_files + src_dist_files)
 
-# Not only does this preaction not work, it causes the files from the root
-# directory to not get included in the release!
-# env.AddPreAction (source_release_dir, Delete (source_release_dir))
-
 source_release_tarball = env.Tarball ('nonpareil-' + release + '.tar.gz',
                                       source_release_dir)
 
@@ -179,13 +137,11 @@ env.AddPostAction (source_release_tarball, Delete (source_release_dir))
 # package a source snapshot tarball
 #-----------------------------------------------------------------------------
 
+import time
+
 snap_date = time.strftime ("%Y.%m.%d")
 
 snapshot_dir = env.Distribute ('nonpareil-' + snap_date, src_dist_files)
-
-# Not only does this preaction not work, it causes the files from the root
-# directory to not get included in the snapshot!
-# env.AddPreAction (snapshot_dir, Delete (snapshot_dir))
 
 snapshot_tarball = env.Tarball ('nonpareil-' + snap_date + '.tar.gz',
                                 snapshot_dir)
@@ -195,7 +151,7 @@ env.Alias ('srcsnap', snapshot_tarball)
 env.AddPostAction (snapshot_tarball, Delete (snapshot_dir))
 
 #-----------------------------------------------------------------------------
-# package a Windows distribution ZIP file
+# package a Windows binary distribution ZIP file
 #-----------------------------------------------------------------------------
 
 if env ['target'] == 'win32':
@@ -205,6 +161,17 @@ if env ['target'] == 'win32':
     win32_bin_dist_zip = Zip ('nonpareil-' + release + '-win32.zip', win32_bin_dist_dir)
     env.Alias ('dist', win32_bin_dist_zip)
     env.AddPostAction (win32_bin_dist_zip, Delete (win32_bin_dist_dir.path))
+
+#-----------------------------------------------------------------------------
+# package a Windows installer
+#-----------------------------------------------------------------------------
+
+#if env ['target'] == 'win32':
+#    win32_nsis_installer_fn = 'nonpareil-' + release + '-setup.exe'
+#    win32_nsis_installer = env.MakeNSISInstaller (win32_nsis_installer_fn,
+#                                                  'src/nonpareil.nsi')
+#    env.Alias ('installer', win32_nsis_installer)
+#    env.AddPostAction (win32_nsis_installer, Delete (win32_bin_dist_dir.path))
 
 #-----------------------------------------------------------------------------
 # Installation paths
@@ -220,7 +187,7 @@ if not env ['libdir']:
 # Prepare for SConscription
 #-----------------------------------------------------------------------------
 
-Export ('env source_release_dir snapshot_dir')
+Export ('source_release_dir snapshot_dir')
 
 host_build_dir = 'build/' + env ['host']
 target_build_dir = 'build/' + env ['target']
