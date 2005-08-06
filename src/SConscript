@@ -27,7 +27,7 @@ Import('source_release_dir snapshot_dir')
 
 build_target_only = build_env ['build_target_only']
 
-cross = build_env ['host'] != build_env ['target']
+cross = build_env ['PLATFORM'] != build_env ['target']
 
 ming = build_env ['target'] == 'win32'
 

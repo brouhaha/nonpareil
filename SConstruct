@@ -18,7 +18,7 @@
 # the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
 # Boston, MA 02111, USA.
 
-release = '0.77'  # should get from a file, and use only if a release option
+release = '0.78'  # should get from a file, and use only if a release option
                   # is specified
 
 conf_file = 'nonpareil.conf'
@@ -29,13 +29,7 @@ conf_file = 'nonpareil.conf'
 
 opts = Options (conf_file)
 
-opts.AddOptions (EnumOption ('host',
-			     help = 'host build platform',
-			     allowed_values = ('posix', 'win32'),
-			     default = 'posix',
-			     ignorecase = 1),
-
-		 EnumOption ('target',
+opts.AddOptions (EnumOption ('target',
 			     help = 'execution target platform',
 			     allowed_values = ('posix', 'win32'),
 			     default = 'posix',
@@ -189,7 +183,7 @@ if not env ['libdir']:
 
 Export ('source_release_dir snapshot_dir')
 
-host_build_dir = 'build/' + env ['host']
+host_build_dir = 'build/' + env ['PLATFORM']
 target_build_dir = 'build/' + env ['target']
 
 if env ['debug']:
@@ -236,7 +230,7 @@ SConscript ('asm/SConscript',
 # target platform code if cross-compiling
 #-----------------------------------------------------------------------------
 
-if (env ['host'] != env ['target']):
+if (env ['PLATFORM'] != env ['target']):
 	cross_build_env = env.Copy ()
 	cross_build_env ['build_target_only'] = 1
 	SConscript ('src/SConscript',
