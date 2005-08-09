@@ -714,7 +714,7 @@ static void handle_sim_cmd (sim_t *sim, sim_msg_t *msg)
       msg->b = sim->run_flag;
       msg->reply = OK;
       break;
-#ifdef HAS_DEBUGGER
+#if 1 || defined(HAS_DEBUGGER)
     case CMD_SET_DEBUG_FLAG:
       if (msg->b)
 	sim->debug_flags |= (1 << msg->arg1);
@@ -1378,7 +1378,7 @@ void sim_get_display_update (sim_t *sim)
 }
 
 
-#ifdef HAS_DEBUGGER
+#if 1 || defined(HAS_DEBUGGER)
 void sim_set_debug_flag (sim_t *sim, int debug_flag, bool state)
 {
   sim_msg_t msg;

@@ -286,7 +286,7 @@ void sim_set_ext_flag (sim_t *sim,
 
 void sim_get_display_update (sim_t *sim);
 
-#ifdef HAS_DEBUGGER
+#if 1 || defined(HAS_DEBUGGER)
 
 #define SIM_DEBUG_TRACE     0
 #define SIM_DEBUG_RAM_TRACE 1

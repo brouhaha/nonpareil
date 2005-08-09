@@ -170,7 +170,7 @@ struct sim_t
   int display_digits;
   segment_bitmap_t display_segments [MAX_DIGIT_POSITION];
 
-#ifdef HAS_DEBUGGER
+#if 1 || defined(HAS_DEBUGGER)
   int debug_flags;  /* SIM_DEBUG_TRACE etc. */
 #endif
 
