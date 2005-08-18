@@ -37,6 +37,9 @@ MA 02111, USA.
 #include "dis_woodstock.h"
 
 
+#define HAS_DEBUGGER
+
+
 /* If defined, print warnings about stack overflow or underflow. */
 #undef STACK_WARNING
 
@@ -1379,7 +1382,7 @@ static bool woodstock_execute_cycle (sim_t *sim)
   if (act_reg->ext_flag [5])
     act_reg->s [5] = 1;
 
-  act_reg->pc++;
+  act_reg->pc = (act_reg->pc + 1) & 07777;
 
   switch (prev_inst_state)
     {
