@@ -64,12 +64,14 @@ void wasm_error (char *s);
 %token IAM
 %token IF
 %token JSB
+%token KEY
 %token KEYS
 %token LEFT
 %token LOAD
 %token NC
 %token NOP
 %token OFF
+%token PIK
 %token REGISTER
 %token REGISTERS
 %token RESET
@@ -149,6 +151,7 @@ instruction	: jsb_inst
 	        | pointer_inst
 		| ram_inst
 		| misc_inst
+		| pik_inst
 	        ;
 
 jsb_inst        : JSB expr { emit ((001 << 12) | (($2 & 0377) << 2) | 00001); 
@@ -424,6 +427,10 @@ inst_return	: RETURN                    { emit (01020); } ;
 inst_noop       : NOP			    { emit (00000); } ;
 
 inst_woodstock	: HI IAM WOODSTOCK	    { emit (01760); } ;
+
+pik_inst        : pik_key_inst ;
+
+pik_key_inst	: PIK KEY '?'               { emit (01320); } ;
 
 %%
 
