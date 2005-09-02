@@ -17,3 +17,7 @@ $Id$
   xmllint (part of the libxml2 package):
 
       xmllint --format ~/41CV.nst | more
+
+* If you get Gtk assertions, it may be useful to give Nonpareil the
+  --g-fatal-warnings option when runnning it in GDB.
+
