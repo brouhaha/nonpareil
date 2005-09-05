@@ -90,62 +90,63 @@ static void draw_digit (gui_display_t *d,
 
   fg_gc = d->drawing_area->style->fg_gc [GTK_WIDGET_STATE (widget)];
 
-  // $$$ (erase first if segments aren't using "scaled" mode
   for (i = 0; i < KML_MAX_SEGMENT; i++)
-    if ((segments & (1 << i)) && (kml->segment [i]))
-      {
-	switch (kml->segment [i]->type)
-	  {
-	  case kml_segment_type_line:
-	    gdk_draw_line (widget->window,
+    {
+      if (! ((segments & (1 << i)) && kml->segment [i]))
+	continue;
+
+      switch (kml->segment [i]->type)
+	{
+	case kml_segment_type_line:
+	  gdk_draw_line (widget->window,
+			 fg_gc,
+			 x + kml->segment [i]->offset.x,
+			 y + kml->segment [i]->offset.y,
+			 x + kml->segment [i]->offset.x + kml->segment [i]->size.width - 1,
+			 y + kml->segment [i]->offset.y + kml->segment [i]->size.height - 1);
+	  break;
+	case kml_segment_type_rect:
+	  gdk_draw_rectangle (widget->window,
+			      fg_gc,
+			      TRUE,
+			      x + kml->segment [i]->offset.x,
+			      y + kml->segment [i]->offset.y,
+			      kml->segment [i]->size.width,
+			      kml->segment [i]->size.height);
+	  break;
+	case kml_segment_type_image:
+	  // grab segment images from individual templates in image file
+	  gdk_draw_pixbuf (widget->window,                // drawable
 			   fg_gc,
-			   x + kml->segment [i]->offset.x,
-			   y + kml->segment [i]->offset.y,
-			   x + kml->segment [i]->offset.x + kml->segment [i]->size.width - 1,
-			   y + kml->segment [i]->offset.y + kml->segment [i]->size.height - 1);
-	    break;
-	  case kml_segment_type_rect:
-	    gdk_draw_rectangle (widget->window,
-				fg_gc,
-				TRUE,
-				x + kml->segment [i]->offset.x,
-				y + kml->segment [i]->offset.y,
-				kml->segment [i]->size.width,
-				kml->segment [i]->size.height);
-	    break;
-	  case kml_segment_type_image:
-	    // grab segment images from individual templates in image file
-	    gdk_draw_pixbuf (widget->window,                   // drawable
-			     fg_gc,
-                             d->csim->file_pixbuf,                   // pixbuf
-			     kml->segment [i]->offset.x,    // src_x
-			     kml->segment [i]->offset.y,    // src_y
-			     x,                                // dest_x
-			     y,                                // dest_y
-			     kml->segment [i]->size.width,  // width
-			     kml->segment [i]->size.height, // height
-			     GDK_RGB_DITHER_NORMAL,            // dither
-			     0,                                // x_dither
-			     0);                               // y_dither
-	    break;
-	  case kml_segment_type_scaled:
-	    // pre-rendered images extracted from a single template in
-            // image file and scaled down
-	    gdk_draw_pixbuf (widget->window,                   // drawable
-			     fg_gc,
-                             d->segment_pixbuf [i],            // pixbuf
-			     0,                                // src_x
-			     0,                                // src_y
-			     x,                                // dest_x
-			     y,                                // dest_y
-			     kml->digit_size.width,         // width
-			     kml->digit_size.height,        // height
-			     GDK_RGB_DITHER_NORMAL,            // dither
-			     0,                                // x_dither
-			     0);                               // y_dither
-	    break;
-	  }
-      }
+			   d->csim->file_pixbuf,          // pixbuf
+			   kml->segment [i]->offset.x,    // src_x
+			   kml->segment [i]->offset.y,    // src_y
+			   x,                             // dest_x
+			   y,                             // dest_y
+			   kml->segment [i]->size.width,  // width
+			   kml->segment [i]->size.height, // height
+			   GDK_RGB_DITHER_NORMAL,         // dither
+			   0,                             // x_dither
+			   0);                            // y_dither
+	  break;
+	case kml_segment_type_scaled:
+	  // pre-rendered images extracted from a single template in
+	  // image file and scaled down
+	  gdk_draw_pixbuf (widget->window,                // drawable
+			   fg_gc,
+			   d->segment_pixbuf [i],         // pixbuf
+			   0,                             // src_x
+			   0,                             // src_y
+			   x,                             // dest_x
+			   y,                             // dest_y
+			   kml->digit_size.width,         // width
+			   kml->digit_size.height,        // height
+			   GDK_RGB_DITHER_NORMAL,         // dither
+			   0,                             // x_dither
+			   0);                            // y_dither
+	  break;
+	}
+    }
 }
 
 
@@ -250,6 +251,7 @@ void gui_display_update (gui_display_t *d,
       if ((segments [i] & ~ SEGMENT_ANN) ==
 	  (d->display_segments [i] & ~ SEGMENT_ANN))
 	{
+	  // digit remained the same
 	  if (prev_digit_changed)
 	    gdk_window_invalidate_rect (d->drawing_area->window,
 					& rect,
@@ -258,6 +260,7 @@ void gui_display_update (gui_display_t *d,
 	}
       else
 	{
+	  // digit changed
 	  if (prev_digit_changed)
 	    {
 	      // grow the rect to include this digit
@@ -268,8 +271,8 @@ void gui_display_update (gui_display_t *d,
 	      // start a new rect
 	      rect.x = (kml->digit_offset.x + i * kml->digit_size.width);
 	      rect.width = kml->digit_size.width;
+	      prev_digit_changed = true;
 	    }
-	  prev_digit_changed = true;
 	}
     }
 
@@ -298,9 +301,6 @@ void gui_display_update (gui_display_t *d,
   // save current segments for comparison next time
   memcpy (d->display_segments, segments,
 	  digit_count * sizeof (segment_bitmap_t));
-
-  rect.width = d->drawing_area->allocation.width;
-  rect.height = d->drawing_area->allocation.height;
 }
 
 
