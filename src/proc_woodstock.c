@@ -1354,7 +1354,7 @@ static bool woodstock_execute_cycle (sim_t *sim)
   if ((sim->debug_flags & (1 << SIM_DEBUG_KEY_TRACE)) &&
       (act_reg->inst_state == norm))
     {
-      if (opcode == 00020)
+      if ((opcode == 00020) | (opcode == 00120))
 	sim->debug_flags |= (1 << SIM_DEBUG_TRACE);
       else if (opcode == 01724)
 	sim->debug_flags &= ~ (1 << SIM_DEBUG_TRACE);
