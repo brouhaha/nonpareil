@@ -95,7 +95,7 @@ static chip_detail_t classic_cpu_chip_detail =
 
 
 static bool classic_read_rom (sim_t      *sim,
-			      uint8_t    bank,
+			      bank_t     bank,
 			      addr_t     addr,
 			      rom_word_t *val)
 {
@@ -113,7 +113,7 @@ static bool classic_read_rom (sim_t      *sim,
 
 
 static bool classic_write_rom (sim_t      *sim,
-			       uint8_t    bank,
+			       bank_t     bank,
 			       addr_t     addr,
 			       rom_word_t *val)
 {
@@ -914,8 +914,10 @@ static bool parse_octal (char *oct, int digits, int *val)
 }
 
 
-static bool classic_parse_object_line (char *buf, int *bank, int *addr,
-				       rom_word_t *opcode)
+static bool classic_parse_object_line (char        *buf,
+				       bank_mask_t *bank_mask,
+				       addr_t      *addr,
+				       rom_word_t  *opcode)
 {
   int a, o;
 
@@ -943,7 +945,7 @@ static bool classic_parse_object_line (char *buf, int *bank, int *addr,
       return (false);
     }
 
-  *bank = 0;
+  *bank_mask = 1;
   *addr = a;
   *opcode = o;
   return (true);
@@ -976,8 +978,10 @@ static int parse_opcode (char *bin, int *opcode)
 }
 
 
-static bool classic_parse_listing_line (char *buf, int *bank, int *addr,
-					rom_word_t *opcode)
+static bool classic_parse_listing_line (char        *buf,
+					bank_mask_t *bank_mask,
+					addr_t      *addr,
+					rom_word_t  *opcode)
 {
   int g, r, p, o;
 
@@ -1002,7 +1006,7 @@ static bool classic_parse_listing_line (char *buf, int *bank, int *addr,
       return (false);
     }
 
-  *bank = 0;
+  *bank_mask = 1;
   *addr = (g << 11) + (r << 8) + p;
   *opcode = o;
   return (true);
@@ -1203,7 +1207,7 @@ static void classic_event_fn (sim_t  *sim,
 processor_dispatch_t classic_processor =
   {
     .max_rom             = 4096,
-    .max_bank            = 1,
+    .max_bank            = MAX_BANK,
 
     .new_processor       = classic_new_processor,
     .free_processor      = classic_free_processor,

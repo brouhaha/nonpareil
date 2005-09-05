@@ -155,7 +155,7 @@ static int itmap [WSIZE] =
 static rom_word_t nut_get_ucode (nut_reg_t *nut_reg, rom_addr_t addr)
 {
   uint8_t page = addr / PAGE_SIZE;
-  uint8_t bank = nut_reg->active_bank [page];
+  bank_t bank = nut_reg->active_bank [page];
   uint16_t offset = addr & (PAGE_SIZE - 1);
 
   if (nut_reg->rom [page][bank])
@@ -175,7 +175,7 @@ static void nut_set_ucode (nut_reg_t *nut_reg,
 			   rom_word_t data)
 {
   uint8_t page = addr / PAGE_SIZE;
-  uint8_t bank = nut_reg->active_bank [page];
+  bank_t bank = nut_reg->active_bank [page];
   uint16_t offset = addr & (PAGE_SIZE - 1);
 
   if (! nut_reg->rom [page][bank])
@@ -216,7 +216,7 @@ static bool nut_set_bank_group (sim_t    *sim,
 
 
 static bool nut_read_rom (sim_t      *sim,
-			  uint8_t    bank,
+			  bank_t     bank,
 			  addr_t     addr,
 			  rom_word_t *val)
 {
@@ -239,7 +239,7 @@ static bool nut_read_rom (sim_t      *sim,
 
 
 static bool nut_write_rom (sim_t      *sim,
-			   uint8_t    bank,
+			   bank_t     bank,
 			   addr_t     addr,
 			   rom_word_t *val)
 {
@@ -640,7 +640,7 @@ static void op_goto_c (sim_t *sim,
 
 // Bank selection used in 41CX, Advantage ROM, and perhaps others
 
-static void select_bank (sim_t *sim, rom_addr_t addr, uint8_t new_bank)
+static void select_bank (sim_t *sim, rom_addr_t addr, bank_t new_bank)
 {
   nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
   uint8_t page;
@@ -1777,10 +1777,11 @@ static bool parse_hex (char *hex, int digits, int *val)
 }
 
 
-static bool nut_parse_object_line (char *buf, int *bank, int *addr,
-				   rom_word_t *opcode)
+static bool nut_parse_object_line (char        *buf,
+				   bank_mask_t *bank_mask,
+				   addr_t      *addr,
+				   rom_word_t  *opcode)
 {
-  int b = 0;
   int a;
   int o;
 
@@ -1808,17 +1809,17 @@ static bool nut_parse_object_line (char *buf, int *bank, int *addr,
       return (false);
     }
 
-  *bank = b;
+  *bank_mask = 1;
   *addr = a;
   *opcode = o;
   return (true);
 }
 
 
-static bool nut_parse_listing_line (char *buf          UNUSED,
-				    int *bank          UNUSED,
-				    int *addr          UNUSED,
-				    rom_word_t *opcode UNUSED)
+static bool nut_parse_listing_line (char        *buf    UNUSED,
+				    bank_mask_t *bank   UNUSED,
+				    addr_t      *addr   UNUSED,
+				    rom_word_t  *opcode UNUSED)
 {
   return (false);
 }

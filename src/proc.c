@@ -178,7 +178,7 @@ struct sim_thread_vars_t
 
 
 static bool sim_load_mod1_rom_word (sim_t *sim,
-				    uint8_t bank,
+				    bank_t bank,
 				    addr_t addr,
 				    rom_word_t data)
 {
@@ -263,7 +263,7 @@ static bool sim_read_mod1_page (sim_t *sim, FILE *f)
 
 static bool sim_read_mod1_file (sim_t *sim,
 				FILE *f,
-				int port)   // -1 for not port-based
+				int port UNUSED)   // -1 for not port-based
 {
   mod1_file_header_t header;
   size_t file_size;
@@ -327,9 +327,9 @@ static bool sim_read_mod1_file (sim_t *sim,
 bool sim_read_object_file (sim_t *sim, char *fn)
 {
   FILE *f;
-  int bank;
-  int addr;  // should change to addr_t, but will have to change
-             // the parse function profiles to match.
+  bank_t bank;
+  bank_mask_t bank_mask;
+  addr_t addr;
   rom_word_t opcode;
   int count = 0;
   char buf [80];
@@ -371,15 +371,19 @@ bool sim_read_object_file (sim_t *sim, char *fn)
       trim_trailing_whitespace (buf);
       if (! buf [0])
 	continue;
-      if (sim->proc->parse_object_line (buf, & bank, & addr, & opcode))
+      if (sim->proc->parse_object_line (buf, & bank_mask, & addr, & opcode))
 	{
-	  if (! sim_write_rom (sim, bank, addr, & opcode))
-	    fatal (3, "can't load ROM word at bank %d address %o\n", bank, addr);
+	  for (bank = 0; bank < sim->proc->max_bank; bank++)
+	    if (bank_mask & (1 << bank))
+	      {
+		if (! sim_write_rom (sim, bank, addr, & opcode))
+		  fatal (3, "can't load ROM word at bank %d address %o\n", bank, addr);
+	      }
 	  count++;
 	}
     }
 
-#if 0
+#if 1
   fprintf (stderr, "read %d words from '%s'\n", count, fn);
 #endif
   return (true);
@@ -389,9 +393,9 @@ bool sim_read_object_file (sim_t *sim, char *fn)
 bool sim_read_listing_file (sim_t *sim, char *fn)
 {
   FILE *f;
-  int bank, i;
-  int addr;  // should change to addr_t, but will have to change
-             // the parse function profiles to match.
+  bank_t bank;
+  bank_mask_t bank_mask;
+  addr_t addr;
   rom_word_t opcode;
   rom_word_t obj_opcode;
   int count = 0;
@@ -407,23 +411,27 @@ bool sim_read_listing_file (sim_t *sim, char *fn)
   while (fgets (buf, sizeof (buf), f))
     {
       trim_trailing_whitespace (buf);
-      if (sim->proc->parse_listing_line (buf, & bank, & addr, & opcode))
+      if (sim->proc->parse_listing_line (buf, & bank_mask, & addr, & opcode))
 	{
-	  i = bank * sim->proc->max_rom + addr;
-	  if (sim_read_rom (sim, bank, addr, & obj_opcode))
-	    {
-	      fprintf (stderr, "listing line for which there was no code in object file, bank %d address %o\n",
-		       bank, addr);
-	      fprintf (stderr, "src: %s\n", sim->source [i]);
-	    }
-	  if (obj_opcode != opcode)
-	    {
-	      fprintf (stderr, "listing line for which object code does not match object file, bank %d address %o\n",
-		       bank, addr);
-	      fprintf (stderr, "src: %s\n", sim->source [i]);
-	      fprintf (stderr, "object file: %04o\n", obj_opcode);
-	    }
-	  sim->source   [i] = newstr (& buf [0]);
+	  for (bank = 0; bank < sim->proc->max_bank; bank++)
+	    if (bank_mask & (1 << bank))
+	      {
+		int i = bank * sim->proc->max_rom + addr;
+		if (sim_read_rom (sim, bank, addr, & obj_opcode))
+		  {
+		    fprintf (stderr, "listing line for which there was no code in object file, bank %d address %o\n",
+			     bank, addr);
+		    fprintf (stderr, "src: %s\n", sim->source [i]);
+		  }
+		if (obj_opcode != opcode)
+		  {
+		    fprintf (stderr, "listing line for which object code does not match object file, bank %d address %o\n",
+			     bank, addr);
+		    fprintf (stderr, "src: %s\n", sim->source [i]);
+		    fprintf (stderr, "object file: %04o\n", obj_opcode);
+		  }
+		sim->source   [i] = newstr (& buf [0]);
+	      }
 	  count++;
 	}
     }

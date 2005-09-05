@@ -39,6 +39,8 @@ MA 02111, USA.
 
 #define HAS_DEBUGGER
 
+#define DEBUG_BANK_SWITCH
+
 
 /* If defined, print warnings about stack overflow or underflow. */
 #undef STACK_WARNING
@@ -121,7 +123,7 @@ static chip_detail_t woodstock_cpu_chip_detail =
 static inline uint8_t get_effective_bank (act_reg_t *act_reg, rom_addr_t addr)
 {
   uint8_t page = addr / PAGE_SIZE;
-  uint8_t bank;
+  bank_t bank;
 
   bank = act_reg->bank;
   if (! (act_reg->bank_exists [page] & (1 << bank)))
@@ -133,7 +135,7 @@ static inline uint8_t get_effective_bank (act_reg_t *act_reg, rom_addr_t addr)
 
 static rom_word_t woodstock_get_ucode (act_reg_t *act_reg, rom_addr_t addr)
 {
-  uint8_t bank;
+  bank_t bank;
 
   bank = get_effective_bank (act_reg, addr);
 
@@ -143,23 +145,23 @@ static rom_word_t woodstock_get_ucode (act_reg_t *act_reg, rom_addr_t addr)
 }
 
 
-int woodstock_get_max_rom_bank (sim_t *sim)
+bank_t woodstock_get_max_rom_bank (sim_t *sim UNUSED)
 {
   return MAX_BANK;
 }
 
-int woodstock_get_rom_page_size (sim_t *sim)
+int woodstock_get_rom_page_size (sim_t *sim UNUSED)
 {
   return PAGE_SIZE;
 }
 
-int woodstock_get_max_rom_addr (sim_t *sim)
+int woodstock_get_max_rom_addr (sim_t *sim UNUSED)
 {
   return MAX_PAGE * PAGE_SIZE;
 }
 
 bool woodstock_page_exists (sim_t   *sim,
-			    uint8_t bank,
+			    bank_t  bank,
 			    uint8_t page)
 {
   act_reg_t *act_reg = get_chip_data (sim->first_chip);
@@ -169,7 +171,7 @@ bool woodstock_page_exists (sim_t   *sim,
 
 
 static bool woodstock_read_rom (sim_t      *sim,
-				uint8_t    bank,
+				bank_t     bank,
 				addr_t     addr,
 				rom_word_t *val)
 {
@@ -196,7 +198,7 @@ static bool woodstock_read_rom (sim_t      *sim,
 
 
 static bool woodstock_write_rom (sim_t      *sim,
-				 uint8_t    bank,
+				 bank_t     bank,
 				 addr_t     addr,
 				 rom_word_t *val)
 {
@@ -1300,7 +1302,7 @@ static void woodstock_print_state (sim_t *sim)
 {
   act_reg_t *act_reg = get_chip_data (sim->first_chip);
   int i;
-  uint8_t bank;
+  bank_t bank;
   int mapped_addr;
 
   bank = get_effective_bank (act_reg, act_reg->prev_pc);
@@ -1438,56 +1440,66 @@ static bool parse_octal (char *oct, int digits, int *val)
 }
 
 
-static bool woodstock_parse_object_line (char *buf, int *bank, int *addr,
-					 rom_word_t *opcode)
+static bool woodstock_parse_object_line (char        *buf,
+					 bank_mask_t *bank_mask,
+					 addr_t      *addr,
+					 rom_word_t  *opcode)
 {
-  bool has_bank;
-  int b = 0;
-  int a, o;
+  int a, b, o;
 
   if (buf [0] == '#')  /* comment? */
     return (false);
 
+  if (buf [0] == '[')  // banks?
+    {
+      *bank_mask = 0;
+      buf++;
+      while ((*buf) != ']')
+	{
+	  if (! parse_octal (buf, 1, & b))
+	    {
+	      fprintf (stderr, "invalid bank in object line '%s'\n", buf);
+	      return false;
+	    }
+	  buf++;
+	  *bank_mask |= (1 << b);
+	}
+      buf++;
+    }
+  else
+    *bank_mask = (1 << MAX_BANK) - 1;
+
   if ((strlen (buf) < 9) || (strlen (buf) > 10))
     return (false);
 
-  if (buf [4] == ':')
-    has_bank = false;
-  else if (buf [5] == ':')
-    has_bank = true;
-  else
+  if (buf [4] != ':')
     {
       fprintf (stderr, "invalid object file format\n");
       return (false);
     }
 
-  if (has_bank && ! parse_octal (& buf [0], 1, & b))
-    {
-      fprintf (stderr, "invalid bank in object line '%s'\n", buf);
-      return (false);
-    }
-
-  if (! parse_octal (& buf [has_bank ? 1 : 0], 4, & a))
+  if (! parse_octal (& buf [0], 4, & a))
     {
       fprintf (stderr, "invalid address in object line '%s'\n", buf);
       return (false);
     }
 
-  if (! parse_octal (& buf [has_bank ? 6 : 5], 4, & o))
+  if (! parse_octal (& buf [5], 4, & o))
     {
       fprintf (stderr, "invalid opcode in object line '%s'\n", buf);
       return (false);
     }
 
-  *bank = b;
   *addr = a;
   *opcode = o;
   return (true);
 }
 
 
-static bool woodstock_parse_listing_line (char *buf, int *bank, int *addr,
-					  rom_word_t *opcode)
+static bool woodstock_parse_listing_line (char        *buf,
+					  bank_mask_t *bank_mask,
+					  addr_t      *addr,
+					  rom_word_t  *opcode)
 {
   int a, o;
 
@@ -1506,7 +1518,7 @@ static bool woodstock_parse_listing_line (char *buf, int *bank, int *addr,
       return (false);
     }
 
-  *bank = 0;
+  *bank_mask = 1;  // doesn't yet deal correctly with banks
   *addr = a;
   *opcode = o;
   return (true);
@@ -1734,7 +1746,7 @@ static void woodstock_event_fn (sim_t  *sim,
 processor_dispatch_t woodstock_processor =
   {
     .max_rom             = 4096,
-    .max_bank            = 2, 
+    .max_bank            = MAX_BANK,
 
     .new_processor       = woodstock_new_processor,
     .free_processor      = woodstock_free_processor,

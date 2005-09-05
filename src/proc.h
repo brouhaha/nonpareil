@@ -45,6 +45,13 @@ enum
 };
 
 
+typedef uint8_t bank_t;         // bank number
+typedef uint32_t bank_mask_t;   // bank bitmask
+
+// sim->proc->max_bank can't be more than this:
+#define MAX_MAX_BANK (sizeof (bank_mask_t) * 8)
+
+
 typedef uint32_t addr_t;
 
 typedef uint16_t rom_word_t;
@@ -184,15 +191,15 @@ bool sim_set_bank_group (sim_t   *sim,
 int sim_get_max_rom_bank  (sim_t *sim);
 int sim_get_rom_page_size (sim_t *sim);
 int sim_get_max_rom_addr  (sim_t *sim);
-bool sim_page_exists      (sim_t *sim, uint8_t bank, uint8_t page);
+bool sim_page_exists      (sim_t *sim, bank_t bank, uint8_t page);
 
 bool sim_read_rom  (sim_t      *sim,
-		    uint8_t    bank,
+		    bank_t     bank,
 		    addr_t     addr,
 		    rom_word_t *val);
 
 bool sim_write_rom (sim_t      *sim,
-		    uint8_t    bank,
+		    bank_t     bank,
 		    addr_t     addr,
 		    rom_word_t *val);
 

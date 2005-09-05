@@ -73,15 +73,20 @@ typedef struct chip_detail_t
 typedef struct
 {
   int max_rom;
-  int max_bank;
+  bank_t max_bank;
 
   void (* new_processor)       (sim_t *sim, int ram_size);
   void (* free_processor)      (sim_t *sim);
 
-  bool (* parse_object_line)   (char *buf, int *bank, int *addr,
-				rom_word_t *opcode);
-  bool (* parse_listing_line)  (char *buf, int *bank, int *addr,
-				rom_word_t *opcode);
+  bool (* parse_object_line)   (char        *buf,
+				bank_mask_t *bank_mask,
+				addr_t      *addr,
+				rom_word_t  *opcode);
+
+  bool (* parse_listing_line)  (char        *buf,
+				bank_mask_t *bank_mask,
+				addr_t      *addr,
+				rom_word_t  *opcode);
 
   /* returns false if asleep (can't execute cycles) */
   bool (* execute_cycle)       (sim_t *sim);
@@ -99,23 +104,23 @@ typedef struct
 				int        bank_group,
 				addr_t     addr);
 
-  int (* get_max_rom_bank)     (sim_t      *sim);
+  bank_t (* get_max_rom_bank)  (sim_t      *sim);
 
   int (* get_rom_page_size)    (sim_t      *sim);
 
   int (* get_max_rom_addr)     (sim_t      *sim);
 
   bool (* page_exists)         (sim_t      *sim,
-				uint8_t    bank,
+				bank_t     bank,
 				uint8_t    page);
 
   bool (* read_rom)            (sim_t      *sim,
-				uint8_t    bank,
+				bank_t     bank,
 				addr_t     addr,
 				rom_word_t *val);
 
   bool (* write_rom)           (sim_t      *sim,
-				uint8_t    bank,
+				bank_t     bank,
 				addr_t     addr,
 				rom_word_t *val);
 
