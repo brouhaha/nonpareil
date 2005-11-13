@@ -27,6 +27,7 @@ MA 02111, USA.
 #include "util.h"
 #include "display.h"
 #include "kml.h"
+#include "scancode.h"
 
 /* parser temporaries */
 kml_t *yy_kml;
@@ -67,6 +68,7 @@ int kml_cur_idx2;
 
 %type <integer> char_id
 %type <integer> segment_list
+%type <integer> scancode_id
 
 %%
 
@@ -93,6 +95,9 @@ section			:	global_section
 include_stmt		:	INCLUDE STRING { kml_include ($2); }
 			;
 
+scancode_id		:	INTEGER { $$ = $1; }
+			|	STRING { $$ = get_scancode_from_name ($1); }
+			;
 
 /*----------------------------------------------------------------------------
  global section
@@ -344,7 +349,7 @@ command			:	map_command { $$ = $1; }
 			|	ifpressed_command { $$ = $1; }
 			;
 
-map_command		:	MAP INTEGER INTEGER
+map_command		:	MAP scancode_id INTEGER
 				{ $$ = alloc (sizeof (kml_command_list_t));
 				  $$->cmd = KML_CMD_MAP;
 				  $$->arg1 = $2;
@@ -490,7 +495,7 @@ ondown_stmt		:	ONDOWN command_list END
  scancode section
 ----------------------------------------------------------------------------*/
 
-scancode_section	:	SCANCODE INTEGER command_list END
+scancode_section	:	SCANCODE scancode_id command_list END
 				{ kml_scancode_t *s = alloc (sizeof (kml_scancode_t));
 				  s->scancode = $2;
 				  s->commands = $3;

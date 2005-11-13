@@ -283,7 +283,8 @@ nonpareil_env = build_env.Copy ()
 nonpareil_srcs = Split ("""about.c goose.c pixbuf_util.c
                            calc_chooser.c
                            sound.c
-                           display.c keyboard.c slide_switch.c printer.c""")
+                           display.c printer.c
+                           keyboard.c scancode.c slide_switch.c""")
 
 nonpareil_csim_srcs = Split ("""csim.c""")
 
@@ -448,7 +449,7 @@ if build_env ['build_target_only'] == 0:
                         display.h printer.h
                         voyager_lcd.h
                         coconut_lcd.h helios.h phineas.h
-                        csim.h about.h goose.h pixbuf_util.h sound.h
+                        csim.h about.h goose.h pixbuf_util.h sound.h scancode.h
                         asm.h symtab.h
                         nsim_conv.h
                         mod1_file.h""")

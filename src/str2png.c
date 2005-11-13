@@ -32,6 +32,7 @@ MA 02111, USA.
 #include "util.h"
 #include "display.h"
 #include "kml.h"
+#include "scancode.h"
 
 
 char *default_path = MAKESTR(DEFAULT_PATH);
@@ -56,6 +57,13 @@ GError *error = NULL;
 GdkPixbuf *file_pixbuf;  /* the entire image loaded from the file */
 GdkPixbuf *segment_pixbuf [KML_MAX_SEGMENT];
 GdkPixbuf *render_pixbuf;
+
+
+// We don't care about scancodes.
+int get_scancode_from_name (char *scancode_name)
+{
+  return 0;
+}
 
 
 static void fill_pixbuf (GdkPixbuf *dest,
