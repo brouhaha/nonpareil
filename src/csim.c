@@ -106,7 +106,7 @@ void process_command (csim_t *csim,
   switch (command->cmd)
     {
     case KML_CMD_MAP:
-      if (scancode != command->arg1)
+      if (command->arg1 && (scancode != command->arg1))
 	{
 	  fprintf (stderr, "scancode %d has map command for scancode %d\n",
 		   scancode, command->arg1);

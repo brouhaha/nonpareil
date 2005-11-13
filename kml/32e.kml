@@ -123,39 +123,39 @@ button 73  type 0  size 35 27  offset 152 477  down 2 8  keycode 0101  end
 button 74  type 0  size 35 27  offset 208 477  down 2 8  keycode 0100  end
 
 # main keyboard:
-scancode 48 map 48 72 end  # 0
-scancode 49 map 49 62 end  # 1
-scancode 50 map 50 63 end  # 2
-scancode 51 map 51 64 end  # 3
-scancode 52 map 52 52 end  # 4
-scancode 53 map 53 53 end  # 5
-scancode 54 map 54 54 end  # 6
-scancode 55 map 55 42 end  # 7
-scancode 56 map 56 43 end  # 8
-scancode 57 map 57 44 end  # 9
-scancode 46 map 46 73 end  # .
-scancode 43 map 43 51 end  # +
-scancode 45 map 45 41 end  # -
-scancode 42 map 42 61 end  # *
-scancode 47 map 47 71 end  # /
-scancode 65293 map 65293 31 end  # ENTER
-scancode 99 map 99 32 end  # c - CHS
-scancode 101 map 101 33 end  # e - EEX
+scancode 48 map 0 72 end  # 0
+scancode 49 map 0 62 end  # 1
+scancode 50 map 0 63 end  # 2
+scancode 51 map 0 64 end  # 3
+scancode 52 map 0 52 end  # 4
+scancode 53 map 0 53 end  # 5
+scancode 54 map 0 54 end  # 6
+scancode 55 map 0 42 end  # 7
+scancode 56 map 0 43 end  # 8
+scancode 57 map 0 44 end  # 9
+scancode 46 map 0 73 end  # .
+scancode 43 map 0 51 end  # +
+scancode 45 map 0 41 end  # -
+scancode 42 map 0 61 end  # *
+scancode 47 map 0 71 end  # /
+scancode 65293 map 0 31 end  # ENTER
+scancode 99 map 0 32 end  # c - CHS
+scancode 101 map 0 33 end  # e - EEX
 
 # keypad:
-scancode 65456 map 65456 72 end  # 0
-scancode 65457 map 65457 62 end  # 1
-scancode 65458 map 65458 63 end  # 2
-scancode 65459 map 65459 64 end  # 3
-scancode 65460 map 65460 52 end  # 4
-scancode 65461 map 65461 53 end  # 5
-scancode 65462 map 65462 54 end  # 6
-scancode 65463 map 65463 42 end  # 7
-scancode 65464 map 65464 43 end  # 8
-scancode 65465 map 65465 44 end  # 9
-scancode 65454 map 65454 73 end  # .
-scancode 65451 map 65451 51 end  # +
-scancode 65453 map 65453 41 end  # -
-scancode 65450 map 65450 61 end  # *
-scancode 65455 map 65455 71 end  # /
-scancode 65421 map 65421 31 end  # ENTER
+scancode 65456 map 0 72 end  # 0
+scancode 65457 map 0 62 end  # 1
+scancode 65458 map 0 63 end  # 2
+scancode 65459 map 0 64 end  # 3
+scancode 65460 map 0 52 end  # 4
+scancode 65461 map 0 53 end  # 5
+scancode 65462 map 0 54 end  # 6
+scancode 65463 map 0 42 end  # 7
+scancode 65464 map 0 43 end  # 8
+scancode 65465 map 0 44 end  # 9
+scancode 65454 map 0 73 end  # .
+scancode 65451 map 0 51 end  # +
+scancode 65453 map 0 41 end  # -
+scancode 65450 map 0 61 end  # *
+scancode 65455 map 0 71 end  # /
+scancode 65421 map 0 31 end  # ENTER
