@@ -608,6 +608,16 @@ scancode 65293 map 65293 41 end  # ENTER
 #scancode 99 map 99 42 end  # c - CHS
 #scancode 101 map 101 43 end  # e - EEX
 
+scancode 0xff09 map 0xff09 31 end # tab - shift (gold)
+
+scancode 0xffc1 map 0xffc1 01 end # F4 - ON
+scancode 0xffc2 map 0xffc2 02 end # F5 - USER
+scancode 0xffc3 map 0xffc3 03 end # F6 - PRGM
+scancode 0xffc4 map 0xffc4 04 end # F7 - ALPHA
+
+scancode 0xffc5 map 0xffc5 35 end # F8 - SST
+scancode 0xffc6 map 0xffc6 84 end # F9 - R/S
+
 # keypad:
 scancode 65456 map 65456 82 end  # 0
 scancode 65457 map 65457 72 end  # 1
