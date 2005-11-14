@@ -608,13 +608,13 @@ scancode "Return"      map 0 41 end # ENTER
 
 scancode "Tab"         map 0 31 end # shift (gold)
 
-scancode "F4"          map 0 01 end # ON
-scancode "F5"          map 0 02 end # USER
-scancode "F6"          map 0 03 end # PRGM
-scancode "F7"          map 0 04 end # ALPHA
+scancode "F2"          map 0 01 end # ON
+scancode "F3"          map 0 02 end # USER
+scancode "F4"          map 0 03 end # PRGM
+scancode "F5"          map 0 04 end # ALPHA
 
-scancode "F8"          map 0 35 end # SST
-scancode "F9"          map 0 84 end # R/S
+scancode "F6"          map 0 35 end # SST
+scancode "F7"          map 0 84 end # R/S
 
 # keypad:
 scancode "KP_0"        map 0 82 end
