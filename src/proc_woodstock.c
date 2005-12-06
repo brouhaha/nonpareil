@@ -34,6 +34,7 @@ MA 02111, USA.
 #include "proc_int.h"
 #include "digit_ops.h"
 #include "proc_woodstock.h"
+#include "woodstock_loader.h"
 #include "dis_woodstock.h"
 
 
@@ -81,6 +82,7 @@ static reg_detail_t woodstock_cpu_reg_detail [] =
 
   //   name       field    bits   radix get        set        arg
   WR  ("p",       p,       4,     16,   NULL,      NULL,      0),
+
   WR  ("f",       f,       4,     16,   NULL,      NULL,      0),
   WR  ("decimal", decimal, 1,      2,   NULL,      NULL,      0),
   WR  ("carry",   carry,   1,      2,   NULL,      NULL,      0),
@@ -118,6 +120,12 @@ static chip_detail_t woodstock_cpu_chip_detail =
   woodstock_cpu_reg_detail,
   woodstock_event_fn,
 };
+
+
+static inline bool p_valid (act_reg_t *act_reg)
+{
+  return act_reg->p < WSIZE;
+}
 
 
 static inline uint8_t get_effective_bank (act_reg_t *act_reg, rom_addr_t addr)
@@ -252,6 +260,8 @@ static void op_arith (sim_t *sim, int opcode)
   switch (field)
     {
     case 0:  /* p  */
+      if (! p_valid (act_reg))
+	fatal (3, "TEF P instruction while P invalid\n");
       first = act_reg->p; last = act_reg->p;
       if (act_reg->p >= WSIZE)
 	{
@@ -261,6 +271,8 @@ static void op_arith (sim_t *sim, int opcode)
 	}
       break;
     case 1:  /* wp */
+      if (! p_valid (act_reg))
+	fatal (3, "TEF WP instruction while P invalid\n");
       first = 0; last = act_reg->p;
       if (act_reg->p >= WSIZE)
 	{
@@ -511,10 +523,20 @@ static void op_dec_p (sim_t *sim,
 {
   act_reg_t *act_reg = get_chip_data (sim->first_chip);
 
-  if (act_reg->p)
-    act_reg->p--;
-  else
-    act_reg->p = WSIZE - 1;
+  switch (act_reg->p)
+    {
+    case P_WRAP_INC:
+      fatal (3, "dec P immediately after a wrapped inc P\n");
+      break;
+    case P_WRAP_DEC:
+      fatal (3, "dec P immediately after a wrapped dec P\n");
+      break;
+    case 0:
+      act_reg->p = P_WRAP_DEC;  // start decrement wraparound
+      break;
+    default:
+      act_reg->p--;
+    }
 }
 
 
@@ -523,9 +545,20 @@ static void op_inc_p (sim_t *sim,
 {
   act_reg_t *act_reg = get_chip_data (sim->first_chip);
 
-  act_reg->p++;
-  if (act_reg->p >= WSIZE)
-    act_reg->p = 0;
+  switch (act_reg->p)
+    {
+    case P_WRAP_INC:
+      act_reg->p = 0;
+      break;
+    case P_WRAP_DEC:
+      fatal (3, "inc P immediately after a wrapped dec P\n");
+      break;
+    case WSIZE - 1:
+      act_reg->p = P_WRAP_INC;  // start increment wraparound
+      break;
+    default:
+      act_reg->p++;
+    }
 }
 
 
@@ -887,17 +920,14 @@ static void op_load_constant (sim_t *sim, int opcode)
 {
   act_reg_t *act_reg = get_chip_data (sim->first_chip);
 
-  if (act_reg->p >= WSIZE)
+  if (! p_valid (act_reg))
     {
-      printf ("load constant w/ p >= WSIZE at %05o\n", act_reg->prev_pc);
+      printf ("load constant w/ invalid p at %05o\n", act_reg->prev_pc);
       woodstock_print_state (sim);
     }
   else
     act_reg->c [act_reg->p] = opcode >> 6;
-  if (act_reg->p)
-    act_reg->p--;
-  else
-    act_reg->p = WSIZE - 1;
+  op_dec_p (sim, opcode);
 }
 
 
@@ -1376,6 +1406,24 @@ static bool woodstock_execute_cycle (sim_t *sim)
   act_reg->prev_carry = act_reg->carry;
   act_reg->carry = 0;
 
+  // handle p wraparound, deferred by one cycle
+  if ((! p_valid (act_reg)) && (act_reg->p == act_reg->prev_p))
+    {
+      switch (act_reg->p)
+	{
+	case P_WRAP_INC:
+	  act_reg->p = 0;  // finish the increment wraparaound
+	  break;
+	case P_WRAP_DEC:
+	  act_reg->p = WSIZE - 1;  // finish the decrement wraparaound
+	  break;
+	default:
+	  fatal (3, "internal error in P pointer handling\n");
+	}
+    }
+
+  act_reg->prev_p = act_reg->p;
+
   if (act_reg->key_flag)
     act_reg->s [15] = 1;
 
@@ -1423,105 +1471,6 @@ static bool woodstock_execute_instruction (sim_t *sim)
     }
   while (act_reg->inst_state != norm);
   return true;
-}
-
-
-static bool parse_octal (char *oct, int digits, int *val)
-{
-  *val = 0;
-
-  while (digits--)
-    {
-      if (((*oct) < '0') || ((*oct) > '7'))
-	return (false);
-      (*val) = ((*val) << 3) + ((*(oct++)) - '0');
-    }
-  return (true);
-}
-
-
-static bool woodstock_parse_object_line (char        *buf,
-					 bank_mask_t *bank_mask,
-					 addr_t      *addr,
-					 rom_word_t  *opcode)
-{
-  int a, b, o;
-
-  if (buf [0] == '#')  /* comment? */
-    return (false);
-
-  if (buf [0] == '[')  // banks?
-    {
-      *bank_mask = 0;
-      buf++;
-      while ((*buf) != ']')
-	{
-	  if (! parse_octal (buf, 1, & b))
-	    {
-	      fprintf (stderr, "invalid bank in object line '%s'\n", buf);
-	      return false;
-	    }
-	  buf++;
-	  *bank_mask |= (1 << b);
-	}
-      buf++;
-    }
-  else
-    *bank_mask = (1 << MAX_BANK) - 1;
-
-  if ((strlen (buf) < 9) || (strlen (buf) > 10))
-    return (false);
-
-  if (buf [4] != ':')
-    {
-      fprintf (stderr, "invalid object file format\n");
-      return (false);
-    }
-
-  if (! parse_octal (& buf [0], 4, & a))
-    {
-      fprintf (stderr, "invalid address in object line '%s'\n", buf);
-      return (false);
-    }
-
-  if (! parse_octal (& buf [5], 4, & o))
-    {
-      fprintf (stderr, "invalid opcode in object line '%s'\n", buf);
-      return (false);
-    }
-
-  *addr = a;
-  *opcode = o;
-  return (true);
-}
-
-
-static bool woodstock_parse_listing_line (char        *buf,
-					  bank_mask_t *bank_mask,
-					  addr_t      *addr,
-					  rom_word_t  *opcode)
-{
-  int a, o;
-
-  if (strlen (buf) < 18)
-    return (false);
-
-  if (! parse_octal (& buf [15], 4, & a))
-    {
-      fprintf (stderr, "invalid address %o\n", a);
-      return (false);
-    }
-
-  if (! parse_octal (& buf [ 9], 4, & o))
-    {
-      fprintf (stderr, "invalid opcode %o\n", o);
-      return (false);
-    }
-
-  *bank_mask = 1;  // doesn't yet deal correctly with banks
-  *addr = a;
-  *opcode = o;
-  return (true);
 }
 
 
