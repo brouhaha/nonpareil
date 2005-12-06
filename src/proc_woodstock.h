@@ -47,10 +47,6 @@ typedef enum
   } inst_state_t;
 
 
-#define P_WRAP_INC 14
-#define P_WRAP_DEC 15
-
-
 typedef struct
 {
   reg_t a;
@@ -64,9 +60,7 @@ typedef struct
 
   digit_t f;
 
-  digit_t p, prev_p;	// 0-13: normal
-  			// 14: increment wraparound in progress
-			// 15: decrement wraparound in progress
+  digit_t p;
 
   bool decimal;
 
