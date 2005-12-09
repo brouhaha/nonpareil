@@ -1070,7 +1070,7 @@ static void bender_pulse (sim_t *sim, uint64_t pulse_width)
 #endif
 
   nut_reg->bender_sound_ref = synth_sound (frequency,
-					   0,    // amplitude
+					   0.1,  // amplitude
 					   0.0,  // duration - indefinite
 					   squarewave_waveform_table,
 					   squarewave_waveform_table_length);

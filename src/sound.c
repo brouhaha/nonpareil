@@ -63,6 +63,7 @@ typedef struct
   uint32_t     waveform_pos;        // fractional
   uint32_t     waveform_inc;        // fractional
   int32_t      waveform_duration;   // in samples
+  float        waveform_amplitude;  // 0..1
 } sound_info_t;
 
 sound_info_t sounds [MAX_SOUNDS];
@@ -104,11 +105,13 @@ static void sound_mix_synth (sound_info_t *sound,
 
   for (i = 0; i < len; i++)
     {
+      uint32_t ip = sound->waveform_pos >> SYNTH_FRAC_BITS;  // integer part
+      uint32_t wrap = sound->waveform_table_length << SYNTH_FRAC_BITS;
       // $$$ might be nice to interpolate
-      sample [i] = sound->waveform_table [sound->waveform_pos >> SYNTH_FRAC_BITS];
+      sample [i] = sound->waveform_table [ip] * sound->waveform_amplitude + 0.5;
       sound->waveform_pos += sound->waveform_inc;
-      if (sound->waveform_pos >= (sound->waveform_table_length << SYNTH_FRAC_BITS))
-	sound->waveform_pos -= (sound->waveform_table_length << SYNTH_FRAC_BITS);
+      if (sound->waveform_pos >= wrap)
+	sound->waveform_pos -= wrap;
       
     }
   SDL_MixAudio (stream,
@@ -243,7 +246,7 @@ int play_sound (const uint8_t *buf, size_t len)
 
 // duration can be zero for continuous
 int synth_sound (float    frequency,  // Hz
-		 uint32_t amplitude,  // not yet implemented
+		 float    amplitude,  // 0..1
 		 float    duration,   // s, or zero for indefinite
 		 sample_t *waveform_table,
 		 uint32_t waveform_table_length)
@@ -264,6 +267,7 @@ int synth_sound (float    frequency,  // Hz
   sounds [index].waveform_table_length  = waveform_table_length;
   sounds [index].waveform_pos = 0;
   sounds [index].waveform_inc = inc * (1 << SYNTH_FRAC_BITS) + 0.5;
+  sounds [index].waveform_amplitude = amplitude;
   sounds [index].waveform_duration = duration * SAMPLE_RATE;
 
 #ifdef SYNTH_DEBUG

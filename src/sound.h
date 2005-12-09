@@ -23,6 +23,8 @@ MA 02111, USA.
 #define SAMPLE_TYPE AUDIO_S16
 typedef int16_t sample_t;
 
+#define SAMPLE_MAX 32767
+
 
 bool init_sound (void);
 
@@ -33,7 +35,7 @@ int play_sound (const uint8_t *buf, size_t len);
 
 
 int synth_sound (float    frequency,  // Hz
-		 uint32_t amplitude,  // not yet implemented
+		 float    amplitude,  // 0..1
 		 float    duration,   // s, or zero for indefinite
 		 sample_t *waveform_table,
 		 uint32_t waveform_table_length);  // samples in table
