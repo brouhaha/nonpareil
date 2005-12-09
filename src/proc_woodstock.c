@@ -37,9 +37,7 @@ MA 02111, USA.
 #include "dis_woodstock.h"
 
 
-#define HAS_DEBUGGER
-
-#define DEBUG_BANK_SWITCH
+#undef DEBUG_BANK_SWITCH
 
 
 /* If defined, print warnings about stack overflow or underflow. */
@@ -118,6 +116,9 @@ static chip_detail_t woodstock_cpu_chip_detail =
   woodstock_cpu_reg_detail,
   woodstock_event_fn,
 };
+
+
+static void display_setup (sim_t *sim);
 
 
 static inline uint8_t get_effective_bank (act_reg_t *act_reg, rom_addr_t addr)
@@ -1061,7 +1062,7 @@ static void op_display_reset_twf (sim_t *sim,
   act_reg_t *act_reg = get_chip_data (sim->first_chip);
 
   act_reg->display_14_digit = true;
-  act_reg->right_scan = 0;
+  display_setup (sim);
 }
 
 
@@ -1474,7 +1475,7 @@ static bool woodstock_parse_object_line (char        *buf,
 
   if (buf [4] != ':')
     {
-      fprintf (stderr, "invalid object file format\n");
+      fprintf (stderr, "invalid object file format '%s'\n", buf);
       return (false);
     }
 
@@ -1622,9 +1623,9 @@ static void woodstock_reset (sim_t *sim)
   op_clear_s (sim, 0);
   act_reg->p = 0;
 
+  act_reg->display_14_digit = 0;
   act_reg->display_enable = 0;
-  act_reg->display_digit_position = 0;
-  act_reg->display_scan_position = WSIZE - 1;
+  display_setup (sim);
 
   act_reg->key_buf = -1;  // no key has been pressed
   act_reg->key_flag = 0;
@@ -1669,16 +1670,9 @@ static void woodstock_new_ram_addr_space (sim_t *sim, int max_ram)
 }
 
 
-static void woodstock_new_processor (sim_t *sim, int ram_size)
+static void display_setup (sim_t *sim)
 {
-  act_reg_t *act_reg;
-
-  act_reg = alloc (sizeof (act_reg_t));
-
-  install_chip (sim, & woodstock_cpu_chip_detail, act_reg);
-
-  woodstock_new_rom_addr_space (sim, MAX_BANK, MAX_PAGE, PAGE_SIZE);
-  woodstock_new_ram_addr_space (sim, ram_size);
+  act_reg_t *act_reg = get_chip_data (sim->first_chip);
 
   switch (sim->platform)
     {
@@ -1689,7 +1683,10 @@ static void woodstock_new_processor (sim_t *sim, int ram_size)
       sim->display_digits = MAX_DIGIT_POSITION;
       act_reg->display_scan_fn = woodstock_display_scan;
       act_reg->left_scan = WSIZE - 1;
-      act_reg->right_scan = 2;
+      if (act_reg->display_14_digit)
+	act_reg->right_scan = 0;
+      else
+	act_reg->right_scan = 2;
       break;
     case PLATFORM_SPICE:
       // ten digits plus special-case for sign
@@ -1704,6 +1701,21 @@ static void woodstock_new_processor (sim_t *sim, int ram_size)
 
   act_reg->display_scan_position = act_reg->left_scan;
   act_reg->display_digit_position = 0;
+}
+
+
+static void woodstock_new_processor (sim_t *sim, int ram_size)
+{
+  act_reg_t *act_reg;
+
+  act_reg = alloc (sizeof (act_reg_t));
+
+  install_chip (sim, & woodstock_cpu_chip_detail, act_reg);
+
+  display_setup (sim);
+
+  woodstock_new_rom_addr_space (sim, MAX_BANK, MAX_PAGE, PAGE_SIZE);
+  woodstock_new_ram_addr_space (sim, ram_size);
 
   init_ops (act_reg);
 
@@ -1734,7 +1746,8 @@ static void woodstock_event_fn (sim_t  *sim,
        woodstock_clear_memory (sim);
        break;
     case event_restore_completed:
-      // force display update
+      // handle twf flag and force display update
+      display_setup (sim);
       break;
     default:
       // warning ("proc_woodstock: unknown event %d\n", event);
