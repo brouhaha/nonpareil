@@ -60,7 +60,9 @@ typedef struct
 
   digit_t f;
 
-  digit_t p;
+  digit_t p;  // 0 to 13 only
+  int p_change [3];  // p inc/dec values for last three cycles
+                     // -1, 0, or +1
 
   bool decimal;
 

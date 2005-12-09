@@ -38,6 +38,7 @@ MA 02111, USA.
 
 
 #undef DEBUG_BANK_SWITCH
+#undef DEBUG_P_WRAP
 
 
 /* If defined, print warnings about stack overflow or underflow. */
@@ -505,13 +506,28 @@ static void op_decimal (sim_t *sim,
 
 
 /* $$$ woodstock doc says when increment or decrement P wraps,
- * P "disappears for one word time". */
+ * P "disappears for one word time".  The 19C, 29C, 67, and 97
+ * seem to depend on undocumented behavior of incrementing P to
+ * make label searching more efficient. */
+
+static void op_inc_p (sim_t *sim,
+		      int opcode UNUSED)
+{
+  act_reg_t *act_reg = get_chip_data (sim->first_chip);
+
+  act_reg->p_change [0] = 1;
+  act_reg->p++;
+  if (act_reg->p >= WSIZE)
+    act_reg->p = 0;
+}
+
 
 static void op_dec_p (sim_t *sim,
 		      int opcode UNUSED)
 {
   act_reg_t *act_reg = get_chip_data (sim->first_chip);
 
+  act_reg->p_change [0] = -1;
   if (act_reg->p)
     act_reg->p--;
   else
@@ -519,14 +535,18 @@ static void op_dec_p (sim_t *sim,
 }
 
 
-static void op_inc_p (sim_t *sim,
-		      int opcode UNUSED)
+static void op_load_constant (sim_t *sim, int opcode)
 {
   act_reg_t *act_reg = get_chip_data (sim->first_chip);
 
-  act_reg->p++;
   if (act_reg->p >= WSIZE)
-    act_reg->p = 0;
+    {
+      printf ("load constant w/ p >= WSIZE at %05o\n", act_reg->prev_pc);
+      woodstock_print_state (sim);
+    }
+  else
+    act_reg->c [act_reg->p] = opcode >> 6;
+  op_dec_p (sim, opcode);
 }
 
 
@@ -884,24 +904,6 @@ static void op_clear_reg (sim_t *sim,
 }
 
 
-static void op_load_constant (sim_t *sim, int opcode)
-{
-  act_reg_t *act_reg = get_chip_data (sim->first_chip);
-
-  if (act_reg->p >= WSIZE)
-    {
-      printf ("load constant w/ p >= WSIZE at %05o\n", act_reg->prev_pc);
-      woodstock_print_state (sim);
-    }
-  else
-    act_reg->c [act_reg->p] = opcode >> 6;
-  if (act_reg->p)
-    act_reg->p--;
-  else
-    act_reg->p = WSIZE - 1;
-}
-
-
 static void op_set_s (sim_t *sim, int opcode)
 {
   act_reg_t *act_reg = get_chip_data (sim->first_chip);
@@ -962,9 +964,60 @@ static void op_set_p (sim_t *sim, int opcode)
 static void op_test_p_eq (sim_t *sim, int opcode)
 {
   act_reg_t *act_reg = get_chip_data (sim->first_chip);
+  digit_t val = p_test_map [opcode >> 6];
 
   act_reg->inst_state = branch;
-  act_reg->carry = ! (act_reg->p == p_test_map [opcode >> 6]);
+#if 1
+  if ((val == 0) &&
+      (act_reg->p_change [1] == +1) &&
+      (act_reg->p_change [2] == +1))
+    {
+      // test p after double increment
+#ifdef DEBUG_P_WRAP
+      printf ("test after double increment: ");
+#endif
+      if (act_reg->p == 1)
+	{
+#ifdef DEBUG_P_WRAP
+	  printf ("match\n");
+#endif
+	  act_reg->carry = 0;
+	}
+      else
+	{
+#ifdef DEBUG_P_WRAP
+	  printf ("no match\n");
+#endif
+	  act_reg->carry = 1;
+	}
+    }
+  else if ((val == 0) &&
+	   (act_reg->p_change [1] == -1) &&
+	   (act_reg->p_change [2] == -1))
+    {
+#ifdef DEBUG_P_WRAP
+      printf ("test after double decrement\n");
+#endif
+      if (act_reg->p == (WSIZE - 1))
+	{
+#ifdef DEBUG_P_WRAP
+	  printf ("match\n");
+#endif
+	  act_reg->carry = 0;
+	}
+      else
+	{
+#ifdef DEBUG_P_WRAP
+	  printf ("no match\n");
+#endif
+	  act_reg->carry = 1;
+	}
+    }
+  else
+#endif
+    {
+      act_reg->carry = ! (act_reg->p == val);
+    }
 }
 
 
@@ -972,8 +1025,8 @@ static void op_test_p_ne (sim_t *sim, int opcode)
 {
   act_reg_t *act_reg = get_chip_data (sim->first_chip);
 
-  act_reg->inst_state = branch;
-  act_reg->carry = ! (act_reg->p != p_test_map [opcode >> 6]);
+  op_test_p_eq (sim, opcode);
+  act_reg->carry ^= 1;  // complement carry
 }
 
 
@@ -1339,6 +1392,11 @@ static bool woodstock_execute_cycle (sim_t *sim)
   rom_word_t opcode;
   inst_state_t prev_inst_state;
 
+  // $$$ could use memmove()
+  act_reg->p_change [2] = act_reg->p_change [1];
+  act_reg->p_change [1] = act_reg->p_change [0];
+  act_reg->p_change [0] = 0;
+
   act_reg->prev_pc = act_reg->pc;
   opcode = woodstock_get_ucode (act_reg, act_reg->pc);
 
@@ -1622,6 +1680,7 @@ static void woodstock_reset (sim_t *sim)
   op_clear_reg (sim, 0);
   op_clear_s (sim, 0);
   act_reg->p = 0;
+  memset (act_reg->p_change, 0, sizeof (act_reg->p_change));
 
   act_reg->display_14_digit = 0;
   act_reg->display_enable = 0;
