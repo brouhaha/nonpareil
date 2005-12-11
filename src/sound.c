@@ -19,6 +19,8 @@ Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
 MA 02111, USA.
 */
 
+#undef USE_SOUND_THREAD
+
 #include <math.h>
 #include <stdbool.h>
 #include <stdint.h>
@@ -32,43 +34,78 @@ MA 02111, USA.
 #include "sound.h"
 
 
-static bool sound_open = false;
+#ifdef USE_SOUND_THREAD
+  #include <glib.h>
+  typedef gint atomic_bool_t;
+  #define atomic_bool_get(x) g_atomic_int_get(x)
+  #define atomic_bool_set(x) g_atomic_int_compare_and_exchange (x, 0, 1)
+  #define atomic_bool_clear(x) g_atomic_int_compare_and_exchange (x, 1, 0)
+#else
+  // Assume uint8_t reads and writes are atomic, true on most if not all
+  // systems
+  typedef uint8_t atomic_bool_t;
+  static inline atomic_bool_t atomic_bool_get (atomic_bool_t *b)
+  {
+    return *b;
+  }
+  static inline void atomic_bool_set (atomic_bool_t *b)
+  {
+    *b = 1;
+  }
+  static inline void atomic_bool_clear (atomic_bool_t *b)
+  {
+    *b = 0;
+  }
+#endif
 
 
 #define SAMPLE_RATE 22050
 
-#define MAX_SAMPLE 1024
+#define MAX_SAMPLE 500
 
 
 #define MAX_SOUNDS 4
 
 
-typedef enum { SOUND_NONE, SOUND_RECORDED, SOUND_SYNTH } sound_type_t;
+typedef enum { SOUND_RECORDED, SOUND_SYNTH } sound_type_t;
 
 #define SYNTH_FRAC_BITS 16
 
 
 typedef struct
 {
-  sound_type_t type;
+  atomic_bool_t run;           // true if sound is active
+  atomic_bool_t stop_request;  // true if trying to stop this sound
 
-  // The following are for SOUND_RECORDED only:
-  uint8_t      *data;
-  uint32_t     len;        // length of data
-  uint32_t     pos;
+  sound_type_t  type;
 
-  // The following are for SOUND_SYNTH only:
-  int16_t      *waveform_table;
-  uint32_t     waveform_table_length;
-  uint32_t     waveform_pos;        // fractional
-  uint32_t     waveform_inc;        // fractional
-  int32_t      waveform_duration;   // in samples
-  float        waveform_amplitude;  // 0..1
+  // For SOUND_RECORDED:
+  bool      free_data_when_done;
+  uint8_t   *data;
+  uint32_t  len;        // length of data
+  uint32_t  pos;
+
+  // For SOUND_SYNTH:
+  int16_t   *waveform_table;
+  uint32_t  waveform_table_length;
+  uint32_t  waveform_pos;        // fractional
+  uint32_t  waveform_inc;        // fractional
+  int32_t   waveform_duration;   // in samples
+  float     waveform_amplitude;  // 0..1
 } sound_info_t;
 
-sound_info_t sounds [MAX_SOUNDS];
 
-SDL_AudioSpec hw_fmt;
+struct
+{
+  atomic_bool_t open;
+#ifdef SOUND_USE_THREAD
+  GThread       *thread;
+  atomic_bool_t close_request;
+  atomic_bool_t sound_thread_error;
+#endif
+  SDL_AudioSpec hw_fmt;
+  sound_info_t  sounds [MAX_SOUNDS];
+} sound_v;
 
 
 void sinewave_init (void);
@@ -89,13 +126,13 @@ static void sound_mix_recorded (sound_info_t *sound,
 		SDL_MIX_MAXVOLUME);
   sound->pos += count;
   if (sound->pos >= sound->len)
-    sound->type = SOUND_NONE;
+    atomic_bool_clear (& sound->run);
 }
 
 
 static void sound_mix_synth (sound_info_t *sound,
 			     uint8_t *stream,
-			     int len)
+			     int len)  // bytes, not samples
 {
   int i;
   int16_t sample [MAX_SAMPLE];
@@ -103,7 +140,7 @@ static void sound_mix_synth (sound_info_t *sound,
   if (sound->waveform_duration && (len > sound->waveform_duration))
     len = sound->waveform_duration;
 
-  for (i = 0; i < len; i++)
+  for (i = 0; i < (len / 2); i++)
     {
       uint32_t ip = sound->waveform_pos >> SYNTH_FRAC_BITS;  // integer part
       uint32_t wrap = sound->waveform_table_length << SYNTH_FRAC_BITS;
@@ -122,7 +159,7 @@ static void sound_mix_synth (sound_info_t *sound,
     {
       sound->waveform_duration -= len;
       if (! sound->waveform_duration)
-	sound->type = SOUND_NONE;
+	atomic_bool_clear (& sound->run);
     }
 }
 
@@ -134,26 +171,33 @@ static void sound_callback (void *unused UNUSED,
   int i;
 
   for (i = 0; i < MAX_SOUNDS; i++)
-    switch (sounds [i].type)
-      {
-      case SOUND_NONE:
-	break;
-      case SOUND_RECORDED:
-	sound_mix_recorded (& sounds [i], stream, len);
-	break;
-      case SOUND_SYNTH:
-	sound_mix_synth (& sounds [i], stream, len);
-	break;
-      }
+    {
+      sound_info_t *sound = & sound_v.sounds [i];
+      if (atomic_bool_get (& sound->run))
+	{
+	  if (atomic_bool_get (& sound->stop_request))
+	    {
+	      atomic_bool_clear (& sound->stop_request);
+	      atomic_bool_clear (& sound->run);
+	      continue;
+	    }
+	  switch (sound->type)
+	    {
+	    case SOUND_RECORDED:
+	      sound_mix_recorded (sound, stream, len);
+	      break;
+	    case SOUND_SYNTH:
+	      sound_mix_synth (sound, stream, len);
+	      break;
+	    }
+	}
+    }
 }
 
 
-bool init_sound (void)
+static bool init_sound_inner (void)
 {
   SDL_AudioSpec req_fmt;
-
-  if (sound_open)
-    return true;
 
   req_fmt.freq = SAMPLE_RATE;
   req_fmt.format = SAMPLE_TYPE;
@@ -162,83 +206,219 @@ bool init_sound (void)
   req_fmt.callback = sound_callback;
   req_fmt.userdata = NULL;
 
-  if (SDL_OpenAudio (& req_fmt, & hw_fmt) < 0)
+  if (SDL_OpenAudio (& req_fmt, & sound_v.hw_fmt) < 0)
     return false;
-
-  memset (& sounds, 0, sizeof (sounds));
-
-  sinewave_init ();
 
   SDL_PauseAudio (0);
 
-  sound_open = true;
+  return true;
+}
+
+
+#ifdef SOUND_USE_THREAD
+gpointer sound_thread_func (gpointer data UNUSED)
+{
+  if (! init_sound_inner ())
+    {
+      atomic_bool_set (& sound_v.sound_thread_error);
+      return NULL;
+    }
+
+  atomic_bool_set (& sound_v.open);
+
+  while (! atomic_bool_get (& sound_v.close_request))
+    {
+      g_usleep (1000000);  // delay 1 second
+    }
+
+  atomic_bool_clear (& sound_v.open);
+
+  return NULL;
+}
+#endif // SOUND_USE_THREAD
+
+
+bool stop_sound (int id)
+{
+  if ((id < 0) || (id > MAX_SOUNDS))
+    return false;
+
+  sound_info_t *sound;
+
+  sound = & sound_v.sounds [id];
+  if (! atomic_bool_get (& sound->run))
+    return true;  // OK to stop a sound that isn't active
+
+#ifdef SOUND_USE_THREAD
+  atomic_bool_set (& sound->stop_request);
+
+  while (atomic_bool_get (& sound->run))
+    {
+      g_usleep (50000);  // delay 0.05 second
+    }
+#else
+  if (atomic_bool_get (& sound->run))
+    {
+      SDL_LockAudio ();
+      atomic_bool_clear (& sound->run);
+      SDL_UnlockAudio ();
+    }
+#endif
+
+  if (sound->data)
+    {
+      if (sound->free_data_when_done)
+	free (sound->data);
+      sound->data = NULL;
+    }
 
   return true;
+}
+
+
+void close_sound (void)
+{
+  int i;
+
+  for (i = 0; i < MAX_SOUNDS; i++)
+    (void) stop_sound (i);
+
+#ifdef SOUND_USE_THREAD
+  atomic_bool_set (& sound_v.close_request);
+
+  // wait for sound thread to exit
+  while (atomic_bool_get (& sound_v.open)
+    {
+      g_usleep (50000);  // delay 0.05 second
+    }
+#endif
+}
+
+
+bool init_sound (void)
+{
+  if (atomic_bool_get (& sound_v.open))
+    return true;
+
+  memset (& sound_v, 0, sizeof (sound_v));
+
+  sinewave_init ();
+
+#if SOUND_USE_THREAD
+  sound_v.thread = g_thread_create (sound_thread_func,
+				    NULL,   // data
+				    FALSE,  // joinable
+				    NULL);  // error
+  if (! sound_v.thread)
+    return false;
+
+  // wait for sound thread to return init status
+  while (! atomic_bool_get (& sound_v.open))
+    {
+      if (atomic_bool_get (& sound_v.sound_thread_error))
+	return false;
+      g_usleep (50000);  // delay 0.05 second
+    }
+  return true;
+#else
+  if (! init_sound_inner ())
+    return false;
+  sound_v.open = 1;
+  return true;
+#endif
 }
 
 
 static int find_open_sound_slot (void)
 {
   int index;
+  sound_info_t *sound;
 
-  if (! sound_open)
+  if (! atomic_bool_get (& sound_v.open))
     return -1;
 
   for (index = 0; index < MAX_SOUNDS; index++)
-    if (sounds [index].type == SOUND_NONE)
-      break;
+    {
+      sound = & sound_v.sounds [index];
+      if (! atomic_bool_get (& sound->run))
+	break;
+    }
 
   if (index >= MAX_SOUNDS)
     return -1;
 
-  if (sounds [index].data)
+  if (sound->data)
     {
-      free (sounds [index].data);
-      sounds [index].data = NULL;
+      if (sound->free_data_when_done)
+	free (sound->data);
+      sound->data = NULL;
     }
 
   return index;
 }
 
 
-int play_sound (const uint8_t *buf, size_t len)
+bool prepare_samples_from_wav_data (const uint8_t *wav_buf,
+				    size_t  wav_len,
+				    void    **sample_buf,
+				    size_t  *sample_len)
 {
-  int index;
   SDL_AudioCVT cvt;
   int format;
   uint8_t channels;
   int freq;
 
-  index = find_open_sound_slot ();
-  if (index < 0)
-    return index;
-
-  buf += 44;  // skip wave, data chunk header
-  len -= 44;
+  wav_buf += 44;  // skip wave, data chunk header
+  wav_len -= 44;
   // $$$ should parse header
   format = AUDIO_U8;
   channels = 1;
   freq = 22050;
 
   if (SDL_BuildAudioCVT (& cvt,
-			 format, channels, freq,
-			 hw_fmt.format, hw_fmt.channels, hw_fmt.freq) < 0)
-    return -1;
+			 format,
+			 channels,
+			 freq,
+			 sound_v.hw_fmt.format,
+			 sound_v.hw_fmt.channels,
+			 sound_v.hw_fmt.freq) < 0)
+    {
+      *sample_buf = NULL;
+      *sample_len = 0;
+      return false;
+    }
 
-  cvt.buf = alloc (len * cvt.len_mult);
-  cvt.len = len;
-  memcpy (cvt.buf, buf, len);
+  cvt.buf = alloc (wav_len * cvt.len_mult);
+  cvt.len = wav_len;
+  memcpy (cvt.buf, wav_buf, wav_len);
 
   SDL_ConvertAudio (& cvt);
 
-  SDL_LockAudio ();
-  sounds [index].type = SOUND_RECORDED;
-  sounds [index].data = cvt.buf;
-  sounds [index].len = cvt.len * cvt.len_mult;
-  sounds [index].pos = 0;
-  SDL_UnlockAudio ();
+  *sample_buf = cvt.buf;
+  *sample_len = cvt.len * cvt.len_mult;
 
-  SDL_PauseAudio (0);
+  return true;
+}
+
+
+int play_sound (void *sample_buf, size_t sample_len, bool free_data_when_done)
+{
+  int index;
+  sound_info_t *sound;
+
+  index = find_open_sound_slot ();
+
+  if (index < 0)
+    return index;
+  sound = & sound_v.sounds [index];
+
+  sound->type = SOUND_RECORDED;
+  sound->free_data_when_done = free_data_when_done;
+  sound->data = sample_buf;
+  sound->len = sample_len;
+  sound->pos = 0;
+
+  atomic_bool_set (& sound->run);
 
   return index;
 }
@@ -252,51 +432,29 @@ int synth_sound (float    frequency,  // Hz
 		 uint32_t waveform_table_length)
 {
   int index;
+  sound_info_t *sound;
   float inc;
 
   index = find_open_sound_slot ();
   if (index < 0)
     return index;
+  sound = & sound_v.sounds [index];
 
   inc = (waveform_table_length * frequency) / SAMPLE_RATE;
 
-  SDL_LockAudio ();
-  sounds [index].type = SOUND_SYNTH;
+  sound->type = SOUND_SYNTH;
 
-  sounds [index].waveform_table = waveform_table;
-  sounds [index].waveform_table_length  = waveform_table_length;
-  sounds [index].waveform_pos = 0;
-  sounds [index].waveform_inc = inc * (1 << SYNTH_FRAC_BITS) + 0.5;
-  sounds [index].waveform_amplitude = amplitude;
-  sounds [index].waveform_duration = duration * SAMPLE_RATE;
+  sound->waveform_table = waveform_table;
+  sound->waveform_table_length  = waveform_table_length;
+  sound->waveform_pos = 0;
+  sound->waveform_inc = inc * (1 << SYNTH_FRAC_BITS) + 0.5;
+  //printf ("frequency %f, inc %f, fixed point %d\n", frequency, inc, sound->waveform_inc);
+  sound->waveform_amplitude = amplitude;
+  sound->waveform_duration = duration * SAMPLE_RATE;
 
-#ifdef SYNTH_DEBUG
-  printf ("frequency = %f, inc = %f, waveform_inc = %d\n",
-	  frequency, inc, sounds [index].waveform_inc);
-#endif
-
-  SDL_UnlockAudio ();
+  atomic_bool_set (& sound->run);
 
   return index;
-}
-
-
-bool stop_sound (int id)
-{
-  if (id > MAX_SOUNDS)
-    return false;
-
-  SDL_LockAudio ();
-  sounds [id].type = SOUND_NONE;
-  SDL_UnlockAudio ();
-
-  if (sounds [id].data)
-    {
-      free (sounds [id].data);
-      sounds [id].data = NULL;
-    }
-
-  return true;
 }
 
 

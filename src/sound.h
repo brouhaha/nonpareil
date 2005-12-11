@@ -27,11 +27,21 @@ typedef int16_t sample_t;
 
 
 bool init_sound (void);
+void close_sound (void);
+
+
+// Convert a WAV file in a memory buffer to a sample buffer and length
+// for use by play_sound().  When no longer needed, the sample_buf should
+// be freed with free().
+bool prepare_samples_from_wav_data (const uint8_t *wav_buf,
+				    size_t  wav_len,
+				    void    **sample_buf,
+				    size_t  *sample_len);
 
 
 // Returns a non-negative integer reference number for the sound,
 // or a negative value for an error condition.
-int play_sound (const uint8_t *buf, size_t len);
+int play_sound (void *sample_buf, size_t sample_len, bool free_data_when_done);
 
 
 int synth_sound (float    frequency,  // Hz

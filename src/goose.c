@@ -47,6 +47,10 @@ typedef struct
 } goose_t;
 
 
+static void *canada_goose_sample_ptr;
+static size_t canada_goose_sample_len;
+
+
 static void fly_goose (goose_t *goose, bool move, bool reverse)
 {
   if (goose->position >= 0)
@@ -90,7 +94,8 @@ static void goose_click_callback (GtkWidget *widget     UNUSED,
   goose_t *goose = data;
 
   fly_goose (goose, false, true);
-  play_sound (canada_goose_wav, canada_goose_wav_size);
+  if (canada_goose_sample_ptr)
+    play_sound (canada_goose_sample_ptr, canada_goose_sample_len, false);
 }
 
 
@@ -124,6 +129,16 @@ static GtkWidget *init_goose_from_image (const uint8_t *p, size_t size)
 }
 
 
+static void init_goose_sound (void)
+{
+  if (! canada_goose_sample_ptr)
+    (void) prepare_samples_from_wav_data (canada_goose_wav,
+					  canada_goose_wav_size,
+					  & canada_goose_sample_ptr,
+					  & canada_goose_sample_len);
+}
+
+
 static void destroy_goose (gpointer data)
 {
   goose_t *goose = data;
@@ -142,6 +157,8 @@ GtkWidget *new_goose (int positions)
 {
   int i;
   goose_t *goose;
+
+  init_goose_sound ();
 
   goose = alloc (sizeof (goose_t));
 
