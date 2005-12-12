@@ -6,6 +6,11 @@ $Id$
 
 News:
 
+Release 0.78 adds support for the 22, 27, 29C, and 67 (sans card reader).
+There is also now sound output from the 41 family.  Errors in the KML
+files that caused spurious decimal and comma displays have been
+corrected.
+
 Release 0.77 fixes a bug inadvertently introduced in 0.67 which 
 prevented trigonometric functions from working correctly on the
 Classic series calculators, and may have caused other less obvious
