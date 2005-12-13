@@ -43,7 +43,7 @@ display
 
 	digits 15
 		size 17 24
-		offset 5 15
+		offset 10 20
 	end
 
 	character 0x00 segment 'a' 'b' 'c' 'd' 'e' 'f'         end
@@ -66,14 +66,14 @@ display
 	character '-' segment                         'g'     end
 	character ' ' segment                                 end
 
-	segment 'a' line offset   0  0 size 12  1 end
-	segment 'b' line offset  11  0 size  1 12 end
-	segment 'c' line offset  11 11 size  1 12 end
-	segment 'd' line offset   0 23 size 12  1 end
-	segment 'e' line offset   0 11 size  1 12 end
-	segment 'f' line offset   0  0 size  1 12 end
-	segment 'g' line offset   0 11 size 12  1 end
-	segment 'h' rect offset   4 16 size  4  4 end
+	segment 'a' line offset   0  0 size 10  1 end
+	segment 'b' line offset   9  0 size  1 10 end
+	segment 'c' line offset   9  9 size  1 10 end
+	segment 'd' line offset   0 19 size 10  1 end
+	segment 'e' line offset   0  9 size  1 10 end
+	segment 'f' line offset   0  0 size  1 10 end
+	segment 'g' line offset   0  9 size 10  1 end
+	segment 'h' rect offset   3 12 size  3  3 end
 end
 
 switch 0
