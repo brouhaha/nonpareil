@@ -17,7 +17,8 @@ Ports:
         http://members.lycos.co.uk/alexv6/Cross_mingw_building_HOWTO.html
 
     Libraries and Toolkits:
-      GTK+ for Windows:      http://www.gimp.org/~tml/gimp/win32/
+      GTK+ for Windows:  ftp://ftp.gtk.org/pub/gtk/v2.8/win32/
+			 http://www.gimp.org/~tml/gimp/win32/
       GTK+ for Windows runtime installer:  http://members.lycos.co.uk/alexv6/
       libxml2 for Windows:   http://www.zlatkovic.com/libxml.en.html
       SDL for Windows:       http://www.libsdl.org/
