@@ -3,6 +3,25 @@
 # Provided 'as-is', it works for me!
 # Modified for use building Nonpareil, by Eric Smith, July 2005
 
+
+# Mike Elkins' notes on new feature as compared to wiki version, 13-Jul-2005:
+# 
+# The best feature that we put in is the ability to have lists of files in 
+# variables sent to NSIS:
+# 
+# myfiles=['file1.exe','file2.dll',...]
+# env.Installer('Foo.nsi', NSISDEFINES={
+#         'SOMESETTING':somevalue,
+#         'FILES':myfiles})
+# and in the nsi file:
+# SetOutPath $INSTDIR
+# FILE $(FILES}
+# 
+# Wildcards are supported as well.  The NSIS tool figures out all the 
+# dependencies and knows when to rebuild itself whenever any file you install 
+# changes.
+
+
 Import ('env')
 
 import os.path
