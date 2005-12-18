@@ -48,7 +48,15 @@ typedef enum
 
 
 // Architecture variants:
+
 #define AV_P_WRAP_FUNNY 1   // pointer compares funny after wrapping
+                            // off for ACT 1820-1396, 1820-1523, 1820-1741
+                            // on  for ACT 1820-1596, 1820-1812, 1820-2028,
+                            //             1820-2530
+                            // unknown for NMOS ACT 5061-0428
+                            // unknown for Spice series processors
+                            //      1820-2105, 1820-2122, 1820-2162-A
+
 
 typedef struct
 {
