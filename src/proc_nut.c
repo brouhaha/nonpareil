@@ -102,7 +102,6 @@ static reg_detail_t nut_cpu_reg_detail [] =
   NR  ("fo",      fo,      8,     16,   NULL,      NULL,      0),
   NR  ("s",       s,       SSIZE,  2,   get_bools, set_bools, SSIZE),
   NR  ("pc",      pc,      16,    16,   NULL,      NULL,      0),
-  // prev_pc
   NRA ("stack",   stack,   16,    16,   NULL,      NULL,      0, STACK_DEPTH ),
   NR  ("decimal", decimal, 1,      2,   NULL,      NULL,      0),
   NR  ("carry",   carry,   1,      2,   NULL,      NULL,      0),
@@ -119,8 +118,10 @@ static reg_detail_t nut_cpu_reg_detail [] =
   // following are only applicable if inst_state != norm:
   // first_word
   // cxisa_addr
-  // long_branch_carry
-  // prev_carry
+#ifdef NUT_BUGS
+  // prev_tef_last
+#endif // NUT_BUGS
+
   // NR  ("selprf",  selprf,  4,     16,   NULL,      NULL,      0),
 
   // display_enable
@@ -312,7 +313,9 @@ static void op_arith (sim_t *sim, int opcode)
     case 7:  /* s  */  first = WSIZE - 1;      last = WSIZE - 1;      break;
     }
 
+#ifdef NUT_BUGS
   nut_reg->prev_tef_last = last;
+#endif // NUT_BUGS
 
   switch (op)
     {
@@ -599,7 +602,7 @@ static void op_long_branch (sim_t *sim, int opcode)
 
   nut_reg->inst_state = long_branch;
   nut_reg->first_word = opcode;
-  nut_reg->long_branch_carry = nut_reg->prev_carry;
+  nut_reg->carry = nut_reg->prev_carry;  // remember carry for second word
 }
 
 
@@ -611,7 +614,7 @@ static void op_long_branch_word_2 (sim_t *sim, int opcode)
   nut_reg->inst_state = norm;
   target = (nut_reg->first_word >> 2) | ((opcode & 0x3fc) << 6);
 
-  if ((opcode & 0x001) == nut_reg->long_branch_carry)
+  if ((opcode & 0x001) == nut_reg->prev_carry)
     {
       if (opcode & 0x002)
 	nut_reg->pc = target;
@@ -1446,11 +1449,13 @@ static void op_or (sim_t *sim,
 
   for (i = 0; i < WSIZE; i++)
     nut_reg->c [i] |= nut_reg->a [i];
+#ifdef NUT_BUGS
   if (nut_reg->prev_carry && (nut_reg->prev_tef_last == (WSIZE - 1)))
     {
       nut_reg->c [WSIZE - 1] = nut_reg->c [0];
       nut_reg->a [WSIZE - 1] = nut_reg->c [0];
     }
+#endif // NUT_BUGS
 }
 
 static void op_and (sim_t *sim,
@@ -1461,11 +1466,13 @@ static void op_and (sim_t *sim,
 
   for (i = 0; i < WSIZE; i++)
     nut_reg->c [i] &= nut_reg->a [i];
+#ifdef NUT_BUGS
   if (nut_reg->prev_carry && (nut_reg->prev_tef_last == (WSIZE - 1)))
     {
       nut_reg->c [WSIZE - 1] = nut_reg->c [0];
       nut_reg->a [WSIZE - 1] = nut_reg->c [0];
     }
+#endif // NUT_BUGS
 }
 
 static void op_rcr (sim_t *sim, int opcode)

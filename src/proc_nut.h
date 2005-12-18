@@ -108,8 +108,10 @@ typedef struct nut_reg_t
   bool carry;       // carry being generated in current instruction
   bool prev_carry;  // carry that resulted from previous instruction
 
+#ifdef NUT_BUGS
   int prev_tef_last;  // last digit of field of previous arith. instruction
                       // used to simulate bug in logical or and and
+#endif // NUT_BUGS
 
   bool s [SSIZE];
 
@@ -123,7 +125,6 @@ typedef struct nut_reg_t
   inst_state_t inst_state;
 
   rom_word_t first_word;   /* long branch: remember first word */
-  bool long_branch_carry;  /* and carry */
 
   bool key_down;      /* true while a key is down */
   keyboard_state_t kb_state;
