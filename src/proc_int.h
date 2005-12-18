@@ -75,7 +75,9 @@ typedef struct
   int max_rom;
   bank_t max_bank;
 
-  void (* new_processor)       (sim_t *sim, int ram_size);
+  void (* new_processor)       (sim_t *sim,
+				uint32_t arch_variant,
+				int ram_size);
   void (* free_processor)      (sim_t *sim);
 
   bool (* parse_object_line)   (char        *buf,
@@ -162,6 +164,7 @@ struct sim_t
   int platform;
 
   int arch;
+  uint32_t arch_flags;
   processor_dispatch_t *proc;
 
   double words_per_usec;  /* Processor word times per microsecond, typically

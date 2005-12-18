@@ -28,6 +28,7 @@ typedef struct
   char *name;
   int platform;
   int cpu_arch;
+  uint32_t arch_variant;
   int ram_size;
   int clock_frequency;  /* Hz */
 } model_info_t;

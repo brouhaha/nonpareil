@@ -941,7 +941,9 @@ sim_t *sim_init  (int model,
 
   sim->source = alloc (sim->proc->max_bank * sim->proc->max_rom * sizeof (char *));
 
-  sim->proc->new_processor (sim, model_info->ram_size);
+  sim->proc->new_processor (sim,
+			    model_info->arch_variant,
+			    model_info->ram_size);
 
   sim->char_gen = char_gen;
 

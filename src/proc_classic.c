@@ -1149,7 +1149,9 @@ static void classic_new_ram_addr_space (sim_t *sim, int max_ram)
 }
 
 
-static void classic_new_processor (sim_t *sim, int ram_size)
+static void classic_new_processor (sim_t *sim,
+				   uint32_t arch_variant UNUSED,
+				   int ram_size)
 {
   classic_cpu_reg_t *cpu_reg;
 

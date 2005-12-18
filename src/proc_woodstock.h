@@ -47,8 +47,13 @@ typedef enum
   } inst_state_t;
 
 
+// Architecture variants:
+#define AV_P_WRAP_FUNNY 1   // pointer compares funny after wrapping
+
 typedef struct
 {
+  uint32_t arch_variant;
+
   reg_t a;
   reg_t b;
   reg_t c;

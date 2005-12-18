@@ -967,16 +967,17 @@ static void op_test_p_eq (sim_t *sim, int opcode)
   digit_t val = p_test_map [opcode >> 6];
 
   act_reg->inst_state = branch;
-#if 1
-  if ((val == 0) &&
+
+  if ((act_reg->arch_variant & AV_P_WRAP_FUNNY) &&
+      (val == 0) &&
       (act_reg->p_change [1] == +1) &&
       (act_reg->p_change [2] == +1))
     {
       // test p after double increment
 #ifdef DEBUG_P_WRAP
-      printf ("test after double increment: ");
+      printf ("addr %04o: test P equal 0 after double decrement, P=%d\n", act_reg->prev_pc, act_reg->p);
 #endif
-      if (act_reg->p == 1)
+      if ((act_reg->p == 0) || (act_reg->p == 1))
 	{
 #ifdef DEBUG_P_WRAP
 	  printf ("match\n");
@@ -991,14 +992,15 @@ static void op_test_p_eq (sim_t *sim, int opcode)
 	  act_reg->carry = 1;
 	}
     }
-  else if ((val == 0) &&
+  else if ((act_reg->arch_variant & AV_P_WRAP_FUNNY) &&
+	   (val == 0) &&
 	   (act_reg->p_change [1] == -1) &&
 	   (act_reg->p_change [2] == -1))
     {
 #ifdef DEBUG_P_WRAP
-      printf ("test after double decrement\n");
+      printf ("addr %04o: test P not equal 0 after double decrement, P=%d\n", act_reg->prev_pc, act_reg->p);
 #endif
-      if (act_reg->p == (WSIZE - 1))
+      if ((act_reg->p == 0) || (act_reg->p == (WSIZE - 1)))
 	{
 #ifdef DEBUG_P_WRAP
 	  printf ("match\n");
@@ -1014,7 +1016,6 @@ static void op_test_p_eq (sim_t *sim, int opcode)
 	}
     }
   else
-#endif
     {
       act_reg->carry = ! (act_reg->p == val);
     }
@@ -1763,11 +1764,15 @@ static void display_setup (sim_t *sim)
 }
 
 
-static void woodstock_new_processor (sim_t *sim, int ram_size)
+static void woodstock_new_processor (sim_t *sim,
+				     uint32_t arch_variant,
+				     int ram_size)
 {
   act_reg_t *act_reg;
 
   act_reg = alloc (sizeof (act_reg_t));
+
+  act_reg->arch_variant = arch_variant;
 
   install_chip (sim, & woodstock_cpu_chip_detail, act_reg);
 

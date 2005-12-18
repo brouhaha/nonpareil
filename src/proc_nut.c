@@ -2017,7 +2017,9 @@ static void nut_new_ram (sim_t *sim, int base_addr, int count)
 }
 
 
-static void nut_new_processor (sim_t *sim, int ram_size)
+static void nut_new_processor (sim_t *sim,
+			       uint32_t arch_variant UNUSED,
+			       int ram_size)
 {
   nut_reg_t *nut_reg;
 
