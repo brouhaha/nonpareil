@@ -42,7 +42,7 @@ display
 	color 2 255 17 17  # lit segments
 
 	digits 12
-		size 15 12
+		size 15 13
 		offset 7 15
 	end
 
