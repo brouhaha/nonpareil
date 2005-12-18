@@ -61,7 +61,7 @@ MA 02111, USA.
 
 #define SAMPLE_RATE 22050
 
-#define MAX_SAMPLE 500
+#define MAX_SAMPLE 2000
 
 
 #define MAX_SOUNDS 4
