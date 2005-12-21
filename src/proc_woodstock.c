@@ -38,6 +38,7 @@ MA 02111, USA.
 
 
 #undef DEBUG_CRC
+#undef DEBUG_PIK
 
 #undef DEBUG_BANK_SWITCH
 #undef DEBUG_P_WRAP
@@ -120,6 +121,8 @@ static chip_detail_t woodstock_cpu_chip_detail =
   woodstock_event_fn,
 };
 
+
+static void print_reg (char *label, reg_t reg);
 
 static void display_setup (sim_t *sim);
 
@@ -1154,7 +1157,10 @@ static void op_crc_unknown (sim_t *sim,
   act_reg_t *act_reg = get_chip_data (sim->first_chip);
 
   if (opcode != 00560)
-    printf ("unknown CRC opcode %04o at %05o\n", opcode, act_reg->prev_pc);
+    {
+      printf ("unknown CRC opcode %04o at %05o\n", opcode, act_reg->prev_pc);
+      print_reg ("c:  ", & act_reg->c);
+    }
 }
 #else
 static void op_crc_unknown (sim_t *sim,
@@ -1166,13 +1172,34 @@ static void op_crc_unknown (sim_t *sim,
 
 // Unknown function, but apparently this normally sets S3.  If it doesn't,
 // the 67 won't execute the default functions for the top row of buttons.
+bool crc_flag;
+
 static void op_crc_unknown_1100 (sim_t *sim,
-			 int opcode UNUSED)
+				 int opcode UNUSED)
 {
   act_reg_t *act_reg = get_chip_data (sim->first_chip);
 
-  act_reg->s [3] = 1;
+  if (crc_flag)
+    act_reg->s [3] = 1;
+
+  printf ("unknown CRC opcode %04o at %05o\n", opcode, act_reg->prev_pc);
 }
+
+
+#ifdef DEBUG_PIK
+static void op_pik_unknown (sim_t *sim,
+			    int opcode)
+{
+  act_reg_t *act_reg = get_chip_data (sim->first_chip);
+
+  printf ("unknown PIK opcode %04o at %05o\n", opcode, act_reg->prev_pc);
+}
+#else
+static void op_pik_unknown (sim_t *sim UNUSED,
+			    int opcode UNUSED)
+{
+}
+#endif
 
 
 static void init_ops (act_reg_t *act_reg)
@@ -1248,20 +1275,40 @@ static void init_ops (act_reg_t *act_reg)
   /* 1560..1660 unassigned/unknown */
   act_reg->op_fcn [01760] = op_nop;  /* "HI I'M WOODSTOCK" */
 
-  /* CRC chip in 67/97 */
-  act_reg->op_fcn [00300] = op_crc_test_f1;
-  act_reg->op_fcn [00400] = op_crc_unknown;
-  act_reg->op_fcn [00500] = op_crc_unknown;
-  act_reg->op_fcn [01000] = op_crc_unknown;
-  act_reg->op_fcn [01100] = op_crc_unknown_1100;
-  act_reg->op_fcn [01300] = op_crc_unknown;
-  act_reg->op_fcn [01500] = op_crc_clear_f1;
 
-  act_reg->op_fcn [00160] = op_crc_unknown;
-  act_reg->op_fcn [00560] = op_crc_unknown;
+  // CRC chip in 67/97
+  act_reg->op_fcn [00100] = op_crc_unknown;  // sometimes followed by test S3
+  act_reg->op_fcn [00300] = op_crc_test_f1;
+  act_reg->op_fcn [00400] = op_crc_unknown;  // no test
+  act_reg->op_fcn [00500] = op_crc_unknown;  // sometimes followed by test S3
+  act_reg->op_fcn [01000] = op_crc_unknown;  // no test
+  act_reg->op_fcn [01100] = op_crc_unknown_1100;  // sometimes followed by test S3
+  act_reg->op_fcn [01200] = op_crc_unknown;  // no test
+  act_reg->op_fcn [01300] = op_crc_unknown;  // sometimes followed by test S3
+  act_reg->op_fcn [01400] = op_crc_unknown;  // no test
+  act_reg->op_fcn [01500] = op_crc_clear_f1;  // sometimes followed by test S3
+  act_reg->op_fcn [01700] = op_crc_unknown;  // sometimes followed by test S3
+
+  act_reg->op_fcn [00060] = op_crc_unknown;  // no test
+  act_reg->op_fcn [00160] = op_crc_unknown;  // no test
+  act_reg->op_fcn [00260] = op_crc_unknown;  // no test
+  act_reg->op_fcn [00360] = op_crc_unknown;  // no test
+  act_reg->op_fcn [00560] = op_crc_unknown;  // followed by test S3
+  act_reg->op_fcn [00660] = op_crc_unknown;  // no test
+  act_reg->op_fcn [00760] = op_crc_unknown;  // no test
+
+
+  // PIK chip in 19C/91/92/95C/97, some instructions also found in 29C
+  // despite having no PIK, presumably due to the shared code base.
+  act_reg->op_fcn [01120] = op_pik_unknown;  // followed by test S3
+  act_reg->op_fcn [01220] = op_pik_unknown;  // followed by test S3
+  act_reg->op_fcn [01320] = op_pik_unknown;  // followed by test S3
+  act_reg->op_fcn [01720] = op_pik_unknown;  // not followed by test
+
+  act_reg->op_fcn [01660] = op_pik_unknown;  // not followed by test
 
   /*
-   * Instruction codings unknown (probably 1160..1760):
+   * Instruction codings unknown
    *    PRINT 0
    *    PRINT 1
    *    PRINT 2
