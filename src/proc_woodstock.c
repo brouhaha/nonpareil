@@ -507,7 +507,7 @@ static void op_decimal (sim_t *sim,
 
 /* $$$ woodstock doc says when increment or decrement P wraps,
  * P "disappears for one word time".  The 19C, 29C, 67, and 97
- * seem to depend on undocumented behavior of incrementing P to
+ * seem to depend on undocumented behavior of decrementing P to
  * make label searching more efficient. */
 
 static void op_inc_p (sim_t *sim,
@@ -546,7 +546,13 @@ static void op_load_constant (sim_t *sim, int opcode)
     }
   else
     act_reg->c [act_reg->p] = opcode >> 6;
-  op_dec_p (sim, opcode);
+
+  // Note: don't set p_change, because wrap after load constant apparently
+  // doesn't act "funny".
+  if (act_reg->p)
+    act_reg->p--;
+  else
+    act_reg->p = WSIZE - 1;
 }
 
 
