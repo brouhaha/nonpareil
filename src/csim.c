@@ -58,6 +58,10 @@ MA 02111, USA.
 #define SHAPE_DEFAULT true
 #endif
 
+#ifndef SOUND_DEFAULT
+#define SOUND_DEFAULT true
+#endif
+
 
 #ifdef DEFAULT_PATH
 char *default_path = MAKESTR(DEFAULT_PATH);
@@ -65,6 +69,17 @@ char *default_path = MAKESTR(DEFAULT_PATH);
 char *default_path = NULL;
 #endif
 
+
+void print_usage_toggle_option (FILE *f, char *name, bool default_setting)
+{
+  fprintf (f, "   --%s", name);
+  if (default_setting)
+    fprintf (f, " (default)");
+  fprintf (f, "\n   --no%s", name);
+  if (! default_setting)
+    fprintf (f, " (default)");
+  fprintf (f, "\n");
+}
 
 void usage (FILE *f)
 {
@@ -75,14 +90,10 @@ void usage (FILE *f)
   fprintf (f, "\n");
   fprintf (f, "usage: %s [options...] kmlfile\n", progname);
   fprintf (f, "options:\n");
-  fprintf (f, "   --shape");
-  if (SHAPE_DEFAULT)
-    fprintf (f, " (default)");
-  fprintf (f, "\n");
-  fprintf (f, "   --noshape");
-  if (! (SHAPE_DEFAULT))
-    fprintf (f, " (default)");
-  fprintf (f, "\n");
+
+  print_usage_toggle_option (f, "shape", SHAPE_DEFAULT);
+  print_usage_toggle_option (f, "sound", SOUND_DEFAULT);
+
   fprintf (f, "   --kmldebug\n");
   fprintf (f, "   --kmldump\n");
   fprintf (f, "   --scancodedebug\n");
@@ -580,6 +591,7 @@ int main (int argc, char *argv[])
   gboolean shape = SHAPE_DEFAULT;
   gboolean kml_dump = FALSE;
   gboolean run = TRUE;
+  bool sound_enabled = TRUE;
 
   int model;
   model_info_t *model_info;
@@ -597,8 +609,6 @@ int main (int argc, char *argv[])
 
   gtk_init (& argc, & argv);
 
-  init_sound ();
-
   while (--argc)
     {
       argv++;
@@ -608,6 +618,10 @@ int main (int argc, char *argv[])
 	    shape = true;
 	  else if (strcasecmp (argv [0], "--noshape") == 0)
 	    shape = false;
+	  else if (strcasecmp (argv [0], "--sound") == 0)
+	    sound_enabled = true;
+	  else if (strcasecmp (argv [0], "--nosound") == 0)
+	    sound_enabled = false;
 	  else if (strcasecmp (argv [0], "--kmldump") == 0)
 	    kml_dump = 1;
 	  else if (strcasecmp (argv [0], "--scancodedebug") == 0)
@@ -624,6 +638,8 @@ int main (int argc, char *argv[])
       else
 	kml_name = argv [0];
     }
+
+  init_sound (sound_enabled);
 
   kml_fn = find_kml_file (kml_name);
   if (! kml_fn)

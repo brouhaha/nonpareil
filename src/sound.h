@@ -26,7 +26,7 @@ typedef int16_t sample_t;
 #define SAMPLE_MAX 32767
 
 
-bool init_sound (void);
+bool init_sound (bool enable);
 void close_sound (void);
 
 

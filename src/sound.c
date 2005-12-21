@@ -97,7 +97,8 @@ typedef struct
 
 struct
 {
-  atomic_bool_t open;
+  atomic_bool_t open;          // true if sound subsystem has been opened
+  atomic_bool_t enable;        // true if sound is enabled
 #ifdef SOUND_USE_THREAD
   GThread       *thread;
   atomic_bool_t close_request;
@@ -240,6 +241,10 @@ gpointer sound_thread_func (gpointer data UNUSED)
 
 bool stop_sound (int id)
 {
+  if (! (atomic_bool_get (& sound_v.open) &&
+	 atomic_bool_get (& sound_v.enable)))
+    return false;
+
   if ((id < 0) || (id > MAX_SOUNDS))
     return false;
 
@@ -295,12 +300,18 @@ void close_sound (void)
 }
 
 
-bool init_sound (void)
+bool init_sound (bool enable)
 {
   if (atomic_bool_get (& sound_v.open))
     return true;
 
   memset (& sound_v, 0, sizeof (sound_v));
+  sound_v.enable = enable;
+  if (! enable)
+    {
+      sound_v.open = 1;
+      return true;
+    }
 
   sinewave_init ();
 
@@ -334,7 +345,8 @@ static int find_open_sound_slot (void)
   int index;
   sound_info_t *sound;
 
-  if (! atomic_bool_get (& sound_v.open))
+  if (! (atomic_bool_get (& sound_v.open) &&
+	 atomic_bool_get (& sound_v.enable)))
     return -1;
 
   for (index = 0; index < MAX_SOUNDS; index++)
