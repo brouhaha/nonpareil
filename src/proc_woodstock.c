@@ -37,6 +37,8 @@ MA 02111, USA.
 #include "dis_woodstock.h"
 
 
+#undef DEBUG_CRC
+
 #undef DEBUG_BANK_SWITCH
 #undef DEBUG_P_WRAP
 
@@ -1145,6 +1147,34 @@ static void op_crc_test_f1 (sim_t *sim,
 }
 
 
+#ifdef DEBUG_CRC
+static void op_crc_unknown (sim_t *sim,
+			    int opcode)
+{
+  act_reg_t *act_reg = get_chip_data (sim->first_chip);
+
+  if (opcode != 00560)
+    printf ("unknown CRC opcode %04o at %05o\n", opcode, act_reg->prev_pc);
+}
+#else
+static void op_crc_unknown (sim_t *sim,
+			    int opcode UNUSED)
+{
+}
+#endif
+
+
+// Unknown function, but apparently this normally sets S3.  If it doesn't,
+// the 67 won't execute the default functions for the top row of buttons.
+static void op_crc_unknown_1100 (sim_t *sim,
+			 int opcode UNUSED)
+{
+  act_reg_t *act_reg = get_chip_data (sim->first_chip);
+
+  act_reg->s [3] = 1;
+}
+
+
 static void init_ops (act_reg_t *act_reg)
 {
   int i;
@@ -1220,13 +1250,15 @@ static void init_ops (act_reg_t *act_reg)
 
   /* CRC chip in 67/97 */
   act_reg->op_fcn [00300] = op_crc_test_f1;
+  act_reg->op_fcn [00400] = op_crc_unknown;
+  act_reg->op_fcn [00500] = op_crc_unknown;
+  act_reg->op_fcn [01000] = op_crc_unknown;
+  act_reg->op_fcn [01100] = op_crc_unknown_1100;
+  act_reg->op_fcn [01300] = op_crc_unknown;
   act_reg->op_fcn [01500] = op_crc_clear_f1;
 
-  act_reg->op_fcn [00560] = op_nop;
-
-  act_reg->op_fcn [00400] = op_nop;
-  act_reg->op_fcn [01000] = op_nop;
-  act_reg->op_fcn [01300] = op_nop;
+  act_reg->op_fcn [00160] = op_crc_unknown;
+  act_reg->op_fcn [00560] = op_crc_unknown;
 
   /*
    * Instruction codings unknown (probably 1160..1760):
