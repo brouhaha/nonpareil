@@ -176,6 +176,7 @@ struct sim_t
   segment_bitmap_t *char_gen;
 
   int display_digits;
+  bool display_changed;
   segment_bitmap_t display_segments [MAX_DIGIT_POSITION];
 
 #if 1 || defined(HAS_DEBUGGER)
