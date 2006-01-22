@@ -22,6 +22,14 @@ MA 02111, USA.
 
 typedef uint8_t digit_t;
 
+
+digit_t digit_add (digit_t x, digit_t y, bool *carry, uint8_t base);
+
+digit_t digit_sub (digit_t x, digit_t y, bool *carry, uint8_t base);
+
+digit_t digit_add_sub (bool sub, digit_t x, digit_t y, bool *carry, uint8_t base);
+
+
 void reg_zero (digit_t *dest, int first, int last);
 
 void reg_copy (digit_t *dest, const digit_t *src, int first, int last);

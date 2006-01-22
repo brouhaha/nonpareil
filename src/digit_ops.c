@@ -54,7 +54,7 @@ void reg_exch (digit_t *dest, digit_t *src, int first, int last)
 }
 
 
-static digit_t do_add (digit_t x, digit_t y, bool *carry, uint8_t base)
+digit_t digit_add (digit_t x, digit_t y, bool *carry, uint8_t base)
 {
   int res;
 
@@ -70,7 +70,7 @@ static digit_t do_add (digit_t x, digit_t y, bool *carry, uint8_t base)
 }
 
 
-static digit_t do_sub (digit_t x, digit_t y, bool *carry, uint8_t base)
+digit_t digit_sub (digit_t x, digit_t y, bool *carry, uint8_t base)
 {
   int res;
 
@@ -86,6 +86,15 @@ static digit_t do_sub (digit_t x, digit_t y, bool *carry, uint8_t base)
 }
 
 
+digit_t digit_add_sub (bool sub, digit_t x, digit_t y, bool *carry, uint8_t base)
+{
+  if (sub)
+    return digit_sub (x, y, carry, base);
+  else
+    return digit_add (x, y, carry, base);
+}
+
+
 void reg_add (digit_t *dest, const digit_t *src1, const digit_t *src2,
 	      int first, int last,
 	      bool *carry, uint8_t base)
@@ -95,7 +104,7 @@ void reg_add (digit_t *dest, const digit_t *src1, const digit_t *src2,
   for (i = first; i <= last; i++)
     {
       int s2 = src2 ? src2 [i] : 0;
-      dest [i] = do_add (src1 [i], s2, carry, base);
+      dest [i] = digit_add (src1 [i], s2, carry, base);
     }
 }
 
@@ -110,7 +119,7 @@ void reg_sub (digit_t *dest, const digit_t *src1, const digit_t *src2,
     {
       int s1 = src1 ? src1 [i] : 0;
       int s2 = src2 ? src2 [i] : 0;
-      int d = do_sub (s1, s2, carry, base);
+      int d = digit_sub (s1, s2, carry, base);
       if (dest)
 	dest [i] = d;
     }
