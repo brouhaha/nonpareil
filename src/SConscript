@@ -81,7 +81,8 @@ sim_core_srcs = Split ("""proc.c glib_async_queue_source.c
                           proc_nut.c
                           coconut_lcd.c phineas.c helios.c helios_chargen.c
                           voyager_lcd.c
-                          mod1_file.c""")
+                          mod1_file.c
+                          proc_tmc1500.c""")
 sim_core_objs = [build_env.Object(src) for src in sim_core_srcs];
 
 common_dis_srcs = Split ("""dis_woodstock.c dis_nut.c""")
@@ -452,7 +453,8 @@ if build_env ['build_target_only'] == 0:
                         csim.h about.h goose.h pixbuf_util.h sound.h scancode.h
                         asm.h symtab.h
                         nsim_conv.h
-                        mod1_file.h""")
+                        mod1_file.h
+                        proc_tmc1500.h""")
 
     misc = Split ("""SConscript ChangeLog release.c""")
 

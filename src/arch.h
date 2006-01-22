@@ -34,7 +34,11 @@ MA 02111, USA.
 #define ARCH_SUNPLUS   9
 #define ARCH_ARM       10
 
-#define ARCH_MAX       11
+#define ARCH_TMC0501   11
+#define ARCH_TMC0980   12
+#define ARCH_TMC1500   13
+
+#define ARCH_MAX       14
 
 
 typedef struct

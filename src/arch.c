@@ -36,7 +36,11 @@ static arch_info_t arch_info [ARCH_MAX] =
     [ARCH_68K]       = { "68k",        8 },  // 32-bit longword
     [ARCH_H8]        = { "h8",         8 },
     [ARCH_SUNPLUS]   = { "sunplus",    8 },
-    [ARCH_ARM]       = { "arm",        8 }   // 32-bit word
+    [ARCH_ARM]       = { "arm",        8 },  // 32-bit word
+
+    [ARCH_TMC0501]   = { "tmc0501",   64 },
+    [ARCH_TMC0980]   = { "tmc0501",   64 },
+    [ARCH_TMC1500]   = { "tmc0501",   64 }
   };
 
 

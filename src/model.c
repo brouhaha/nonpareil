@@ -66,6 +66,8 @@ model_info_t model_info [] =
     { "92",   PLATFORM_TOPCAT,    ARCH_WOODSTOCK, 1,  48, 185000 },
     { "95C",  PLATFORM_TOPCAT,    ARCH_WOODSTOCK, 1,  48, 185000 },
     { "97",   PLATFORM_TOPCAT,    ARCH_WOODSTOCK, 1,  64, 185000 },
+
+    { "T57",  PLATFORM_T_MAJESTIC_2, ARCH_TMC1500, 0,  0, 400000 }
   };
 
 

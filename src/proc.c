@@ -1450,6 +1450,7 @@ void sim_send_chip_msg_to_gui (sim_t  *sim,
 extern processor_dispatch_t classic_processor;
 extern processor_dispatch_t woodstock_processor;
 extern processor_dispatch_t nut_processor;
+extern processor_dispatch_t tmc1500_processor;
 
 processor_dispatch_t *processor_dispatch [ARCH_MAX] =
   {
@@ -1459,7 +1460,9 @@ processor_dispatch_t *processor_dispatch [ARCH_MAX] =
     [ARCH_CRICKET]   = NULL,
     [ARCH_NUT]       = & nut_processor,
     [ARCH_CAPRICORN] = NULL,
-    [ARCH_SATURN]    = NULL
+    [ARCH_SATURN]    = NULL,
+
+    [ARCH_TMC1500]   = & tmc1500_processor
   };
 
 

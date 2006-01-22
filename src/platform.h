@@ -44,7 +44,11 @@ MA 02111, USA.
 #define PLATFORM_CLARKE     19  // 38G 39G 40G 48S 48SX 48G 48GX 49G
 #define PLATFORM_APPLE      20  // 39G+ 48GII 49G+
 
-#define PLATFORM_MAX        21
+#define PLATFORM_T_CLASSIC    21  // TMC0501
+#define PLATFORM_T_MAJESTIC   22  // TMC0980
+#define PLATFORM_T_MAJESTIC_2 23  // TMC1500
+
+#define PLATFORM_MAX        24
 
 extern char *platform_name [PLATFORM_MAX];
 
