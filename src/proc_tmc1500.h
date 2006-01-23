@@ -26,7 +26,7 @@ MA 02111, USA.
 typedef digit_t reg_t [WSIZE];
 
 
-#define MAX_BANK 4
+#define MAX_BANK 1
 #define MAX_PAGE 1
 #define PAGE_SIZE 2048
 
