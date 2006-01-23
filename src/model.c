@@ -67,7 +67,20 @@ model_info_t model_info [] =
     { "95C",  PLATFORM_TOPCAT,    ARCH_WOODSTOCK, 1,  48, 185000 },
     { "97",   PLATFORM_TOPCAT,    ARCH_WOODSTOCK, 1,  64, 185000 },
 
-    { "T57",  PLATFORM_T_MAJESTIC_2, ARCH_TMC1500, 0,  0, 400000 }
+    { "SR22",       PLATFORM_T_2C12D,        ARCH_TMS0200, 0,  0, 100000 },  // freq. unknown
+    { "T30",        PLATFORM_T_MAJESTIC,     ARCH_TMC0980, 0,  0, 100000 },  // freq. unknown
+    { "SR50",       PLATFORM_T_CLASSIC,      ARCH_TMC0501, 0,  0, 100000 },  // freq. unknown
+    { "SR51",       PLATFORM_T_CLASSIC,      ARCH_TMC0501, 0,  0, 100000 },  // freq. unknown
+    { "SR52",       PLATFORM_T_CARDREADER,   ARCH_TMC0501, 0,  0, 100000 },  // freq. unknown
+    { "T55",        PLATFORM_T_MAJESTIC_2,   ARCH_TMC1500, 0,  0, 400000 },
+    { "SR56",       PLATFORM_T_CLASSIC,      ARCH_TMC0501, 0,  0, 100000 },  // freq. unknown
+    { "T57",        PLATFORM_T_MAJESTIC_2,   ARCH_TMC1500, 0,  0, 400000 },
+    { "T58",        PLATFORM_T_CARDREADER_2, ARCH_TMC0501, 1,  0, 400000 },
+    { "T59",        PLATFORM_T_CARDREADER_2, ARCH_TMC0501, 1,  0, 400000 },
+    { "SR60",       PLATFORM_T_BIGDESK,      ARCH_TMC0501, 0,  0, 100000 },  // freq. unknown
+    { "BA",         PLATFORM_T_MAJESTIC,     ARCH_TMC0980, 0,  0, 100000 },  // freq. unknown
+    { "MBA",        PLATFORM_T_MAJESTIC_2,   ARCH_TMC1500, 0,  0, 400000 },
+    { "PROGRAMMER", PLATFORM_T_MAJESTIC,     ARCH_TMC0980, 0,  0, 100000 }   // freq. unknown
   };
 
 

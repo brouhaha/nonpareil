@@ -47,9 +47,15 @@ char *platform_name [PLATFORM_MAX] =
     [PLATFORM_BERT]       = "bert",
     [PLATFORM_CLARKE]     = "clarke",
     [PLATFORM_APPLE]      = "apple",
-    [PLATFORM_T_CLASSIC]  = "t_classic",
-    [PLATFORM_T_MAJESTIC] = "t_majestic",
-    [PLATFORM_T_MAJESTIC_2] = "t_majestic_2"
+
+    [PLATFORM_T_DATAMATH]     = "t_datamath",
+    [PLATFORM_T_2C12D]        = "t_2c12d",
+    [PLATFORM_T_CLASSIC]      = "t_classic",
+    [PLATFORM_T_CARDREADER]   = "t_cardreader",
+    [PLATFORM_T_MAJESTIC]     = "t_majestic",
+    [PLATFORM_T_MAJESTIC_2]   = "t_majestic_2",
+    [PLATFORM_T_CARDREADER_2] = "t_cardreader_2",
+    [PLATFORM_T_BIGDESK]      = "t_bigdesk"
   };
 
 int find_platform_by_name (char *s)
