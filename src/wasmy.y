@@ -1,6 +1,6 @@
 /*
 $Id$
-Copyright 1995, 2004, 2005 Eric L. Smith <eric@brouhaha.com>
+Copyright 1995, 2004, 2005, 2006 Eric L. Smith <eric@brouhaha.com>
 
 Nonpareil is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License version 2 as
@@ -296,7 +296,8 @@ stat_bit_name	: IDENT { $$ = 0; }
 		| KEY { $$ = 0; }
 		| F { $$ = 0; };
 
-stat_bit	: S stat_bit_name expr { $$ = range ($3, 0, 15); } ;
+stat_bit	: S stat_bit_name expr { $$ = range ($3, 0, 15); }
+		| S expr { $$ = range ($2, 0, 15); };
 
 inst_set_stat   : expr ARROW stat_bit { $1 = range ($1, 0, 1);
                                   emit (($3 << 6) | ($1 ? 00004 : 00014)); } ;
