@@ -1,4 +1,4 @@
-; ROM source code from U.S. Patent 4,177,520 and other sources
+; 25 ROM source code from U.S. Patent 4,177,520 and other sources
 ; Copyright 2004, 2006 Eric L. Smith <eric@brouhaha.com>
 ; $Id$
 ;
