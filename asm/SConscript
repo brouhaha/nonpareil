@@ -24,7 +24,7 @@ Import('env source_release_dir snapshot_dir')
 # Assemble ROM sources
 #-----------------------------------------------------------------------------
 
-asm_srcs = Split ("""35.asm 45.asm 55.asm 80.asm""")
+asm_srcs = Split ("""25.asm 35.asm 45.asm 55.asm 80.asm""")
 
 asm_objs = [env.Assemble(src) for src in asm_srcs]
 
