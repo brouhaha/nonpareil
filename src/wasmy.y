@@ -293,6 +293,7 @@ status_inst     : inst_set_stat
                 ;
 
 stat_bit_name	: IDENT { $$ = 0; }
+		| KEY { $$ = 0; }
 		| F { $$ = 0; };
 
 stat_bit	: S stat_bit_name expr { $$ = range ($3, 0, 15); } ;
