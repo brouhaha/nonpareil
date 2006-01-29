@@ -1,6 +1,6 @@
 # SConscript for Nonpareil
 # $Id$
-# Copyright 2004, 2005 Eric L. Smith <eric@brouhaha.com>
+# Copyright 2004, 2005, 2006 Eric L. Smith <eric@brouhaha.com>
 
 # Nonpareil is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License version 2 as
@@ -24,7 +24,7 @@ Import('env source_release_dir snapshot_dir')
 # Install firmware files
 #-----------------------------------------------------------------------------
 
-roms = Split ("""21.obj 22.obj 27.obj
+roms = Split ("""22.obj 27.obj
                  67.obj
                  32e.obj 33c.obj 34c.obj 37e.obj 38c.obj 38e.obj
                  41cv.mod 41cx.mod 82143a.mod 82182a.mod

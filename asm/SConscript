@@ -1,6 +1,6 @@
 # SConscript for Nonpareil
 # $Id$
-# Copyright 2004, 2005 Eric L. Smith <eric@brouhaha.com>
+# Copyright 2004, 2005, 2006 Eric L. Smith <eric@brouhaha.com>
 
 # Nonpareil is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License version 2 as
@@ -24,7 +24,7 @@ Import('env source_release_dir snapshot_dir')
 # Assemble ROM sources
 #-----------------------------------------------------------------------------
 
-asm_srcs = Split ("""25.asm 35.asm 45.asm 55.asm 80.asm""")
+asm_srcs = Split ("""21.asm 25.asm 35.asm 45.asm 55.asm 80.asm""")
 
 asm_objs = [env.Assemble(src) for src in asm_srcs]
 
