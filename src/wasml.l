@@ -1,6 +1,6 @@
 /*
 $Id$
-Copyright 1995, 2003, 2004 Eric L. Smith <eric@brouhaha.com>
+Copyright 1995, 2003, 2004, 2006 Eric L. Smith <eric@brouhaha.com>
 
 Nonpareil is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License version 2 as
@@ -126,7 +126,7 @@ rb		\]
 @{octaldig}+	{ sscanf (yytext+1, "%o", &wasm_lval.integer); return INTEGER; }
 
 
-{lglobal}?{lfirst}({lmiddle}*{lend})?	{
+{lglobal}*{lfirst}({lmiddle}*{lend})?	{
                           if ((wasm_lval.integer = keyword (yytext, wasm_keywords)))
                             return wasm_lval.integer;
                           wasm_lval.string = newstr (yytext);
