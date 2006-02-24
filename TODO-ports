@@ -19,7 +19,12 @@ Ports:
     Libraries and Toolkits:
       GTK+ for Windows:  ftp://ftp.gtk.org/pub/gtk/v2.8/win32/
 			 http://www.gimp.org/~tml/gimp/win32/
-      GTK+ for Windows runtime installer:  http://members.lycos.co.uk/alexv6/
+
+      GTK+ for Windows runtime installer:
+			 http://gimp-win.sourceforge.net/stable.html
+		(not compatible with Gimp installer when I last tried it):
+			  http://members.lycos.co.uk/alexv6/
+
       libxml2 for Windows:   http://www.zlatkovic.com/libxml.en.html
       SDL for Windows:       http://www.libsdl.org/
 
