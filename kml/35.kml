@@ -115,39 +115,40 @@ button 83  type 0  size 38 26  offset 174 530  down 2 8  keycode 043  end
 button 84  type 0  size 38 26  offset 244 530  down 2 8  keycode 042  end
 
 # main keyboard:
-scancode 48 map 0 82 end  # 0
-scancode 49 map 0 72 end  # 1
-scancode 50 map 0 73 end  # 2
-scancode 51 map 0 74 end  # 3
-scancode 52 map 0 62 end  # 4
-scancode 53 map 0 63 end  # 5
-scancode 54 map 0 64 end  # 6
-scancode 55 map 0 52 end  # 7
-scancode 56 map 0 53 end  # 8
-scancode 57 map 0 54 end  # 9
-scancode 46 map 0 83 end  # .
-scancode 43 map 0 61 end  # +
-scancode 45 map 0 51 end  # -
-scancode 42 map 0 71 end  # *
-scancode 47 map 0 81 end  # /
-scancode 65293 map 0 41 end  # ENTER
-scancode 99 map 0 42 end  # c - CHS
-scancode 101 map 0 43 end  # e - EEX
+scancode "0"            map 0 82 end  # 0
+scancode "1"            map 0 72 end  # 1
+scancode "2"            map 0 73 end  # 2
+scancode "3"            map 0 74 end  # 3
+scancode "4"            map 0 62 end  # 4
+scancode "5"            map 0 63 end  # 5
+scancode "6"            map 0 64 end  # 6
+scancode "7"            map 0 52 end  # 7
+scancode "8"            map 0 53 end  # 8
+scancode "9"            map 0 54 end  # 9
+scancode "period"       map 0 83 end  # .
+scancode "plus"         map 0 61 end  # +
+scancode "minus"        map 0 51 end  # -
+scancode "asterisk"     map 0 71 end  # *
+scancode "slash"        map 0 81 end  # /
+scancode "Return"       map 0 41 end  # ENTER
+scancode "c"            map 0 42 end  # c - CHS
+scancode "e"            map 0 43 end  # e - EEX
 
 # keypad:
-scancode 65456 map 0 82 end  # 0
-scancode 65457 map 0 72 end  # 1
-scancode 65458 map 0 73 end  # 2
-scancode 65459 map 0 74 end  # 3
-scancode 65460 map 0 62 end  # 4
-scancode 65461 map 0 63 end  # 5
-scancode 65462 map 0 64 end  # 6
-scancode 65463 map 0 52 end  # 7
-scancode 65464 map 0 53 end  # 8
-scancode 65465 map 0 54 end  # 9
-scancode 65454 map 0 83 end  # .
-scancode 65451 map 0 61 end  # +
-scancode 65453 map 0 51 end  # -
-scancode 65450 map 0 71 end  # *
-scancode 65455 map 0 81 end  # /
-scancode 65421 map 0 41 end  # ENTER
+scancode "KP_0"         map 0 82 end  # 0
+scancode "KP_1"         map 0 72 end  # 1
+scancode "KP_2"         map 0 73 end  # 2
+scancode "KP_3"         map 0 74 end  # 3
+scancode "KP_4"         map 0 62 end  # 4
+scancode "KP_5"         map 0 63 end  # 5
+scancode "KP_6"         map 0 64 end  # 6
+scancode "KP_7"         map 0 52 end  # 7
+scancode "KP_8"         map 0 53 end  # 8
+scancode "KP_9"         map 0 54 end  # 9
+scancode "KP_Decimal"   map 0 83 end  # .
+scancode "KP_Separator" map 0 83 end  # ,
+scancode "KP_Add"       map 0 61 end  # +
+scancode "KP_Subtract"  map 0 51 end  # -
+scancode "KP_Multiply"  map 0 71 end  # *
+scancode "KP_Divide"    map 0 81 end  # /
+scancode "KP_Enter"     map 0 41 end  # ENTER

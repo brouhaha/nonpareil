@@ -60,7 +60,7 @@ display
 	character 0x0b segment 'a'             'e' 'f' 'g'     end # F
 	character 0x0c segment         'c' 'd' 'e'     'g'     end # o
 	character 0x0d segment 'a' 'b'         'e' 'f' 'g'     end # p
-	character 0x0e segment 'a'         'd' 'e' 'f' 'g'     end # e
+	character 0x0e segment 'a'         'd' 'e' 'f' 'g'     end # E
 	character 0x0f segment                                 end # space
 	character ' '  segment                                 end
 	character '-'  segment                         'g'     end
@@ -159,6 +159,7 @@ scancode 65463 map 0 42 end  # 7
 scancode 65464 map 0 43 end  # 8
 scancode 65465 map 0 44 end  # 9
 scancode 65454 map 0 73 end  # .
+scancode 65452 map 0 73 end  # ,
 scancode 65451 map 0 51 end  # +
 scancode 65453 map 0 41 end  # -
 scancode 65450 map 0 61 end  # *

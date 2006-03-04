@@ -557,79 +557,80 @@ button 83  type 0  size 37 28  offset 141 447  down 2 8  keycode 0x77  end
 button 84  type 0  size 37 28  offset 209 447  down 2 8  keycode 0x87  end
 
 # main keyboard:
-scancode "0"           map 0 82 end
-scancode "1"           map 0 72 end
-scancode "2"           map 0 73 end
-scancode "3"           map 0 74 end
-scancode "4"           map 0 62 end
-scancode "5"           map 0 63 end
-scancode "6"           map 0 64 end
-scancode "7"           map 0 52 end
-scancode "8"           map 0 53 end
-scancode "9"           map 0 54 end
-scancode "period"      map 0 83 end  # .
-scancode "plus"        map 0 61 end  # +
-scancode "minus"       map 0 51 end  # -
-scancode "asterisk"    map 0 71 end  # *
-scancode "slash"       map 0 81 end  # /
+scancode "0"            map 0 82 end
+scancode "1"            map 0 72 end
+scancode "2"            map 0 73 end
+scancode "3"            map 0 74 end
+scancode "4"            map 0 62 end
+scancode "5"            map 0 63 end
+scancode "6"            map 0 64 end
+scancode "7"            map 0 52 end
+scancode "8"            map 0 53 end
+scancode "9"            map 0 54 end
+scancode "period"       map 0 83 end  # .
+scancode "plus"         map 0 61 end  # +
+scancode "minus"        map 0 51 end  # -
+scancode "asterisk"     map 0 71 end  # *
+scancode "slash"        map 0 81 end  # /
 
 #all letter access the key it is printed on
-scancode "a"           map 0 11 end
-scancode "b"           map 0 12 end
-scancode "c"           map 0 13 end
-scancode "d"           map 0 14 end
-scancode "e"           map 0 15 end
-scancode "f"           map 0 21 end
-scancode "g"           map 0 22 end
-scancode "h"           map 0 23 end
-scancode "i"           map 0 24 end
-scancode "j"           map 0 25 end
-scancode "k"           map 0 32 end
-scancode "l"           map 0 33 end
-scancode "m"           map 0 34 end
-scancode "n"           map 0 41 end
-scancode "o"           map 0 42 end
-scancode "p"           map 0 43 end
-scancode "q"           map 0 51 end
-scancode "r"           map 0 52 end
-scancode "s"           map 0 53 end
-scancode "t"           map 0 54 end
-scancode "u"           map 0 61 end
-scancode "v"           map 0 62 end
-scancode "w"           map 0 63 end
-scancode "x"           map 0 64 end
-scancode "y"           map 0 71 end
-scancode "z"           map 0 72 end
-scancode "equal"       map 0 73 end # =
-scancode "question"    map 0 74 end # ?
+scancode "a"            map 0 11 end
+scancode "b"            map 0 12 end
+scancode "c"            map 0 13 end
+scancode "d"            map 0 14 end
+scancode "e"            map 0 15 end
+scancode "f"            map 0 21 end
+scancode "g"            map 0 22 end
+scancode "h"            map 0 23 end
+scancode "i"            map 0 24 end
+scancode "j"            map 0 25 end
+scancode "k"            map 0 32 end
+scancode "l"            map 0 33 end
+scancode "m"            map 0 34 end
+scancode "n"            map 0 41 end
+scancode "o"            map 0 42 end
+scancode "p"            map 0 43 end
+scancode "q"            map 0 51 end
+scancode "r"            map 0 52 end
+scancode "s"            map 0 53 end
+scancode "t"            map 0 54 end
+scancode "u"            map 0 61 end
+scancode "v"            map 0 62 end
+scancode "w"            map 0 63 end
+scancode "x"            map 0 64 end
+scancode "y"            map 0 71 end
+scancode "z"            map 0 72 end
+scancode "equal"        map 0 73 end # =
+scancode "question"     map 0 74 end # ?
 
-scancode "BackSpace"   map 0 44 end # backspace
-scancode "Return"      map 0 41 end # ENTER
+scancode "BackSpace"    map 0 44 end # backspace
+scancode "Return"       map 0 41 end # ENTER
 
-scancode "Tab"         map 0 31 end # shift (gold)
+scancode "Tab"          map 0 31 end # shift (gold)
 
-scancode "F2"          map 0 01 end # ON
-scancode "F3"          map 0 02 end # USER
-scancode "F4"          map 0 03 end # PRGM
-scancode "F5"          map 0 04 end # ALPHA
+scancode "F2"           map 0 01 end # ON
+scancode "F3"           map 0 02 end # USER
+scancode "F4"           map 0 03 end # PRGM
+scancode "F5"           map 0 04 end # ALPHA
 
-scancode "F6"          map 0 35 end # SST
-scancode "F7"          map 0 84 end # R/S
+scancode "F6"           map 0 35 end # SST
+scancode "F7"           map 0 84 end # R/S
 
 # keypad:
-scancode "KP_0"        map 0 82 end
-scancode "KP_1"        map 0 72 end
-scancode "KP_2"        map 0 73 end
-scancode "KP_3"        map 0 74 end
-scancode "KP_4"        map 0 62 end
-scancode "KP_5"        map 0 63 end
-scancode "KP_6"        map 0 64 end
-scancode "KP_7"        map 0 52 end
-scancode "KP_8"        map 0 53 end
-scancode "KP_9"        map 0 54 end
-scancode "KP_Decimal"  map 0 83 end  # .
-scancode "KP_Add"      map 0 61 end  # +
-scancode "KP_Subtract" map 0 51 end  # -
-scancode "KP_Multiply" map 0 71 end  # *
-scancode "KP_Divide"   map 0 81 end  # /
-scancode "KP_Enter"    map 0 41 end
+scancode "KP_0"         map 0 82 end
+scancode "KP_1"         map 0 72 end
+scancode "KP_2"         map 0 73 end
+scancode "KP_3"         map 0 74 end
+scancode "KP_4"         map 0 62 end
+scancode "KP_5"         map 0 63 end
+scancode "KP_6"         map 0 64 end
+scancode "KP_7"         map 0 52 end
+scancode "KP_8"         map 0 53 end
+scancode "KP_9"         map 0 54 end
+scancode "KP_Decimal"   map 0 83 end  # .
+scancode "KP_Separator" map 0 83 end  # ,  radix mark
+scancode "KP_Add"       map 0 61 end  # +
+scancode "KP_Subtract"  map 0 51 end  # -
+scancode "KP_Multiply"  map 0 71 end  # *
+scancode "KP_Divide"    map 0 81 end  # /
+scancode "KP_Enter"     map 0 41 end

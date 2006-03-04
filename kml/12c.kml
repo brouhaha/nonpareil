@@ -130,64 +130,65 @@ button 49  type 0  size 38 32  offset 450 298  down 2 8 keycode 0x35  end
 button 40  type 0  size 38 32  offset 504 298  down 2 8 keycode 0x15  end
 
 # main keyboard:
-scancode  48 map 0 47 end  # 0
-scancode  49 map 0 37 end  # 1
-scancode  50 map 0 38 end  # 2
-scancode  51 map 0 39 end  # 3
-scancode  52 map 0 27 end  # 4
-scancode  53 map 0 28 end  # 5
-scancode  54 map 0 29 end  # 6
-scancode  55 map 0 17 end  # 7
-scancode  56 map 0 18 end  # 8
-scancode  57 map 0 19 end  # 9
-scancode  46 map 0 48 end  # .
-scancode  43 map 0 40 end  # +
-scancode  45 map 0 30 end  # -
-scancode  42 map 0 20 end  # *
-scancode  47 map 0 10 end  # /
-scancode 65293 map 0 36 end  # ENTER
+scancode "0"            map 0 47 end  # 0
+scancode "1"            map 0 37 end  # 1
+scancode "2"            map 0 38 end  # 2
+scancode "3"            map 0 39 end  # 3
+scancode "4"            map 0 27 end  # 4
+scancode "5"            map 0 28 end  # 5
+scancode "6"            map 0 29 end  # 6
+scancode "7"            map 0 17 end  # 7
+scancode "8"            map 0 18 end  # 8
+scancode "9"            map 0 19 end  # 9
+scancode "period"       map 0 48 end  # .
+scancode "plus"         map 0 40 end  # +
+scancode "minus"        map 0 30 end  # -
+scancode "asterisk"     map 0 20 end  # *
+scancode "slash"        map 0 10 end  # /
+scancode "Return"       map 0 36 end  # ENTER
 
 # suggested bindings (John R. Hogerhuis)
 # !, @, comma are derived from Forth. Any better (unshifted) ideas?
-scancode 110   map 0 11 end  # 'n' is n
-scancode 105   map 0 12 end  # 'i' is i
-scancode 91    map 0 13 end  # '[' is PV (present-value)
-scancode 112   map 0 14 end  # 'p' is PMT
-scancode 93    map 0 15 end  # ']' is FV (future-value)
-scancode 96    map 0 16 end  # back-tick is CHS (change-sign)
-scancode 94    map 0 21 end  # '^' is y^x
-scancode 92    map 0 22 end  # '\' is 1/x
-scancode 116   map 0 23 end  # 't' is %T (percent of total) 
-scancode 100   map 0 24 end  # 'd' is delta percent
-scancode 37    map 0 25 end  # '%' is %
-scancode 101   map 0 26 end  # 'e' is EEX
-scancode 120   map 0 31 end  # 'R/S' is x (execute)  
-scancode 115   map 0 32 end  # 's' is SST (single-step) 
-scancode 65366 map 0 33 end  # 'PgDn' is R-down
-scancode 59    map 0 34 end  # ';' is X><Y (swap)
-scancode 65535 map 0 35 end  # 'Delete' is CLx
-scancode 32    map 0 41 end  # 'Space' is ON
-scancode 102   map 0 42 end  # 'f' is f
-scancode 103   map 0 43 end  # 'g' is g
-scancode 33    map 0 44 end  # '!' is STO
-scancode 64    map 0 45 end  # '@' is RCL
-scancode 44    map 0 49 end  # comma is sigma+
+scancode "n"            map 0 11 end  # 'n' is n
+scancode "i"            map 0 12 end  # 'i' is i
+scancode "bracketleft"  map 0 13 end  # '[' is PV (present-value)
+scancode "p"            map 0 14 end  # 'p' is PMT
+scancode "bracketright" map 0 15 end  # ']' is FV (future-value)
+scancode "quoteleft"    map 0 16 end  # back-tick is CHS (change-sign)
+scancode "asciicircum"  map 0 21 end  # '^' is y^x
+scancode "backslash"    map 0 22 end  # '\' is 1/x
+scancode "t"            map 0 23 end  # 't' is %T (percent of total) 
+scancode "d"            map 0 24 end  # 'd' is delta percent
+scancode "percent"      map 0 25 end  # '%' is %
+scancode "e"            map 0 26 end  # 'e' is EEX
+scancode "x"            map 0 31 end  # 'R/S' is x (execute)  
+scancode "s"            map 0 32 end  # 's' is SST (single-step) 
+scancode "Page_Down"    map 0 33 end  # 'PgDn' is R-down
+scancode "semicolon"    map 0 34 end  # ';' is X><Y (swap)
+scancode "Delete"       map 0 35 end  # 'Delete' is CLx
+scancode "space"        map 0 41 end  # 'Space' is ON
+scancode "f"            map 0 42 end  # 'f' is f
+scancode "g"            map 0 43 end  # 'g' is g
+scancode "exclam"       map 0 44 end  # '!' is STO
+scancode "at"           map 0 45 end  # '@' is RCL
+scancode "comma"        map 0 49 end  # comma is sigma+
 
 # keypad:
-scancode 65456 map 0 47 end  # 0
-scancode 65457 map 0 37 end  # 1
-scancode 65458 map 0 38 end  # 2
-scancode 65459 map 0 39 end  # 3
-scancode 65460 map 0 27 end  # 4
-scancode 65461 map 0 28 end  # 5
-scancode 65462 map 0 29 end  # 6
-scancode 65463 map 0 17 end  # 7
-scancode 65464 map 0 18 end  # 8
-scancode 65465 map 0 19 end  # 9
-scancode 65454 map 0 48 end  # .
-scancode 65451 map 0 40 end  # +
-scancode 65453 map 0 30 end  # -
-scancode 65450 map 0 20 end  # *
-scancode 65455 map 0 10 end  # /
-scancode 65421 map 0 36 end  # ENTER
+scancode "KP_0"         map 0 47 end  # 0
+scancode "KP_1"         map 0 37 end  # 1
+scancode "KP_2"         map 0 38 end  # 2
+scancode "KP_3"         map 0 39 end  # 3
+scancode "KP_4"         map 0 27 end  # 4
+scancode "KP_5"         map 0 28 end  # 5
+scancode "KP_6"         map 0 29 end  # 6
+scancode "KP_7"         map 0 17 end  # 7
+scancode "KP_8"         map 0 18 end  # 8
+scancode "KP_9"         map 0 19 end  # 9
+scancode "KP_Decimal"   map 0 48 end  # .
+scancode "KP_Separator" map 0 48 end  # ,
+scancode "KP_Add"       map 0 40 end  # +
+scancode "KP_Subtract"  map 0 30 end  # -
+scancode "KP_Multiply"  map 0 20 end  # *
+scancode "KP_Divide"    map 0 10 end  # /
+scancode "KP_Enter"     map 0 36 end  # ENTER
 
