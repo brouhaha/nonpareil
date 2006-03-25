@@ -389,9 +389,9 @@ void emit_test (int op)
 void target (int g, int r, int p)
 {
   targflag = 1;
-  targgroup = g;
-  targrom = r;
-  targpc = p;
+  targgroup = g & 01;
+  targrom = r & 07;
+  targpc = p & 00377;
 }
 
 int range (int val, int min, int max)
