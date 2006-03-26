@@ -71,9 +71,6 @@ if ming and (build_target_only or not cross):
 # common components
 #-----------------------------------------------------------------------------
 
-if build_env ['has_debugger_gui'] or build_env ['has_debugger_cli']:
-    build_env.Append (CPPDEFINES = {'HAS_DEBUGGER': 1})
-
 common_srcs = Split ("""util.c arch.c model.c platform.c""")
 common_objs = [build_env.Object(src) for src in common_srcs]
 
@@ -311,8 +308,8 @@ for gen in ["nonpareil_title_png",
 
 nonpareil_env.Append (LIBS = 'png')
 
-#if build_env ['has_debugger_gui'] or build_env ['has_debugger_cli']:
-#    nonpareil_env.Append (CPPDEFINES = {'HAS_DEBUGGER': 1})
+if build_env ['has_debugger_gui'] or build_env ['has_debugger_cli']:
+    nonpareil_env.Append (CPPDEFINES = {'HAS_DEBUGGER': 1})
 
 if build_env ['has_debugger_cli']:
     nonpareil_packages += ' vte'
