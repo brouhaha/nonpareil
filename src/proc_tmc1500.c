@@ -727,7 +727,7 @@ static bool tmc1500_execute_cycle (sim_t *sim)
   opcode = tmc1500_get_ucode (tmc_reg, tmc_reg->pc);
 
 #ifdef HAS_DEBUGGER
-  if (sim->debug_flags & (1 << SIM_DEBUG_TRACE)
+  if (sim->debug_flags & (1 << SIM_DEBUG_TRACE))
     {
       tmc1500_print_state (sim);
     }
