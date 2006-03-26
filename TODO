@@ -3,6 +3,21 @@ Copyright 1995, 2003, 2004, 2005 Eric L. Smith <eric@brouhaha.com>
 $Id$
 
 
+Needed for next release:
+
+  Create replacement for button widget.
+
+  Finish switching to split images.  This should eliminate the circular
+  dependency complaints from SCons, but verify with latest SCons release.
+
+  Package kml, rom, images in ZIP file (.npc file) (see GSF below).
+
+  Windows installer using NSIS, using .nsi file from Christoph Giesselink,
+  latest in email on 14-Dec-2005.
+
+  KML and images for 22, 27, 29C based on Maciej's images for 21 and 25.
+
+
 Build process:
 
   Create an RPM .spec file.
@@ -13,6 +28,11 @@ Build process:
     "scons dist" should create the nonpareil.spec
     file from a template, so that "rpmbuild -tb" will work with the release
     tarball.
+
+  Change builders for tarballs and zip files to construct directly using
+  Python zip/tar libraries rather than invoking external programs.
+
+  Write a builder to create SRPM from .spec and source tarball.
 
 
 User interface:
@@ -145,6 +165,8 @@ KML:
 
 Assembler:
 
+  Fix "delayed select" and branch targets (Classic, possibly Woodstock)
+
   Clean up memory usage of symbols in CASM
 
   Implement symbol cross-reference in CASM
@@ -165,7 +187,8 @@ Debugger:
 
   Add debugger commands.  Pass dbt_t as arg to commands.
 
-  Create new VTE patch based on feedback from Nalin.
+  Switch to new VTE patch by John Swensen based on feedback from Nalin,
+  Gnome Bugzilla bug #135230.
 
   Change Tcl standard I/O streams to use pty file descriptor.
 
@@ -176,17 +199,12 @@ Better model support:
 
   Add 41C HEPAX support.
 
-  Scan images at uniform scale and without JPEG compression.
-
   Dump actual ROMs:
 
       Classic:
-		HP-35 (early 1818-0006/17/20, late 24/26/28)
-                HP-45 (early 1818-0058?)
                 HP-55
                 HP-65
                 HP-70
-                HP-80
 
       Classic/printing:
 		HP-46
@@ -194,30 +212,24 @@ Better model support:
 		HP 9805A
 
       Woodstock:
-		HP-22
-		HP-27
-		HP-29C
+		early HP-29C
 		HP-67 (0227: early rev not compatible with 1820-1596 AMI ACT)
-                      (0550, 0551: late rev to fix trig bugs)
 
       Topcat:
 		HP-91
 		HP-92
 		HP-95C
 		HP-97 (0225: early rev not compatible with 1820-1596 AMI ACT)
-                      (0267: late ev compatible with 1820-1596 AMI ACT)
-                      (0550, 0551: late rev to fix trig bugs)
-                      (0233, 0229, 0230: common)
 
-      Sting:	HP-10 (decap?)
-		HP-19C
+      Sting:	HP-10 (optical)
+		early HP-19C
 
       Spice:
 		HP-31E
 		HP-33E
 
       Cricket:
-		HP-01 (decap?)
+		HP-01 (optical)
 
   Compare actual HP-55, and HP-80 ROMs to CASM output.
 
