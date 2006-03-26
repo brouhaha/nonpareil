@@ -1,6 +1,6 @@
 /*
 $Id$
-Copyright 2004 Eric L. Smith <eric@brouhaha.com>
+Copyright 2004, 2005, 2006 Eric L. Smith <eric@brouhaha.com>
 
 Nonpareil is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License version 2 as
@@ -114,6 +114,7 @@ rom		return (ROM);
 scaled          return (SCALED);
 scancode	return (SCANCODE);
 segment		return (SEGMENT);
+segments	return (SEGMENTS);
 setflag		return (SETFLAG);
 size		return (SIZE);
 switch		return (SWITCH);

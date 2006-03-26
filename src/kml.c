@@ -1,6 +1,6 @@
 /*
 $Id$
-Copyright 2004 Eric L. Smith <eric@brouhaha.com>
+Copyright 2004, 2005, 2006 Eric L. Smith <eric@brouhaha.com>
 
 Nonpareil is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License version 2 as
@@ -118,10 +118,10 @@ void free_kml (kml_t *kml)
   free (kml->author);
   free (kml->hardware);
   free (kml->model);
-  free (kml->rom);
-  free (kml->rom_listing);
-  free (kml->patch);
-  free (kml->image);
+  free (kml->rom_fn);
+  free (kml->rom_listing_fn);
+  free (kml->patch_fn);
+  free (kml->image_fn);
 
   for (i = 0; i < KML_MAX_GLOBAL_COLOR; i++)
     free (kml->global_color [i]);
@@ -178,9 +178,9 @@ static void print_kml_global (FILE *f, kml_t *kml)
   print_kml_string (f, "author",       kml->author);
   print_kml_string (f, "hardware",     kml->hardware);
   print_kml_string (f, "model",        kml->model);
-  print_kml_string (f, "rom",          kml->rom);
-  print_kml_string (f, "rom_listing",  kml->rom_listing);
-  print_kml_string (f, "image",        kml->image);
+  print_kml_string (f, "rom",          kml->rom_fn);
+  print_kml_string (f, "rom_listing",  kml->rom_listing_fn);
+  print_kml_string (f, "image",        kml->image_fn);
   if (kml->has_transparency)
     fprintf (f, "\ttransparency %d\n", kml->transparency_threshold);
   fprintf (f, "end\n\n");

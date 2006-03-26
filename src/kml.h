@@ -1,6 +1,6 @@
 /*
 $Id$
-Copyright 2004 Eric L. Smith <eric@brouhaha.com>
+Copyright 2004, 2005, 2006 Eric L. Smith <eric@brouhaha.com>
 
 Nonpareil is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License version 2 as
@@ -132,6 +132,7 @@ typedef struct
 typedef struct
 {
   int type;
+  char *image_fn;
   kml_size_t size;
   kml_offset_t offset;
   kml_offset_t down;
@@ -153,17 +154,14 @@ typedef struct kml_scancode_t
 
 typedef enum
   {
+    kml_segment_type_scaled,  // default
     kml_segment_type_line,
     kml_segment_type_rect,
     kml_segment_type_image,
-    kml_segment_type_scaled,
   } kml_segment_type_t;
 
 typedef struct
 {
-  kml_segment_type_t type;
-  kml_size_t   size;
-  kml_offset_t offset;
   kml_color_t  color;  // used for "scaled" segment type, which extracts
                        // only the portion of the image in this color
 } kml_segment_t;
@@ -176,18 +174,18 @@ typedef struct
   char *hardware;
   char *model;
   int  class;
-  char *rom;
-  char *rom_listing;
-  char *patch;
-  char *image;
+  char *rom_fn;
+  char *rom_listing_fn;
+  char *patch_fn;
+  char *image_fn;
   int has_transparency;
   int transparency_threshold;
   kml_color_t *global_color [KML_MAX_GLOBAL_COLOR];
   int debug;
 
-  int has_background_offset;
+  bool has_background_offset;
   kml_offset_t background_offset;
-  int has_background_size;
+  bool has_background_size;
   kml_size_t background_size;
 
   int display_digits;
@@ -195,6 +193,12 @@ typedef struct
   kml_offset_t digit_offset;
 
   segment_bitmap_t character_segment_map [KML_MAX_CHARACTER];
+
+  char *segment_image_fn;             // used for "scaled" segment type
+  bool has_segment_image_offset;
+  kml_offset_t segment_image_offset;  // used for "scaled" segment type
+  bool has_segment_image_size;
+  kml_size_t segment_image_size;      // used for "scaled" segment type
   kml_segment_t *segment [KML_MAX_SEGMENT];
 
   int display_zoom;

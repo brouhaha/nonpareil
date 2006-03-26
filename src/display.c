@@ -40,7 +40,12 @@ struct gui_display_t
   GtkWidget *drawing_area;
   int digit_count;  // how many digits the sim thread asked us to display
   GdkGC *annunciator_gc [KML_MAX_ANNUNCIATOR];
+
+  GdkPixbuf *segment_image_pixbuf;
+  kml_size_t segment_image_size;
+  kml_offset_t segment_image_offset;
   GdkPixbuf *segment_pixbuf [KML_MAX_SEGMENT];
+
   segment_bitmap_t display_segments [KML_MAX_DIGITS];
 };
 
@@ -95,57 +100,20 @@ static void draw_digit (gui_display_t *d,
       if (! ((segments & (1 << i)) && kml->segment [i]))
 	continue;
 
-      switch (kml->segment [i]->type)
-	{
-	case kml_segment_type_line:
-	  gdk_draw_line (widget->window,
-			 fg_gc,
-			 x + kml->segment [i]->offset.x,
-			 y + kml->segment [i]->offset.y,
-			 x + kml->segment [i]->offset.x + kml->segment [i]->size.width - 1,
-			 y + kml->segment [i]->offset.y + kml->segment [i]->size.height - 1);
-	  break;
-	case kml_segment_type_rect:
-	  gdk_draw_rectangle (widget->window,
-			      fg_gc,
-			      TRUE,
-			      x + kml->segment [i]->offset.x,
-			      y + kml->segment [i]->offset.y,
-			      kml->segment [i]->size.width,
-			      kml->segment [i]->size.height);
-	  break;
-	case kml_segment_type_image:
-	  // grab segment images from individual templates in image file
-	  gdk_draw_pixbuf (widget->window,                // drawable
-			   fg_gc,
-			   d->csim->file_pixbuf,          // pixbuf
-			   kml->segment [i]->offset.x,    // src_x
-			   kml->segment [i]->offset.y,    // src_y
-			   x,                             // dest_x
-			   y,                             // dest_y
-			   kml->segment [i]->size.width,  // width
-			   kml->segment [i]->size.height, // height
-			   GDK_RGB_DITHER_NORMAL,         // dither
-			   0,                             // x_dither
-			   0);                            // y_dither
-	  break;
-	case kml_segment_type_scaled:
-	  // pre-rendered images extracted from a single template in
-	  // image file and scaled down
-	  gdk_draw_pixbuf (widget->window,                // drawable
-			   fg_gc,
-			   d->segment_pixbuf [i],         // pixbuf
-			   0,                             // src_x
-			   0,                             // src_y
-			   x,                             // dest_x
-			   y,                             // dest_y
-			   kml->digit_size.width,         // width
-			   kml->digit_size.height,        // height
-			   GDK_RGB_DITHER_NORMAL,         // dither
-			   0,                             // x_dither
-			   0);                            // y_dither
-	  break;
-	}
+      // pre-rendered images extracted from a single template in
+      // image file and scaled down
+      gdk_draw_pixbuf (widget->window,                // drawable
+		       fg_gc,
+		       d->segment_pixbuf [i],         // pixbuf
+		       0,                             // src_x
+		       0,                             // src_y
+		       x,                             // dest_x
+		       y,                             // dest_y
+		       kml->digit_size.width,         // width
+		       kml->digit_size.height,        // height
+		       GDK_RGB_DITHER_NORMAL,         // dither
+		       0,                             // x_dither
+		       0);                            // y_dither
     }
 }
 
@@ -647,11 +615,11 @@ static void init_segment (gui_display_t *d, int i)
   GdkPixbuf *full_size_pixbuf;
   double scale_x, scale_y;
 
-  full_size_pixbuf = copy_subpixbuf_with_alpha (d->csim->file_pixbuf,
-						kml->segment [i]->offset.x,
-						kml->segment [i]->offset.y,
-						kml->segment [i]->size.width,
-						kml->segment [i]->size.height);
+  full_size_pixbuf = copy_subpixbuf_with_alpha (d->segment_image_pixbuf,
+						d->segment_image_offset.x,
+						d->segment_image_offset.y,
+						d->segment_image_size.width,
+						d->segment_image_size.height);
 
 #ifdef SCALED_SEGMENT_DEBUG
   show_pixbuf (d, "full size orig", full_size_pixbuf);
@@ -671,8 +639,8 @@ static void init_segment (gui_display_t *d, int i)
 					  kml->digit_size.width,
 					  kml->digit_size.height);
 
-  scale_x = (kml->digit_size.width * 1.0) / kml->segment [i]->size.width;
-  scale_y = (kml->digit_size.height * 1.0) / kml->segment [i]->size.height;
+  scale_x = (kml->digit_size.width * 1.0) / d->segment_image_size.width;
+  scale_y = (kml->digit_size.height * 1.0) / d->segment_image_size.height;
 
   // Scale the pixbuf down to the final size.
   // Note that GDK_INTERP_HYPER is slow but results in high quality.
@@ -711,9 +679,31 @@ static void init_segments (gui_display_t *d)
 {
   int i;
 
+  d->segment_image_pixbuf = load_pixbuf_from_file (d->csim->kml->segment_image_fn);
+  if (d->csim->kml->has_segment_image_size)
+    {
+      d->segment_image_size.width  = d->csim->kml->segment_image_size.width;
+      d->segment_image_size.height = d->csim->kml->segment_image_size.height;
+    }
+  else
+    {
+      d->segment_image_size.width = gdk_pixbuf_get_width (d->segment_image_pixbuf);
+      d->segment_image_size.height = gdk_pixbuf_get_height (d->segment_image_pixbuf);
+    }
+
+  if (d->csim->kml->has_segment_image_offset)
+    {
+      d->segment_image_offset.x = d->csim->kml->segment_image_offset.x;
+      d->segment_image_offset.y = d->csim->kml->segment_image_offset.y;
+    }
+  else
+    {
+      d->segment_image_offset.x = 0;
+      d->segment_image_offset.y = 0;
+    }
+
   for (i = 0; i < KML_MAX_SEGMENT; i++)
-    if (d->csim->kml->segment [i] &&
-	(d->csim->kml->segment [i]->type == kml_segment_type_scaled))
+    if (d->csim->kml->segment [i])
       init_segment (d, i);
 }
 

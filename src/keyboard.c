@@ -1,6 +1,6 @@
 /*
 $Id$
-Copyright 1995, 2004, 2005 Eric L. Smith <eric@brouhaha.com>
+Copyright 1995, 2004, 2005, 2006 Eric L. Smith <eric@brouhaha.com>
 
 Nonpareil is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License version 2 as
@@ -42,6 +42,7 @@ struct button_info_t
 {
   csim_t *csim;
   kml_button_t *kml_button;
+  kml_size_t size;
   int number;  // 0..KML_MAX_BUTTON-1
   GtkWidget *widget;
   bool pressed;
@@ -150,21 +151,36 @@ static void add_key (csim_t *csim,
   button_info->kml_button = kml_button;
   button_info->number = number;
 
-  button_pixbuf = gdk_pixbuf_new_subpixbuf (csim->background_pixbuf,
-					    kml_button->offset.x - csim->kml->background_offset.x,
-					    kml_button->offset.y - csim->kml->background_offset.y,
-					    kml_button->size.width,
-					    kml_button->size.height);
+  if (kml_button->image_fn)
+    button_pixbuf = load_pixbuf_from_file (kml_button->image_fn);
+  else
+    button_pixbuf = gdk_pixbuf_new_subpixbuf (csim->background_pixbuf,
+					      kml_button->offset.x - csim->kml->background_offset.x,
+					      kml_button->offset.y - csim->kml->background_offset.y,
+					      kml_button->size.width,
+					      kml_button->size.height);
+
+  button_info->size.width  = gdk_pixbuf_get_width  (button_pixbuf);
+  button_info->size.height = gdk_pixbuf_get_height (button_pixbuf);
 
   button_image = gtk_image_new_from_pixbuf (button_pixbuf);
 
+#if 0
+  button_info->widget = gtk_event_box_new ();
+  gtk_container_add (GTK_CONTAINER (button_info->widget), button_image);
+#elif 1
+  button_info->widget = button_image;
+#else
   button_info->widget = gtk_button_new ();
 
   gtk_button_set_relief (GTK_BUTTON (button_info->widget), GTK_RELIEF_NONE);
 
   gtk_widget_set_size_request (button_info->widget,
-			       kml_button->size.width,
-			       kml_button->size.height);
+			       button_info->size.width,
+			       button_info->size.height);
+
+  gtk_container_add (GTK_CONTAINER (button_info->widget), button_image);
+#endif
 
   gtk_fixed_put (GTK_FIXED (csim->fixed),
 		 button_info->widget,
@@ -180,8 +196,6 @@ static void add_key (csim_t *csim,
 		    "released",
 		    G_CALLBACK (& button_widget_released),
 		    (gpointer) button_info);
-
-  gtk_container_add (GTK_CONTAINER (button_info->widget), button_image);
 }
 
 

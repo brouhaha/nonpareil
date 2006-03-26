@@ -55,9 +55,11 @@ int kml_cur_idx2;
 %token OFFSET       ONDOWN       ONUP         OUTIN        PATCH
 %token POSITION     PRESS        PRINT        RECT         RELEASE
 %token RESETFLAG    ROM          SCALED       SCANCODE     SEGMENT
-%token SETFLAG      SIZE         SWITCH       TITLE        TRANSPARENCY
-%token TYPE         VIRTUAL      ZOOM
+%token SEGMENTS     SETFLAG      SIZE         SWITCH       TITLE
+%token TRANSPARENCY TYPE         VIRTUAL      ZOOM
 
+
+%type <string>  image_stmt
 
 %type <intpair> offset_stmt size_stmt down_stmt
 
@@ -117,7 +119,7 @@ global_stmt		:	title_stmt
 			|	rom_stmt
 			|	listing_stmt
 			|	patch_stmt
-			|	image_stmt
+			|	image_stmt { yy_kml->image_fn = newstr ($1); }
 			|	transparency_stmt
 			|	global_color_stmt
 			|	print_stmt
@@ -134,17 +136,11 @@ model_stmt		:	MODEL STRING { yy_kml->model = newstr ($2); } ;
 
 class_stmt		:	CLASS INTEGER { yy_kml->class = $2; } ;
 
-rom_stmt		:	ROM STRING { yy_kml->rom = newstr ($2); } ;
+rom_stmt		:	ROM STRING { yy_kml->rom_fn = newstr ($2); } ;
 
-listing_stmt		:	LISTING STRING { yy_kml->rom_listing = newstr ($2); } ;
+listing_stmt		:	LISTING STRING { yy_kml->rom_listing_fn = newstr ($2); } ;
 
-patch_stmt		:	PATCH STRING { yy_kml->patch = newstr ($2); } ;
-
-image_stmt		:	image_stmt_name STRING { yy_kml->image = newstr ($2); } ;
-
-image_stmt_name		:	IMAGE
-			|	BITMAP /* backward compatability */
-			;
+patch_stmt		:	PATCH STRING { yy_kml->patch_fn = newstr ($2); } ;
 
 transparency_stmt	:	TRANSPARENCY INTEGER
 				{ yy_kml->has_transparency = 1;
@@ -170,6 +166,12 @@ offset_stmt		:	OFFSET INTEGER INTEGER { $$.a = $2; $$.b = $3; } ;
 size_stmt		:	SIZE INTEGER INTEGER { $$.a = $2; $$.b = $3; };
 
 down_stmt		:	DOWN INTEGER INTEGER { $$.a = $2; $$.b = $3; };
+
+image_stmt		:	image_stmt_name STRING { $$ = newstr ($2); } ;
+
+image_stmt_name		:	IMAGE
+			|	BITMAP /* backward compatability */
+			;
 
 /*----------------------------------------------------------------------------
  background section
@@ -213,7 +215,7 @@ display_stmt		:	zoom_stmt
 					      yy_kml->display_offset.y = $1.b; }
 			|	display_color_stmt
 			|	character_stmt
-			|	segment_stmt
+			|	segments_section
 			|	annunciator_section
 			;
 
@@ -266,40 +268,37 @@ segment_list		:	{ $$ = 0; }
 						    $$ = (1 << ($1 - KML_FIRST_SEGMENT)) + $2; }
 			;
 
+segments_section	:	SEGMENTS segments_stmt_list END ;
+
+segments_stmt_list	:	segments_stmt
+			|	segments_stmt segments_stmt_list
+			;
+
+segments_stmt		:	image_stmt { yy_kml->segment_image_fn = $1 }
+			|	offset_stmt
+				{ yy_kml->has_segment_image_offset = 1;
+				  yy_kml->segment_image_offset.x = $1.a;
+				  yy_kml->segment_image_offset.y = $1.b; }
+			|	size_stmt
+				{ yy_kml->has_segment_image_size = 1;
+				  yy_kml->segment_image_size.width = $1.a;
+				  yy_kml->segment_image_size.height = $1.b; }
+			|	segment_stmt
+			;
+
 segment_stmt		:	SEGMENT CHAR
 				{
 				  range_check ($2, KML_FIRST_SEGMENT, KML_FIRST_SEGMENT + KML_MAX_SEGMENT - 1);
 				  kml_cur_idx = $2 - KML_FIRST_SEGMENT;
 				  yy_kml->segment [kml_cur_idx] = alloc (sizeof (kml_segment_t));
 				}
-				segment_type;
-
-segment_type		:	LINE segment_param_list END
-				{ yy_kml->segment [kml_cur_idx]->type =
-				    kml_segment_type_line; }
-			|	RECT segment_param_list END
-				{ yy_kml->segment [kml_cur_idx]->type =
-				    kml_segment_type_rect; }
-			|	IMAGE segment_param_list END
-				{ yy_kml->segment [kml_cur_idx]->type =
-				    kml_segment_type_image; }
-			|	SCALED segment_param_list END
-				{ yy_kml->segment [kml_cur_idx]->type =
-				    kml_segment_type_scaled; }
-
-			;
+				segment_param_list END ;
 
 segment_param_list	:	segment_param
 			|	segment_param segment_param_list
 			;
 
-segment_param		:	size_stmt
-				{ yy_kml->segment [kml_cur_idx]->size.width = $1.a;
-				  yy_kml->segment [kml_cur_idx]->size.height = $1.b; }
-			|	offset_stmt
-				{ yy_kml->segment [kml_cur_idx]->offset.x = $1.a;
-				  yy_kml->segment [kml_cur_idx]->offset.y = $1.b; }
-			|	COLOR INTEGER INTEGER INTEGER
+segment_param		:	COLOR INTEGER INTEGER INTEGER
 				{ yy_kml->segment [kml_cur_idx]->color.r = $2;
 				  yy_kml->segment [kml_cur_idx]->color.g = $3;
 				  yy_kml->segment [kml_cur_idx]->color.b = $4; }
@@ -458,6 +457,8 @@ button_stmt_list	:	button_stmt
 			;
 
 button_stmt		:	type_stmt
+			|	image_stmt
+				{ yy_kml->button [kml_cur_idx]->image_fn = $1; }
 			|	size_stmt
 				{ yy_kml->button [kml_cur_idx]->size.width = $1.a;
 				  yy_kml->button [kml_cur_idx]->size.height = $1.b; }

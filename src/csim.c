@@ -1,6 +1,6 @@
 /*
 $Id$
-Copyright 1995, 2004, 2005 Eric L. Smith <eric@brouhaha.com>
+Copyright 1995, 2004, 2005, 2006 Eric L. Smith <eric@brouhaha.com>
 
 Nonpareil is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License version 2 as
@@ -577,11 +577,28 @@ char *find_kml_file (char *kml_name)
 }
 
 
+GdkPixbuf *load_pixbuf_from_file (char *image_name)
+{
+  GError *error = NULL;
+  char *image_fn;
+  GdkPixbuf *pixbuf;
+
+  image_fn = find_file_in_path_list (image_name, NULL, default_path);
+  if (! image_fn)
+    fatal (2, "can't find image file '%s'\n", image_name);
+  pixbuf = gdk_pixbuf_new_from_file (image_fn, & error);
+  if (! pixbuf)
+    fatal (2, "can't load image '%s'\n", image_fn);
+  free (image_fn);
+  return pixbuf;
+}
+
+
 int main (int argc, char *argv[])
 {
   csim_t *csim;
   char *kml_name = NULL;
-  char *kml_fn, *image_fn, *rom_fn;
+  char *kml_fn, *rom_fn;
 #ifdef HAS_DEBUGGER
   char *listing_fn;
 #endif
@@ -598,7 +615,6 @@ int main (int argc, char *argv[])
 
   GtkWidget *vbox;
 
-  GError *error = NULL;
   GtkWidget *image;
 
   GdkBitmap *image_mask_bitmap = NULL;
@@ -655,10 +671,10 @@ int main (int argc, char *argv[])
       exit (0);
     }
 
-  if (! csim->kml->image)
+  if (! csim->kml->image_fn)
     fatal (2, "No image file spsecified in KML\n");
 
-  if (! csim->kml->rom)
+  if (! csim->kml->rom_fn)
     fatal (2, "No ROM file specified in KML\n");
 
   if (! csim->kml->model)
@@ -670,13 +686,7 @@ int main (int argc, char *argv[])
 
   model_info = get_model_info (model);
 
-  image_fn = find_file_in_path_list (csim->kml->image, NULL, default_path);
-  if (! image_fn)
-    fatal (2, "can't find image file '%s'\n", csim->kml->image);
-
-  csim->file_pixbuf = gdk_pixbuf_new_from_file (image_fn, & error);
-  if (! csim->file_pixbuf)
-    fatal (2, "can't load image '%s'\n", image_fn);
+  csim->file_pixbuf = load_pixbuf_from_file (csim->kml->image_fn);
 
   if (! csim->kml->has_background_size)
     {
@@ -807,19 +817,19 @@ int main (int argc, char *argv[])
 		    GTK_SIGNAL_FUNC (main_window_destroy_callback),
 		    csim);
 
-  rom_fn = find_file_in_path_list (csim->kml->rom, NULL, default_path);
+  rom_fn = find_file_in_path_list (csim->kml->rom_fn, NULL, default_path);
   if (! rom_fn)
-    fatal (2, "can't find ROM file '%s'\n", csim->kml->rom);
+    fatal (2, "can't find ROM file '%s'\n", csim->kml->rom_fn);
 
   if (! sim_read_object_file (csim->sim, rom_fn))
     fatal (2, "can't read object file '%s'\n", rom_fn);
 
 #ifdef HAS_DEBUGGER
-  if (csim->kml->rom_listing)
+  if (csim->kml->rom_listing_fn)
     {
-      listing_fn = find_file_in_path_list (csim->kml->rom_listing, NULL, default_path);
+      listing_fn = find_file_in_path_list (csim->kml->rom_listing_fn, NULL, default_path);
       if (! listing_fn)
-	warning ("can't find ROM listing file '%s'\n", csim->kml->rom_listing);
+	warning ("can't find ROM listing file '%s'\n", csim->kml->rom_listing_fn);
       else if (! sim_read_listing_file (csim->sim, listing_fn))
 	warning ("can't read ROM listing file '%s'\n", listing_fn);
     }

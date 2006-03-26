@@ -53,6 +53,11 @@ typedef struct
 } csim_t;
 
 
+// General utility functions in csim.c:
+
+GdkPixbuf *load_pixbuf_from_file (char *image_name);
+
+
 // Display:
 
 gui_display_t *gui_display_init (csim_t *csim);

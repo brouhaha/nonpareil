@@ -23,18 +23,23 @@ global
 	hardware "Voyager"
 	model "16c"
 	rom "16c.obj"
-	image "16c.png"
+	image "16c_bkg.png"
 	color 0 137 0 6	  # background color, used when transparency is off
-	# transparency 128
+	transparency 128
 end
 
 background
 	offset 0 0
-	size 558 350
+	size 574 366
 end
 
+# flag "f_anun"
+# flag "g_anun"
+
+# var "shiftmode"   # 0 for no shift, 1 for "f" shift, 2 for "g" shift
+
 display
-	offset 73 29
+	offset 81 37
 	size 305 55
 
 	color 0  165 175 145  # background
@@ -43,8 +48,29 @@ display
 
 	annunciator  1  size  5  7 offset  13 42  end  # * (battery low)
 	annunciator  2  size 23  7 offset  45 42  end  # USER
-	annunciator  3  size  5  7 offset  88 42  end  # f
-	annunciator  4  size  6  8 offset 105 44  end  # g
+
+	annunciator  3  size  5  7 offset  88 42       # f
+#            ondown
+#                setflag "f_anun"
+#		setvar "shift_mode" 1
+#            end
+#            onup
+#                resetflag "f_anun"
+#		setvar "shift_mode" 0
+#            end
+        end
+
+	annunciator  4  size  6  8 offset 105 44       # g
+#            ondown
+#                setflag "g_anun"
+#		setvar "shift_mode" 2
+#            end
+#            onup
+#                resetflag "g_anun"
+#		setvar "shift_mode" 0
+#            end
+        end
+
 	annunciator  5  size 27  7 offset 124 42  end  # BEGIN
 	annunciator  6  size  5  7 offset 181 42  end  # G
 	annunciator  7  size 17  7 offset 187 42  end  # RAD
@@ -57,77 +83,63 @@ display
 		offset 5 4
 	end
 
-	segment 'a' scaled offset 560 2 size 157 182
-                           color 255   0   0  end       # red
-
-	segment 'b' scaled offset 560 2 size 157 182
-                           color   0 255   0  end       # green
-
-	segment 'c' scaled offset 560 2 size 157 182
-                           color   0   0 255  end       # blue
-
-	segment 'd' scaled offset 560 2 size 157 182
-                           color 255 255   0  end       # yellow
-
-	segment 'e' scaled offset 560 2 size 157 182
-                           color 255   0 255  end       #
-
-	segment 'f' scaled offset 560 2 size 157 182
-                           color   0 255 255  end       #
-
-	segment 'g' scaled offset 560 2 size 157 182
-                           color 255 128   0  end       # orange
-
-	segment 'h' scaled offset 560 2 size 157 182    # dot
-                           color 255   0 128  end       # pink
-
-	segment 'i' scaled offset 560 2 size 157 182    # comma
-                           color 128   0   0  end       # dark red
+	segments
+		image "16c_segs.png"
+		segment 'a'  color 255   0   0  end       # red
+		segment 'b'  color   0 255   0  end       # green
+		segment 'c'  color   0   0 255  end       # blue
+		segment 'd'  color 255 255   0  end       # yellow
+		segment 'e'  color 255   0 255  end       #
+		segment 'f'  color   0 255 255  end       #
+		segment 'g'  color 255 128   0  end       # orange
+		segment 'h'  color 255   0 128  end       # pink (dot)
+		segment 'i'  color 128   0   0  end       # dark red (comma)
+	end
 
 end # display
 
-button 11  type 0  size 38 32  offset  18 130  down 2 8 keycode 0x13  end
-button 12  type 0  size 38 32  offset  72 130  down 2 8 keycode 0x33  end
-button 13  type 0  size 38 32  offset 126 130  down 2 8 keycode 0x73  end
-button 14  type 0  size 38 32  offset 180 130  down 2 8 keycode 0xc3  end
-button 15  type 0  size 38 32  offset 234 130  down 2 8 keycode 0x83  end
-button 16  type 0  size 38 32  offset 288 130  down 2 8 keycode 0x82  end
-button 17  type 0  size 38 32  offset 342 130  down 2 8 keycode 0xc2  end
-button 18  type 0  size 38 32  offset 396 130  down 2 8 keycode 0x72  end
-button 19  type 0  size 38 32  offset 450 130  down 2 8 keycode 0x32  end
-button 10  type 0  size 38 32  offset 504 130  down 2 8 keycode 0x12  end
+button 11  image "16c_b11.png"  offset  26 138  keycode 0x13  end
+button 12  image "16c_b12.png"  offset  80 138  keycode 0x33  end
+button 13  image "16c_b13.png"  offset 134 138  keycode 0x73  end
+button 14  image "16c_b14.png"  offset 188 138  keycode 0xc3  end
+button 15  image "16c_b15.png"  offset 242 138  keycode 0x83  end
+button 16  image "16c_b16.png"  offset 296 138  keycode 0x82  end
+button 17  image "16c_b17.png"  offset 350 138  keycode 0xc2  end
+button 18  image "16c_b18.png"  offset 404 138  keycode 0x72  end
+button 19  image "16c_b19.png"  offset 458 138  keycode 0x32  end
+button 10  image "16c_b10.png"  offset 512 138  keycode 0x12  end
 
-button 21  type 0  size 38 32  offset  18 186  down 2 8 keycode 0x10  end
-button 22  type 0  size 38 32  offset  72 186  down 2 8 keycode 0x30  end
-button 23  type 0  size 38 32  offset 126 186  down 2 8 keycode 0x70  end
-button 24  type 0  size 38 32  offset 180 186  down 2 8 keycode 0xc0  end
-button 25  type 0  size 38 32  offset 234 186  down 2 8 keycode 0x80  end
-button 26  type 0  size 38 32  offset 288 186  down 2 8 keycode 0x87  end
-button 27  type 0  size 38 32  offset 342 186  down 2 8 keycode 0xc7  end
-button 28  type 0  size 38 32  offset 396 186  down 2 8 keycode 0x77  end
-button 29  type 0  size 38 32  offset 450 186  down 2 8 keycode 0x37  end
-button 20  type 0  size 38 32  offset 504 186  down 2 8 keycode 0x17  end
+button 21  image "16c_b21.png"  offset  26 194  keycode 0x10  end
+button 22  image "16c_b22.png"  offset  80 194  keycode 0x30  end
+button 23  image "16c_b23.png"  offset 134 194  keycode 0x70  end
+button 24  image "16c_b24.png"  offset 188 194  keycode 0xc0  end
+button 25  image "16c_b25.png"  offset 242 194  keycode 0x80  end
+button 26  image "16c_b26.png"  offset 296 194  keycode 0x87  end
+button 27  image "16c_b27.png"  offset 350 194  keycode 0xc7  end
+button 28  image "16c_b28.png"  offset 404 194  keycode 0x77  end
+button 29  image "16c_b29.png"  offset 458 194  keycode 0x37  end
+button 20  image "16c_b20.png"  offset 512 194  keycode 0x17  end
 
-button 31  type 0  size 38 32  offset  18 242  down 2 8 keycode 0x11  end
-button 32  type 0  size 38 32  offset  72 242  down 2 8 keycode 0x31  end
-button 33  type 0  size 38 32  offset 126 242  down 2 8 keycode 0x71  end
-button 34  type 0  size 38 32  offset 180 242  down 2 8 keycode 0xc1  end
-button 35  type 0  size 38 32  offset 234 242  down 2 8 keycode 0x81  end
-button 36  type 0  size 38 88  offset 288 242  down 2 8 keycode 0x84  end
-button 37  type 0  size 38 32  offset 342 242  down 2 8 keycode 0xc4  end
-button 38  type 0  size 38 32  offset 396 242  down 2 8 keycode 0x74  end
-button 39  type 0  size 38 32  offset 450 242  down 2 8 keycode 0x34  end
-button 30  type 0  size 38 32  offset 504 242  down 2 8 keycode 0x14  end
+button 31  image "16c_b31.png"  offset  26 250  keycode 0x11  end
+button 32  image "16c_b32.png"  offset  80 250  keycode 0x31  end
+button 33  image "16c_b33.png"  offset 134 250  keycode 0x71  end
+button 34  image "16c_b34.png"  offset 188 250  keycode 0xc1  end
+button 35  image "16c_b35.png"  offset 242 250  keycode 0x81  end
+button 36  image "16c_b36.png"  offset 296 250  keycode 0x84  end
+button 37  image "16c_b37.png"  offset 350 250  keycode 0xc4  end
+button 38  image "16c_b38.png"  offset 404 250  keycode 0x74  end
+button 39  image "16c_b39.png"  offset 458 250  keycode 0x34  end
+button 30  image "16c_b30.png"  offset 512 250  keycode 0x14  end
 
-button 41  type 0  size 38 32  offset  18 298  down 2 8 keycode 0x18  end
-button 42  type 0  size 38 32  offset  72 298  down 2 8 keycode 0x38  end
-button 43  type 0  size 38 32  offset 126 298  down 2 8 keycode 0x78  end
-button 44  type 0  size 38 32  offset 180 298  down 2 8 keycode 0xc8  end
-button 45  type 0  size 38 32  offset 234 298  down 2 8 keycode 0x88  end
-button 47  type 0  size 38 32  offset 342 298  down 2 8 keycode 0xc5  end
-button 48  type 0  size 38 32  offset 396 298  down 2 8 keycode 0x75  end
-button 49  type 0  size 38 32  offset 450 298  down 2 8 keycode 0x35  end
-button 40  type 0  size 38 32  offset 504 298  down 2 8 keycode 0x15  end
+button 41  image "16c_b41.png"  offset  26 306  keycode 0x18  end
+button 42  image "16c_b42.png"  offset  80 306  keycode 0x38  end
+button 43  image "16c_b43.png"  offset 134 306  keycode 0x78  end
+button 44  image "16c_b44.png"  offset 188 306  keycode 0xc8  end
+button 45  image "16c_b45.png"  offset 242 306  keycode 0x88  end
+button 47  image "16c_b47.png"  offset 350 306  keycode 0xc5  end
+button 48  image "16c_b48.png"  offset 404 306  keycode 0x75  end
+button 49  image "16c_b49.png"  offset 458 306  keycode 0x35  end
+button 40  image "16c_b40.png"  offset 512 306  keycode 0x15  end
 
 # main keyboard:
 scancode "0"            map 0 47 end  # 0

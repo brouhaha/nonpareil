@@ -295,10 +295,10 @@ static void init_segment (int i)
   double scale_x, scale_y;
 
   full_size_pixbuf = copy_subpixbuf_with_alpha (file_pixbuf,
-						kml->segment [i]->offset.x,
-						kml->segment [i]->offset.y,
-						kml->segment [i]->size.width,
-						kml->segment [i]->size.height);
+						kml->segment_image_offset.x,
+						kml->segment_image_offset.y,
+						kml->segment_image_size.width,
+						kml->segment_image_size.height);
 
 #ifdef SCALED_SEGMENT_DEBUG
   show_pixbuf (d, "full size orig", full_size_pixbuf);
@@ -318,8 +318,8 @@ static void init_segment (int i)
 				       kml->digit_size.width,
 				       kml->digit_size.height);
 
-  scale_x = (kml->digit_size.width * 1.0) / kml->segment [i]->size.width;
-  scale_y = (kml->digit_size.height * 1.0) / kml->segment [i]->size.height;
+  scale_x = (kml->digit_size.width * 1.0) / kml->segment_image_size.width;
+  scale_y = (kml->digit_size.height * 1.0) / kml->segment_image_size.height;
 
   // Scale the pixbuf down to the final size.
   // Note that GDK_INTERP_HYPER is slow but results in high quality.
@@ -359,7 +359,7 @@ static void init_segments (void)
   int i;
 
   for (i = 0; i < KML_MAX_SEGMENT; i++)
-    if (kml->segment [i]->type == kml_segment_type_scaled)
+    /* if (kml->segment [i]->type == kml_segment_type_scaled) */
       init_segment (i);
 }
 
@@ -473,12 +473,12 @@ int main (int argc, char *argv[])
   if (y_size)
     kml->digit_size.height = y_size;
 
-  if (! kml->image)
+  if (! kml->image_fn)
     fatal (2, "No image file spsecified in KML\n");
 
-  image_fn = find_file_in_path_list (kml->image, NULL, default_path);
+  image_fn = find_file_in_path_list (kml->image_fn, NULL, default_path);
   if (! image_fn)
-    fatal (2, "can't find image file '%s'\n", kml->image);
+    fatal (2, "can't find image file '%s'\n", kml->image_fn);
 
   file_pixbuf = gdk_pixbuf_new_from_file (image_fn, & error);
   if (! file_pixbuf)
