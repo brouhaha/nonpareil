@@ -34,7 +34,8 @@ else:
 	env.Append (CCFLAGS = ['-O2'])
 
 if env ['target'] == 'windows':
-	env.Replace (CC = '/usr/local/mingw/bin/i586-mingw32-gcc')
+	# env.Replace (CC = '/usr/local/mingw/bin/i586-mingw32-gcc')
+	env.Replace (CC = '/usr/local/mingw/bin/i386-mingw32msvc-gcc')
 	env.Append (CCFLAGS = ['-mms-bitfields'])
 
 common_srcs = Split("""util.c arch.c""")
@@ -71,7 +72,7 @@ nonpareil_srcs = Split ("""proc.c kmll.l kmly.y kml.c
                            proc_woodstock.c dis_woodstock.c
                            proc_nut.c dis_nut.c coconut_lcd.c voyager_lcd.c""")
 
-packages = "gtk+-2.0 gdk-2.0 gdk-pixbuf-2.0 glib-2.0 gthread-2.0"
+packages = "gtk+-2.0 gdk-2.0 gdk-pixbuf-2.0 glib-2.0 gthread-2.0 libgsf-1"
 if env ['has_debugger_cli']:
     packages += ' vte'
 

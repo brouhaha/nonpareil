@@ -28,6 +28,10 @@ MA 02111, USA.
 #include <string.h>
 #include <gdk/gdk.h>
 #include <gtk/gtk.h>
+#include <gsf/gsf-input-stdio.h>
+#include <gsf/gsf-infile.h>
+#include <gsf/gsf-infile-zip.h>
+#include <gsf/gsf-input-textline.h>
 
 #include "util.h"
 #include "display.h"
@@ -580,6 +584,59 @@ gboolean on_move_window (GtkWidget *widget, GdkEventButton *event)
 }
 
 
+GsfInfile *open_zip_file (char *zip_fn)
+{
+  GsfInput *zip_input;
+  GsfInfile *zip_infile;
+  GError *err = NULL;
+
+  zip_input = gsf_input_stdio_new (zip_fn, & err);
+  if (! zip_input)
+    fatal (2, "can't open ZIP file: error %s\n", err->message);
+
+  zip_infile = gsf_infile_zip_new (zip_input, & err);
+  if (! zip_infile)
+    fatal (2, "Not a ZIP file: error %s\n", err->message);
+
+  g_object_unref (G_OBJECT (zip_input));
+
+  return (zip_infile);
+}
+
+
+void close_zip_file (GsfInfile *infile)
+{
+  g_object_unref (G_OBJECT (infile));
+}
+
+
+void dump_kml_from_zip (GsfInfile *zip_infile, char *kml_fn)
+{
+  GsfInput *kml_input;
+  GsfInputTextline *kml_textline;
+  unsigned char *res;
+
+  kml_input = gsf_infile_child_by_name (zip_infile, kml_fn);
+  if (! kml_input)
+    fatal (2, "Can't open KML in ZIP file\n");
+
+  kml_textline = (GsfInputTextline *) gsf_input_textline_new (kml_input);
+  if (! kml_textline)
+    fatal (2, "can't read KML from ZIP file as text\n");
+
+  do
+    {
+      res = gsf_input_textline_ascii_gets (kml_textline);
+      if (res)
+	printf ("%s\n", res);
+    }
+  while (res);
+
+  g_object_unref (G_OBJECT (kml_textline));
+  g_object_unref (G_OBJECT (kml_input));
+}
+
+
 #ifndef PATH_MAX
 #define PATH_MAX 256
 #endif
@@ -587,7 +644,9 @@ gboolean on_move_window (GtkWidget *widget, GdkEventButton *event)
 
 int main (int argc, char *argv[])
 {
+  char *zip_fn = NULL;
   char *kml_fn = NULL;
+  GsfInfile *zip_infile;
 
   gboolean shape = SHAPE_DEFAULT;
   gboolean kml_dump = FALSE;
@@ -634,22 +693,36 @@ int main (int argc, char *argv[])
 	  else
 	    fatal (1, "unrecognized option '%s'\n", argv [0]);
 	}
-      else if (kml_fn)
-	fatal (1, "only one KML file may be specified\n");
+      else if (zip_fn)
+	fatal (1, "only one ZIP file may be specified\n");
       else
-	kml_fn = argv [0];
+	zip_fn = argv [0];
     }
 
-  if (! kml_fn)
+  if (! zip_fn)
     {
       strncpy (buf, progname, sizeof (buf));
-      strncat (buf, ".kml", sizeof (buf));
-      kml_fn = & buf [0];
+      strncat (buf, ".zip", sizeof (buf));
+      zip_fn = & buf [0];
     }
 
+  gsf_init ();
+
+  zip_infile = open_zip_file (zip_fn);
+
+  kml_fn = "hp33c.kml";
+
+  dump_kml_from_zip (zip_infile, kml_fn);
+
+  close_zip_file (zip_infile);
+
+  exit (0);
+
+#if 0
   kml = read_kml_file (kml_fn);
   if (! kml)
     fatal (2, "can't read KML file '%s'\n", kml_fn);
+#endif
 
   if (kml_dump)
     {

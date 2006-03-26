@@ -209,6 +209,10 @@ typedef struct
 
 kml_t *read_kml_file (char *fn);
 
+#ifdef GSF_H
+kml_t *read_kml_from_gsf_input (GsfInput *input);
+#endif // GSF_H
+
 void free_kml (kml_t *kml);
 
 void print_kml (FILE *f, kml_t *kml);

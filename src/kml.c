@@ -25,6 +25,7 @@ MA 02111, USA.
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <gsf/gsf-input.h>
 
 #include "util.h"
 #include "display.h"
@@ -88,6 +89,41 @@ kml_t *read_kml_file (char *fn)
   yyparse ();
   
   fclose (yyin);
+
+  return (kml);
+}
+
+
+kml_t *read_kml_from_gsf_input (GsfInput *input)
+{
+#if 0
+  GsfInputTextline *textline;
+#endif
+  kml_t *kml;
+  extern kml_t *yy_kml;
+
+#if 0
+  textline = (GsfInputTextline *) gsf_input_textline_new (input);
+  if (! textline)
+    reeturn (NULL);
+#endif
+
+#if 0
+  // how do we hook up flex to a GsfInput?
+  yyin = fopen (fn, "r");
+  if (! yyin)
+    return (NULL);
+#endif
+
+  kml = alloc (sizeof (kml_t));
+
+  yy_kml = kml;
+
+  kml_lineno = 1;
+
+  yyparse ();
+  
+  g_object_unref (G_OBJECT (textline));
 
   return (kml);
 }

@@ -9,13 +9,13 @@ Build process:
 
   Create an RPM .spec file.
 
-  Create an NSIS instller script for Windows.
-
 
 User interface:
 
   Add ability to read kml, image, microcode from zip file.
       GSF: http://www.gnome.org/projects/libgsf/
+          examples in CVS: http://cvs.gnome.org/viewcvs/libgsf/tests/
+	  use a GdkPixbufLoader instead of gdk_pixbuf_new_from_file().
       On Windows, build ZIP into .EXE similar to a self-extractor?
 
   Display segments from image file rather than as line segments and
@@ -129,21 +129,3 @@ Better model support:
 
   Add HP-65 microinstructions for program memory access.
 
-
-Ports:
-
-  Windows
-    Cross-develompent tools:
-      MinGW cross-compiler:  http://www.mingw.org/
-
-    Toolkits:
-      GTK+ for Windows:      http://www.gimp.org/~tml/gimp/win32/
-      GTK+ for Windows runtime installer:  http://members.lycos.co.uk/alexv6/
-
-    Installers:
-      NSIS:        http://nsis.sourceforge.net/
-      MAKEMSI:     http://www.labyrinth.net.au/~dbareis/makemsi.htm
-      WiX:         http://sourceforge.net/projects/wix/
-
-  MacOS X
-    http://www.macgimp.org/index.php?topic=gtk

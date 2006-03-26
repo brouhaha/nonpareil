@@ -1,0 +1,30 @@
+TODO-ports list for Nonpareil
+Copyright 2003, 2004, 2005 Eric L. Smith <eric@brouhaha.com>
+$Id$
+
+Build process:
+
+  Create an NSIS instller script for Windows.
+
+
+Ports:
+
+  Windows
+    Cross-develompent tools:
+      MinGW cross-compiler:  http://www.mingw.org/
+      http://members.lycos.co.uk/alexv6/Cross_mingw_building_HOWTO.html
+
+    Toolkits:
+      GTK+ for Windows:      http://www.gimp.org/~tml/gimp/win32/
+      GTK+ for Windows runtime installer:  http://members.lycos.co.uk/alexv6/
+
+      Other libraries needed for Windows:  http://gnuwin32.sourceforge.net/
+	(freetype, jpeg, libpng, tiff)
+
+    Installers:
+      NSIS:        http://nsis.sourceforge.net/
+      MAKEMSI:     http://www.labyrinth.net.au/~dbareis/makemsi.htm
+      WiX:         http://sourceforge.net/projects/wix/
+
+  MacOS X
+    http://www.macgimp.org/index.php?topic=gtk
