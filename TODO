@@ -61,7 +61,7 @@ User interface:
 
   Visual improvements
       slide switches
-      keyboard button hilighting
+      keyboard button hilighting - new widget?
 
   Implement edit menu commands:
       Edit - Copy, Paste
@@ -105,7 +105,7 @@ User interface:
 Internals:
 
   Display improvements:
-     Change Classic and Woodstock to use display "chip".
+     Change Classic and Woodstock to use a display "chip".
  
      Eliminate dedicated display callback and initialization args to
      sim_init() by using generic chip interface infrastructure.
@@ -131,9 +131,9 @@ Internals:
 
   Split proc.c into separate GUI thread and simulator thread portions.
 
-  Create new XML-based ROM file format.
-
   Complete the support for -41C .mod files
+
+  Create new XML-based ROM file format.
 
   New memory API.
 
@@ -167,10 +167,17 @@ Assembler:
 
   Fix "delayed select" and branch targets (Classic, possibly Woodstock)
 
-  Clean up memory usage of symbols in CASM
+  Clean up memory usage of symbols in CASM.  As of 21-Apr-2006, I don't
+  remember exactly what this means, but maybe it will come back to me
+  if I study the code.
 
   Implement symbol cross-reference in CASM
 
+  Allow keywords to be used as labels, by making putting a "label"
+  production in the parser which can be either an identifier or any
+  keyword.  Might cause ambiguities in the parser.
+
+  Add Nut support.
 
 Disassembler:
 
@@ -183,7 +190,13 @@ Disassembler:
 Debugger:
 
   Make the register and memory windows update, and make changes get
-  written back.  Disable editing (and grey out?) while running.
+  written back.
+    * Have the GUI track what registers and memory locs are actually
+      visible, and ask the sim core for async notifications when those
+      locations change.
+    * Display changed values highlighted (in red?).  Don't need to
+      determine whether non-visible locations have changed.
+    * ? Disable editing (and grey out?) while running.
 
   Add debugger commands.  Pass dbt_t as arg to commands.
 
