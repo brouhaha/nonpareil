@@ -122,9 +122,36 @@ static chip_detail_t woodstock_cpu_chip_detail =
 };
 
 
-static void print_reg (char *label, reg_t reg);
+static void print_reg (char *label, reg_t reg, char *trailer);
 
 static void display_setup (sim_t *sim);
+
+
+// $$$ to match DIYRPN trace output
+static void woodstock_pre_trace (sim_t *sim, int opcode)
+{
+  act_reg_t *act_reg = get_chip_data (sim->first_chip);
+
+  printf ("%06o: %06o\n", act_reg->prev_pc, opcode);
+}
+
+
+// $$$ to match DIYRPN trace output
+static void woodstock_post_trace (sim_t *sim)
+{
+  act_reg_t *act_reg = get_chip_data (sim->first_chip);
+  int i;
+
+  print_reg ("A:", act_reg->a, " ");
+  print_reg ("B:", act_reg->b, " ");
+  print_reg ("C:", act_reg->c, "\n");
+  print_reg ("M:", act_reg->m1, " ");
+  print_reg ("N:", act_reg->m2, " ");
+  printf ("P:%X F:%X C:%X S:", act_reg->p, act_reg->f, act_reg->carry);
+  for (i = 0; i < SSIZE; i++)
+    printf ("%d",act_reg->s [i]);
+  printf ("\n");
+}
 
 
 static inline uint8_t get_effective_bank (act_reg_t *act_reg, rom_addr_t addr)
@@ -1159,11 +1186,11 @@ static void op_crc_unknown (sim_t *sim,
   if (opcode != 00560)
     {
       printf ("unknown CRC opcode %04o at %05o\n", opcode, act_reg->prev_pc);
-      print_reg ("c:  ", & act_reg->c);
+      print_reg ("c:  ", & act_reg->c, "\n");
     }
 }
 #else
-static void op_crc_unknown (sim_t *sim,
+static void op_crc_unknown (sim_t *sim UNUSED,
 			    int opcode UNUSED)
 {
 }
@@ -1429,13 +1456,14 @@ static void spice_display_scan (sim_t *sim)
 }
 
 
-static void print_reg (char *label, reg_t reg)
+static void print_reg (char *label, reg_t reg, char *trailer)
 {
   int i;
   printf ("%s", label);
   for (i = WSIZE - 1; i >= 0; i--)
-    printf ("%x", reg [i]);
-  printf ("\n");
+    printf ("%X", reg [i]);
+  if (trailer)
+    printf ("%s", trailer);
 }
 
 static void woodstock_print_state (sim_t *sim)
@@ -1454,11 +1482,11 @@ static void woodstock_print_state (sim_t *sim)
     if (act_reg->s [i])
       printf (" %d", i);
   printf ("\n");
-  print_reg ("a:  ", act_reg->a);
-  print_reg ("b:  ", act_reg->b);
-  print_reg ("c:  ", act_reg->c);
-  print_reg ("m1: ", act_reg->m1);
-  print_reg ("m2: ", act_reg->m2);
+  print_reg ("a:  ", act_reg->a, "\n");
+  print_reg ("b:  ", act_reg->b, "\n");
+  print_reg ("c:  ", act_reg->c, "\n");
+  print_reg ("m1: ", act_reg->m1, "\n");
+  print_reg ("m2: ", act_reg->m2, "\n");
 
   if (sim->source [mapped_addr])
     printf ("%s\n", sim->source [mapped_addr]);
@@ -1486,6 +1514,9 @@ static bool woodstock_execute_cycle (sim_t *sim)
   act_reg->prev_pc = act_reg->pc;
   opcode = woodstock_get_ucode (act_reg, act_reg->pc);
 
+  if (sim->debug_flags & (1 << SIM_DEBUG_TRACE))
+    woodstock_pre_trace (sim, opcode);  // $$$ to match DIYRPN trace output
+
   if ((sim->platform != PLATFORM_SPICE) &&
       (act_reg->pc < 02000) &&
       (act_reg->bank == 1))
@@ -1497,7 +1528,6 @@ static bool woodstock_execute_cycle (sim_t *sim)
 	act_reg->bank = 0;
      }
 
-#ifdef HAS_DEBUGGER
   if ((sim->debug_flags & (1 << SIM_DEBUG_KEY_TRACE)) &&
       (act_reg->inst_state == norm))
     {
@@ -1507,12 +1537,13 @@ static bool woodstock_execute_cycle (sim_t *sim)
 	sim->debug_flags &= ~ (1 << SIM_DEBUG_TRACE);
     }
 
+#if 0
   if ((sim->debug_flags & (1 << SIM_DEBUG_TRACE)) &&
       (act_reg->inst_state != selftest))
     {
       woodstock_print_state (sim);
     }
-#endif /* HAS_DEBUGGER */
+#endif
 
   prev_inst_state = act_reg->inst_state;
   if (act_reg->inst_state == branch)
@@ -1552,6 +1583,9 @@ static bool woodstock_execute_cycle (sim_t *sim)
   sim->cycle_count++;
 
   act_reg->display_scan_fn (sim);
+
+  if (sim->debug_flags & (1 << SIM_DEBUG_TRACE))
+    woodstock_post_trace (sim);  // $$$ to match DIYRPN trace output
 
   return (true);  /* never sleeps */
 }
