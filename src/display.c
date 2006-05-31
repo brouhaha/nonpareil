@@ -1,6 +1,6 @@
 /*
 $Id: csim.c 417 2004-06-15 07:34:30Z eric $
-Copyright 1995, 2004, 2005 Eric L. Smith <eric@brouhaha.com>
+Copyright 1995, 2004, 2005, 2006 Eric L. Smith <eric@brouhaha.com>
 
 Nonpareil is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License version 2 as
@@ -40,6 +40,8 @@ struct gui_display_t
   GtkWidget *drawing_area;
   int digit_count;  // how many digits the sim thread asked us to display
   GdkGC *annunciator_gc [KML_MAX_ANNUNCIATOR];
+  GdkColor display_fg_color;
+  GdkColor display_bg_color;
 
   GdkPixbuf *segment_image_pixbuf;
   kml_size_t segment_image_size;
@@ -562,9 +564,10 @@ static void grey_to_alpha (uint8_t *r,
 			   uint8_t *g,
 			   uint8_t *b,
 			   uint8_t *a,
-			   void *data UNUSED)
+			   void *data)
 {
   uint16_t level;
+  gui_display_t *d = (gui_display_t *) data;
 
   // Compute luminance value by averaging R, G, and B (not ideal!).
   level = (*r);
@@ -572,10 +575,10 @@ static void grey_to_alpha (uint8_t *r,
   level += (*g);
   level /= 3;
 
-  // Turn luminance into opacity of black.
-  (*r) = 0;
-  (*b) = 0;
-  (*g) = 0;
+  // Turn luminance into opacity of display segment color.
+  (*r) = d->display_fg_color.red;
+  (*b) = d->display_fg_color.green;
+  (*g) = d->display_fg_color.blue;
   (*a) = 255 - level;
 }
 
@@ -665,7 +668,7 @@ static void init_segment (gui_display_t *d, int i)
   // Convert pixbuf grey level to alpha
   pixbuf_map_all_pixels (d->segment_pixbuf [i],
 			 grey_to_alpha,
-			 NULL);
+			 d);
 
 #ifdef SCALED_SEGMENT_DEBUG
   show_pixbuf (d, "mapped", d->segment_pixbuf [i]);
@@ -746,7 +749,6 @@ gui_display_t * gui_display_init (csim_t *csim)
   gui_display_t *d;
   GdkColormap *colormap;
   GdkColor image_bg_color;
-  GdkColor display_fg_color, display_bg_color;
 
   d = alloc (sizeof (gui_display_t));
 
@@ -760,17 +762,17 @@ gui_display_t * gui_display_init (csim_t *csim)
 
   gtk_widget_modify_bg (csim->event_box, GTK_STATE_NORMAL, & image_bg_color);
 
-  setup_color (colormap, csim->kml->display_color [0], & display_bg_color,
+  setup_color (colormap, csim->kml->display_color [0], & d->display_bg_color,
 	       "display background", 0x0000, 0x0000, 0x0000);
 
-  setup_color (colormap, csim->kml->display_color [2], & display_fg_color,
+  setup_color (colormap, csim->kml->display_color [2], & d->display_fg_color,
 	       "display foreground", 0xffff, 0x1111, 0x1111);
 
   gtk_widget_set_size_request (d->drawing_area,
 			       csim->kml->display_size.width,
 			       csim->kml->display_size.height);
-  gtk_widget_modify_fg (d->drawing_area, GTK_STATE_NORMAL, & display_fg_color);
-  gtk_widget_modify_bg (d->drawing_area, GTK_STATE_NORMAL, & display_bg_color);
+  gtk_widget_modify_fg (d->drawing_area, GTK_STATE_NORMAL, & d->display_fg_color);
+  gtk_widget_modify_bg (d->drawing_area, GTK_STATE_NORMAL, & d->display_bg_color);
   gtk_fixed_put (GTK_FIXED (csim->fixed),
 		 d->drawing_area,
 		 csim->kml->display_offset.x - csim->kml->background_offset.x,
