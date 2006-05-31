@@ -1,6 +1,6 @@
 # SConscript for Nonpareil
 # $Id$
-# Copyright 2004, 2005 Eric L. Smith <eric@brouhaha.com>
+# Copyright 2004, 2005, 2006 Eric L. Smith <eric@brouhaha.com>
 
 # Nonpareil is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License version 2 as
@@ -28,7 +28,8 @@ unmod_images = Split ("""35.png 45.png 55.png 80.png
                          21.png 25.png
                          67.png
                          32e.png 33c.png 34c.png 37e.png 38c.png
-                         41cv.png""")
+                         41cv.png
+                         led_segments.png led_segments_template.png""")
 
 voyager_base_images = Split ("""11c_base.png 12c_base.png 15c_base.png 16c_base.png""")
 
