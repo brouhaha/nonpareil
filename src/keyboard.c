@@ -168,7 +168,7 @@ static void add_key (csim_t *csim,
 #if 0
   button_info->widget = gtk_event_box_new ();
   gtk_container_add (GTK_CONTAINER (button_info->widget), button_image);
-#elif 1
+#elif 0
   button_info->widget = button_image;
 #else
   button_info->widget = gtk_button_new ();
