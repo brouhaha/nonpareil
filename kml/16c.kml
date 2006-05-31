@@ -1,5 +1,5 @@
 # $Id$
-# Copyright 2004, 2005 Eric L. Smith <eric@brouhaha.com>
+# Copyright 2004, 2005, 2006 Eric L. Smith <eric@brouhaha.com>
 
 # Nonpareil is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License version 2 as
@@ -84,17 +84,18 @@ display
 	end
 
 	segments
-		image "16c_segs.png"
-		segment 'a'  color 255   0   0  end       # red
-		segment 'b'  color   0 255   0  end       # green
-		segment 'c'  color   0   0 255  end       # blue
-		segment 'd'  color 255 255   0  end       # yellow
-		segment 'e'  color 255   0 255  end       #
-		segment 'f'  color   0 255 255  end       #
-		segment 'g'  color 255 128   0  end       # orange
-		segment 'h'  color 255   0 128  end       # pink (dot)
-		segment 'i'  color 128   0   0  end       # dark red (comma)
-	end
+		offset 560 2 size 157 182
+
+		segment 'a' color 255   0   0  end       # red
+		segment 'b' color   0 255   0  end       # green
+		segment 'c' color   0   0 255  end       # blue
+		segment 'd' color 255 255   0  end       # yellow
+		segment 'e' color 255   0 255  end       # purple
+		segment 'f' color   0 255 255  end       # bluegreen
+		segment 'g' color 255 128   0  end       # orange
+		segment 'h' color 255   0 128  end       # pink
+		segment 'i' color 128   0   0  end       # dark red
+	end # segments
 
 end # display
 

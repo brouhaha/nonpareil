@@ -61,13 +61,15 @@ display
 	end
 
 	segments
-		image "41cv.png" offset 2 498 size 119 129
+		# image "41cv.png"
+		offset 2 498 size 119 129
+
 		segment 'a'  color 255   0   0  end       # red
 		segment 'b'  color   0 255   0  end       # green
 		segment 'c'  color   0   0 255  end       # blue
 		segment 'd'  color 255 255   0  end       # yellow
-		segment 'e'  color 255   0 255  end       #
-		segment 'f'  color   0 255 255  end       #
+		segment 'e'  color 255   0 255  end       # purple
+		segment 'f'  color   0 255 255  end       # bluegreen
 		segment 'g'  color 255 128   0  end       # orange
 		segment 'h'  color 255   0 128  end       # pink
 		segment 'i'  color 128   0   0  end       # dark red

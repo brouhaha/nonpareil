@@ -60,57 +60,28 @@ display
 		offset 6 4
 	end
 
-	segment 'a' scaled offset  2 498 size 119 129
-                           color 255   0   0  end       # red
+	segments
+		# image "41cv.png"
+		offset 2 498 size 119 129
 
-	segment 'b' scaled offset  2 498 size 119 129
-                           color   0 255   0  end       # green
-
-	segment 'c' scaled offset  2 498 size 119 129
-                           color   0   0 255  end       # blue
-
-	segment 'd' scaled offset  2 498 size 119 129
-                           color 255 255   0  end       # yellow
-
-	segment 'e' scaled offset  2 498 size 119 129
-                           color 255   0 255  end       #
-
-	segment 'f' scaled offset  2 498 size 119 129
-                           color   0 255 255  end       #
-
-	segment 'g' scaled offset  2 498 size 119 129
-                           color 255 128   0  end       # orange
-
-	segment 'h' scaled offset  2 498 size 119 129
-                           color 255   0 128  end       # pink
-
-	segment 'i' scaled offset  2 498 size 119 129
-                           color 128   0   0  end       # dark red
-
-	segment 'j' scaled offset  2 498 size 119 129
-                           color   0 128   0  end       # dark green
-
-	segment 'k' scaled offset  2 498 size 119 129
-                           color   0   0 128  end       # dark blue
-
-	segment 'l' scaled offset  2 498 size 119 129
-                           color 127 255 212  end       # aquamarine
-
-	segment 'm' scaled offset  2 498 size 119 129
-                           color 233 150 122  end       # dark salmon
-
-	segment 'n' scaled offset  2 498 size 119 129
-                           color   0   0   0  end       # black
-
-	segment 'o' scaled offset  2 498 size 119 129   # period
-                           color 128 128 128  end       # grey
-
-	segment 'p' scaled offset  2 498 size 119 129   # comma
-                           color  64  64  64  end       # dark grey
-
-	segment 'q' scaled offset  2 498 size 119 129   # upper dot of colon
-                           color 192 192 192  end       # light grey
-
+		segment 'a'  color 255   0   0  end       # red
+		segment 'b'  color   0 255   0  end       # green
+		segment 'c'  color   0   0 255  end       # blue
+		segment 'd'  color 255 255   0  end       # yellow
+		segment 'e'  color 255   0 255  end       # purple
+		segment 'f'  color   0 255 255  end       # bluegreen
+		segment 'g'  color 255 128   0  end       # orange
+		segment 'h'  color 255   0 128  end       # pink
+		segment 'i'  color 128   0   0  end       # dark red
+		segment 'j'  color   0 128   0  end       # dark green
+		segment 'k'  color   0   0 128  end       # dark blue
+		segment 'l'  color 127 255 212  end       # aquamarine
+		segment 'm'  color 233 150 122  end       # dark salmon
+		segment 'n'  color   0   0   0  end       # black
+		segment 'o'  color 128 128 128  end       # grey
+		segment 'p'  color  64  64  64  end       # dark grey
+		segment 'q'  color 192 192 192  end       # light grey
+	end
 
 	character default  # blank
           segment                                                         end
