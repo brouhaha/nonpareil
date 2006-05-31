@@ -679,7 +679,11 @@ static void init_segments (gui_display_t *d)
 {
   int i;
 
-  d->segment_image_pixbuf = load_pixbuf_from_file (d->csim->kml->segment_image_fn);
+  if (d->csim->kml->segment_image_fn)
+    d->segment_image_pixbuf = load_pixbuf_from_file (d->csim->kml->segment_image_fn);
+  else
+    d->segment_image_pixbuf = d->csim->file_pixbuf;
+
   if (d->csim->kml->has_segment_image_size)
     {
       d->segment_image_size.width  = d->csim->kml->segment_image_size.width;
