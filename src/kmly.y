@@ -1,6 +1,6 @@
 /*
 $Id$
-Copyright 2004 Eric L. Smith <eric@brouhaha.com>
+Copyright 2004, 2006 Eric L. Smith <eric@brouhaha.com>
 
 Nonpareil is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License version 2 as
@@ -50,13 +50,13 @@ int kml_cur_idx2;
 %token CHARACTER    CLASS        COLOR        DEBUG        DEFAULT
 %token DIGITS       DISPLAY      DOWN         ELSE         END
 %token FLAG         GLOBAL       HARDWARE     IFFLAG       IFPRESSED
-%token IMAGE        INCLUDE      KEYCODE      LCD          LINE
-%token LISTING      MAP          MENUITEM     MODEL        NOHOLD
-%token OFFSET       ONDOWN       ONUP         OUTIN        PATCH
-%token POSITION     PRESS        PRINT        RECT         RELEASE
-%token RESETFLAG    ROM          SCALED       SCANCODE     SEGMENT
-%token SEGMENTS     SETFLAG      SIZE         SWITCH       TITLE
-%token TRANSPARENCY TYPE         VIRTUAL      ZOOM
+%token IMAGE        INCLUDE      KEYCODE      LCD          LISTING
+%token MAP          MENUITEM     MODEL        NOHOLD       OFFSET
+%token ONDOWN       ONUP         OUTIN        PATCH        POSITION
+%token PRESS        PRINT        RELEASE      RESETFLAG    ROM
+%token SCANCODE     SEGMENT      SEGMENTS     SETFLAG      SIZE
+%token SWITCH       TITLE        TRANSPARENCY TYPE         VIRTUAL
+%token ZOOM
 
 
 %type <string>  image_stmt
