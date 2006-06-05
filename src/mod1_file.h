@@ -2,7 +2,7 @@
 $Id$
 Copyright 2005, 2006 Eric L. Smith <eric@brouhaha.com>
 
-Based on code by Warren Furlow (email: warren@furlow.org).
+Based on code originally written by Warren Furlow <warren@furlow.org>.
 
 Description:  Describes the structure of the MODULE file for HP-41 ROM images
 
