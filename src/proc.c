@@ -36,7 +36,6 @@ MA 02111, USA.
 #include "model.h"
 #include "proc_int.h"
 #include "glib_async_queue_source.h"
-#include "mod1_file.h"
 #include "helios.h"
 #include "phineas.h"
 #include "printer.h"
@@ -177,153 +176,6 @@ struct sim_thread_vars_t
 };
 
 
-static bool sim_load_mod1_rom_word (sim_t *sim,
-				    bank_t bank,
-				    addr_t addr,
-				    rom_word_t data)
-{
-  if (! sim_write_rom (sim, bank, addr, & data))
-    {
-      fprintf (stderr, "Can't load ROM word at bank %d address %o\n", bank, addr);
-      return false;
-    }
-  return true;
-}
-
-
-static int bank_group [MAX_BANK_GROUP + 1];  // index from 1 .. MAX_BANK_GROUP,
-                                             // entry 0 not used
-
-
-static bool sim_read_mod1_page (sim_t *sim, FILE *f)
-{
-  mod1_file_page_t page;
-  addr_t addr;
-  int i;
-
-  if (! mod1_read_page (f, & page))
-    {
-      fprintf (stderr, "Can't read MOD1 page\n");
-      return false;
-    }
-
-  if (! mod1_validate_page (& page))
-    {
-      fprintf (stderr, "Unrecognized or inconsistent values in MOD1 page\n");
-      return false;
-    }
-
-  if (page.Page > 0x0f)
-    {
-      fprintf (stderr, "Currently only MOD1 pages at fixed page numbers are supported\n");
-      return false;
-    }
-
-  addr = page.Page << 12;
-
-  if (page.BankGroup)
-    {
-      if (! bank_group [page.BankGroup])
-	bank_group [page.BankGroup] = sim_create_bank_group (sim);
-      sim_set_bank_group (sim, bank_group [page.BankGroup], addr);
-    }
-
-  for (i = 0; i < 5120; i += 5)
-    {
-      rom_word_t data;
-
-      data = (((page.Image [i + 1] & 0x03) << 8) |
-	      (page.Image [i]));
-      if (! sim_load_mod1_rom_word (sim, page.Bank - 1, addr++, data))
-				    
-        return false;
-
-      data = (((page.Image [i + 2] & 0x0f) << 6) |
-	      ((page.Image [i + 1] & 0xfc) >> 2));
-      if (! sim_load_mod1_rom_word (sim, page.Bank - 1, addr++, data))
-				    
-        return false;
-
-      data = (((page.Image [i + 3] & 0x3f) << 4) |
-	      ((page.Image [i + 2] & 0xf0) >> 4));
-      if (! sim_load_mod1_rom_word (sim, page.Bank - 1, addr++, data))
-				    
-        return false;
-
-      data = ((page.Image [i + 4] << 2) |
-	      ((page.Image [i + 3] & 0xc0) >> 6));
-      if (! sim_load_mod1_rom_word (sim, page.Bank - 1, addr++, data))
-				    
-        return false;
-    }
-
-  return true;
-}
-
-
-static bool sim_read_mod1_file (sim_t *sim,
-				FILE *f,
-				int port UNUSED)   // -1 for not port-based
-{
-  mod1_file_header_t header;
-  size_t file_size;
-  int i;
-
-  for (i = 1; i <= MAX_BANK_GROUP; i++)
-    bank_group [i] = 0;
-
-  fseek (f, 0, SEEK_END);
-  file_size = ftell (f);
-  fseek (f, 0, SEEK_SET);
-
-  if (! mod1_read_file_header (f, & header))
-    {
-      fprintf (stderr, "Can't read MOD1 file header\n");
-      return false;
-    }
-
-  if (! mod1_validate_file_header (& header, file_size))
-    {
-      fprintf (stderr, "Unrecognized or inconsistent values in MOD1 file header\n");
-      return false;
-    }
-
-  switch (header.Hardware)
-    {
-    case HARDWARE_NONE:
-      break;
-
-    case HARDWARE_TIMER:
-      (void) sim_add_chip (sim, CHIP_PHINEAS, NULL, NULL);
-      break;
-
-    case HARDWARE_PRINTER:
-      sim->install_hardware_callback (sim->install_hardware_callback_ref, CHIP_HELIOS);
-      break;
-
-    default:
-      if ((header.Hardware <= HARDWARE_MAX) &&
-	  mod1_hardware_name [header.Hardware])
-	fprintf (stderr, "Unsupported hardware: %s\n",
-		 mod1_hardware_name [header.Hardware]);
-      else
-	fprintf (stderr, "Unsupported hardware type %d\n",
-		 header.Hardware);
-#if 1
-      break;  // for debugging, allow unsupported hardware
-#else
-      return false;
-#endif
-    }
-
-  for (i = 0; i < header.NumPages; i++)
-    if (! sim_read_mod1_page (sim, f))
-      return false;
-
-  return true;
-}
-
-
 bool sim_read_object_file (sim_t *sim, char *fn)
 {
   FILE *f;
@@ -336,33 +188,15 @@ bool sim_read_object_file (sim_t *sim, char *fn)
   char magic [4];
   bool eof, error;
 
-  f = fopen (fn, "rb");
+  if (is_mod1_file (fn))
+    {
+      return sim_load_mod1 (sim, fn, NULL);
+    }
+
+  f = fopen (fn, "r");
   if (! f)
     {
       fprintf (stderr, "error opening object file\n");
-      return (false);
-    }
-
-  if (fread_bytes (f, magic, sizeof (magic), & eof, & error) != sizeof (magic))
-    {
-      fprintf (stderr, "error reading object file\n");
-      return (false);
-    }
-
-  if (strncmp (magic, "MOD1", sizeof (magic)) == 0)
-    return sim_read_mod1_file (sim, f, -1);
-
-  // switch from binary to text mode, and rewind
-#ifdef MINGW
-  f = freopen (fn, "r", f);
-  // Microsoft freopen() isn't compliant with the C standard, which allows
-  // NULL for the filename if you're reopening an existing file handle.
-#else
-  f = freopen (NULL, "r", f);
-#endif
-  if (! f)
-    {
-      fprintf (stderr, "error reopening object file\n");
       return (false);
     }
 

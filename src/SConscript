@@ -418,7 +418,7 @@ if build_env ['build_target_only'] == 0:
 # default targets
 #-----------------------------------------------------------------------------
 
-default_targets = [nonpareil, uasm, modutil]
+default_targets = [nonpareil, uasm]
 # omit nsim_conv, udis for now
 
 if (not cross) or build_target_only:
