@@ -1,11 +1,20 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
 
-<!ELEMENT state (ui*, chip*, memory*)>
+<!ELEMENT state (kmlpath*, modulepath*, ui*, chip*, memory*)>
 <!ATTLIST state 
           version  CDATA #REQUIRED
           arch     CDATA #REQUIRED
           platform CDATA #REQUIRED
           model    CDATA #REQUIRED>
+
+<!ELEMENT kmlpath EMPTY>
+<!ATTLIST kmlpath
+          path CDATA #REQUIRED>
+
+<!ELEMENT modulepath EMPTY>
+<!ATTLIST modulepath
+          name CDATA #REQUIRED
+          path CDATA #REQUIRED>
 
 <!ELEMENT ui (switch*)>
 
