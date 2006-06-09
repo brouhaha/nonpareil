@@ -1,6 +1,6 @@
 /*
 $Id$
-Copyright 1995, 2004, 2005 Eric L. Smith <eric@brouhaha.com>
+Copyright 1995, 2004, 2005, 2006 Eric L. Smith <eric@brouhaha.com>
 
 Nonpareil is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License version 2 as
@@ -220,7 +220,7 @@ void debug_add_reg_all_chips (sim_t *sim,
 			  
 
 
-static sim_t *dsim;  // $$$ ugly!
+static sim_t *dg_sim;  // $$$ ugly!
 
 
 void debug_show_reg  (gpointer callback_data,
@@ -246,7 +246,7 @@ void debug_show_reg  (gpointer callback_data,
 
       max_reg = 0;
 
-      debug_add_reg_all_chips (dsim, notebook);
+      debug_add_reg_all_chips (dg_sim, notebook);
     }
 
   reg_window_visible = ! reg_window_visible;
@@ -269,7 +269,7 @@ static void update_ram_window (void)
 
   for (index = 0; index < max_ram; index++)
     {
-      if (sim_read_ram (dsim, ram_addr [index], & val))
+      if (sim_read_ram (dg_sim, ram_addr [index], & val))
 	snprintf (buf, sizeof (buf), "%014" PRIx64, val);
       else
 	snprintf (buf, sizeof (buf), "err");
@@ -347,9 +347,9 @@ void debug_show_ram  (gpointer callback_data,
 
       gtk_container_add (GTK_CONTAINER (ram_window), scrolled_window);
 
-      limit = sim_get_max_ram (dsim);
+      limit = sim_get_max_ram (dg_sim);
       for (addr = 0; addr < limit; addr++)
-	if (sim_read_ram (dsim, addr, & val))
+	if (sim_read_ram (dg_sim, addr, & val))
 	  debug_window_add_ram (table, addr);
     }
 
@@ -369,7 +369,7 @@ void debug_run       (gpointer callback_data,
 		      guint    callback_action,
 		      GtkWidget *widget)
 {
-  sim_start (dsim);
+  sim_start (dg_sim);
 }
 
 
@@ -377,7 +377,7 @@ void debug_step      (gpointer callback_data,
 		      guint    callback_action,
 		      GtkWidget *widget)
 {
-  sim_single_inst (dsim);
+  sim_single_inst (dg_sim);
 }
 
 
@@ -385,8 +385,8 @@ void debug_trace     (gpointer callback_data,
 		      guint    callback_action,
 		      GtkWidget *widget)
 {
-  sim_set_debug_flag (dsim, SIM_DEBUG_TRACE,
-		      ! sim_get_debug_flag (dsim, SIM_DEBUG_TRACE));
+  sim_set_debug_flag (dg_sim, SIM_DEBUG_TRACE,
+		      ! sim_get_debug_flag (dg_sim, SIM_DEBUG_TRACE));
 }
 
 
@@ -394,8 +394,8 @@ void debug_key_trace (gpointer callback_data,
 		      guint    callback_action,
 		      GtkWidget *widget)
 {
-  sim_set_debug_flag (dsim, SIM_DEBUG_KEY_TRACE,
-		      ! sim_get_debug_flag (dsim, SIM_DEBUG_KEY_TRACE));
+  sim_set_debug_flag (dg_sim, SIM_DEBUG_KEY_TRACE,
+		      ! sim_get_debug_flag (dg_sim, SIM_DEBUG_KEY_TRACE));
 }
 
 
@@ -403,12 +403,12 @@ void debug_ram_trace (gpointer callback_data,
 		      guint    callback_action,
 		      GtkWidget *widget)
 {
-  sim_set_debug_flag (dsim, SIM_DEBUG_RAM_TRACE,
-		      ! sim_get_debug_flag (dsim, SIM_DEBUG_RAM_TRACE));
+  sim_set_debug_flag (dg_sim, SIM_DEBUG_RAM_TRACE,
+		      ! sim_get_debug_flag (dg_sim, SIM_DEBUG_RAM_TRACE));
 }
 
 
 void init_debugger_gui (sim_t *sim)
 {
-  dsim = sim;  // $$$ ugly!
+  dg_sim = sim;  // $$$ ugly!
 }

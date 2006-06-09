@@ -1,6 +1,6 @@
 /*
 $Id$
-Copyright 1996, 2001, 2003, 2004, 2005 Eric L. Smith <eric@brouhaha.com>
+Copyright 1996, 2001, 2003, 2004, 2005, 2006 Eric L. Smith <eric@brouhaha.com>
 
 Nonpareil is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License version 2 as
@@ -42,7 +42,7 @@ MA 02111, USA.
 #include "util.h"
 #include "display.h"
 #include "proc.h"
-#include "debugger.h"
+#include "debugger_cli.h"
 
 
 #define MAX_ARGS 100
@@ -55,6 +55,7 @@ MA 02111, USA.
 struct dbg_cli_t
 {
   sim_t *sim;
+  gboolean visible;
   GThread *thread;
   int slave_pty;
   GtkWidget *window;
@@ -373,7 +374,7 @@ static gpointer debugger_thread_func (gpointer data)
 }
 
 
-static dbg_cli_t *init_debugger_cli (sim_t *sim)
+static dbg_cli_t *init_debugger_cli_window (sim_t *sim)
 {
   dbg_cli_t *dbg;
   int master_pty;
@@ -390,7 +391,7 @@ static dbg_cli_t *init_debugger_cli (sim_t *sim)
 
   vte = vte_terminal_new ();
 
-  vte_terminal_add_pty (VTE_TERMINAL (vte), master_pty);
+  vte_terminal_set_pty (VTE_TERMINAL (vte), master_pty);
 
   /* vte_terminal_set_size() must come *after* vte_terminal_add_pty() */
   vte_terminal_set_size (VTE_TERMINAL (vte), 80, 24);
@@ -411,15 +412,20 @@ static void show_debugger_cli (dbg_cli_t *dbg, gboolean visible)
 }
 
 
-static gboolean dbg_visible;
-static dbg_cli_t *dbg_cli;
+static dbg_cli_t *dbg_cli;  // $$$ ugly, shouldn't use global
+
 
 void debug_cli_window (GtkWidget *widget, gpointer data)
 {
-  if (! dbg)
-    dbg = init_debugger_cli (sim);
+  dbg_cli->visible = ! dbg_cli->visible;
 
-  dbg_visible = ! dbg_visible;
+  show_debugger_cli (dbg_cli, dbg_cli->visible);
+}
 
-  show_debugger_cli (dbg, dbg_visible);
+
+void init_debugger_cli (sim_t *sim)
+{
+  dbg_cli = init_debugger_cli_window (sim);
+  dbg_cli->visible = false;
+  show_debugger_cli (dbg_cli, dbg_cli->visible);
 }

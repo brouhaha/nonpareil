@@ -433,7 +433,7 @@ static GtkItemFactoryEntry menu_items [] =
     { "/Debug/RAM Trace", NULL,     debug_ram_trace, 1, "<ToggleItem>", 0 },
 #endif // HAS_DEBUGGER
 #ifdef HAS_DEBUGGER_CLI
-    { "/Debug/Command Window", NULL,     debug_cmd_win, 1, "<ToggleItem>", 0 },
+    { "/Debug/Command Window", NULL,     debug_cli_window, 1, "<ToggleItem>", 0 },
 #endif // HAS_DEBUGGER_CLI
     { "/_Help",         NULL,         NULL,          0, "<Branch>", 0 },
     { "/_Help/About",   NULL,         help_about,    1, "<Item>", 0 }
@@ -881,6 +881,10 @@ int main (int argc, char *argv[])
 
 #ifdef HAS_DEBUGGER_GUI
   init_debugger_gui (csim->sim);
+#endif
+
+#ifdef HAS_DEBUGGER_CLI
+  init_debugger_cli (csim->sim);
 #endif
 
   add_slide_switches (csim->sim, csim->kml, csim->background_pixbuf, csim->fixed);
