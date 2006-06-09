@@ -209,6 +209,8 @@ typedef struct
 
 kml_t *read_kml_file (char *fn);
 
+kml_t *read_kml_file_from_npz (GsfInfile *npz, char *fn);
+
 void free_kml (kml_t *kml);
 
 void print_kml (FILE *f, kml_t *kml);

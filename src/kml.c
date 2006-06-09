@@ -27,6 +27,9 @@ MA 02111, USA.
 #include <string.h>
 #include <unistd.h>
 
+#include <gsf/gsf-infile.h>
+#include <gsf/gsf-infile-zip.h>
+
 #include "util.h"
 #include "display.h"
 #include "kml.h"
@@ -89,6 +92,23 @@ kml_t *read_kml_file (char *fn)
   yyparse ();
   
   fclose (yyin);
+
+  return (kml);
+}
+
+
+kml_t *read_kml_file_from_npz (GsfInfile *npz, char *fn)
+{
+  GsfInput *kml_input;
+  kml_t *kml;
+
+  kml_input = gsf_infile_child_by_name (npz, fn);
+  if (! kml_input)
+    return NULL;
+
+  // $$$ more code needed here
+
+  g_object_unref (G_OBJECT (kml_input));
 
   return (kml);
 }
