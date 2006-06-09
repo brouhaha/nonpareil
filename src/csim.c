@@ -31,6 +31,10 @@ MA 02111, USA.
 #include <gdk/gdk.h>
 #include <gtk/gtk.h>
 
+#include <gsf/gsf-input-stdio.h>
+#include <gsf/gsf-infile.h>
+#include <gsf/gsf-infile-zip.h>
+
 #include "util.h"
 #include "display.h"
 #include "kml.h"
@@ -85,10 +89,14 @@ void usage (FILE *f)
 {
   fprintf (f, "%s:  Microcode-level calculator simulator\n",
 	   nonpareil_release);
-  fprintf (f, "Copyright 1995, 2003, 2004, 2005 Eric L. Smith\n");
+  fprintf (f, "Copyright 1995, 2003, 2004, 2005, 2006 Eric L. Smith\n");
   fprintf (f, "http://nonpareil.brouhaha.com/\n");
   fprintf (f, "\n");
+#ifdef USE_NPZ
+  fprintf (f, "usage: %s [options...] npzfile\n", progname);
+#else
   fprintf (f, "usage: %s [options...] kmlfile\n", progname);
+#endif
   fprintf (f, "options:\n");
 
   print_usage_toggle_option (f, "shape", SHAPE_DEFAULT);
@@ -577,6 +585,36 @@ char *find_kml_file (char *kml_name)
 }
 
 
+char *find_npz_file (char *npz_name)
+{
+  char *npz_fn;
+  char *p;
+
+  if (npz_name)
+    {
+      npz_fn = find_file_in_path_list (npz_name, ".npz", default_path);
+      if (! npz_fn)
+	fatal (2, "can't find NPZ file '%s'\n", npz_name);
+      return npz_fn;
+    }
+
+  // $$$ following is not portable!
+  p = strrchr (progname, '/');
+  if (p)
+    p++;
+  else
+    p = progname;
+
+  npz_name = newstrcat (p, ".npz");
+  npz_fn = find_file_in_path_list (npz_name, NULL, default_path);
+  if (npz_fn)
+    return npz_fn;
+
+  npz_fn = calculator_chooser (default_path);
+  return npz_fn;
+}
+
+
 GdkPixbuf *load_pixbuf_from_file (char *image_name)
 {
   GError *error = NULL;
@@ -593,12 +631,59 @@ GdkPixbuf *load_pixbuf_from_file (char *image_name)
   return pixbuf;
 }
 
+GdkPixbuf *load_pixbuf_from_npz (GsfInfile *npz, char *image_name)
+{
+  GsfInput *image_input;
+  GdkPixbuf *pixbuf;
+
+  image_input = gsf_infile_child_by_name (npz, image_name);
+  if (! image_input)
+    return NULL;
+
+  // $$$ more code needed here
+
+  g_object_unref (G_OBJECT (image_input));
+  return pixbuf;
+}
+
+
+GsfInfile *open_zip_file (char *zip_fn)
+{
+  GsfInput *zip_input;
+  GsfInfile *zip_infile;
+  GError *err = NULL;
+
+  zip_input = gsf_input_stdio_new (zip_fn, & err);
+  if (! zip_input)
+    return NULL;
+
+  zip_infile = gsf_infile_zip_new (zip_input, & err);
+  if (! zip_infile)
+    return NULL;
+
+  g_object_unref (G_OBJECT (zip_input));
+
+  return (zip_infile);
+}
+
+
+void close_zip_file (GsfInfile *infile)
+{
+  g_object_unref (G_OBJECT (infile));
+}
+
 
 int main (int argc, char *argv[])
 {
   csim_t *csim;
+#ifdef USE_NPZ
+  char *npz_name = NULL;
+  char *npz_fn;
+#else
   char *kml_name = NULL;
-  char *kml_fn, *rom_fn;
+  char *kml_fn;
+#endif
+  char *rom_fn;
 #ifdef HAS_DEBUGGER
   char *listing_fn;
 #endif
@@ -649,19 +734,40 @@ int main (int argc, char *argv[])
 	  else
 	    fatal (1, "unrecognized option '%s'\n", argv [0]);
 	}
+#ifdef USE_NPZ
+      else if (npz_name)
+	fatal (1, "only one NPZ file may be specified\n");
+      else
+	npz_name = argv [0];
+#else
       else if (kml_name)
 	fatal (1, "only one KML file may be specified\n");
       else
 	kml_name = argv [0];
+#endif
     }
 
   init_sound (sound_enabled);
 
+#ifdef USE_NPZ
+  npz_fn = find_npz_file (npz_name);
+  if (! npz_fn)
+    fatal (1, "no NPZ file\n");
+
+  csim->npz = open_zip_file (npz_fn);
+  if (! caim->npz)
+    fatal (2, "Error opening or reading NPZ file\n");
+
+  kml_fn = base_filename_with_suffix (npz_fn, "kml");
+  csim->kml = read_kml_file_from_npz (csim->npz, kml_fn);
+#else
   kml_fn = find_kml_file (kml_name);
   if (! kml_fn)
     fatal (1, "no KML file\n");
 
   csim->kml = read_kml_file (kml_fn);
+#endif
+
   if (! csim->kml)
     fatal (2, "can't read KML file '%s'\n", kml_fn);
 

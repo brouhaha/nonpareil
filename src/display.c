@@ -27,6 +27,8 @@ MA 02111, USA.
 #include <gdk/gdk.h>
 #include <gtk/gtk.h>
 
+#include <gsf/gsf-infile.h>
+
 #include "util.h"
 #include "display.h"
 #include "kml.h"

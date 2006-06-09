@@ -1,6 +1,6 @@
 /*
 $Id$
-Copyright 1995, 2004, 2005 Eric L. Smith <eric@brouhaha.com>
+Copyright 1995, 2004, 2005, 2006 Eric L. Smith <eric@brouhaha.com>
 
 Nonpareil is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License version 2 as
@@ -112,6 +112,10 @@ size_t fwrite_bytes (FILE *stream,
 		     size_t byte_count,
 		     bool *eof,
 		     bool *error);
+
+
+char *base_filename (char *name);
+char *base_filename_with_suffix (char *name, char *suffix);
 
 
 // Given a base filename, an optional suffix, and a colon-delimited

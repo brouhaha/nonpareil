@@ -93,7 +93,7 @@ kml_objs = [build_env.Object(src) for src in kml_srcs]
 
 state_io_srcs = Split ("""state_write.c state_read.c""")
 state_io_objs = [build_env.Object(src) for src in state_io_srcs];
-state_io_packages = "gtk+-2.0 gdk-2.0 gdk-pixbuf-2.0 glib-2.0 libxml-2.0"
+state_io_packages = "gtk+-2.0 gdk-2.0 gdk-pixbuf-2.0 glib-2.0 libxml-2.0 libgsf-1"
 
 release_env = build_env.Copy (CPPDEFINES = { 'NONPAREIL_RELEASE': build_env ['RELEASE']})
 common_objs.append (release_env.Object ('release.c'))

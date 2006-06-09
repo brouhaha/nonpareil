@@ -1,6 +1,6 @@
 /*
 $Id$
-Copyright 1995, 2004, 2005 Eric L. Smith <eric@brouhaha.com>
+Copyright 1995, 2004, 2005, 2006 Eric L. Smith <eric@brouhaha.com>
 
 Nonpareil is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License version 2 as
@@ -304,6 +304,67 @@ size_t fwrite_bytes (FILE *stream,
 	}
     }
   return total;
+}
+
+
+char *base_filename (char *name)
+{
+  char *p1, *p2;
+  unsigned int n;
+  char buf [PATH_MAX];
+
+  p1 = strrchr (name, '/');  // $$$ not portable
+  if (! p1)
+    p1 = name;
+  p2 = strchr (name, '.');
+  if (p2)
+    n = p2 - p1;
+  else
+    n = strlen (p1);
+  if (n >= sizeof (buf))
+    n = sizeof (buf) - 1;
+  strncpy (buf, p1, n);
+  buf [n] = '\0';
+  return newstr (buf);
+}
+
+
+char *base_filename_with_suffix (char *name, char *suffix)
+{
+  char *p1, *p2;
+  unsigned int n;
+  unsigned int sn;
+  char buf [PATH_MAX];
+
+  p1 = strrchr (name, '/');  // $$$ not portable
+  if (! p1)
+    p1 = name;
+  p2 = strchr (name, '.');
+  if (p2)
+    {
+      n = strlen (p1);
+      if (n >= sizeof (buf))
+	n = sizeof (buf) - 1;
+      strncpy (buf, p1, n);
+      buf [n] = '\0';
+    }
+  else
+    {
+      n = p2 - p1;
+      sn = strlen (suffix);
+      if (n >= sizeof (buf))
+	n = sizeof (buf) - 1;
+      strncpy (buf, p1, n);
+      buf [n] = '\0';
+      // now append '.' and suffix
+      if ((n + 1 + sn) < sizeof (buf))
+	{
+	  buf [n] = '.';
+	  strcpy (& buf [n + 1], suffix);
+	}
+    }
+
+  return newstr (buf);
 }
 
 

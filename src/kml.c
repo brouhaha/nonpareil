@@ -28,7 +28,6 @@ MA 02111, USA.
 #include <unistd.h>
 
 #include <gsf/gsf-infile.h>
-#include <gsf/gsf-infile-zip.h>
 
 #include "util.h"
 #include "display.h"
