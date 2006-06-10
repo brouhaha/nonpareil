@@ -67,6 +67,15 @@ if ming and (build_target_only or not cross):
     build_env.Append (CPPDEFINES = { 'MINGW': '1',
                                      'MS_WINDOWS' : '1'})
 
+if build_env ['has_debugger_gui'] or build_env ['has_debugger_cli']:
+    build_env.Append (CPPDEFINES = {'HAS_DEBUGGER': 1})
+
+if build_env ['has_debugger_gui']:
+    build_env.Append (CPPDEFINES = {'HAS_DEBUGGER_GUI': 1})
+
+if build_env ['has_debugger_cli']:
+    build_env.Append (CPPDEFINES = {'HAS_DEBUGGER_CLI': 1})
+
 #-----------------------------------------------------------------------------
 # common components
 #-----------------------------------------------------------------------------
@@ -308,9 +317,6 @@ for gen in ["nonpareil_title_png",
 
 nonpareil_env.Append (LIBS = 'png')
 
-if build_env ['has_debugger_gui'] or build_env ['has_debugger_cli']:
-    nonpareil_env.Append (CPPDEFINES = {'HAS_DEBUGGER': 1})
-
 if build_env ['has_debugger_cli']:
     nonpareil_packages += ' vte'
     nonpareil_env.Append (LIBS = 'util')  # for PTY support
@@ -329,11 +335,7 @@ if not ming:
 if build_env ['target'] == 'win32':
     csim_env.Append (CPPDEFINES = {'SHAPE_DEFAULT': "false"})
 
-if build_env ['has_debugger_gui']:
-    csim_env.Append (CPPDEFINES = {'HAS_DEBUGGER_GUI': 1})
-
 if build_env ['has_debugger_cli']:
-    csim_env.Append (CPPDEFINES = {'HAS_DEBUGGER_CLI': 1})
     debugger_cli_env = csim_env.Copy ()
     if build_env ['use_tcl']:
         debugger_cli_env.Append (CPPDEFINES = {'USE_TCL': 1})
