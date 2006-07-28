@@ -353,12 +353,15 @@ bool sim_read_object_file (sim_t *sim, char *fn)
     return sim_read_mod1_file (sim, f, -1);
 
   // switch from binary to text mode, and rewind
-#ifdef MINGW
-  f = freopen (fn, "r", f);
-  // Microsoft freopen() isn't compliant with the C standard, which allows
-  // NULL for the filename if you're reopening an existing file handle.
-#else
+
+#if 0
   f = freopen (NULL, "r", f);
+#else
+  // Apparently many C libraries, including those from FreeBSD and Microsoft
+  // have freopen() implementations that are non-compliant with the
+  // C standard, which allows NULL for the filename if you're reopening an
+  // existing file handle.
+  f = freopen (fn, "r", f);
 #endif
   if (! f)
     {
