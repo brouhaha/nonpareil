@@ -381,21 +381,6 @@ udis = udis_env.Program (target = 'udis',
                                    udis_srcs))
 
 #-----------------------------------------------------------------------------
-# nsim_conv
-#-----------------------------------------------------------------------------
-
-nsim_conv_env = build_env.Copy ()
-
-nsim_conv_srcs = Split ("""nsim_conv.c
-	                   state_read_nsim.c state_write_nsim.c""")
-
-# nsim_conv_packages = "libxml-2.0"
-# nsim_conv_env.ParseConfig(pkg_config_cmd + nsim_conv_packages)
-
-nsim_conv = nsim_conv_env.Program (target = 'nsim_conv',
-                                   source = common_objs + state_io_objs + nsim_conv_srcs)
-
-#-----------------------------------------------------------------------------
 # modutil
 #-----------------------------------------------------------------------------
 
@@ -421,7 +406,7 @@ if build_env ['build_target_only'] == 0:
 #-----------------------------------------------------------------------------
 
 default_targets = [nonpareil, uasm, modutil]
-# omit nsim_conv, udis for now
+# omit udis for now
 
 if (not cross) or build_target_only:
     Default (default_targets)
@@ -454,7 +439,6 @@ if build_env ['build_target_only'] == 0:
                         coconut_lcd.h helios.h phineas.h
                         csim.h about.h goose.h pixbuf_util.h sound.h scancode.h
                         asm.h symtab.h
-                        nsim_conv.h
                         mod1_file.h
                         proc_tmc1500.h""")
 
