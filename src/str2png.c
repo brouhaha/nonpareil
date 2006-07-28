@@ -51,6 +51,7 @@ void usage (FILE *f)
   fprintf (f, "options:\n");
   fprintf (f, "  -x <size>      horizontal character size in pixels\n");
   fprintf (f, "  -y <size>      vertical character size in pixels\n");
+  fprintf (f, "  -m <size>      margin in pixels\n");
 }
 
 
@@ -401,6 +402,13 @@ void draw_char (int x, int y, char c)
 }
 
 
+void chop_tail (char *p)
+{
+  char *p2 = strrchr (p, '/');
+  if (p2)
+    *p2 = '\0';
+}
+
 
 int main (int argc, char *argv[])
 {
@@ -413,6 +421,7 @@ int main (int argc, char *argv[])
 
   char *kml_fn;
   char *image_fn;
+  char *image_path;
   int i;
 
   progname = newstr (argv [0]);
@@ -478,7 +487,12 @@ int main (int argc, char *argv[])
   if (! kml->image_fn)
     fatal (2, "No image file spsecified in KML\n");
 
-  image_fn = find_file_in_path_list (kml->image_fn, NULL, default_path);
+  image_path = newstr (kml_name);
+  chop_tail (image_path);
+
+  chop_tail (image_path);  // HACK: 41c.png is in directory above 41cv.kml
+
+  image_fn = find_file_in_path_list (kml->image_fn, NULL, image_path);
   if (! image_fn)
     fatal (2, "can't find image file '%s'\n", kml->image_fn);
 
