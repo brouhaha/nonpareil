@@ -106,6 +106,7 @@ env ['RELEASE'] = release
 #-----------------------------------------------------------------------------
 
 Export ('env')
+SConscript ('scons-builders/ncz.py')
 SConscript ('scons-builders/tarball.py')
 # SConscript ('scons-builders/nsis.py')
 
@@ -191,20 +192,47 @@ if env ['debug']:
 	target_build_dir += '-debug'
 
 #-----------------------------------------------------------------------------
-# KML, firmware, image, sound, text files
+# the calculators
 #-----------------------------------------------------------------------------
 
-SConscript (['rom/SConscript',
-	     'kml/SConscript',
-	     'image/SConscript',
-	     'sound/SConscript'])
+#all_calcs = { 'classic':    ['35', '45', '55', '80'],
+#	      'woodstock':  ['21', '22', '25', '27'],
+#	      'spice':      ['32e', '33c', '34c', '37e', '38c', '38e'],
+#	      'nut':        ['41cv', '41cx'],
+#	      'voyager':    ['11c', '12c', '15c', '16c'] }
+
+all_calcs = {'nut':        ['41cv'],
+	     'voyager':    ['15c'] }
+
+env.Append (KML_41CV = File ('calc/nut/41cv/41cv.kml'))
+
+ncz_files = []
+
+for family in all_calcs:
+	print family,
+	for model in all_calcs [family]:
+		print model,
+		model_dir = Dir ('calc/' + family + '/' + model)
+		kml = FindFile (model + '.kml', model_dir)
+		# parse kml to find ROM, image files, etc.
+		ncz_files += env.NCZ (target = 'build/calc/' + model + '.ncz',
+				      source = 'calc/' + family + '/' + model + '/' + model + '.kml');
+#		SConscript ('calc/SConscript',
+#			    exports = 'model',
+#			    src_dir = 'calc/' + family + '/' + model,
+#			    build_dir = 'build/calc/' + family + '/' + model,
+#			    duplicate = 0)
+	print
+
+Default (ncz_files)
+
+#-----------------------------------------------------------------------------
+# sound files
+#-----------------------------------------------------------------------------
+
+SConscript ('sound/SConscript')
 
 env.Append (GPLv2 = File ('COPYING'))
-
-#-----------------------------------------------------------------------------
-# KML, image, firmware files
-#-----------------------------------------------------------------------------
-
 
 #-----------------------------------------------------------------------------
 # host platform code
@@ -222,9 +250,9 @@ SConscript ('src/SConscript',
 # ROM sources - assemble with host tools
 #-----------------------------------------------------------------------------
 
-SConscript ('asm/SConscript',
-	    build_dir='obj',
-	    duplicate=0)
+#SConscript ('asm/SConscript',
+#	    build_dir='obj',
+#	    duplicate=0)
 
 #-----------------------------------------------------------------------------
 # target platform code if cross-compiling
