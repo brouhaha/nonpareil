@@ -22,7 +22,7 @@ global
 	author "Eric Smith <eric@brouhaha.com>"
 	hardware "Voyager"
 	model "15c"
-	rom "15c.obj"
+	rom "15c.rom"
 	image "15c.png"
 	color 0 137 0 6	  # background color, used when transparency is off
 	# transparency 128
