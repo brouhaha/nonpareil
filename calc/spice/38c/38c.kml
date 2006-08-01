@@ -22,7 +22,7 @@ global
 	author "Eric Smith <eric@brouhaha.com>"
 	hardware "Spice"
 	model "38c"
-	rom "38c.obj"
+	rom "38c.rom"
 	image "38c.png"
 	color 0 87 127 152  # background color, used when transparency is off
 	transparency 128
@@ -42,8 +42,8 @@ display
 	color 2 255 17 17  # lit segments
 
 	digits 12
-		size 17 14
-		offset 10 20
+		size 17 30
+		offset 10 10
 	end
 
 	character 0x00 segment 'a' 'b' 'c' 'd' 'e' 'f'             end
@@ -67,16 +67,20 @@ display
 	character '.'  segment                             'h'     end
 	character ','  segment                             'h' 'i' end
 
-	segment 'a' line offset  0  0 size 6 1 end
-	segment 'b' line offset  5  0 size 1 6 end
-	segment 'c' line offset  5  5 size 1 6 end
-	segment 'd' line offset  0 10 size 6 1 end
-	segment 'e' line offset  0  5 size 1 6 end
-	segment 'f' line offset  0  0 size 1 6 end
-	segment 'g' line offset  0  5 size 6 1 end
-	segment 'h' rect offset  9 11 size 2 2 end
-	segment 'i' rect offset  8 13 size 2 1 end
-end
+	segments
+		image "led_segments.png" offset 2 2 size 126 188
+		segment 'a' color 255   0   0  end       # red
+		segment 'b' color   0 255   0  end       # green
+		segment 'c' color   0   0 255  end       # blue
+		segment 'd' color 255 255   0  end       # yellow
+		segment 'e' color 255   0 255  end       # purple
+		segment 'f' color   0 255 255  end       # bluegreen
+		segment 'g' color 255 128   0  end       # orange
+		#segment 'h' color 255   0 128  end       # pink (inside dp)
+		segment 'h' color 128   0   0  end       # dark red (outside dp)
+		segment 'i'  color  64  64  64  end       # dark grey
+	end # segments
+end # display
 
 switch 0
   size 15 10
@@ -133,7 +137,7 @@ button 74  type 0  size 37 25  offset 206 472  down 2 8  keycode 0100  end
 scancode "0"            map 0 72 end  # 0
 scancode "1"            map 0 62 end  # 1
 scancode "2"            map 0 63 end  # 2
-scancode "3'            map 0 64 end  # 3
+scancode "3"            map 0 64 end  # 3
 scancode "4"            map 0 52 end  # 4
 scancode "5"            map 0 53 end  # 5
 scancode "6"            map 0 54 end  # 6
