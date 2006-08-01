@@ -21,6 +21,8 @@
 Import('build_env native_env')
 Import('source_release_dir snapshot_dir')
 
+import os
+
 #-----------------------------------------------------------------------------
 # cross-platform
 #-----------------------------------------------------------------------------
@@ -105,7 +107,8 @@ state_io_objs = [build_env.Object(src) for src in state_io_srcs];
 state_io_packages = "gtk+-2.0 gdk-2.0 gdk-pixbuf-2.0 glib-2.0 libxml-2.0 libgsf-1"
 
 release_env = build_env.Copy (CPPDEFINES = { 'NONPAREIL_RELEASE': build_env ['RELEASE']})
-common_objs.append (release_env.Object ('release.c'))
+release_obj = release_env.Object ('release.c')
+common_objs.append (release_obj)
 
 build_env.ParseConfig(pkg_config_cmd + state_io_packages)
 
@@ -209,24 +212,15 @@ uasm_srcs = Split ("""asm.c symtab.c
                       wasml.l wasmy.y""")
 
 uasm = build_env.Program (target = 'uasm',
-                          source = uasm_srcs + common_objs)
+                          source = uasm_srcs + ["util.c",'arch.c',release_obj])
+#                          source = uasm_srcs + common_objs)
 
-if build_env ['build_target_only'] == 0:
-    import os.path
+print "uasm", uasm [0]
 
-    def AssembleEmitter (target, source, env):
-        target.append (os.path.splitext (str (target [0])) [0] + '.lst')
-        env.Depends (target, "$UASM")
-        return (target, source)
+if not build_target_only:
+    native_env ['UASM'] = uasm [0]
+#   native_env.Append (UASM = uasm [0])
 
-    Assemble = Builder (action = "$UASMCOM",
-                        suffix = '.obj',
-                        src_suffix = '.asm',
-                        emitter = AssembleEmitter)
-
-    native_env.Append (BUILDERS = { 'Assemble': Assemble },
-                       UASM = uasm,
-                       UASMCOM = "$UASM $UASMFLAGS $SOURCE -o $TARGET -l ${TARGETS[1]}")
 
 
 #-----------------------------------------------------------------------------
@@ -366,19 +360,19 @@ nonpareil = nonpareil_env.Program (target = 'nonpareil',
 # udis
 #-----------------------------------------------------------------------------
 
-udis_env = build_env.Copy ()
+#udis_env = build_env.Copy ()
 
-udis_packages = "gthread-2.0"
+#udis_packages = "gthread-2.0"
 
-udis_env.ParseConfig (pkg_config_cmd + udis_packages)
+#udis_env.ParseConfig (pkg_config_cmd + udis_packages)
 
-udis_srcs = Split ("""dis.c""")
+#udis_srcs = Split ("""dis.c""")
 
-udis = udis_env.Program (target = 'udis',
-                         source = (common_objs +
-                                   sim_core_objs +
-                                   common_dis_objs +
-                                   udis_srcs))
+#udis = udis_env.Program (target = 'udis',
+#                         source = (common_objs +
+#                                   sim_core_objs +
+#                                   common_dis_objs +
+#                                   udis_srcs))
 
 #-----------------------------------------------------------------------------
 # modutil
@@ -388,18 +382,6 @@ modutil_srcs = Split ("""modutil.c""")
 
 modutil = build_env.Program (target = 'modutil',
                              source = modutil_srcs + common_objs)
-
-#-----------------------------------------------------------------------------
-# genhash
-#-----------------------------------------------------------------------------
-
-if build_env ['build_target_only'] == 0:
-    genhash_srcs = Split ("""genhash.c""")
-
-    genhash = build_env.Program (target = 'genhash',
-                                 source = (genhash_srcs +
-                                           kml_objs +
-                                           common_objs))
 
 #-----------------------------------------------------------------------------
 # default targets
