@@ -646,8 +646,11 @@ static void op_keys_to_rom_addr (sim_t *sim,
 static void op_rom_addr_to_buf (sim_t *sim UNUSED,
 				int opcode UNUSED)
 {
-  // I don't know what this instruction is supposed to do!
+#if 0
+  // I don't know what this instruction is supposed to do, but the
+  // 55 uses it quite frequently!
   fprintf (stderr, "rom addr to buf!!!!!!!!!!!!\n");
+#endif
 }
 
 
