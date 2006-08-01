@@ -22,7 +22,7 @@ global
 	author "Eric Smith <eric@brouhaha.com>"
 	hardware "Woodstock"
 	model "21"
-	rom "21.obj"
+	rom "21.rom"
 	image "21.png"
 	color 0 87 127 152  # background color, used when transparency is off
 	transparency 128
