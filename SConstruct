@@ -192,19 +192,50 @@ if env ['debug']:
 	target_build_dir += '-debug'
 
 #-----------------------------------------------------------------------------
+# sound files
+#-----------------------------------------------------------------------------
+
+SConscript ('sound/SConscript')
+
+env.Append (GPLv2 = File ('COPYING'))
+
+#-----------------------------------------------------------------------------
+# host platform code
+#-----------------------------------------------------------------------------
+
+env.Append (KML_41CV = File ('calc/nut/41cv/41cv.kml'))
+
+native_env = env.Copy ()
+native_env ['build_target_only'] = 0
+SConscript ('src/SConscript',
+            build_dir = host_build_dir,
+            duplicate = 0,
+	    exports = {'build_env' : native_env,
+		       'native_env' : env})
+
+#-----------------------------------------------------------------------------
+# ROM sources - assemble with host tools
+#-----------------------------------------------------------------------------
+
+print "env ['UASM']", env ['UASM']
+
+SConscript ('scons-builders/uasm.py')
+
+#w25_rom = env.UASM (target = 'calc/woodstock/25/25.rom',
+#		    source = 'calc/woodstock/25/25.asm')
+#Default (w25_rom)
+
+#-----------------------------------------------------------------------------
 # the calculators
 #-----------------------------------------------------------------------------
 
-#all_calcs = { 'classic':    ['35', '45', '55', '80'],
-#	      'woodstock':  ['21', '22', '25', '27'],
-#	      'spice':      ['32e', '33c', '34c', '37e', '38c', '38e'],
-#	      'nut':        ['41cv', '41cx'],
-#	      'voyager':    ['11c', '12c', '15c', '16c'] }
+print "builders", env ['BUILDERS']
 
-all_calcs = {'nut':        ['41cv'],
-	     'voyager':    ['15c'] }
-
-env.Append (KML_41CV = File ('calc/nut/41cv/41cv.kml'))
+all_calcs = {'classic':    ['35', '45', '55', '80'],
+	     'woodstock':  ['21', '25'],
+	     'spice':      ['32e', '33c', '34c', '37e', '38c', '38e'],
+	     'nut':        ['41cv', '41cx'],
+	     'voyager':    ['11c', '12c', '15c'] }
 
 ncz_files = []
 
@@ -225,34 +256,6 @@ for family in all_calcs:
 	print
 
 Default (ncz_files)
-
-#-----------------------------------------------------------------------------
-# sound files
-#-----------------------------------------------------------------------------
-
-SConscript ('sound/SConscript')
-
-env.Append (GPLv2 = File ('COPYING'))
-
-#-----------------------------------------------------------------------------
-# host platform code
-#-----------------------------------------------------------------------------
-
-native_env = env.Copy ()
-native_env ['build_target_only'] = 0
-SConscript ('src/SConscript',
-            build_dir = host_build_dir,
-            duplicate = 0,
-	    exports = {'build_env' : native_env,
-		       'native_env' : env})
-
-#-----------------------------------------------------------------------------
-# ROM sources - assemble with host tools
-#-----------------------------------------------------------------------------
-
-#SConscript ('asm/SConscript',
-#	    build_dir='obj',
-#	    duplicate=0)
 
 #-----------------------------------------------------------------------------
 # target platform code if cross-compiling
