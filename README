@@ -6,10 +6,11 @@ $Id$
 
 News:
 
-Release 0.78 adds support for the 22, 27, 29C, and 67 (sans card reader).
-There is also now sound output from the 41 family.  Errors in the KML
-files that caused spurious decimal and comma displays have been
-corrected.
+Release 0.78 adds support for the 22 and 27, and sound output for the
+41 family.  Errors in the KML files that caused spurious decimal and
+comma displays have been corrected.  Instead of separate KML, ROM, and
+image files for each model, there is now a single .ncz file which is
+a zip file containing those files.
 
 Release 0.77 fixes a bug inadvertently introduced in 0.67 which 
 prevented trigonometric functions from working correctly on the

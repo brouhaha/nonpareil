@@ -1,21 +1,28 @@
 TODO list for Nonpareil
-Copyright 1995, 2003, 2004, 2005 Eric L. Smith <eric@brouhaha.com>
+Copyright 1995, 2003, 2004, 2005, 2006 Eric L. Smith <eric@brouhaha.com>
 $Id$
 
 
 Needed for next release:
 
+  Implement reading kml, image, roms from NCZ file
+    use a GdkPixbufLoader instead of gdk_pixbuf_new_from_file().
+
+  Change model chooser to use NCZ files
+
+  Fix scons install, source tarball, Windows binary targets (broken with
+  major build system overhaul)
+
+  Finish Voyager background/key image separation
+
   Create replacement for button widget.
 
-  Finish switching to split images.  This should eliminate the circular
-  dependency complaints from SCons, but verify with latest SCons release.
-
-  Package kml, rom, images in ZIP file (.npc file) (see GSF below).
+  Improve support for -41C .mod files
 
   Windows installer using NSIS, using .nsi file from Christoph Giesselink,
   latest in email on 14-Dec-2005.
 
-  KML and images for 22, 27, 29C based on Maciej's images for 21 and 25.
+  KML and images for 22 and 27 based on Maciej's images for 21 and 25.
 
 
 Build process:
@@ -40,7 +47,7 @@ User interface:
   Custom menu from KML file (e.g., "ON-x" commands)
 
   Startup:
-      Save path of KML file in state save file.
+      Save path of NCZ file in state save file.
       Allow starting Nonpareil with state save file as command line argument.
       If no command line argument, provide dialog for user to choose
            calculator (KML done, should show state saves as well).
@@ -65,12 +72,6 @@ User interface:
 
   Implement edit menu commands:
       Edit - Copy, Paste
-
-  Add ability to read kml, image, microcode from zip file.
-      GSF: http://www.gnome.org/projects/libgsf/
-          examples in CVS: http://cvs.gnome.org/viewcvs/libgsf/tests/
-	  use a GdkPixbufLoader instead of gdk_pixbuf_new_from_file().
-      On Windows, build ZIP into .EXE similar to a self-extractor?
 
   Transparency/shape: improve support for moving window: add KML
   syntax to specify keyboard rectangle, and use only region outside
@@ -130,8 +131,6 @@ Internals:
       Nut read/write instructions
 
   Split proc.c into separate GUI thread and simulator thread portions.
-
-  Complete the support for -41C .mod files
 
   Create new XML-based ROM file format.
 
