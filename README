@@ -7,60 +7,36 @@ $Id$
 News:
 
 Release 0.78 adds support for the 22 and 27, and sound output for the
-41 family.  Errors in the KML files that caused spurious decimal and
-comma displays have been corrected.  Instead of separate KML, ROM, and
-image files for each model, there is now a single .ncz file which is
-a zip file containing those files.
+41 family.  A 15X model is provided, which is a 15C modified to have
+more RAM available to the user.
 
-Release 0.77 fixes a bug inadvertently introduced in 0.67 which 
-prevented trigonometric functions from working correctly on the
-Classic series calculators, and may have caused other less obvious
-problems in those models.  This release also adds "Hard reset" and
-"Obdurate reset" commands on the edit menu.  "Hard reset" acts as a
-reset to the processor, while "Obdurate reset" also zeros all of RAM.
-Depending on the specific calculator model, a hard reset may result in
-loss of user data and/or programs; an obdurate reset will always clear
-all user data and programs.
-
-Release 0.76 has a minor fix to the build process so that the Windows
-executables will have a '.exe.' extension.  The HP-67 files that were
-inadventently included in the last several releases have been removed
-as Nonpareil is not yet able to simulate it correctly.  There are no
-code changes from release 0.74.
-
-Release 0.74 will prompt for a KML file if none is given on the command
-line.  There is now alpha-level support for Windows (win32).
-
-Release 0.73 fixes a problem that prevented 41CX simulation from
-working in 0.72.  The Phineas (timer) chip is now only "installed"
-when the .mod file requests it; in the case of the 41CX this occurs
-when the mainframe microcode is loaded.  Suitable .mod files of the
-82143A Printer and 82182A Time Module are now provided.
-
-Release 0.72 of Nonpareil is an interim development release, adding
-support for the HP 82143A printer (used with the HP-41C family).  The
-keyboard support for the HP-41C family and Voyager calculators now
-have two-key rollover.
+Errors in the KML files that caused spurious decimal and comma
+displays have been corrected.  Instead of separate KML, ROM, and image
+files for each model, there is now a single .ncz file which is a zip
+file containing those files.
 
 In this release, the following calculators are simulated:
-	HP-35, HP-45, HP-55, HP-80
-	HP-21, HP-25
-	HP-31E, HP-33C, HP-34C, HP-37E, HP-38E, HP-38C
-	HP-41CV, HP-41CX
-	HP-11C, HP-12C, HP-15C, HP-16C
+
+	Classic series:    35, 45, 55, 80
+	Woodstock series:  21, 22, 25, 27
+	Spice series:      31E, 33C, 34C, 37E, 38E, 38C
+	Nut series:        41CV, 41CX
+	Voyager series:    11C, 12C, 15C, 16C
+
+	Modified Voyager:  15X
 
 Many menu commands are not yet implemented.
 
 Known bugs and deficiencies:
 
-* The HP-55 simulation does not correctly support user registers
+* The 55 simulation does not correctly support user registers
   .0 through .9.
 
-* The HP-41CX clock runs at very close to real time, but it does not
+* The 41CX clock runs at very close to real time, but it does not
   currently initialize the calculator time and date from the host,
   nor track the host time and date.
 
-* The HP 82143A printer paper advance button does not work correctly in
+* The 82143A printer paper advance button does not work correctly in
   program mode.
 
 -----------------------------------------------------------------------------
@@ -121,32 +97,32 @@ Nonpareil simulator:
 
 Nonpareil uses the GTK+ 2.x toolkit and the Glib 2.x and libxml2 libraries.
 
-Nonpareil uses a single command line argument to specify the KML file.
+Nonpareil uses a single command line argument to specify the NCZ file.
 If no argument is found, nonpareil will try to find a file using the
-concatentation of the name under which it was invoked and ".kml".
-This allows you to (for instance) link nonpareil to "hp45" and have it
-automatically try to use "hp45.kml".
+concatentation of the name under which it was invoked and ".ncz".
+This allows you to (for instance) link nonpareil to "45" and have it
+automatically try to use "45.ncz".
 
 Nonpareil attempts to run the simulation at the same nominal rate of
 microinstruction execution as a real calculator, e.g., 3500
-microinstructions per second for an HP-55.  The HP-55 used a crystal
+microinstructions per second for a 55.  The HP-55 used a crystal
 oscillator, but most other models used an LC oscillator which was not
 very accurate.  On a computer that is heavily loaded, the
-microinstruction rate will be reduced, so the HP-55 timer mode (and the
-undocumented HP-45 timer mode) will run slow.  Don't blame me if you try
+microinstruction rate will be reduced, so the 55 timer mode (and the
+undocumented 45 timer mode) will run slow.  Don't blame me if you try
 to use it and burn your eggs.
 
-If you want to use the undocumented timer mode of the HP-45, there are
-comments in hp45.kml explaining the change necessary to that file.  On
-a real HP-45 this feature was accessed by pressing RCL then the "right
+If you want to use the undocumented timer mode of the 45, there are
+comments in 45.kml explaining the change necessary to that file.  On a
+real HP-45 this feature was accessed by pressing RCL then the "right
 half of the ENTER key".  The ENTER key actually covered two switches,
 but the key was shaped so that it only pressed the left switch, and
 the ROM was written so the right switch would provide the ENTER
 function as well as allowing use of the timer mode.  It was possible
 to either put a shim on the key, or to create a a phantom keystroke by
-simultaneously pressing CHS, 7, and 8.  Nonpareil doesn't support multiple
-key presses at all, so the KML change makes the simulator's ENTER
-button produce the keycode for the right switch.
+simultaneously pressing CHS, 7, and 8.  Nonpareil doesn't support
+multiple key presses at all, so the KML change makes the simulator's
+ENTER button produce the keycode for the right switch.
 
 -----------------------------------------------------------------------------
 
@@ -166,7 +142,7 @@ insensitive so if you prefer emphatic source code be my guest.
 Uasm considers the keywords which are used to form instructions to be
 reserved words, so they can't be used as labels.  HP's assembler was
 more flexible in this regard; I had to change the label "go" in the
-HP-55 source code to "go_".
+55 source code to "go_".
 
 Uasm does a better job of displaying the branch target addresses than
 the HP assembler did.  It will actually show the correct target
@@ -185,7 +161,7 @@ Uasm has a .symtab directive which causes the symbol table to be
 printed to the listing file.  If the source file contains multiple
 ROMs, each ROM should have its own .symtab directive.
 
-The file "hp55.asm" when assembled with uasm will produce one warning,
+The file "55.asm" when assembled with uasm will produce one warning,
 which will be printed to standard out twice (once during each pass).
 This warning can be ignored as it is the result of uasm being pickier
 than the HP assembler about forms of the "go to" instruction.
