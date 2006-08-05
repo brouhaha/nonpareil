@@ -106,9 +106,9 @@ env ['RELEASE'] = release
 #-----------------------------------------------------------------------------
 
 Export ('env')
-SConscript ('scons-builders/ncz.py')
-SConscript ('scons-builders/tarball.py')
-# SConscript ('scons-builders/nsis.py')
+SConscript ('scons/ncz.py')
+SConscript ('scons/tarball.py')
+# SConscript ('scons/nsis.py')
 
 #-----------------------------------------------------------------------------
 # package a release source tarball
@@ -217,7 +217,7 @@ SConscript ('src/SConscript',
 # ROM sources - assemble with host tools
 #-----------------------------------------------------------------------------
 
-SConscript ('scons-builders/uasm.py')
+SConscript ('scons/uasm.py')
 
 #w25_rom = env.UASM (target = 'calc/woodstock/25/25.rom',
 #		    source = 'calc/woodstock/25/25.asm')
@@ -279,7 +279,8 @@ SConscript ('win32/dll/SConscript',
 SConscript ('doc/SConscript')
 
 #-----------------------------------------------------------------------------
-# scons-local, in case the user doesn't want to install scons
+# scons directory, which contains various scons builders we use, and the
+# scons-local tarball for those that don't want to install SCons
 #-----------------------------------------------------------------------------
 
-SConscript ('scons-local/SConscript')
+SConscript ('scons/SConscript')
