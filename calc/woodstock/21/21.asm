@@ -5,6 +5,7 @@
 ; Verified to match 21 ROM/anode driver part number 1818-0129
 
 ; s 2 = stack lift enabled
+; s 3 = radian angle mode (hardware switch)
 ; s 5 = power
 ; s 9 = dp hit
 ; s 13 = shift key
@@ -1055,17 +1056,17 @@ atan34:	if 1 = s 7
 	  then go to $kxexy
 	select rom 01	; go to L0433
 
-L1633:	if 1 = s 3
+L1633:	if 1 = s 3		; equiv. tan + 1 in 25
 	  then go to L1641
 	jsb div11
 	jsb $atc1
 	c + c -> c[w]
 	jsb mpy11
 
-L1641:	jsb $atc1
-	c + c -> c[w]
-	c + c -> c[w]
-	c + c -> c[w]
+L1641:	jsb $atc1		; load pi/4
+	c + c -> c[w]		; pi/2
+	c + c -> c[w]		; pi
+	c + c -> c[w]		; 2*pi
 	jsb pre11
 	jsb $atc1
 	p <- 10
