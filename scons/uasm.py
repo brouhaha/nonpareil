@@ -7,7 +7,6 @@ Import ('env')
 import os.path
 
 uasm_path = str (env ['UASM'])
-print "uasm", uasm_path
 
 def uasm_emitter_fn (target, source, env):
     target.append (os.path.splitext (str (target [0])) [0] + '.lst')

@@ -98,14 +98,12 @@ Help (opts.GenerateHelpText (env))
 SConsignFile ()
 
 env ['RELEASE'] = release
+Export ('env')
 
 #-----------------------------------------------------------------------------
 # Add some builders to the environment:
-#   tarball
-#   NSIS
 #-----------------------------------------------------------------------------
 
-Export ('env')
 SConscript ('scons/ncz.py')
 SConscript ('scons/tarball.py')
 # SConscript ('scons/nsis.py')
@@ -214,14 +212,10 @@ SConscript ('src/SConscript',
 		       'native_env' : env})
 
 #-----------------------------------------------------------------------------
-# ROM sources - assemble with host tools
+# Add more builders to the environment:
 #-----------------------------------------------------------------------------
 
 SConscript ('scons/uasm.py')
-
-#w25_rom = env.UASM (target = 'calc/woodstock/25/25.rom',
-#		    source = 'calc/woodstock/25/25.asm')
-#Default (w25_rom)
 
 #-----------------------------------------------------------------------------
 # the calculators
@@ -237,19 +231,17 @@ ncz_files = []
 
 for family in all_calcs:
 	for model in all_calcs [family]:
-		print family, model
 		model_dir = Dir ('calc/' + family + '/' + model)
 		kml = FindFile (model + '.kml', model_dir)
 		# parse kml to find ROM, image files, etc.
 		ncz_files += env.NCZ (target = 'build/calc/' + model + '.ncz',
 				      source = 'calc/' + family + '/' + model + '/' + model + '.kml');
-#		SConscript ('calc/SConscript',
-#			    exports = 'model',
-#			    src_dir = 'calc/' + family + '/' + model,
-#			    build_dir = 'build/calc/' + family + '/' + model,
-#			    duplicate = 0)
 
 Default (ncz_files)
+
+env.Alias (target = 'install',
+           source = env.Install (dir = env ['destdir'] + env ['libdir'],
+                                 source = ncz_files))
 
 #-----------------------------------------------------------------------------
 # target platform code if cross-compiling

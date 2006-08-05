@@ -215,12 +215,9 @@ uasm = build_env.Program (target = 'uasm',
                           source = uasm_srcs + ["util.c",'arch.c',release_obj])
 #                          source = uasm_srcs + common_objs)
 
-print "uasm", uasm [0]
-
 if not build_target_only:
     native_env ['UASM'] = uasm [0]
 #   native_env.Append (UASM = uasm [0])
-
 
 
 #-----------------------------------------------------------------------------
