@@ -25,28 +25,21 @@ def kml_scanner_fn (node, env, path):
     fl = []
 
     for f in files:
-        print "looking for", f
-        # look for the file in the hierarchy
+        #print "scanner looking for ", f
         kpath = os.path.dirname (str (node))
         while kpath:
-            f2 = kpath + '/' + f
-            if os.path.exists (f2):
-                print "found", f2
+            f1 = kpath + '/' + f
+            #print "scanner trying", f1
+            if os.path.exists (f1):
+                #print "found", f1
+                fl.append (env.File (f1))
                 break
             else:
                 kpath = os.path.dirname (kpath)
         else:
-            f2 = 'build/' + os.path.dirname (str (node)) + '/' + f
-            print "using", f2
-            # The following ugly hack deals with the lack of automatic
-            # implicit dependency handling in SCons.  Hopefully we'll get
-            # a better solution eventually.
-            if f2 [-4:] == '.rom':
-                print "it's a .rom file"
-                sf = os.path.dirname (str (node)) + '/' + f [:-3] + 'asm'
-                print "try to build from", sf
-                env.UASM (target = f2, source = sf)
-        fl.append (env.File (f2))
+            f1 = 'build/' + os.path.dirname (str (node)) + '/' + f
+            #print "not found, using", f1
+            fl.append (env.File (f1))
     return fl
 
 
@@ -54,12 +47,56 @@ kml_scanner = env.Scanner (function = kml_scanner_fn,
                            skeys = ['.kml'])
 
 
+# The following tries to figure out how to build a target file based on
+# its extension and the available builders.
+
+# It attempts to determine the source directory that the build
+# directory builds from.  Ideally we would find that out from the
+# mapping of build_dir to src_dir established by SConscript(), but I
+# haven't yet figured out how to extract that.  For Nonpareil, the
+# build dir for foo/bar is build/foo/bar, so we just remove the first
+# component of the path.
+
+def try_to_build (target_fn, env):
+    #print "trying to figure out how to build", target_fn
+    target_path_and_base, target_suffix = os.path.splitext (target_fn)
+    target_path, target_base = os.path.split (target_path_and_base)
+    #print "target path", target_path, "target base", target_base, "target suffix", target_suffix
+    # if the target_fn is in the source tree (not the build tree), we're done
+    #print "target_path [0:6]", target_path [0:6]
+    if target_path [0:6] != 'build/':
+        return os.path.exists (target_fn);
+    builder_list = env ['BUILDERS']
+    for builder_name in builder_list.keys():
+        builder = builder_list [builder_name]
+        if target_suffix in builder.suffix:
+            #print "matched builder", builder_name
+            for src_suffix in builder.src_suffix:
+                #print "possible source suffix", src_suffix
+                src_path = target_path.split ('/', 1) [1]
+                #print "src path", src_path
+                src_fn = src_path + '/' + target_base + src_suffix
+                if os.path.exists (src_fn):
+                    builder.__call__ (target = target_fn,
+                                      source = src_fn,
+                                      env = env,
+                                      for_signature = False)
+                    return True
+                src_fn = target_path + '/' + target_base + src_suffix
+                if try_to_build (src_fn, env):
+                    builder.__call__ (target = target_fn,
+                                      source = src_fn,
+                                      env = env,
+                                      for_signature = False)
+    return False
+                
+
 def ncz_emitter_fn (target, source, env):
     extra_files = kml_scanner_fn (source [0], env, None)
     fnl = []
     for f in extra_files:
-        fn = env.File (f)
-        # create dependency for fn based on available builders
+        fn = str (f)
+        try_to_build (fn, env)
         fnl.append (fn)
     return (target, source + fnl)
 

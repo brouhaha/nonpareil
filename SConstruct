@@ -217,8 +217,6 @@ SConscript ('src/SConscript',
 # ROM sources - assemble with host tools
 #-----------------------------------------------------------------------------
 
-print "env ['UASM']", env ['UASM']
-
 SConscript ('scons-builders/uasm.py')
 
 #w25_rom = env.UASM (target = 'calc/woodstock/25/25.rom',
@@ -229,8 +227,6 @@ SConscript ('scons-builders/uasm.py')
 # the calculators
 #-----------------------------------------------------------------------------
 
-print "builders", env ['BUILDERS']
-
 all_calcs = {'classic':    ['35', '45', '55', '80'],
 	     'woodstock':  ['21', '25'],
 	     'spice':      ['32e', '33c', '34c', '37e', '38c', '38e'],
@@ -240,9 +236,8 @@ all_calcs = {'classic':    ['35', '45', '55', '80'],
 ncz_files = []
 
 for family in all_calcs:
-	print family,
 	for model in all_calcs [family]:
-		print model,
+		print family, model
 		model_dir = Dir ('calc/' + family + '/' + model)
 		kml = FindFile (model + '.kml', model_dir)
 		# parse kml to find ROM, image files, etc.
@@ -253,7 +248,6 @@ for family in all_calcs:
 #			    src_dir = 'calc/' + family + '/' + model,
 #			    build_dir = 'build/calc/' + family + '/' + model,
 #			    duplicate = 0)
-	print
 
 Default (ncz_files)
 
