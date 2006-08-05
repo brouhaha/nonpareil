@@ -25,20 +25,16 @@ def kml_scanner_fn (node, env, path):
     fl = []
 
     for f in files:
-        #print "scanner looking for ", f
         kpath = os.path.dirname (str (node))
         while kpath:
             f1 = kpath + '/' + f
-            #print "scanner trying", f1
             if os.path.exists (f1):
-                #print "found", f1
                 fl.append (env.File (f1))
                 break
             else:
                 kpath = os.path.dirname (kpath)
         else:
             f1 = 'build/' + os.path.dirname (str (node)) + '/' + f
-            #print "not found, using", f1
             fl.append (env.File (f1))
     return fl
 
@@ -58,23 +54,17 @@ kml_scanner = env.Scanner (function = kml_scanner_fn,
 # component of the path.
 
 def try_to_build (target_fn, env):
-    #print "trying to figure out how to build", target_fn
     target_path_and_base, target_suffix = os.path.splitext (target_fn)
     target_path, target_base = os.path.split (target_path_and_base)
-    #print "target path", target_path, "target base", target_base, "target suffix", target_suffix
     # if the target_fn is in the source tree (not the build tree), we're done
-    #print "target_path [0:6]", target_path [0:6]
     if target_path [0:6] != 'build/':
         return os.path.exists (target_fn);
     builder_list = env ['BUILDERS']
     for builder_name in builder_list.keys():
         builder = builder_list [builder_name]
         if target_suffix in builder.suffix:
-            #print "matched builder", builder_name
             for src_suffix in builder.src_suffix:
-                #print "possible source suffix", src_suffix
                 src_path = target_path.split ('/', 1) [1]
-                #print "src path", src_path
                 src_fn = src_path + '/' + target_base + src_suffix
                 if os.path.exists (src_fn):
                     builder.__call__ (target = target_fn,
