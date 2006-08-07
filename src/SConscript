@@ -57,7 +57,7 @@ else:
     build_env.Append (LINKFLAGS = ['-s'])  # strip executables
 
 if cross and ming and build_target_only:
-    build_env.Replace (CC = '/usr/local/mingw/bin/i586-mingw32msvc-gcc')
+    build_env.Replace (CC = '/usr/local/bin/i386-mingw32-gcc')
     build_env.Append (CCFLAGS = ['-mms-bitfields'])
     build_env.Append (CPPPATH = ['/usr/local/gtkwin/include'])  # libpng
     build_env.Append (CPPPATH = ['/usr/local/gtkwin/SDL-1.2.8/include'])
