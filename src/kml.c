@@ -139,8 +139,8 @@ kml_t *read_kml_file_from_gsfinfile (GsfInfile *ncz, char *fn)
   if (! kml_gsfinput)
     return NULL;
 
-  g_object_ref (G_OBJECT (kml_gsfinfile));
   kml_gsfinfile = ncz;
+  g_object_ref (G_OBJECT (kml_gsfinfile));
 
   kml = alloc (sizeof (kml_t));
 
