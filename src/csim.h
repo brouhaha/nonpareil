@@ -28,7 +28,7 @@ typedef struct button_info_t button_info_t;
 typedef struct
 {
   gboolean scancode_debug;
-  GsfInfile *npz;
+  GsfInfile *ncz;
   kml_t *kml;
   sim_t *sim;
   GtkWidget *main_window;

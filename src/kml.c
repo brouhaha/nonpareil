@@ -28,11 +28,15 @@ MA 02111, USA.
 #include <unistd.h>
 
 #include <gsf/gsf-infile.h>
+#include <gsf/gsf-input.h>
 
 #include "util.h"
 #include "display.h"
 #include "kml.h"
 
+
+GsfInfile *kml_gsfinfile;
+GsfInput *kml_gsfinput;
 
 int kml_lineno;
 int kml_tokenpos;
@@ -73,10 +77,39 @@ void range_check_char (int val, int min, int max)
 }
 
 
+int kml_yyinput (unsigned char *buf, size_t max_size)
+{
+  size_t size;
+  guint8 *rp;
+  size_t r;
+
+  if (kml_gsfinput)
+    {
+      size = gsf_input_remaining (kml_gsfinput);
+      if (size > max_size)
+	size = max_size;
+
+      r = gsf_input_read (kml_gsfinput, size, buf);
+      if (r)
+	return size;
+      else
+	return 0;
+    }
+  else
+    {
+      // not very efficient
+      r = fread (buf, 1, max_size, yyin);
+      return r;
+    }
+}
+
+
 kml_t *read_kml_file (char *fn)
 {
   kml_t *kml;
   extern kml_t *yy_kml;
+
+  kml_gsfinfile = NULL;
 
   yyin = fopen (fn, "r");
   if (! yyin)
@@ -91,25 +124,43 @@ kml_t *read_kml_file (char *fn)
   yyparse ();
   
   fclose (yyin);
+  yyin = NULL;
 
   return (kml);
 }
 
 
-kml_t *read_kml_file_from_npz (GsfInfile *npz, char *fn)
+kml_t *read_kml_file_from_gsfinfile (GsfInfile *ncz, char *fn)
 {
-  GsfInput *kml_input;
   kml_t *kml;
+  extern kml_t *yy_kml;
 
-  kml_input = gsf_infile_child_by_name (npz, fn);
-  if (! kml_input)
+  kml_gsfinput = gsf_infile_child_by_name (ncz, fn);
+  if (! kml_gsfinput)
     return NULL;
 
-  // $$$ more code needed here
+  g_object_ref (G_OBJECT (kml_gsfinfile));
+  kml_gsfinfile = ncz;
 
-  g_object_unref (G_OBJECT (kml_input));
+  kml = alloc (sizeof (kml_t));
+
+  yy_kml = kml;
+
+  kml_lineno = 1;
+
+  yyparse ();
+
+  g_object_unref (G_OBJECT (kml_gsfinput));
+  kml_gsfinput = NULL;
+  g_object_unref (G_OBJECT (kml_gsfinfile));
+  kml_gsfinfile = NULL;
 
   return (kml);
+}
+
+void kml_include (char *fn)
+{
+  fatal (2, "KML include not currently supported.");
 }
 
 
@@ -306,3 +357,5 @@ void print_kml (FILE *f, kml_t *kml)
   for (scancode = kml->first_scancode; scancode; scancode = scancode->next)
     print_kml_scancode (f, scancode);
 }
+
+

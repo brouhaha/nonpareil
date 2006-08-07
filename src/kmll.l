@@ -37,11 +37,15 @@ int octal_escape (char *p);
 
 #define MAX_STR_CONST 300
 
+#if 0
 #define MAX_INCLUDE_DEPTH 10
 
 int include_stack_ptr = 0;
-YY_BUFFER_STATE include_stack [MAX_INCLUDE_DEPTH];
+GsfInput *include_stack [MAX_INCLUDE_DEPTH];
+#endif
 
+#undef YY_INPUT
+#define YY_INPUT(buf,result,max_size) (result = kml_yyinput (buf, max_size))
 %}
 
 %option case-insensitive
@@ -92,7 +96,6 @@ hardware	return (HARDWARE);
 ifflag		return (IFFLAG);
 ifpressed	return (IFPRESSED);
 image		return (IMAGE);
-include		return (INCLUDE);
 keycode		return (KEYCODE);
 lcd		return (LCD);
 listing		return (LISTING);
@@ -128,27 +131,13 @@ zoom		return (ZOOM);
 .		yyerror ("invalid character");
 
 <<EOF>>		{
-		  if (--include_stack_ptr < 0)
+#if 0
+		  if (kml_include_end () < 0)
+#endif
 		    yyterminate ();
-		  else
-		    {
-		      yy_delete_buffer (YY_CURRENT_BUFFER);
-		      yy_switch_to_buffer (include_stack [include_stack_ptr]);
-		    }
 		}
 
 %%
-
-void kml_include (char *fn)
-{
-  if (include_stack_ptr >= MAX_INCLUDE_DEPTH)
-    fatal (2, "includes nexted too deeply\n");
-  include_stack [include_stack_ptr++] = YY_CURRENT_BUFFER;
-  yyin = fopen (fn, "r");
-  if (! yyin)
-    fatal (2, "error opening include file '%s'\n", fn);
-  yy_switch_to_buffer (yy_create_buffer (yyin, YY_BUF_SIZE));
-}
 
 int octal_escape (char *p)
 {
@@ -162,3 +151,29 @@ int yywrap (void)
 {
   return (1);
 }
+
+#if 0
+void kml_include (char *fn)
+{
+  if (include_stack_ptr >= MAX_INCLUDE_DEPTH)
+    fatal (2, "includes nexted too deeply\n");
+  include_stack_ptr++;
+  if (kml_gsfinfile)
+    include_stack [include_stack_ptr] = gsf_infile_child_by_name (kml_gsfinfile, fn);
+  else
+    include_stack [include_stack_ptr] = ???;
+  if (! include_stack [include_stack_ptr])
+    fatal (2, "error opening include file '%s'\n", fn);
+  yy_switch_to_buffer (yy_create_buffer (yyin, YY_BUF_SIZE));
+}
+
+int kml_include_end (void)
+{
+  if ((--include_stack_ptr) <= 0)
+    return include_stack_ptr;
+
+  yy_delete_buffer (YY_CURRENT_BUFFER);
+  yy_switch_to_buffer (include_stack [include_stack_ptr]);
+  return include_stack_ptr;
+}
+#endif

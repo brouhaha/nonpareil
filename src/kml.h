@@ -19,25 +19,6 @@ Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
 MA 02111, USA.
 */
 
-extern FILE *yyin;
-
-extern int kml_lineno;
-extern int kml_tokenpos;
-extern int kml_errors;
-
-#define KML_LINEBUF_SIZE 500
-extern char kml_linebuf [KML_LINEBUF_SIZE];
-
-void kml_include (char *fn);
-
-int yylex (void);
-int yyparse (void);
-void yyerror (char *fmt, ...);
-
-void range_check (int val, int min, int max);
-void range_check_char (int val, int min, int max);
-
-
 #define KML_MAX_GLOBAL_COLOR 2
 #define KML_MAX_DISPLAY_COLOR 16
 
@@ -209,8 +190,34 @@ typedef struct
 
 kml_t *read_kml_file (char *fn);
 
-kml_t *read_kml_file_from_npz (GsfInfile *npz, char *fn);
+kml_t *read_kml_file_from_gsfinfile (GsfInfile *ncz, char *fn);
 
 void free_kml (kml_t *kml);
 
 void print_kml (FILE *f, kml_t *kml);
+
+
+// for use in kml.c, kmll.l, and kmly.y only:
+
+extern FILE *yyin;
+
+GsfInfile *kml_gsfinfile;
+
+extern int kml_lineno;
+extern int kml_tokenpos;
+extern int kml_errors;
+
+#define KML_LINEBUF_SIZE 500
+extern char kml_linebuf [KML_LINEBUF_SIZE];
+
+int yylex (void);
+int yyparse (void);
+void yyerror (char *fmt, ...);
+
+void range_check (int val, int min, int max);
+void range_check_char (int val, int min, int max);
+
+void kml_include (char *fn);
+//int kml_include_end (void);
+
+int kml_yyinput (unsigned char *buf, size_t max_size);

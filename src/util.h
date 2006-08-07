@@ -114,7 +114,8 @@ size_t fwrite_bytes (FILE *stream,
 		     bool *error);
 
 
-char *base_filename (char *name);
+bool filename_suffix_match (char *name, char *suffix);
+
 char *base_filename_with_suffix (char *name, char *suffix);
 
 

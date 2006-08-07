@@ -307,64 +307,49 @@ size_t fwrite_bytes (FILE *stream,
 }
 
 
-char *base_filename (char *name)
+bool filename_suffix_match (char *name, char *suffix)
 {
-  char *p1, *p2;
-  unsigned int n;
-  char buf [PATH_MAX];
-
-  p1 = strrchr (name, '/');  // $$$ not portable
-  if (! p1)
-    p1 = name;
-  p2 = strchr (name, '.');
-  if (p2)
-    n = p2 - p1;
-  else
-    n = strlen (p1);
-  if (n >= sizeof (buf))
-    n = sizeof (buf) - 1;
-  strncpy (buf, p1, n);
-  buf [n] = '\0';
-  return newstr (buf);
+  int nl = strlen (name);
+  int sl = strlen (suffix);
+  if (sl > nl)
+    return false;
+  return strcmp (name + nl - sl, suffix) == 0;
 }
 
 
 char *base_filename_with_suffix (char *name, char *suffix)
 {
   char *p1, *p2;
-  unsigned int n;
-  unsigned int sn;
-  char buf [PATH_MAX];
+  unsigned int n, sn;
+  char *buf;
+
+  if (suffix)
+    sn = strlen (suffix) + 1;
+  else
+    sn = 0;
 
   p1 = strrchr (name, '/');  // $$$ not portable
-  if (! p1)
+  if (p1)
+    p1++;
+  else
     p1 = name;
-  p2 = strchr (name, '.');
+  p2 = strchr (p1, '.');
   if (p2)
+    n = p2 - p1;
+  else
+    n = strlen (p1);
+
+  buf = alloc (n + sn + 1);
+
+  strncpy (buf, p1, n);
+  if (suffix)
     {
-      n = strlen (p1);
-      if (n >= sizeof (buf))
-	n = sizeof (buf) - 1;
-      strncpy (buf, p1, n);
-      buf [n] = '\0';
+      buf [n] = '.';
+      strcpy (buf + n + 1, suffix);
     }
   else
-    {
-      n = p2 - p1;
-      sn = strlen (suffix);
-      if (n >= sizeof (buf))
-	n = sizeof (buf) - 1;
-      strncpy (buf, p1, n);
-      buf [n] = '\0';
-      // now append '.' and suffix
-      if ((n + 1 + sn) < sizeof (buf))
-	{
-	  buf [n] = '.';
-	  strcpy (& buf [n + 1], suffix);
-	}
-    }
-
-  return newstr (buf);
+    buf [n] = '\0';
+  return buf;
 }
 
 
