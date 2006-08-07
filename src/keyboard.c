@@ -154,7 +154,7 @@ static void add_key (csim_t *csim,
   button_info->number = number;
 
   if (kml_button->image_fn)
-    button_pixbuf = load_pixbuf_from_file (kml_button->image_fn);
+    button_pixbuf = load_pixbuf (csim, kml_button->image_fn);
   else
     button_pixbuf = gdk_pixbuf_new_subpixbuf (csim->background_pixbuf,
 					      kml_button->offset.x - csim->kml->background_offset.x,

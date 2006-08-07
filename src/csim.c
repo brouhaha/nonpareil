@@ -630,17 +630,57 @@ GdkPixbuf *load_pixbuf_from_file (char *image_name)
 GdkPixbuf *load_pixbuf_from_ncz (GsfInfile *ncz, char *image_name)
 {
   GsfInput *image_input;
+  GdkPixbufLoader *loader;
   GdkPixbuf *pixbuf;
+  unsigned char buf [1024];
 
   image_input = gsf_infile_child_by_name (ncz, image_name);
   if (! image_input)
     return NULL;
 
-  // $$$ more code needed here
+  printf ("found image '%s' in ncz file\n", image_name);
+
+  loader = gdk_pixbuf_loader_new ();
+
+  while (1)
+    {
+      size_t count = gsf_input_remaining (image_input);
+      if (! count)
+	break;
+      if (count > sizeof (buf))
+	count = sizeof (buf);
+      unsigned char const *rp = gsf_input_read (image_input, count, buf);
+      if (! rp)
+	fatal (2, "error reading image\n");
+      gdk_pixbuf_loader_write (loader, buf, count, NULL);
+    }
+
+  pixbuf = gdk_pixbuf_loader_get_pixbuf (loader);
+  g_object_ref (G_OBJECT (pixbuf));
+
+  gdk_pixbuf_loader_close (loader, NULL);
 
   g_object_unref (G_OBJECT (image_input));
+  g_object_unref (G_OBJECT (loader));
   return pixbuf;
 }
+
+
+GdkPixbuf *load_pixbuf (csim_t *csim, char *image_name)
+{
+  GdkPixbuf *pixbuf;
+
+  if (csim->ncz)
+    {
+      pixbuf = load_pixbuf_from_ncz (csim->ncz, image_name);
+      if (pixbuf)
+	return pixbuf;
+    }
+
+  pixbuf = load_pixbuf_from_file (image_name);
+  return pixbuf;
+}
+
 
 
 GsfInfile *open_zip_file (char *zip_fn)
@@ -796,9 +836,7 @@ int main (int argc, char *argv[])
 
   model_info = get_model_info (model);
 
-  // $$$
-  csim->file_pixbuf = load_pixbuf_from_file (csim->kml->image_fn);
-  // $$$
+  csim->file_pixbuf = load_pixbuf (csim, csim->kml->image_fn);
 
   if (! csim->kml->has_background_size)
     {

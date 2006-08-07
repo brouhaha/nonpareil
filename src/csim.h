@@ -56,7 +56,7 @@ typedef struct
 
 // General utility functions in csim.c:
 
-GdkPixbuf *load_pixbuf_from_file (char *image_name);
+GdkPixbuf *load_pixbuf (csim_t *csim, char *image_name);
 
 
 // Display:
