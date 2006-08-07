@@ -551,17 +551,17 @@ bool gui_remove_hardware (void *ref             UNUSED,
 }
 
 
-char *find_kml_file (char *kml_name)
+char *find_file_with_suffix (char *name, char *suffix)
 {
-  char *kml_fn;
+  char *fn;
   char *p;
 
-  if (kml_name)
+  if (name)
     {
-      kml_fn = find_file_in_path_list (kml_name, ".kml", default_path);
-      if (! kml_fn)
-	fatal (2, "can't find KML file '%s'\n", kml_name);
-      return kml_fn;
+      fn = find_file_in_path_list (name, suffix, default_path);
+      if (! fn)
+	fatal (2, "can't find %s file '%s'\n", suffix, name);
+      return fn;
     }
 
   // $$$ following is not portable!
@@ -571,43 +571,9 @@ char *find_kml_file (char *kml_name)
   else
     p = progname;
 
-  kml_name = newstrcat (p, ".kml");
-  kml_fn = find_file_in_path_list (kml_name, NULL, default_path);
-  if (kml_fn)
-    return kml_fn;
-
-  kml_fn = calculator_chooser (default_path);
-  return kml_fn;
-}
-
-
-char *find_ncz_file (char *ncz_name)
-{
-  char *ncz_fn;
-  char *p;
-
-  if (ncz_name)
-    {
-      ncz_fn = find_file_in_path_list (ncz_name, ".ncz", default_path);
-      if (! ncz_fn)
-	fatal (2, "can't find NCZ file '%s'\n", ncz_name);
-      return ncz_fn;
-    }
-
-  // $$$ following is not portable!
-  p = strrchr (progname, '/');
-  if (p)
-    p++;
-  else
-    p = progname;
-
-  ncz_name = newstrcat (p, ".ncz");
-  ncz_fn = find_file_in_path_list (ncz_name, NULL, default_path);
-  if (ncz_fn)
-    return ncz_fn;
-
-  ncz_fn = calculator_chooser (default_path);
-  return ncz_fn;
+  name = newstrcat (p, suffix);
+  fn = find_file_in_path_list (name, NULL, default_path);
+  return fn;
 }
 
 
@@ -713,8 +679,8 @@ int main (int argc, char *argv[])
 {
   csim_t *csim;
   char *cmd_line_filename = NULL;
-  char *ncz_fn;
-  char *kml_fn;
+  char *ncz_fn = NULL;
+  char *kml_fn = NULL;
   char *rom_fn;
 #ifdef HAS_DEBUGGER
   char *listing_fn;
@@ -774,19 +740,26 @@ int main (int argc, char *argv[])
 
   init_sound (sound_enabled);
 
+  if (! cmd_line_filename)
+    {
+      cmd_line_filename = calculator_chooser (default_path);
+      if (! cmd_line_filename)
+	fatal (2, "No NCZ or KML file specified.\n");
+    }
+
   if (filename_suffix_match (cmd_line_filename, ".ncz"))
-    ncz_fn = find_ncz_file (cmd_line_filename);
+    ncz_fn = find_file_with_suffix (cmd_line_filename, ".ncz");
   else if (filename_suffix_match (cmd_line_filename, ".kml"))
-    kml_fn = find_kml_file (cmd_line_filename);
+    kml_fn = find_file_with_suffix (cmd_line_filename, ".kml");
   else
     {
-      ncz_fn = find_ncz_file (cmd_line_filename);
+      ncz_fn = find_file_with_suffix (cmd_line_filename, ".ncz");
       if (! ncz_fn)
 	{
-	  kml_fn = find_kml_file (cmd_line_filename);
+	  kml_fn = find_file_with_suffix (cmd_line_filename, ".kml");
 	  if (! kml_fn)
 	    {
-	      fatal (2, "Can't find NCZ file");
+	      fatal (2, "Can't find NCZ or KML file\n");
 	    }
 	}
     }
