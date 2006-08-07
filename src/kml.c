@@ -80,17 +80,19 @@ void range_check_char (int val, int min, int max)
 int kml_yyinput (unsigned char *buf, size_t max_size)
 {
   size_t size;
-  guint8 *rp;
+  unsigned char const * rp;
   size_t r;
 
   if (kml_gsfinput)
     {
       size = gsf_input_remaining (kml_gsfinput);
+      if (! size)
+	return 0;
+
       if (size > max_size)
 	size = max_size;
-
-      r = gsf_input_read (kml_gsfinput, size, buf);
-      if (r)
+      rp = gsf_input_read (kml_gsfinput, size, buf);
+      if (rp)
 	return size;
       else
 	return 0;
