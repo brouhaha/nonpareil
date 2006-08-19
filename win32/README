@@ -1,0 +1,28 @@
+GTK+ 2.8 uses Cairo, and will not run on Windows95, Windows98, Windows ME,
+or Windows NT 4.0.
+
+GTK+ 2.8.18 runtime (for Windows 2000, XP)
+	05-AUG-2006
+	http://prdownloads.sourceforge.net/gimp-win/gtk+-2.8.18-setup-1.zip?download
+
+GTK+ 2.6.10 runtime (for Windows 95, 98, ME, or NT 4.0)
+	05-AUG-2006
+	http://prdownloads.sourceforge.net/gimp-win/gtk+-2.6.10-20050823-setup.zip?download
+
+GTK+ 2.8/Glib 2.10 development packages
+
+GTK+ 2.6/Glib 2.6 development packages
+
+GTK+ 2.4/Glib 2.4 development packages (preferred for backwards compatibility?)
+
+libgsf2
+
+libxml2
+	05-AUG-2006
+	http://www.zlatkovic.com/pub/libxml/libxml2-2.6.26.win32.zip
+
+
+SDL
+	05-AUG-2006
+	http://www.libsdl.org/release/SDL-1.2.11-win32.zip
+	http://www.libsdl.org/release/SDL-devel-1.2.11-mingw32.tar.gz
