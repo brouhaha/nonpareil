@@ -5,10 +5,7 @@ $Id$
 
 Needed for next release:
 
-  Implement reading kml, image, roms from NCZ file
-    use a GdkPixbufLoader instead of gdk_pixbuf_new_from_file().
-
-  Change model chooser to use NCZ files
+  Implement reading .rom, .mod files from NCZ file
 
   Fix scons install, source tarball, Windows binary targets (broken with
   major build system overhaul)
@@ -154,6 +151,8 @@ Internals:
 
 
 KML:
+
+  Reimplement include files.
 
   It would be nice to use a pure parser for KML, pass in the kml_t
   pointer as input, and return it from read_kml_file().  But Flex
