@@ -151,6 +151,7 @@ typedef struct
   char *rom_listing_fn;
   char *patch_fn;
   char *image_fn;
+  char *image_cr;
   int has_transparency;
   int transparency_threshold;
   kml_color_t *global_color [KML_MAX_GLOBAL_COLOR];

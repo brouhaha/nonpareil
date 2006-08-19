@@ -75,7 +75,7 @@ static char *credits_people [] =
 };
 
 
-static GtkWidget *intro_page (void)
+static GtkWidget *intro_page (kml_t *kml)
 {
   GtkWidget *vbox;
 
@@ -89,6 +89,30 @@ static GtkWidget *intro_page (void)
 		      FALSE,  // expand
 		      FALSE,  // fill
 		      0);     // padding
+
+  if (kml && (kml->title || kml->author))
+    {
+      gtk_container_add (GTK_CONTAINER (vbox),
+			 gtk_hseparator_new ());
+      gtk_container_add (GTK_CONTAINER (vbox),
+			 gtk_label_new ("KML:"));
+      if (kml->title)
+	gtk_container_add (GTK_CONTAINER (vbox),
+			   gtk_label_new (kml->title));
+      if (kml->author)
+	gtk_container_add (GTK_CONTAINER (vbox),
+			   gtk_label_new (kml->author));
+    }
+
+  if (kml && kml->image_cr)
+    {
+      gtk_container_add (GTK_CONTAINER (vbox),
+			 gtk_hseparator_new ());
+      gtk_container_add (GTK_CONTAINER (vbox),
+			 gtk_label_new ("Images by:"));
+      gtk_container_add (GTK_CONTAINER (vbox),
+			 gtk_label_new (kml->image_cr));
+    }
 
   return vbox;
 }
@@ -216,7 +240,7 @@ void about_dialog (GtkWidget *main_window, kml_t *kml)
   //			       GTK_POS_LEFT);
 
   gtk_notebook_append_page (GTK_NOTEBOOK (notebook),
-			    intro_page (),
+			    intro_page (kml),
 			    gtk_label_new ("Introduction"));
 
   gtk_notebook_append_page (GTK_NOTEBOOK (notebook),
@@ -226,24 +250,6 @@ void about_dialog (GtkWidget *main_window, kml_t *kml)
   gtk_notebook_append_page (GTK_NOTEBOOK (notebook),
 			    license_page (),
 			    gtk_label_new ("License"));
-
-#if 0
-  add_credits (GTK_DIALOG (dialog)->vbox);
-
-  if (kml && (kml->title || kml->author))
-    {
-      gtk_container_add (GTK_CONTAINER (GTK_DIALOG (dialog)->vbox),
-			 gtk_hseparator_new ());
-      gtk_container_add (GTK_CONTAINER (GTK_DIALOG (dialog)->vbox),
-			 gtk_label_new ("KML:"));
-      if (kml->title)
-	gtk_container_add (GTK_CONTAINER (GTK_DIALOG (dialog)->vbox),
-			   gtk_label_new (kml->title));
-      if (kml->author)
-	gtk_container_add (GTK_CONTAINER (GTK_DIALOG (dialog)->vbox),
-			   gtk_label_new (kml->author));
-    }
-#endif
 
   gtk_container_add (GTK_CONTAINER (GTK_DIALOG (dialog)->vbox),
 		     notebook);

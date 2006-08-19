@@ -83,6 +83,7 @@ button		return (BUTTON);
 character	return (CHARACTER);
 class		return (CLASS);
 color		return (COLOR);
+credit		return (CREDIT);
 debug		return (DEBUG);
 default		return (DEFAULT);
 digits		return (DIGITS);

@@ -49,19 +49,19 @@ int kml_cur_idx2;
 %token <integer> CHAR
 
 %token ANNUNCIATOR  AUTHOR       BACKGROUND   BITMAP       BUTTON
-%token CHARACTER    CLASS        COLOR        DEBUG        DEFAULT
-%token DIGITS       DISPLAY      DOWN         ELSE         END
-%token FLAG         GLOBAL       HARDWARE     IFFLAG       IFPRESSED
-%token IMAGE        INCLUDE      KEYCODE      LCD          LISTING
-%token MAP          MENUITEM     MODEL        NOHOLD       OFFSET
-%token ONDOWN       ONUP         OUTIN        PATCH        POSITION
-%token PRESS        PRINT        RELEASE      RESETFLAG    ROM
-%token SCANCODE     SEGMENT      SEGMENTS     SETFLAG      SIZE
-%token SWITCH       TITLE        TRANSPARENCY TYPE         VIRTUAL
-%token ZOOM
+%token CHARACTER    CLASS        COLOR        CREDIT       DEBUG
+%token DEFAULT      DIGITS       DISPLAY      DOWN         ELSE
+%token END          FLAG         GLOBAL       HARDWARE     IFFLAG
+%token IFPRESSED    IMAGE        INCLUDE      KEYCODE      LCD
+%token LISTING      MAP          MENUITEM     MODEL        NOHOLD
+%token OFFSET       ONDOWN       ONUP         OUTIN        PATCH
+%token POSITION     PRESS        PRINT        RELEASE      RESETFLAG
+%token ROM          SCANCODE     SEGMENT      SEGMENTS     SETFLAG
+%token SIZE         SWITCH       TITLE        TRANSPARENCY TYPE
+%token VIRTUAL      ZOOM
 
 
-%type <string>  image_stmt
+%type <string>  image_stmt image_credit_stmt
 
 %type <intpair> offset_stmt size_stmt down_stmt
 
@@ -122,6 +122,7 @@ global_stmt		:	title_stmt
 			|	listing_stmt
 			|	patch_stmt
 			|	image_stmt { yy_kml->image_fn = newstr ($1); }
+			|	image_credit_stmt { yy_kml->image_cr = newstr ($1); }
 			|	transparency_stmt
 			|	global_color_stmt
 			|	print_stmt
@@ -174,6 +175,8 @@ image_stmt		:	image_stmt_name STRING { $$ = newstr ($2); } ;
 image_stmt_name		:	IMAGE
 			|	BITMAP /* backward compatability */
 			;
+
+image_credit_stmt	:	IMAGE CREDIT STRING { $$ = newstr ($3); } ;
 
 /*----------------------------------------------------------------------------
  background section
