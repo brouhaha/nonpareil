@@ -604,8 +604,6 @@ GdkPixbuf *load_pixbuf_from_ncz (GsfInfile *ncz, char *image_name)
   if (! image_input)
     return NULL;
 
-  printf ("found image '%s' in ncz file\n", image_name);
-
   loader = gdk_pixbuf_loader_new ();
 
   while (1)
@@ -618,13 +616,16 @@ GdkPixbuf *load_pixbuf_from_ncz (GsfInfile *ncz, char *image_name)
       unsigned char const *rp = gsf_input_read (image_input, count, buf);
       if (! rp)
 	fatal (2, "error reading image\n");
-      gdk_pixbuf_loader_write (loader, buf, count, NULL);
+      if (! gdk_pixbuf_loader_write (loader, buf, count, NULL))
+	fatal (2, "error loading image\n");
     }
 
-  pixbuf = gdk_pixbuf_loader_get_pixbuf (loader);
-  g_object_ref (G_OBJECT (pixbuf));
+  if (! gdk_pixbuf_loader_close (loader, NULL))
+    fatal (2, "error loading image\n");
 
-  gdk_pixbuf_loader_close (loader, NULL);
+  pixbuf = gdk_pixbuf_loader_get_pixbuf (loader);
+  if (pixbuf)
+    g_object_ref (G_OBJECT (pixbuf));
 
   g_object_unref (G_OBJECT (image_input));
   g_object_unref (G_OBJECT (loader));
