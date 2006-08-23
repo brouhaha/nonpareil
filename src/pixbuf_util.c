@@ -121,8 +121,9 @@ void pixbuf_map_grey_to_alpha (uint8_t *r,
 			       uint8_t *g,
 			       uint8_t *b,
 			       uint8_t *a,
-			       void *data UNUSED)
+			       void *data)
 {
+  color_t *color = data;
   uint16_t level;
 
   // Compute luminance value by averaging R, G, and B (not ideal!).
@@ -132,10 +133,8 @@ void pixbuf_map_grey_to_alpha (uint8_t *r,
   level /= 3;
 
   // Turn luminance into opacity of black.
-  (*r) = 0;
-  (*b) = 0;
-  (*g) = 0;
+  (*r) = color ? color->r : 0;
+  (*b) = color ? color->g : 0;
+  (*g) = color ? color->b : 0;
   (*a) = 255 - level;
 }
-
-

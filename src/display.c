@@ -574,7 +574,7 @@ static void init_segment (gui_display_t *d, int i)
   // Convert pixbuf grey level to alpha
   pixbuf_map_all_pixels (d->segment_pixbuf [i],
 			 pixbuf_map_grey_to_alpha,
-			 d);
+			 kml->display_color [2]);
 
 #ifdef SCALED_SEGMENT_DEBUG
   show_pixbuf (d, "mapped", d->segment_pixbuf [i]);
