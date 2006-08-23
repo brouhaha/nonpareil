@@ -55,13 +55,6 @@ typedef struct
 
 typedef struct
 {
-  int r;
-  int g;
-  int b;
-} kml_color_t;
-
-typedef struct
-{
   int foo;
   int bar;
 } kml_down_t;
@@ -135,7 +128,7 @@ typedef struct kml_scancode_t
 
 typedef struct
 {
-  kml_color_t  color;  // used for "scaled" segment type, which extracts
+  color_t  color;  // used for "scaled" segment type, which extracts
                        // only the portion of the image in this color
 } kml_segment_t;
 
@@ -154,7 +147,7 @@ typedef struct
   char *image_cr;
   int has_transparency;
   int transparency_threshold;
-  kml_color_t *global_color [KML_MAX_GLOBAL_COLOR];
+  color_t *global_color [KML_MAX_GLOBAL_COLOR];
   int debug;
 
   bool has_background_offset;
@@ -178,7 +171,7 @@ typedef struct
   int display_zoom;
   kml_size_t display_size;
   kml_offset_t display_offset;
-  kml_color_t *display_color [KML_MAX_DISPLAY_COLOR];
+  color_t *display_color [KML_MAX_DISPLAY_COLOR];
 
   kml_annunciator_t *annunciator [KML_MAX_ANNUNCIATOR];
 

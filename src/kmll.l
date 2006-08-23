@@ -28,10 +28,10 @@ MA 02111, USA.
 #include <gsf/gsf-infile.h>
 
 #include "display.h"
+#include "util.h"
 #include "kml.h"
 #include "kmly.h"
 
-#include "util.h"
 
 int octal_escape (char *p);
 

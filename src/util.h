@@ -33,6 +33,14 @@ MA 02111, USA.
 #define SIZE_OF(type, field) sizeof(((type *)0)->field)
 
 
+typedef struct
+{
+  int r;
+  int g;
+  int b;
+} color_t;
+
+
 extern char *progname;  /* must be set by main program */
 
 extern char *nonpareil_release;   /* defined in release.c */

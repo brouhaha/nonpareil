@@ -151,7 +151,7 @@ transparency_stmt	:	TRANSPARENCY INTEGER
 
 global_color_stmt	:	COLOR INTEGER INTEGER INTEGER INTEGER
 				{ range_check ($2, 0, KML_MAX_GLOBAL_COLOR - 1);
-				  yy_kml->global_color [$2] = alloc (sizeof (kml_color_t));
+				  yy_kml->global_color [$2] = alloc (sizeof (color_t));
 				  yy_kml->global_color [$2]->r = $3;
 				  yy_kml->global_color [$2]->g = $4;
 				  yy_kml->global_color [$2]->b = $5; } ;
@@ -228,7 +228,7 @@ zoom_stmt		:	ZOOM INTEGER { yy_kml->display_zoom = $2; } ;
 
 display_color_stmt	:	COLOR INTEGER INTEGER INTEGER INTEGER
 				{ range_check ($2, 0, KML_MAX_DISPLAY_COLOR - 1);
-				  yy_kml->display_color [$2] = alloc (sizeof (kml_color_t));
+				  yy_kml->display_color [$2] = alloc (sizeof (color_t));
 				  yy_kml->display_color [$2]->r = $3;
 				  yy_kml->display_color [$2]->g = $4;
 				  yy_kml->display_color [$2]->b = $5; } ;
