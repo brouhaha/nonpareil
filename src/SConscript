@@ -285,7 +285,8 @@ nonpareil_srcs = Split ("""about.c goose.c
                            calc_chooser.c
                            sound.c
                            display.c printer.c
-                           keyboard.c scancode.c slide_switch.c""")
+                           keyboard.c scancode.c slide_switch.c
+                           cbutton.c""")
 
 nonpareil_csim_srcs = Split ("""csim.c""")
 
