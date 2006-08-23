@@ -82,7 +82,7 @@ if build_env ['has_debugger_cli']:
 # common components
 #-----------------------------------------------------------------------------
 
-common_srcs = Split ("""util.c arch.c model.c platform.c""")
+common_srcs = Split ("""util.c arch.c model.c platform.c pixbuf_util.c""")
 common_objs = [build_env.Object(src) for src in common_srcs]
 
 sim_core_srcs = Split ("""proc.c glib_async_queue_source.c
@@ -281,7 +281,7 @@ if not build_target_only:
 
 nonpareil_env = build_env.Copy ()
 
-nonpareil_srcs = Split ("""about.c goose.c pixbuf_util.c
+nonpareil_srcs = Split ("""about.c goose.c
                            calc_chooser.c
                            sound.c
                            display.c printer.c
