@@ -46,6 +46,7 @@ MA 02111, USA.
  * GTK+ at ftp://ftp.gtk.org/pub/gtk/. 
  */
 
+#include <stdint.h>
 #include <string.h>
 
 #include <gtk/gtk.h>
@@ -54,6 +55,7 @@ MA 02111, USA.
 #include <gdk-pixbuf/gdk-pixbuf.h>
 
 #include "cbutton.h"
+#include "pixbuf_util.h"
 
 enum {
   PRESSED,
@@ -665,56 +667,6 @@ cbutton_state_changed (GtkWidget    *widget,
     }
 }
 
-/**
- * pixbuf_intensify
- * @pixbuf: image
- * @intensity: intensity factor
- *
- * Modifies intensity of @pixbuf.  If
- * @saturation is 1.0 then intensity is not changed. If it's less than 1.0,
- * intensity is reduced (the image becomes darker); if greater than
- * 1.0, saturation is increased (the image becomes lighter).
- **/
-void
-pixbuf_intensify(GdkPixbuf *pixbuf,
-		 gfloat intensify)
-{
-  g_return_if_fail (GDK_IS_PIXBUF (pixbuf));
-  
-  if (intensify == 1.0)
-    return;
-
-  int i, j, t;
-  int width, height, has_alpha, rowstride, bytes_per_pixel;
-  guchar *line;
-  guchar *pixel;
-  guchar intensity;
-
-  has_alpha = gdk_pixbuf_get_has_alpha (pixbuf);
-  bytes_per_pixel = has_alpha ? 4 : 3;
-  width = gdk_pixbuf_get_width (pixbuf);
-  height = gdk_pixbuf_get_height (pixbuf);
-  rowstride = gdk_pixbuf_get_rowstride (pixbuf);
-  line = gdk_pixbuf_get_pixels (pixbuf);
-		
-#define CLAMP_UCHAR(v) (t = (v), CLAMP (t, 0, 255))
-#define INTENSIFY(v) (intensify * (v))
-
-  for (i = 0 ; i < height ; i++)
-    {
-      pixel = line;
-      line += rowstride;
-
-      for (j = 0 ; j < width ; j++)
-	{
-	  pixel[0] = CLAMP_UCHAR (INTENSIFY (pixel[0]));
-	  pixel[1] = CLAMP_UCHAR (INTENSIFY (pixel[1]));
-	  pixel[2] = CLAMP_UCHAR (INTENSIFY (pixel[2]));
-	  pixel += bytes_per_pixel;
-	}
-    }
-}
-
 
 /**
  * cbutton_set_pixbuf:
@@ -728,11 +680,8 @@ cbutton_set_pixbuf (Cbutton   *cbutton,
 		    GdkPixbuf *pixbuf)
 {
   CbuttonPrivate *priv;
-#if 0
-  GdkColorspace colorspace;
-  gboolean has_alpha;
-  int bits_per_sample;
-#endif
+  double prelight_intensity_factor = 1.2;
+  double active_intensity_factor = 0.5;
 
   g_return_if_fail (IS_CBUTTON (cbutton));
   g_return_if_fail (GDK_IS_PIXBUF (pixbuf));
@@ -746,12 +695,6 @@ cbutton_set_pixbuf (Cbutton   *cbutton,
 
   priv->width = gdk_pixbuf_get_width (pixbuf);
   priv->height = gdk_pixbuf_get_height (pixbuf);
-
-#if 0
-  colorspace = gdk_pixbuf_get_colorspace (pixbuf);
-  has_alpha = gdk_pixbuf_get_has_alpha (pixbuf);
-  bits_per_sample = gdk_pixbuf_get_bits_per_sample (pixbuf);
-#endif
 
   priv->mask = (GdkBitmap *) gdk_pixmap_new (NULL,
 					     priv->width,
@@ -772,13 +715,15 @@ cbutton_set_pixbuf (Cbutton   *cbutton,
 
   priv->pixbuf [GTK_STATE_PRELIGHT] = gdk_pixbuf_copy (pixbuf);
 
-  pixbuf_intensify (priv->pixbuf [GTK_STATE_PRELIGHT],
-		    1.2);
+  pixbuf_map_all_pixels (priv->pixbuf [GTK_STATE_PRELIGHT],
+			 pixbuf_map_intensify,
+			 & prelight_intensity_factor);
 
   priv->pixbuf [GTK_STATE_ACTIVE] =  gdk_pixbuf_copy (pixbuf);
 
-  pixbuf_intensify (priv->pixbuf [GTK_STATE_ACTIVE],
-		    0.5);
+  pixbuf_map_all_pixels (priv->pixbuf [GTK_STATE_ACTIVE],
+			 pixbuf_map_intensify,
+			 & active_intensity_factor);
 
   //g_object_notify (G_OBJECT (cbutton), "pixbuf");
 }

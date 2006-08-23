@@ -33,3 +33,4 @@ void pixbuf_map_all_pixels (GdkPixbuf *pixbuf,
 
 pixel_map_fn_t pixbuf_map_color_key;
 pixel_map_fn_t pixbuf_map_grey_to_alpha;
+pixel_map_fn_t pixbuf_map_intensify;

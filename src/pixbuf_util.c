@@ -138,3 +138,22 @@ void pixbuf_map_grey_to_alpha (uint8_t *r,
   (*g) = color ? color->b : 0;
   (*a) = 255 - level;
 }
+
+
+void pixbuf_map_intensify (uint8_t *r,
+			   uint8_t *g,
+			   uint8_t *b,
+			   uint8_t *a UNUSED,
+			   void *data)
+{
+  double *factor = (double *) data;
+  int t;
+
+#define CLAMP_UCHAR(v) (t = (v), CLAMP (t, 0, 255))
+#define INTENSIFY(v) ((* factor) * (v))
+
+  *r = CLAMP_UCHAR (INTENSIFY (*r));
+  *g = CLAMP_UCHAR (INTENSIFY (*g));
+  *b = CLAMP_UCHAR (INTENSIFY (*b));
+}
+
