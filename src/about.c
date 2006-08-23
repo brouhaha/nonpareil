@@ -228,7 +228,7 @@ void about_dialog (GtkWidget *main_window, kml_t *kml)
 
   gtk_container_add (GTK_CONTAINER (GTK_DIALOG (dialog)->vbox),
 		     gtk_label_new ("High-fidelity calculator simulator\n"
-				    "Copyright 1995, 2003, 2004, 2005 Eric L. Smith\n"
+				    "Copyright 1995, 2003-2006 Eric L. Smith\n"
 				    "http://nonpareil.brouhaha.com/"));
 
   notebook = gtk_notebook_new ();
