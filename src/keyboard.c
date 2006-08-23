@@ -167,7 +167,9 @@ static void add_key (csim_t *csim,
   button_info->size.height = gdk_pixbuf_get_height (button_pixbuf);
 
   button_info->widget = cbutton_new ();
-  cbutton_set_pixbuf (CBUTTON (button_info->widget), button_pixbuf);
+  cbutton_set_pixbuf (CBUTTON (button_info->widget),
+		      0,  // shift_state
+		      button_pixbuf);
 
   gtk_fixed_put (GTK_FIXED (csim->fixed),
 		 button_info->widget,

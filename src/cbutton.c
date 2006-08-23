@@ -66,16 +66,6 @@ enum {
   LAST_SIGNAL
 };
 
-#define CBUTTON_GET_PRIVATE(o)       (G_TYPE_INSTANCE_GET_PRIVATE ((o), TYPE_CBUTTON, CbuttonPrivate))
-typedef struct _CbuttonPrivate CbuttonPrivate;
-
-struct _CbuttonPrivate
-{
-  gint         width;
-  gint         height;
-  GdkBitmap   *mask;
-  GdkPixbuf   *pixbuf [5];
-};
 
 static void cbutton_class_init         (CbuttonClass          *klass);
 static void cbutton_init               (Cbutton               *cbutton);
@@ -262,15 +252,11 @@ cbutton_class_init (CbuttonClass *klass)
 		  NULL, NULL,
 		  gtk_marshal_VOID__VOID,
 		  G_TYPE_NONE, 0);
-
-  g_type_class_add_private (gobject_class, sizeof (CbuttonPrivate));  
 }
 
 static void
 cbutton_init (Cbutton *cbutton)
 {
-  //CbuttonPrivate *priv = CBUTTON_GET_PRIVATE (cbutton);
-
   GTK_WIDGET_SET_FLAGS (cbutton, GTK_RECEIVES_DEFAULT);
 
   cbutton->constructed = FALSE;
@@ -358,12 +344,10 @@ static void
 cbutton_realize (GtkWidget *widget)
 {
   Cbutton *cbutton;
-  CbuttonPrivate *priv;
   GdkWindowAttr attributes;
   gint attributes_mask;
 
   cbutton = CBUTTON (widget);
-  priv = CBUTTON_GET_PRIVATE (cbutton);
   GTK_WIDGET_SET_FLAGS (widget, GTK_REALIZED);
 
   attributes.window_type = GDK_WINDOW_CHILD;
@@ -385,7 +369,7 @@ cbutton_realize (GtkWidget *widget)
 				   attributes_mask);
 
   gdk_window_shape_combine_mask (widget->window,
-				 priv->mask,
+				 cbutton->mask,
 				 0,
 				 0);
 
@@ -436,10 +420,9 @@ cbutton_size_request (GtkWidget      *widget,
 		      GtkRequisition *requisition)
 {
   Cbutton *cbutton = CBUTTON (widget);
-  CbuttonPrivate *priv = CBUTTON_GET_PRIVATE (cbutton);
 
-  requisition->width = priv->width;
-  requisition->height = priv->height;
+  requisition->width = cbutton->width;
+  requisition->height = cbutton->height;
 }
 
 static void
@@ -466,11 +449,10 @@ _cbutton_paint (Cbutton      *cbutton)
   if (GTK_WIDGET_DRAWABLE (cbutton))
     {
       widget = GTK_WIDGET (cbutton);
-      CbuttonPrivate *priv = CBUTTON_GET_PRIVATE (cbutton);
 	
       gdk_draw_pixbuf (widget->window,
 		       widget->style->fg_gc [0],
-		       priv->pixbuf [widget->state],
+		       cbutton->pixbuf [cbutton->shift_state] [widget->state],
 		       0,  // src_x
 		       0,  // src_y
 		       0,
@@ -677,55 +659,68 @@ cbutton_state_changed (GtkWidget    *widget,
  */ 
 void
 cbutton_set_pixbuf (Cbutton   *cbutton,
+		    int        shift_state,
 		    GdkPixbuf *pixbuf)
 {
-  CbuttonPrivate *priv;
   double prelight_intensity_factor = 1.2;
   double active_intensity_factor = 0.5;
 
   g_return_if_fail (IS_CBUTTON (cbutton));
   g_return_if_fail (GDK_IS_PIXBUF (pixbuf));
 
-  priv = CBUTTON_GET_PRIVATE (cbutton);
- 
-  if (priv->pixbuf)
+#if 0
+  if (cbutton->pixbuf [shift_state] [GTK_STATE_NORMAL])
     {
       // $$$ deref the old one
     }
+#endif
 
-  priv->width = gdk_pixbuf_get_width (pixbuf);
-  priv->height = gdk_pixbuf_get_height (pixbuf);
+  if (shift_state == 0)
+    {
+      cbutton->width = gdk_pixbuf_get_width (pixbuf);
+      cbutton->height = gdk_pixbuf_get_height (pixbuf);
 
-  priv->mask = (GdkBitmap *) gdk_pixmap_new (NULL,
-					     priv->width,
-					     priv->height,
-					     1);
+      cbutton->mask = (GdkBitmap *) gdk_pixmap_new (NULL,
+						    cbutton->width,
+						    cbutton->height,
+						    1);
 
-  gdk_pixbuf_render_threshold_alpha (pixbuf,
-				     priv->mask,
-				     0,  // src_x
-				     0,  // src_y
-				     0,  // dest_x
-				     0,  // dest_y
-				     priv->width,
-				     priv->height,
-				     128);  // threshold
+      gdk_pixbuf_render_threshold_alpha (pixbuf,
+					 cbutton->mask,
+					 0,  // src_x
+					 0,  // src_y
+					 0,  // dest_x
+					 0,  // dest_y
+					 cbutton->width,
+					 cbutton->height,
+					 128);  // threshold
+    }
 
-  priv->pixbuf [GTK_STATE_NORMAL] = pixbuf;
+  cbutton->pixbuf [shift_state] [GTK_STATE_NORMAL] = pixbuf;
 
-  priv->pixbuf [GTK_STATE_PRELIGHT] = gdk_pixbuf_copy (pixbuf);
+  cbutton->pixbuf [shift_state] [GTK_STATE_PRELIGHT] = gdk_pixbuf_copy (pixbuf);
 
-  pixbuf_map_all_pixels (priv->pixbuf [GTK_STATE_PRELIGHT],
+  pixbuf_map_all_pixels (cbutton->pixbuf [shift_state] [GTK_STATE_PRELIGHT],
 			 pixbuf_map_intensify,
 			 & prelight_intensity_factor);
 
-  priv->pixbuf [GTK_STATE_ACTIVE] =  gdk_pixbuf_copy (pixbuf);
+  cbutton->pixbuf [shift_state] [GTK_STATE_ACTIVE] =  gdk_pixbuf_copy (pixbuf);
 
-  pixbuf_map_all_pixels (priv->pixbuf [GTK_STATE_ACTIVE],
+  pixbuf_map_all_pixels (cbutton->pixbuf [shift_state] [GTK_STATE_ACTIVE],
 			 pixbuf_map_intensify,
 			 & active_intensity_factor);
 
   //g_object_notify (G_OBJECT (cbutton), "pixbuf");
+}
+
+void           cbutton_set_shift_state   (Cbutton      *cbutton,
+					  int           shift_state)
+{
+  if (shift_state == cbutton->shift_state)
+    return;
+
+  cbutton->shift_state = shift_state;
+  _cbutton_paint (cbutton);
 }
 
 #define __CBUTTON_C__

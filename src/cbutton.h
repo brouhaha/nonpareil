@@ -54,6 +54,13 @@ MA 02111, USA.
 #include <gtk/gtkenums.h>
 
 
+// GTK_STATE_NORMAL, GTK_STATE_PRELIGHT, GTK_STATE_ACTIVE
+#define CBUTTON_MAX_BUTTON_STATE 3
+
+// none, f, g, etc.
+#define CBUTTON_MAX_SHIFT_STATE 8
+
+
 G_BEGIN_DECLS
 
 #define TYPE_CBUTTON                 (cbutton_get_type ())
@@ -70,12 +77,17 @@ struct _Cbutton
 {
   GtkWidget widget;
 
-  GdkWindow *event_window;
-
   guint constructed : 1;
   guint in_button : 1;
   guint button_down : 1;
   guint depressed : 1;
+
+  gint         width;
+  gint         height;
+  int          shift_state;
+
+  GdkBitmap   *mask;
+  GdkPixbuf   *pixbuf [CBUTTON_MAX_SHIFT_STATE] [CBUTTON_MAX_BUTTON_STATE];
 };
 
 struct _CbuttonClass
@@ -87,19 +99,19 @@ struct _CbuttonClass
   void (* clicked)  (Cbutton *button);
   void (* enter)    (Cbutton *button);
   void (* leave)    (Cbutton *button);
+  void (* activate) (GtkButton *button);
 };
 
 
 GType          cbutton_get_type          (void) G_GNUC_CONST;
 GtkWidget*     cbutton_new               (void);
-void           cbutton_pressed           (Cbutton      *cbutton);
-void           cbutton_released          (Cbutton      *cbutton);
-void           cbutton_clicked           (Cbutton      *cbutton);
-void           cbutton_enter             (Cbutton      *cbutton);
-void           cbutton_leave             (Cbutton      *cbutton);
 
 void           cbutton_set_pixbuf        (Cbutton      *cbutton,
+					  int           shift_state,
 					  GdkPixbuf    *pixbuf);
+
+void           cbutton_set_shift_state   (Cbutton      *cbutton,
+					  int           shift_state);
 
 G_END_DECLS
 
