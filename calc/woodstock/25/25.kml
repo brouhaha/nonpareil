@@ -34,19 +34,19 @@ end
 #end
 
 display
-	offset 43 40
-	size 217 50
+	offset 27 34
+	size 247 44
 
 	#color 0  165 175 145  # background
 	#color 1  165 175 145  # unlit segments
 	#color 2    0   0   0  # lit segments
-	color 0 35 17 17   # background
-	color 1 35 17 17   # unlit segments
+	color 0 70 0 0   # background
+	color 1 80 0 0   # unlit segments
 	color 2 255 17 17  # lit segments
 
 	digits 12
 		size 17 30
-		offset 5 10
+		offset 21 7
 	end
 
 	character 0x00 segment 'a' 'b' 'c' 'd' 'e' 'f'         end
