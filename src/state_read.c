@@ -41,7 +41,6 @@ MA 02111, USA.
 #include "arch.h"
 #include "platform.h"
 #include "model.h"
-#include "csim.h"  // $$$ for slide switches - really should get from sim instead
 #include "state_io.h"
 
 
@@ -117,7 +116,7 @@ static void parse_ui (sax_data_t *sdata UNUSED,
 }
 
 
-static void parse_switch (sax_data_t *sdata UNUSED,
+static void parse_switch (sax_data_t *sdata,
 			  char **attrs)
 {
   int i;
@@ -145,7 +144,8 @@ static void parse_switch (sax_data_t *sdata UNUSED,
     fatal (3, "switch element with no number\n");
   if (! got_position)
     fatal (3, "switch element with no position\n");
-  set_slide_switch_position (number, position);
+  if (! sim_set_switch (sdata->sim, number, position))
+    fatal (3, "can't set switch %d to position %d\n", number, position);
 }
 
 

@@ -90,8 +90,8 @@ typedef struct kml_command_list_t
 
 typedef struct
 {
-  kml_offset_t offset;
   int flag;
+  char *image_fn;
   kml_command_list_t *onselect;
   kml_command_list_t *ondeselect;
 } kml_switch_position_t;
@@ -99,6 +99,7 @@ typedef struct
 typedef struct
 {
   kml_size_t size;
+  kml_offset_t offset;
   int default_position;
   kml_switch_position_t *position [KML_MAX_SWITCH_POSITION];
 } kml_switch_t;

@@ -1,6 +1,6 @@
 /*
 $Id$
-Copyright 1995, 2004, 2005 Eric L. Smith <eric@brouhaha.com>
+Copyright 1995, 2004, 2005, 2006 Eric L. Smith <eric@brouhaha.com>
 
 Nonpareil is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License version 2 as
@@ -23,6 +23,9 @@ MA 02111, USA.
 #define MAX_RAM 1024  // $$$ ugly hack, needs to go!
 #define MAX_PF   256  // $$$ ugly hack, needs to go!
 
+
+#define MAX_SWITCH 4           // maximum number of slide switches
+#define MAX_SWITCH_POSITION 3  // max number of positions per switch
 
 // common events:
 enum
@@ -286,6 +289,20 @@ void sim_press_key (sim_t *sim,
 		    int keycode);
 
 void sim_release_key (sim_t *sim);
+
+// sets up an association between a switch position and an ext flag
+void sim_set_switch_flag (sim_t *sim,
+			  uint8_t sw,
+			  uint8_t position,
+			  int flag);
+
+bool sim_set_switch (sim_t *sim,
+		     uint8_t sw,
+		     uint8_t position);
+
+bool sim_get_switch (sim_t *sim,
+		     uint8_t sw,
+		     uint8_t *position);
 
 void sim_set_ext_flag (sim_t *sim,
 		       int flag,

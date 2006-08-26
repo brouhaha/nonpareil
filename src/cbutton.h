@@ -113,6 +113,8 @@ void           cbutton_set_pixbuf        (Cbutton      *cbutton,
 void           cbutton_set_shift_state   (Cbutton      *cbutton,
 					  int           shift_state);
 
+int            cbutton_get_shift_state   (Cbutton      *cbutton);
+
 G_END_DECLS
 
 #endif /* __CBUTTON_H__ */

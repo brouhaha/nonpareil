@@ -421,6 +421,10 @@ switch_stmt_list	:	switch_stmt
 switch_stmt		:	size_stmt
 				{ yy_kml->kswitch [kml_cur_idx]->size.width = $1.a;
 				  yy_kml->kswitch [kml_cur_idx]->size.height = $1.b; }
+			|	offset_stmt
+				{ yy_kml->kswitch [kml_cur_idx]->offset.x = $1.a;
+				  yy_kml->kswitch [kml_cur_idx]->offset.y = $1.b; }
+
 			|	default_stmt
 			|	position_section
 			;
@@ -439,9 +443,7 @@ position_stmt_list	:	position_stmt
 			;
 
 position_stmt		:	flag_stmt
-			|	offset_stmt
-				{ yy_kml->kswitch [kml_cur_idx]->position [kml_cur_idx2]->offset.x = $1.a;
-				  yy_kml->kswitch [kml_cur_idx]->position [kml_cur_idx2]->offset.y = $1.b; }
+			|	image_stmt { yy_kml->kswitch [kml_cur_idx]->position [kml_cur_idx2]->image_fn = newstr ($1); }
 			;
 
 flag_stmt		:	FLAG INTEGER { yy_kml->kswitch [kml_cur_idx]->position [kml_cur_idx2]->flag = $2; } ;

@@ -40,7 +40,6 @@ MA 02111, USA.
 #include "arch.h"
 #include "platform.h"
 #include "model.h"
-#include "csim.h"  // $$$ for slide switches - really should get from sim instead
 #include "state_io.h"
 
 
@@ -127,14 +126,14 @@ static void xml_write_attribute_string (xmlTextWriterPtr writer,
 }
 
 
-static void write_slide_switches (sim_t *sim UNUSED,
+static void write_slide_switches (sim_t *sim,
 				  xmlTextWriterPtr writer)
 {
   int switch_number;
-  int switch_position;
+  uint8_t switch_position;
 
   for (switch_number = 0; switch_number < KML_MAX_SWITCH; switch_number++)
-    if (get_slide_switch_position (switch_number, & switch_position))
+    if (sim_get_switch (sim, switch_number, & switch_position))
       {
 	xml_start_element (writer, "switch");
 	xml_write_attribute_format (writer, "number", "%x", switch_number);

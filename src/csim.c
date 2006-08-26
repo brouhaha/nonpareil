@@ -236,6 +236,7 @@ static void file_open (gpointer callback_data,
       strlcpy (csim->state_fn, fn, sizeof (csim->state_fn));
       g_free (fn);
       state_read_xml (csim->sim, csim->state_fn);
+      gui_slide_switches_update_from_sim (csim->gui_switches);
     }
 
   gtk_widget_destroy (dialog);
@@ -905,7 +906,8 @@ int main (int argc, char *argv[])
   init_debugger_cli (csim->sim);
 #endif
 
-  add_slide_switches (csim->sim, csim->kml, csim->background_pixbuf, csim->fixed);
+  csim->gui_switches = gui_switches_init (csim);
+
   add_keys (csim);
 
   if (image_mask_bitmap)
@@ -967,12 +969,12 @@ int main (int argc, char *argv[])
 
   sim_reset (csim->sim);
 
-  init_slide_switches ();
-
   set_default_state_path (csim);
 
   if ((csim->state_fn [0]) && file_exists (csim->state_fn))
     state_read_xml (csim->sim, csim->state_fn);
+
+  gui_slide_switches_update_from_sim (csim->gui_switches);
 
   if (run)
     sim_start (csim->sim);

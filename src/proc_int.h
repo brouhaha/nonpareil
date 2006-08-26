@@ -1,6 +1,6 @@
 /*
 $Id$
-Copyright 1995, 2004, 2005 Eric L. Smith <eric@brouhaha.com>
+Copyright 1995, 2004, 2005, 2006 Eric L. Smith <eric@brouhaha.com>
 
 Nonpareil is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License version 2 as
@@ -182,6 +182,10 @@ struct sim_t
 #if 1 || defined(HAS_DEBUGGER)
   int debug_flags;  /* SIM_DEBUG_TRACE etc. */
 #endif
+
+  // slide switches
+  uint8_t    switch_position [MAX_SWITCH];
+  uint8_t    switch_position_flag [MAX_SWITCH] [MAX_SWITCH_POSITION];
 
   // RAM:
   uint16_t   max_ram;

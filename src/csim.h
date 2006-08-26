@@ -22,6 +22,8 @@ MA 02111, USA.
 
 typedef struct gui_display_t gui_display_t;
 
+typedef struct gui_switches_t gui_switches_t;
+
 typedef struct button_info_t button_info_t;
 
 
@@ -39,6 +41,7 @@ typedef struct
   GtkItemFactory *main_menu_item_factory;
   GtkWidget *menubar;  // actually a popup menu in transparency/shape mode
   gui_display_t *gui_display;
+  gui_switches_t *gui_switches;
   char state_fn [255];
 
   // keyboard vars:
@@ -67,13 +70,6 @@ void gui_display_update (gui_display_t *display,
 			 int digit_count,
 			 segment_bitmap_t *segments);
 
-
-void add_slide_switches (sim_t *sim,
-			 kml_t *kml,
-			 GdkPixbuf *window_pixbuf,
-			 GtkWidget *fixed);
-
-
 // Keyboard:
 
 void add_keys (csim_t *csim);
@@ -84,8 +80,10 @@ bool set_key_state (csim_t *csim, int keycode, bool pressed);
 
 // Slide switches:
 
-void init_slide_switches (void);
+gui_switches_t *gui_switches_init (csim_t *csim);
 
-void set_slide_switch_position (int number, int position);
+void gui_slide_switches_update_from_sim (gui_switches_t *s);
 
-bool get_slide_switch_position (int number, int *position);
+void set_slide_switch_position (gui_switches_t *s,
+				int number,
+				int position);

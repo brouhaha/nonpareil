@@ -1371,6 +1371,51 @@ void sim_release_key (sim_t *sim)
 }
 
 
+// sets up an association between a switch position and an ext flag
+void sim_set_switch_flag (sim_t *sim,
+			  uint8_t sw,
+			  uint8_t position,
+			  int flag)
+{
+  if ((sw >= MAX_SWITCH) ||
+      (position >= MAX_SWITCH_POSITION))
+    fatal (3, "can't assign ext flag %d to nonexistent switch %d position %d\n", flag, sw, position);
+  sim->switch_position_flag [sw] [position] = flag;
+}
+
+
+bool sim_set_switch (sim_t *sim,
+		     uint8_t sw,
+		     uint8_t position)
+{
+  int p;
+
+  if ((sw >= MAX_SWITCH) ||
+      (position >= MAX_SWITCH_POSITION))
+    return false;
+
+  sim->switch_position [sw] = position;
+  for (p = 0; p < MAX_SWITCH_POSITION; p++)
+    if (sim->switch_position_flag [sw] [position])
+      sim_set_ext_flag (sim,
+			sim->switch_position_flag [sw] [position],
+			p == position);
+  return true;
+}
+
+
+bool sim_get_switch (sim_t *sim,
+		     uint8_t sw,
+		     uint8_t *position)
+{
+  if (sw >= MAX_SWITCH)
+    return false;
+
+  *position = sim->switch_position [sw];
+  return true;
+}
+
+
 void sim_set_ext_flag (sim_t *sim, int flag, bool state)
 {
   sim_msg_t msg;

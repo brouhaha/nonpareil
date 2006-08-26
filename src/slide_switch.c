@@ -35,159 +35,132 @@ MA 02111, USA.
 #include "kml.h"
 #include "proc.h"
 #include "csim.h"
+#include "cbutton.h"
 
 
 typedef struct
 {
-  sim_t *sim;
-  GtkWidget *widget [KML_MAX_SWITCH_POSITION];
-  GtkWidget *image [KML_MAX_SWITCH_POSITION];
-  GtkWidget *fixed;
+  struct gui_switches_t *switches;
+  int switch_number;
+  int max_position;
+  GdkPixbuf *pixbuf [KML_MAX_SWITCH_POSITION];
+  GtkWidget *widget;
   kml_switch_t *kml_switch;
-  int flag [KML_MAX_SWITCH_POSITION];
 } slide_switch_info_t;
 
 
-static void slide_switch_toggled (GtkWidget *widget, slide_switch_info_t *sw)
+struct gui_switches_t
+{
+  csim_t *csim;
+  slide_switch_info_t *slide_switch_info [KML_MAX_SWITCH];
+};
+
+
+static void slide_switch_clicked (GtkWidget *widget, slide_switch_info_t *si)
 {
   int pos;
   gboolean state;
 
-  for (pos = 0; pos < KML_MAX_SWITCH_POSITION; pos++)
-    {
-      if (widget == sw->widget [pos])
-	break;
-    }
-  if (pos >= KML_MAX_SWITCH_POSITION)
-    fatal (2, "can't find switch position\n");
+  pos = cbutton_get_shift_state (CBUTTON (widget));
 
-  state = gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (widget));
+  if ((++pos) > si->max_position)
+    pos = 0;
 
-  if (sw->flag [pos])
-    sim_set_ext_flag (sw->sim, sw->flag [pos], state);
+  sim_set_switch (si->switches->csim->sim, si->switch_number, pos);
+  cbutton_set_shift_state (CBUTTON (widget), pos);
 }
 
 
-static void add_slide_switch (sim_t *sim,
-			      kml_t *kml,
-			      GtkWidget *fixed,
-			      GdkPixbuf *window_pixbuf UNUSED,
-			      kml_switch_t *kml_switch,
-			      slide_switch_info_t *slide_switch_info)
+static void add_slide_switch (gui_switches_t *switches, int i)
 {
-  int i;
-  GSList *group = NULL;
-
-  slide_switch_info->sim = sim;
-  slide_switch_info->fixed = fixed;
-  slide_switch_info->kml_switch = kml_switch;
-  
-  for (i = 0; i < KML_MAX_SWITCH_POSITION; i++)
-    if (kml_switch->position [i])
-      {
-	slide_switch_info->flag [i] = kml_switch->position [i]->flag;
-	slide_switch_info->widget [i] = gtk_radio_button_new (group);
-
-	group = gtk_radio_button_get_group (GTK_RADIO_BUTTON (slide_switch_info->widget [i]));
-
-	/* Though it's a radio button, don't display it as one! */
-	gtk_toggle_button_set_mode (GTK_TOGGLE_BUTTON (slide_switch_info->widget [i]),
-				    FALSE);
-
-
-	gtk_button_set_relief (GTK_BUTTON (slide_switch_info->widget [i]),
-			       GTK_RELIEF_NONE);
-	gtk_widget_set_size_request (slide_switch_info->widget [i],
-				     kml_switch->size.width,
-				     kml_switch->size.height);
-
-	gtk_fixed_put (GTK_FIXED (fixed),
-		       slide_switch_info->widget [i],
-		       kml_switch->position [i]->offset.x - kml->background_offset.x,
-		       kml_switch->position [i]->offset.y - kml->background_offset.y);
-
-	if (i == kml_switch->default_position)
-	  gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (slide_switch_info->widget [i]),
-					TRUE);
-
-	g_signal_connect (G_OBJECT (slide_switch_info->widget [i]),
-			  "toggled",
-			  G_CALLBACK (& slide_switch_toggled),
-			  (gpointer) slide_switch_info);
-      }
-}
-
-
-static slide_switch_info_t *slide_switch_info [KML_MAX_SWITCH];
-
-
-void add_slide_switches (sim_t *sim,
-			 kml_t *kml,
-			 GdkPixbuf *window_pixbuf,
-			 GtkWidget *fixed)
-{
-  int i;
-
-  for (i = 0; i < KML_MAX_SWITCH; i++)
-    if (kml->kswitch [i])
-      {
-	slide_switch_info [i] = alloc (sizeof (slide_switch_info_t));
-	add_slide_switch (sim,
-			  kml,
-			  fixed,
-			  window_pixbuf,
-			  kml->kswitch [i],
-			  slide_switch_info [i]);
-      }
-}
-
-
-static void init_slide_switch (slide_switch_info_t *sw)
-{
+  slide_switch_info_t *si;
   int pos;
-  gboolean state;
+  kml_switch_t *ks;
+
+  ks = switches->csim->kml->kswitch [i];
+
+  si = alloc (sizeof (slide_switch_info_t));
+  switches->slide_switch_info [i] = si;
+
+  si->switches = switches;
+  si->switch_number = i;
+  si->max_position = -1;
+  si->widget = cbutton_new ();
 
   for (pos = 0; pos < KML_MAX_SWITCH_POSITION; pos++)
-    if (sw->flag [pos])
+    if (ks->position [pos])
       {
-	state = gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (sw->widget [pos]));
-	sim_set_ext_flag (sw->sim, sw->flag [pos], state);
+	si->max_position = pos;
+
+	if (ks->position [pos]->flag)
+	  sim_set_switch_flag (switches->csim->sim,
+			       i,
+			       pos,
+			       ks->position [pos]->flag);
+
+	// should handle case with no image_fn (use subpixbuf of base image)
+	si->pixbuf [pos] = load_pixbuf (switches->csim,
+				      ks->position [pos]->image_fn);
+
+	cbutton_set_pixbuf (CBUTTON (si->widget),
+			    pos,
+			    si->pixbuf [pos]);
       }
+
+  sim_set_switch (switches->csim->sim, i, ks->default_position);
+  cbutton_set_shift_state (CBUTTON (si->widget),
+			   ks->default_position);
+
+  gtk_fixed_put (GTK_FIXED (switches->csim->fixed),
+		 si->widget,
+		 ks->offset.x - switches->csim->kml->background_offset.x,
+		 ks->offset.y - switches->csim->kml->background_offset.y);
+
+  g_signal_connect (G_OBJECT (si->widget),
+		    "clicked",
+		    G_CALLBACK (& slide_switch_clicked),
+		    (gpointer) si);
 }
 
 
-void init_slide_switches (void)
+
+gui_switches_t *gui_switches_init (csim_t *csim)
 {
+  gui_switches_t *switches;
   int i;
+
+  switches = alloc (sizeof (gui_switches_t));
+  switches->csim = csim;
 
   for (i = 0; i < KML_MAX_SWITCH; i++)
-    if (slide_switch_info [i])
-      init_slide_switch (slide_switch_info [i]);
+    if (csim->kml->kswitch [i])
+      add_slide_switch (switches, i);
+  return switches;
 }
 
 
-void set_slide_switch_position (int number, int position)
-{
-  gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (slide_switch_info [number]->widget [position]), TRUE);
-  init_slide_switch (slide_switch_info [number]);
-}
-
-
-bool get_slide_switch_position (int number, int *position)
+// set the GUI switch state to match the simulation switch state
+void gui_slide_switches_update_from_sim (gui_switches_t *s)
 {
   int i;
+  uint8_t position;
 
-  if (! slide_switch_info [number])
-    return false;
-  for (i = 0; i < KML_MAX_SWITCH_POSITION; i++)
+  for (i = 0; i < KML_MAX_SWITCH; i++)
     {
-      slide_switch_info_t *sw = slide_switch_info [number];
-      if (sw->widget [i] &&
-	  gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (sw->widget [i])))
-	{
-	  *position = i;
-	  return true;
-	}
+      slide_switch_info_t *si = s->slide_switch_info [i];
+      if (si && sim_get_switch (s->csim->sim, i, & position))
+	cbutton_set_shift_state (CBUTTON (si->widget), position);
     }
-  fatal (3, "Can't find active slide switch position\n");
+}
+
+
+void set_slide_switch_position (gui_switches_t *s,
+				int number,
+				int position)
+{
+  if (! s->slide_switch_info [number])
+    return;
+  sim_set_switch (s->csim->sim, number, position);
+  cbutton_set_shift_state (CBUTTON (s->slide_switch_info [number]->widget),
+			   position);
 }

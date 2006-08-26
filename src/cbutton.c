@@ -723,4 +723,9 @@ void           cbutton_set_shift_state   (Cbutton      *cbutton,
   _cbutton_paint (cbutton);
 }
 
+int            cbutton_get_shift_state   (Cbutton      *cbutton)
+{
+  return cbutton->shift_state;
+}
+
 #define __CBUTTON_C__
