@@ -357,7 +357,8 @@ cbutton_realize (GtkWidget *widget)
   attributes.height = widget->allocation.height;
   attributes.wclass = GDK_INPUT_OUTPUT;
   attributes.event_mask = gtk_widget_get_events (widget);
-  attributes.event_mask |= (GDK_BUTTON_PRESS_MASK |
+  attributes.event_mask |= (GDK_EXPOSE |
+			    GDK_BUTTON_PRESS_MASK |
 			    GDK_BUTTON_RELEASE_MASK |
 			    GDK_ENTER_NOTIFY_MASK |
 			    GDK_LEAVE_NOTIFY_MASK);
@@ -473,7 +474,8 @@ cbutton_expose (GtkWidget      *widget,
   if (GTK_WIDGET_DRAWABLE (widget))
     {
       _cbutton_paint (cbutton);
-      (* GTK_WIDGET_CLASS (parent_class)->expose_event) (widget, event);
+      if (GTK_WIDGET_CLASS (parent_class)->expose_event)
+	(* GTK_WIDGET_CLASS (parent_class)->expose_event) (widget, event);
     }
   
   return FALSE;
