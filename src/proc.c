@@ -1396,9 +1396,9 @@ bool sim_set_switch (sim_t *sim,
 
   sim->switch_position [sw] = position;
   for (p = 0; p < MAX_SWITCH_POSITION; p++)
-    if (sim->switch_position_flag [sw] [position])
+    if (sim->switch_position_flag [sw] [p])
       sim_set_ext_flag (sim,
-			sim->switch_position_flag [sw] [position],
+			sim->switch_position_flag [sw] [p],
 			p == position);
   return true;
 }
