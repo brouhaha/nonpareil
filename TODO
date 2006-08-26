@@ -5,14 +5,10 @@ $Id$
 
 Needed for next release:
 
-  Implement reading .rom, .mod files from NCZ file
-
   Fix scons install, source tarball, Windows binary targets (broken with
   major build system overhaul)
 
   Finish Voyager background/key image separation
-
-  Create replacement for button widget.
 
   Improve support for -41C .mod files
 
@@ -65,16 +61,8 @@ User interface:
 
   Replace use of GtkItemFactory (deprecated) with GTKUIManager?
 
-  Visual improvements
-      slide switches
-      keyboard button hilighting - new widget?
-
   Implement edit menu commands:
       Edit - Copy, Paste
-
-  Transparency/shape: improve support for moving window: add KML
-  syntax to specify keyboard rectangle, and use only region outside
-  rectangle for dragging.
 
   Improve keyboard support:
       Release key when focus is lost.
@@ -99,7 +87,9 @@ User interface:
   read twice, once by gdk_pixbuf_new_from_file(), and once by direct
   calls to libpng, libjpeg, etc.  Update: maybe can do parallel
   parsing on the fly, by reading the file myself and passing the
-  data into a GdkPixbufLoader.
+  data into a GdkPixbufLoader.  Update: gdk_pixbuf_new_from_file()
+  is probably already parsing this data, which can probably be
+  accessed by gdk_pixbuf_get_option().
 
 
 Internals:
@@ -199,9 +189,6 @@ Debugger:
     * ? Disable editing (and grey out?) while running.
 
   Add debugger commands.  Pass dbt_t as arg to commands.
-
-  Switch to new VTE patch by John Swensen based on feedback from Nalin,
-  Gnome Bugzilla bug #135230.
 
   Change Tcl standard I/O streams to use pty file descriptor.
 
