@@ -140,7 +140,6 @@ scancode 42 map 0 61 end  # *
 scancode 47 map 0 71 end  # /
 scancode 65293 map 0 31 end  # ENTER
 scancode 99 map 0 32 end  # c - CHS
-scancode 101 map 0 33 end  # e - EEX
 
 # keypad:
 scancode 65456 map 0 72 end  # 0
