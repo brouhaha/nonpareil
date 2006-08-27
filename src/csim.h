@@ -36,6 +36,9 @@ typedef struct
   GtkWidget *main_window;
   GdkPixbuf *file_pixbuf;        // entire pixbuf loaded from file
   GdkPixbuf *background_pixbuf;  // window background (subset of file_pixbuf)
+  GtkWidget *background_image;
+  GdkPixbuf *overlay_pixbuf;
+  GtkWidget *overlay_image;
   GtkWidget *event_box;
   GtkWidget *fixed;
   GtkItemFactory *main_menu_item_factory;

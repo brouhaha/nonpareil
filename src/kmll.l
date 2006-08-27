@@ -108,6 +108,7 @@ offset		return (OFFSET);
 ondown		return (ONDOWN);
 onup		return (ONUP);
 outin		return (OUTIN);
+overlay         return (OVERLAY);
 patch		return (PATCH);
 position	return (POSITION);
 press		return (PRESS);

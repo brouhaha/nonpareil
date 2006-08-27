@@ -54,11 +54,11 @@ int kml_cur_idx2;
 %token END          FLAG         GLOBAL       HARDWARE     IFFLAG
 %token IFPRESSED    IMAGE        INCLUDE      KEYCODE      LCD
 %token LISTING      MAP          MENUITEM     MODEL        NOHOLD
-%token OFFSET       ONDOWN       ONUP         OUTIN        PATCH
-%token POSITION     PRESS        PRINT        RELEASE      RESETFLAG
-%token ROM          SCANCODE     SEGMENT      SEGMENTS     SETFLAG
-%token SIZE         SWITCH       TITLE        TRANSPARENCY TYPE
-%token VIRTUAL      ZOOM
+%token OFFSET       ONDOWN       ONUP         OUTIN        OVERLAY
+%token PATCH        POSITION     PRESS        PRINT        RELEASE
+%token RESETFLAG    ROM          SCANCODE     SEGMENT      SEGMENTS
+%token SETFLAG      SIZE         SWITCH       TITLE        TRANSPARENCY
+%token TYPE         VIRTUAL      ZOOM
 
 
 %type <string>  image_stmt image_credit_stmt
@@ -123,6 +123,7 @@ global_stmt		:	title_stmt
 			|	patch_stmt
 			|	image_stmt { yy_kml->image_fn = newstr ($1); }
 			|	image_credit_stmt { yy_kml->image_cr = newstr ($1); }
+			|       OVERLAY DEFAULT image_stmt { yy_kml->default_overlay_image_fn = newstr ($3); }
 			|	transparency_stmt
 			|	global_color_stmt
 			|	print_stmt

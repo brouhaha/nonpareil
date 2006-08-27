@@ -700,8 +700,6 @@ int main (int argc, char *argv[])
 
   GtkWidget *vbox;
 
-  GtkWidget *image;
-
   GdkBitmap *image_mask_bitmap = NULL;
 
   progname = newstr (argv [0]);
@@ -879,8 +877,18 @@ int main (int argc, char *argv[])
 
   if (csim->background_pixbuf != NULL)
     {
-      image = gtk_image_new_from_pixbuf (csim->background_pixbuf);
-      gtk_fixed_put (GTK_FIXED (csim->fixed), image, 0, 0);
+      csim->background_image = gtk_image_new_from_pixbuf (csim->background_pixbuf);
+      gtk_fixed_put (GTK_FIXED (csim->fixed), csim->background_image, 0, 0);
+    }
+
+  if (csim->kml->default_overlay_image_fn)
+    csim->overlay_pixbuf = load_pixbuf (csim,
+					csim->kml->default_overlay_image_fn);
+
+  if (csim->overlay_pixbuf != NULL)
+    {
+      csim->overlay_image = gtk_image_new_from_pixbuf (csim->overlay_pixbuf);
+      gtk_fixed_put (GTK_FIXED (csim->fixed), csim->overlay_image, 0, 0);
     }
 
   // Have to show everything here, or gui_display_init() can't construct the

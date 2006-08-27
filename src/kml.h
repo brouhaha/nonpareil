@@ -146,6 +146,7 @@ typedef struct
   char *patch_fn;
   char *image_fn;
   char *image_cr;
+  char *default_overlay_image_fn;
   int has_transparency;
   int transparency_threshold;
   color_t *global_color [KML_MAX_GLOBAL_COLOR];

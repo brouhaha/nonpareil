@@ -25,6 +25,7 @@ global
 	rom "25.rom"
 	image "25-background.png"
 	image credit "Maciej Bartosiak"
+	overlay default image "25-overlay.png"
 	color 0 87 127 152  # background color, used when transparency is off
 	transparency 128
 end
