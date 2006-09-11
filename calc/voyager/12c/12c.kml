@@ -22,10 +22,12 @@ global
 	author "Eric Smith <eric@brouhaha.com> and John R. Hogerhuis"
 	hardware "Voyager"
 	model "12c"
-	rom "12c.obj"
-	image "12c.png"
+	rom "12c.rom"
+	image "voyager-background-gold.png"
+	image credit "Maciej Bartosiak"
+	overlay default image "12c-overlay.png"
 	color 0 137 0 6	  # background color, used when transparency is off
-	# transparency 128
+	transparency 128
 end
 
 background
@@ -58,7 +60,7 @@ display
 	end
 
 	segments
-		offset 560 2 size 157 182
+		image "voyager_segments.png" offset 2 2 size 157 182
 
 		segment 'a' color 255   0   0  end       # red
 		segment 'b' color   0 255   0  end       # green
@@ -73,48 +75,48 @@ display
 
 end # display
 
-button 11  type 0  size 38 32  offset  18 130  down 2 8 keycode 0x13  end
-button 12  type 0  size 38 32  offset  72 130  down 2 8 keycode 0x33  end
-button 13  type 0  size 38 32  offset 126 130  down 2 8 keycode 0x73  end
-button 14  type 0  size 38 32  offset 180 130  down 2 8 keycode 0xc3  end
-button 15  type 0  size 38 32  offset 234 130  down 2 8 keycode 0x83  end
-button 16  type 0  size 38 32  offset 288 130  down 2 8 keycode 0x82  end
-button 17  type 0  size 38 32  offset 342 130  down 2 8 keycode 0xc2  end
-button 18  type 0  size 38 32  offset 396 130  down 2 8 keycode 0x72  end
-button 19  type 0  size 38 32  offset 450 130  down 2 8 keycode 0x32  end
-button 10  type 0  size 38 32  offset 504 130  down 2 8 keycode 0x12  end
+button 11  image "key_11.png"  offset  16 130  keycode 0x13  end
+button 12  image "key_12.png"  offset  70 130  keycode 0x33  end
+button 13  image "key_13.png"  offset 124 130  keycode 0x73  end
+button 14  image "key_14.png"  offset 178 130  keycode 0xc3  end
+button 15  image "key_15.png"  offset 232 130  keycode 0x83  end
+button 16  image "key_16.png"  offset 286 130  keycode 0x82  end
+button 17  image "key_17.png"  offset 340 130  keycode 0xc2  end
+button 18  image "key_18.png"  offset 394 130  keycode 0x72  end
+button 19  image "key_19.png"  offset 448 130  keycode 0x32  end
+button 10  image "key_10.png"  offset 502 130  keycode 0x12  end
 
-button 21  type 0  size 38 32  offset  18 186  down 2 8 keycode 0x10  end
-button 22  type 0  size 38 32  offset  72 186  down 2 8 keycode 0x30  end
-button 23  type 0  size 38 32  offset 126 186  down 2 8 keycode 0x70  end
-button 24  type 0  size 38 32  offset 180 186  down 2 8 keycode 0xc0  end
-button 25  type 0  size 38 32  offset 234 186  down 2 8 keycode 0x80  end
-button 26  type 0  size 38 32  offset 288 186  down 2 8 keycode 0x87  end
-button 27  type 0  size 38 32  offset 342 186  down 2 8 keycode 0xc7  end
-button 28  type 0  size 38 32  offset 396 186  down 2 8 keycode 0x77  end
-button 29  type 0  size 38 32  offset 450 186  down 2 8 keycode 0x37  end
-button 20  type 0  size 38 32  offset 504 186  down 2 8 keycode 0x17  end
+button 21  image "key_21.png"  offset  16 186  keycode 0x10  end
+button 22  image "key_22.png"  offset  70 186  keycode 0x30  end
+button 23  image "key_23.png"  offset 124 186  keycode 0x70  end
+button 24  image "key_24.png"  offset 178 186  keycode 0xc0  end
+button 25  image "key_25.png"  offset 232 186  keycode 0x80  end
+button 26  image "key_26.png"  offset 286 186  keycode 0x87  end
+button 27  image "key_27.png"  offset 340 186  keycode 0xc7  end
+button 28  image "key_28.png"  offset 394 186  keycode 0x77  end
+button 29  image "key_29.png"  offset 448 186  keycode 0x37  end
+button 20  image "key_20.png"  offset 502 186  keycode 0x17  end
 
-button 31  type 0  size 38 32  offset  18 242  down 2 8 keycode 0x11  end
-button 32  type 0  size 38 32  offset  72 242  down 2 8 keycode 0x31  end
-button 33  type 0  size 38 32  offset 126 242  down 2 8 keycode 0x71  end
-button 34  type 0  size 38 32  offset 180 242  down 2 8 keycode 0xc1  end
-button 35  type 0  size 38 32  offset 234 242  down 2 8 keycode 0x81  end
-button 36  type 0  size 38 88  offset 288 242  down 2 8 keycode 0x84  end
-button 37  type 0  size 38 32  offset 342 242  down 2 8 keycode 0xc4  end
-button 38  type 0  size 38 32  offset 396 242  down 2 8 keycode 0x74  end
-button 39  type 0  size 38 32  offset 450 242  down 2 8 keycode 0x34  end
-button 30  type 0  size 38 32  offset 504 242  down 2 8 keycode 0x14  end
+button 31  image "key_31.png"  offset  16 242  keycode 0x11  end
+button 32  image "key_32.png"  offset  70 242  keycode 0x31  end
+button 33  image "key_33.png"  offset 124 242  keycode 0x71  end
+button 34  image "key_34.png"  offset 178 242  keycode 0xc1  end
+button 35  image "key_35.png"  offset 232 242  keycode 0x81  end
+button 36  image "key_36.png"  offset 286 242  keycode 0x84  end
+button 37  image "key_37.png"  offset 340 242  keycode 0xc4  end
+button 38  image "key_38.png"  offset 394 242  keycode 0x74  end
+button 39  image "key_39.png"  offset 448 242  keycode 0x34  end
+button 30  image "key_30.png"  offset 502 242  keycode 0x14  end
 
-button 41  type 0  size 38 32  offset  18 298  down 2 8 keycode 0x18  end
-button 42  type 0  size 38 32  offset  72 298  down 2 8 keycode 0x38  end
-button 43  type 0  size 38 32  offset 126 298  down 2 8 keycode 0x78  end
-button 44  type 0  size 38 32  offset 180 298  down 2 8 keycode 0xc8  end
-button 45  type 0  size 38 32  offset 234 298  down 2 8 keycode 0x88  end
-button 47  type 0  size 38 32  offset 342 298  down 2 8 keycode 0xc5  end
-button 48  type 0  size 38 32  offset 396 298  down 2 8 keycode 0x75  end
-button 49  type 0  size 38 32  offset 450 298  down 2 8 keycode 0x35  end
-button 40  type 0  size 38 32  offset 504 298  down 2 8 keycode 0x15  end
+button 41  image "key_41.png"  offset  16 298  keycode 0x18  end
+button 42  image "key_42.png"  offset  70 298  keycode 0x38  end
+button 43  image "key_43.png"  offset 124 298  keycode 0x78  end
+button 44  image "key_44.png"  offset 178 298  keycode 0xc8  end
+button 45  image "key_45.png"  offset 232 298  keycode 0x88  end
+button 47  image "key_47.png"  offset 340 298  keycode 0xc5  end
+button 48  image "key_48.png"  offset 394 298  keycode 0x75  end
+button 49  image "key_49.png"  offset 448 298  keycode 0x35  end
+button 40  image "key_40.png"  offset 502 298  keycode 0x15  end
 
 # main keyboard:
 scancode "0"            map 0 47 end  # 0
