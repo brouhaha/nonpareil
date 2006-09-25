@@ -15,16 +15,13 @@ def unique (list):
     return d.keys ()
 
 image_re = re.compile (r'image\s+"(\S+)"', re.M)
-rom_re = re.compile (r'rom\s+"(\S+)"', re.M)
 
 def kml_scanner_fn (node, env, path):
     contents = node.get_contents ()
     images = image_re.findall (contents)
-    roms = rom_re.findall (contents)
-    files = unique (images + roms)
+    ncz_files = unique (images)
     fl = []
-
-    for f in files:
+    for f in ncz_files:
         kpath = os.path.dirname (str (node))
         while kpath:
             f1 = kpath + '/' + f
