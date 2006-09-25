@@ -1,5 +1,5 @@
 Nonpareil - a calculator simulator
-Copyright 1995, 2003, 2004, 2005 Eric L. Smith <eric@brouhaha.com>
+Copyright 1995, 2003-2006 Eric L. Smith <eric@brouhaha.com>
 $Id$
 
 -----------------------------------------------------------------------------
@@ -38,6 +38,8 @@ Known bugs and deficiencies:
 
 * The 82143A printer paper advance button does not work correctly in
   program mode.
+
+* The 27 color scheme is wrong.
 
 -----------------------------------------------------------------------------
 
@@ -188,23 +190,24 @@ window will appear.  If you execute "FS? 55" the display should show
 
 Runtime dependencies:
 
-			minimum		recommended
-			version		version
-			-------		-----------
+				minimum
+				recommended
+				version
+				-----------
 
-    gtk			2.0		2.4.14
-    gdk			2.0
-    gdk-pixbuf
-    glib				2.4.7
-    libxml2				2.6.16
-    libSDL				1.2.7
-    libSDL_mixer			1.2.5
+    gtk+, gdk, gdk-pixbuf	2.8.20
+    glib			2.10.3
+    libxml2			2.6.23
+    libSDL			1.2.9
+
+Later versions of libraries will probably work.  Earlier versions may
+work, but have not been tested.
 
 -----------------------------------------------------------------------------
 
 Installation:
 
-The file INSTALLATION provides instructions for configuring, building,
+The file INSTALL provides instructions for configuring, building,
 and installing Nonpareil.
 
 -----------------------------------------------------------------------------
