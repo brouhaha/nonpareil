@@ -17,7 +17,7 @@ def uasm_generator_fn (source, target, env, for_signature):
     return '%s %s -o %s -l %s' % (uasm_path, source [0], target [0], target [1])
 
 uasm_builder = env.Builder (generator = uasm_generator_fn,
-                            suffix = ".rom",
+                            suffix = ".obj",
                             src_suffix = '.asm',
                             emitter = uasm_emitter_fn)
 
