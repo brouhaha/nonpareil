@@ -1,4 +1,4 @@
-# SConstruct KML file scanner and NCZ file builder for Nonpareil
+# SConstruct KML file scanner and NUI file builder for Nonpareil
 # $Id$
 # Copyright 2006 Eric L. Smith <eric@brouhaha.com>
 
@@ -19,9 +19,9 @@ image_re = re.compile (r'image\s+"(\S+)"', re.M)
 def kml_scanner_fn (node, env, path):
     contents = node.get_contents ()
     images = image_re.findall (contents)
-    ncz_files = unique (images)
+    nui_files = unique (images)
     fl = []
-    for f in ncz_files:
+    for f in nui_files:
         kpath = os.path.dirname (str (node))
         while kpath:
             f1 = kpath + '/' + f
@@ -78,7 +78,7 @@ def try_to_build (target_fn, env):
     return False
                 
 
-def ncz_emitter_fn (target, source, env):
+def nui_emitter_fn (target, source, env):
     extra_files = kml_scanner_fn (source [0], env, None)
     fnl = []
     for f in extra_files:
@@ -88,17 +88,17 @@ def ncz_emitter_fn (target, source, env):
     return (target, source + fnl)
 
 
-def ncz_action_fn (target, source, env):
+def nui_action_fn (target, source, env):
     zf = zipfile.ZipFile (str (target [0]), 'w', zipfile.ZIP_DEFLATED)
     for s in source:
         zf.write (str (s), os.path.basename (str (s)))
     zf.close ()
 
-ncz_builder = env.Builder (action = env.Action (ncz_action_fn),
+nui_builder = env.Builder (action = env.Action (nui_action_fn),
 			   src_suffix = '.kml',
 			   source_scanner = kml_scanner,
-                           suffix = '.ncz',
-                           emitter = ncz_emitter_fn)
+                           suffix = '.nui',
+                           emitter = nui_emitter_fn)
 
-env.Append (BUILDERS = {'NCZ' : ncz_builder})
+env.Append (BUILDERS = {'NUI' : nui_builder})
 

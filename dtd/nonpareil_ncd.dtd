@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+
+<!-- $Id$ -->
+<!-- Copyright 2006 Eric L. Smith <eric@brouhaha.com> -->
+
+<!ELEMENT calcdef (keyboard,
+                   chip*,
+                   memory*,
+                   obj_file*,
+		   lst_file*,
+                   mod_file*)>
+<!ATTLIST calcdef
+          version  CDATA #REQUIRED
+          arch     CDATA #REQUIRED
+          platform CDATA #REQUIRED
+          model    CDATA #REQUIRED>
+
+<!ELEMENT keyboard (switch*, key+)>
+
+<!ELEMENT key EMPTY>
+<!ATTLIST key
+          user_keycode CDATA #REQUIRED
+          hw_keycode   CDATA #REQUIRED>
+
+<!ELEMENT switch (switch_pos*)>
+<!ATTLIST switch
+          number CDATA #REQUIRED>
+
+<!ELEMENT switch_pos EMPTY>
+<!ATTLIST switch_pos
+          position CDATA #REQUIRED
+          flag     CDATA #IMPLIED
+	  value    CDATA #IMPLIED>
+
+<!ELEMENT chip EMPTY>
+<!ATTLIST chip
+          name CDATA #REQUIRED
+	  as   CDATA #REQUIRED
+          addr CDATA #REQUIRED>
+
+<!ELEMENT addr_space EMPTY>
+<!ATTLIST addr_space
+          name       CDATA #REQUIRED
+          banks      CDATA #REQUIRED
+          addr_width CDATA #REQUIRED
+          data_width CDATA #REQURIED>
+
+<!ELEMENT memory (part_info*, loc*)>
+<!ATTLIST memory
+          addr_space  CDATA #REQUIRED
+          banks       CDATA #REQUIRED
+          base_addr   CDATA #REQUIRED
+          size        CDATA #REQUIRED>
+
+<!ELEMENT part_info (vendor_name*, vendor_pn*, date_code*)>
+
+<!ELEMENT vendor_name (#CDATA)>
+<!ELEMENT part_number (#CDATA)>
+<!ELEMENT date_code   (#CDATA)>
+
+<!ELEMENT loc EMPTY>
+<!ATTLIST loc
+          addr  CDATA #REQUIRED
+          data  CDATA #REQUIRED>
+
+<!ELEMENT obj_file (#CDATA)>
+<!ATTLIST obj_file
+          addr_space  CDATA #REQUIRED>
+
+<!ELEMENT lst_file (#CDATA)>
+
+<!ELEMENT mod_file (#CDATA)>
+

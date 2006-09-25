@@ -116,7 +116,7 @@ build_env.ParseConfig(pkg_config_cmd + state_io_packages)
 # str2png
 #-----------------------------------------------------------------------------
 
-if build_env ['build_target_only'] == 0:
+if not build_target_only:
     str2png_env = build_env.Copy ()
 
     str2png_env.Append (CPPDEFINES = {'DEFAULT_PATH': 'image'})
@@ -145,7 +145,7 @@ if build_env ['build_target_only'] == 0:
 # bin2c
 #-----------------------------------------------------------------------------
 
-if build_env ['build_target_only'] == 0:
+if not build_target_only:
     bin2c_srcs = Split ("""bin2c.c""")
 
     bin2c = build_env.Program (target = 'bin2c',
@@ -219,6 +219,23 @@ if not build_target_only:
     native_env ['UASM'] = uasm [0]
 #   native_env.Append (UASM = uasm [0])
 
+
+#-----------------------------------------------------------------------------
+# build_ncd
+#-----------------------------------------------------------------------------
+
+if not build_target_only:
+    build_ncd_env = build_env.Copy ()
+#    build_ncd_packages = "gdome2"
+#    build_ncd_env.ParseConfig (pkg_config_cmd + build_ncd_packages)
+    
+    build_ncd_srcs = Split ("""build_ncd.c""")
+
+    build_ncd = build_ncd_env.Program (target = 'build_ncd',
+                                       source = build_ncd_srcs + common_objs)
+
+    native_env ['BUILD_NCD'] = build_ncd [0]
+    
 
 #-----------------------------------------------------------------------------
 # prepare graphics
@@ -385,7 +402,7 @@ modutil = build_env.Program (target = 'modutil',
 # default targets
 #-----------------------------------------------------------------------------
 
-default_targets = [nonpareil, uasm, modutil]
+default_targets = [nonpareil, uasm, build_ncd, modutil]
 # omit udis for now
 
 if (not cross) or build_target_only:

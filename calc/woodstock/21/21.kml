@@ -20,9 +20,7 @@
 global
 	title "21 Scientific Calculator"
 	author "Eric Smith <eric@brouhaha.com>"
-	hardware "Woodstock"
-	model "21"
-	rom "21.rom"
+	ncd "21.ncd"
 	image "woodstock-background.png"
 	image credit "Maciej Bartosiak"
 	overlay default image "21-overlay.png"
@@ -72,55 +70,53 @@ display
 		segment 'e' color 255   0 255  end       # purple
 		segment 'f' color   0 255 255  end       # bluegreen
 		segment 'g' color 255 128   0  end       # orange
-		#segment 'h' color 255   0 128  end       # pink (inside dp)
 		segment 'h' color 128   0   0  end       # dark red (outside dp)
-		segment 'i'  color  64  64  64  end       # dark grey
 	end # segments
 end # display
 
 switch 0
   offset  211  96
   default 1
-  position 0  image "switch-off.png"          end  # deg
-  position 1  image "switch-on.png"   flag 3  end  # rad
+  position 0  image "switch-off.png"  end  # deg
+  position 1  image "switch-on.png"   end  # rad
 end
 
-button 11  image "key_11.png"  offset  17 130  keycode 0264  end
-button 12  image "key_12.png"  offset  71 130  keycode 0263  end
-button 13  image "key_13.png"  offset 125 130  keycode 0262  end
-button 14  image "key_14.png"  offset 179 130  keycode 0261  end
-button 15  image "key_15.png"  offset 233 130  keycode 0260  end
+button 11  image "key_11.png"  offset  17 130  end
+button 12  image "key_12.png"  offset  71 130  end
+button 13  image "key_13.png"  offset 125 130  end
+button 14  image "key_14.png"  offset 179 130  end
+button 15  image "key_15.png"  offset 233 130  end
 
-button 21  image "key_21.png"  offset  17 186  keycode 0104  end
-button 22  image "key_22.png"  offset  71 186  keycode 0103  end
-button 23  image "key_23.png"  offset 125 186  keycode 0102  end
-button 24  image "key_24.png"  offset 179 186  keycode 0101  end
-button 25  image "key_25.png"  offset 233 186  keycode 0100  end
+button 21  image "key_21.png"  offset  17 186  end
+button 22  image "key_22.png"  offset  71 186  end
+button 23  image "key_23.png"  offset 125 186  end
+button 24  image "key_24.png"  offset 179 186  end
+button 25  image "key_25.png"  offset 233 186  end
 
-button 31  image "key_31.png"  offset  17 242  keycode 0324  end
-button 32  image "key_32.png"  offset 125 242  keycode 0322  end
-button 33  image "key_33.png"  offset 179 242  keycode 0321  end
-button 34  image "key_34.png"  offset 233 242  keycode 0320  end
+button 31  image "key_31.png"  offset  17 242  end
+button 32  image "key_32.png"  offset 125 242  end
+button 33  image "key_33.png"  offset 179 242  end
+button 34  image "key_34.png"  offset 233 242  end
 
-button 41  image "key_41.png"  offset  17 298  keycode 0144  end
-button 42  image "key_42.png"  offset  82 298  keycode 0143  end
-button 43  image "key_43.png"  offset 153 298  keycode 0142  end
-button 44  image "key_44.png"  offset 225 298  keycode 0141  end
+button 41  image "key_41.png"  offset  17 298  end
+button 42  image "key_42.png"  offset  82 298  end
+button 43  image "key_43.png"  offset 153 298  end
+button 44  image "key_44.png"  offset 225 298  end
 
-button 51  image "key_51.png"  offset  17 354  keycode 0244  end
-button 52  image "key_52.png"  offset  82 354  keycode 0243  end
-button 53  image "key_53.png"  offset 153 354  keycode 0242  end
-button 54  image "key_54.png"  offset 225 354  keycode 0241  end
+button 51  image "key_51.png"  offset  17 354  end
+button 52  image "key_52.png"  offset  82 354  end
+button 53  image "key_53.png"  offset 153 354  end
+button 54  image "key_54.png"  offset 225 354  end
 
-button 61  image "key_61.png"  offset  17 411  keycode 0164  end
-button 62  image "key_62.png"  offset  82 411  keycode 0163  end
-button 63  image "key_63.png"  offset 153 411  keycode 0162  end
-button 64  image "key_64.png"  offset 225 411  keycode 0161  end
+button 61  image "key_61.png"  offset  17 411  end
+button 62  image "key_62.png"  offset  82 411  end
+button 63  image "key_63.png"  offset 153 411  end
+button 64  image "key_64.png"  offset 225 411  end
 
-button 71  image "key_71.png"  offset  17 466  keycode 0224  end
-button 72  image "key_72.png"  offset  82 466  keycode 0223  end
-button 73  image "key_73.png"  offset 153 466  keycode 0222  end
-button 74  image "key_74.png"  offset 225 466  keycode 0221  end
+button 71  image "key_71.png"  offset  17 466  end
+button 72  image "key_72.png"  offset  82 466  end
+button 73  image "key_73.png"  offset 153 466  end
+button 74  image "key_74.png"  offset 225 466  end
 
 # main keyboard:
 scancode 48 map 0 72 end  # 0

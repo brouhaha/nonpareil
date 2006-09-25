@@ -13,12 +13,13 @@ build it with a non-GNU toolchain.
 			minimum		recommended
 			version		version
 			-------		-----------
-    GCC					4.1.1
-    Flex		2.4.2		2.5.4a
     Bison		1.22		2.1
-    SCons		0.96.90		0.96.92
-    Python		1.5.2		2.4.3
+    Flex		2.4.2		2.5.4a
+    GCC					4.1.1
+    gdome                               0.8.1
     NetPBM				10.34
+    Python		1.5.2		2.4.3
+    SCons		0.96.90		0.96.92
 
 In addition, the libraries and header files for the runtime dependencies
 must be available at build time.  A list of these is in the README file.

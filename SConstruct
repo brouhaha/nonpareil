@@ -103,8 +103,10 @@ Export ('env')
 #-----------------------------------------------------------------------------
 # Add some builders to the environment:
 #-----------------------------------------------------------------------------
+import sys
+import os
 
-SConscript ('scons/ncz.py')
+SConscript ('scons/nui.py')
 SConscript ('scons/tarball.py')
 # SConscript ('scons/nsis.py')
 
@@ -216,32 +218,39 @@ SConscript ('src/SConscript',
 #-----------------------------------------------------------------------------
 
 SConscript ('scons/uasm.py')
+SConscript ('scons/ncd.py')
 
 #-----------------------------------------------------------------------------
 # the calculators
 #-----------------------------------------------------------------------------
 
-all_calcs = {'classic':    ['35', '45', '55', '80'],
-	     'woodstock':  ['21', '22', '25', '27'],
-	     'spice':      ['32e', '33c', '34c', '37e', '38c', '38e'],
-	     'nut':        ['41cv', '41cx'],
-	     'voyager':    ['11c', '12c', '15c', '16c'] }
+all_calcs = {'woodstock':  ['21'],
+	     }
 
-ncz_files = []
+#all_calcs = {'classic':    ['35', '45', '55', '80'],
+#	     'woodstock':  ['21', '22', '25', '27', '29c'],
+#	     'spice':      ['32e', '33c', '34c', '37e', '38c', '38e'],
+#	     'nut':        ['41cv', '41cx'],
+#	     'voyager':    ['11c', '12c', '15c', '16c'] }
+
+nui_files = []
+ncd_files = []
 
 for family in all_calcs:
 	for model in all_calcs [family]:
 		model_dir = Dir ('calc/' + family + '/' + model)
+		ncd_files += env.NCD (target = 'build/calc/' + model + '.ncd',
+				      source = 'calc/' + family + '/' + model + '/' + model + '.ncd.tmpl')
 		kml = FindFile (model + '.kml', model_dir)
 		# parse kml to find ROM, image files, etc.
-		ncz_files += env.NCZ (target = 'build/calc/' + model + '.ncz',
-				      source = 'calc/' + family + '/' + model + '/' + model + '.kml');
+		nui_files += env.NUI (target = 'build/calc/' + model + '.nui',
+				      source = 'calc/' + family + '/' + model + '/' + model + '.kml')
 
-Default (ncz_files)
+Default (ncd_files + nui_files)
 
 env.Alias (target = 'install',
            source = env.Install (dir = env ['destdir'] + env ['libdir'],
-                                 source = ncz_files))
+                                 source = ncd_files + nui_files))
 
 #-----------------------------------------------------------------------------
 # target platform code if cross-compiling

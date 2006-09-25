@@ -5,6 +5,14 @@ $Id$
 
 Needed for next release:
 
+  NCD files:
+    Make building ncd files work.
+	fix "two environments were specified for .../21.lst"
+    Make Nonpareil read the ncd file (back end).
+    Remove hardware keycode information, etc. from KML
+
+  Rename NCZ files to NUI files.
+
   Fix scons install, source tarball, Windows binary targets (broken with
   major build system overhaul)
 
@@ -14,8 +22,6 @@ Needed for next release:
 
   Windows installer using NSIS, using .nsi file from Christoph Giesselink,
   latest in email on 14-Dec-2005.
-
-  KML and images for 22 and 27 based on Maciej's images for 21 and 25.
 
   Add 15X with patched ROM.
 
@@ -193,6 +199,8 @@ Debugger:
   Change Tcl standard I/O streams to use pty file descriptor.
 
   Implement async queue based functions needed by debugger.
+
+  Display source code using GtkSourceView
 
 
 Better model support:
