@@ -5,7 +5,6 @@
 
 <!ELEMENT calcdef (keyboard,
                    chip*,
-                   memory*,
                    obj_file*,
 		   lst_file*,
                    mod_file*)>
@@ -32,42 +31,40 @@
           flag     CDATA #IMPLIED
 	  value    CDATA #IMPLIED>
 
-<!ELEMENT chip EMPTY>
+<!ELEMENT chip (part_info+, memory*, chargen*)>
 <!ATTLIST chip
-          name CDATA #REQUIRED
-	  as   CDATA #REQUIRED
-          addr CDATA #REQUIRED>
+          name CDATA #REQUIRED>
 
-<!ELEMENT addr_space EMPTY>
-<!ATTLIST addr_space
-          name       CDATA #REQUIRED
-          banks      CDATA #REQUIRED
-          addr_width CDATA #REQUIRED
-          data_width CDATA #REQURIED>
+<!ELEMENT part_info (vendor_name+, part_number*, date_code*)>
 
-<!ELEMENT memory (part_info*, loc*)>
+<!ELEMENT vendor_name (#PCDATA)>
+<!ELEMENT part_number (#PCDATA)>
+<!ELEMENT date_code   (#PCDATA)>
+
+<!ELEMENT memory (loc*)>
 <!ATTLIST memory
           addr_space  CDATA #REQUIRED
           banks       CDATA #REQUIRED
           base_addr   CDATA #REQUIRED
           size        CDATA #REQUIRED>
 
-<!ELEMENT part_info (vendor_name*, vendor_pn*, date_code*)>
-
-<!ELEMENT vendor_name (#CDATA)>
-<!ELEMENT part_number (#CDATA)>
-<!ELEMENT date_code   (#CDATA)>
-
 <!ELEMENT loc EMPTY>
 <!ATTLIST loc
           addr  CDATA #REQUIRED
           data  CDATA #REQUIRED>
 
-<!ELEMENT obj_file (#CDATA)>
+<!ELEMENT chargen (char*)>
+
+<!ELEMENT char EMPTY>
+<!ATTLIST char
+          id       CDATA #REQUIRED
+          segments CDATA #REQUIRED>
+
+<!ELEMENT obj_file (#PCDATA)>
 <!ATTLIST obj_file
           addr_space  CDATA #REQUIRED>
 
-<!ELEMENT lst_file (#CDATA)>
+<!ELEMENT lst_file (#PCDATA)>
 
-<!ELEMENT mod_file (#CDATA)>
+<!ELEMENT mod_file (#PCDATA)>
 
