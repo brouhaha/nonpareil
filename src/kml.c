@@ -132,16 +132,16 @@ kml_t *read_kml_file (char *fn)
 }
 
 
-kml_t *read_kml_file_from_gsfinfile (GsfInfile *ncz, char *fn)
+kml_t *read_kml_file_from_gsfinfile (GsfInfile *nui, char *fn)
 {
   kml_t *kml;
   extern kml_t *yy_kml;
 
-  kml_gsfinput = gsf_infile_child_by_name (ncz, fn);
+  kml_gsfinput = gsf_infile_child_by_name (nui, fn);
   if (! kml_gsfinput)
     return NULL;
 
-  kml_gsfinfile = ncz;
+  kml_gsfinfile = nui;
   g_object_ref (G_OBJECT (kml_gsfinfile));
 
   kml = alloc (sizeof (kml_t));

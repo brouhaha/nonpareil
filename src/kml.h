@@ -186,7 +186,7 @@ typedef struct
 
 kml_t *read_kml_file (char *fn);
 
-kml_t *read_kml_file_from_gsfinfile (GsfInfile *ncz, char *fn);
+kml_t *read_kml_file_from_gsfinfile (GsfInfile *nui, char *fn);
 
 void free_kml (kml_t *kml);
 

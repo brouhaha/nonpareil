@@ -92,7 +92,7 @@ void usage (FILE *f)
   fprintf (f, "Copyright 1995, 2003, 2004, 2005, 2006 Eric L. Smith\n");
   fprintf (f, "http://nonpareil.brouhaha.com/\n");
   fprintf (f, "\n");
-  fprintf (f, "usage: %s [options...] nczfile\n", progname);
+  fprintf (f, "usage: %s [options...] nuifile\n", progname);
   fprintf (f, "options:\n");
 
   print_usage_toggle_option (f, "shape", SHAPE_DEFAULT);
@@ -594,14 +594,14 @@ GdkPixbuf *load_pixbuf_from_file (char *image_name)
   return pixbuf;
 }
 
-GdkPixbuf *load_pixbuf_from_ncz (GsfInfile *ncz, char *image_name)
+GdkPixbuf *load_pixbuf_from_nui (GsfInfile *nui, char *image_name)
 {
   GsfInput *image_input;
   GdkPixbufLoader *loader;
   GdkPixbuf *pixbuf;
   unsigned char buf [1024];
 
-  image_input = gsf_infile_child_by_name (ncz, image_name);
+  image_input = gsf_infile_child_by_name (nui, image_name);
   if (! image_input)
     return NULL;
 
@@ -638,9 +638,9 @@ GdkPixbuf *load_pixbuf (csim_t *csim, char *image_name)
 {
   GdkPixbuf *pixbuf;
 
-  if (csim->ncz)
+  if (csim->nui)
     {
-      pixbuf = load_pixbuf_from_ncz (csim->ncz, image_name);
+      pixbuf = load_pixbuf_from_nui (csim->nui, image_name);
       if (pixbuf)
 	return pixbuf;
     }
@@ -681,7 +681,7 @@ int main (int argc, char *argv[])
 {
   csim_t *csim;
   char *cmd_line_filename = NULL;
-  char *ncz_fn = NULL;
+  char *nui_fn = NULL;
   char *kml_fn = NULL;
   char *rom_fn;
 #ifdef HAS_DEBUGGER
@@ -733,7 +733,7 @@ int main (int argc, char *argv[])
 	    fatal (1, "unrecognized option '%s'\n", argv [0]);
 	}
       else if (cmd_line_filename)
-	fatal (1, "only one NCZ or KML file may be specified\n");
+	fatal (1, "only one NUI or KML file may be specified\n");
       else
 	cmd_line_filename = argv [0];
     }
@@ -744,38 +744,38 @@ int main (int argc, char *argv[])
     {
       cmd_line_filename = calculator_chooser (default_path);
       if (! cmd_line_filename)
-	fatal (2, "No NCZ or KML file specified.\n");
+	fatal (2, "No NUI or KML file specified.\n");
     }
 
-  if (filename_suffix_match (cmd_line_filename, ".ncz"))
-    ncz_fn = find_file_with_suffix (cmd_line_filename, ".ncz");
+  if (filename_suffix_match (cmd_line_filename, ".nui"))
+    nui_fn = find_file_with_suffix (cmd_line_filename, ".nui");
   else if (filename_suffix_match (cmd_line_filename, ".kml"))
     kml_fn = find_file_with_suffix (cmd_line_filename, ".kml");
   else
     {
-      ncz_fn = find_file_with_suffix (cmd_line_filename, ".ncz");
-      if (! ncz_fn)
+      nui_fn = find_file_with_suffix (cmd_line_filename, ".nui");
+      if (! nui_fn)
 	{
 	  kml_fn = find_file_with_suffix (cmd_line_filename, ".kml");
 	  if (! kml_fn)
 	    {
-	      fatal (2, "Can't find NCZ or KML file\n");
+	      fatal (2, "Can't find NUI or KML file\n");
 	    }
 	}
     }
 
 
-  if (ncz_fn)
+  if (nui_fn)
     {
-      csim->ncz = open_zip_file (ncz_fn);
-      if (! csim->ncz)
-	fatal (2, "Error opening or reading NCZ file\n");
+      csim->nui = open_zip_file (nui_fn);
+      if (! csim->nui)
+	fatal (2, "Error opening or reading NUI file\n");
 
-      kml_fn = base_filename_with_suffix (ncz_fn, "kml");
+      kml_fn = base_filename_with_suffix (nui_fn, "kml");
 
-      csim->kml = read_kml_file_from_gsfinfile (csim->ncz, kml_fn);
+      csim->kml = read_kml_file_from_gsfinfile (csim->nui, kml_fn);
       if (! csim->kml)
-	fatal (2, "can't read KML '%s' from NCZ file '%s'\n", kml_fn, ncz_fn);
+	fatal (2, "can't read KML '%s' from NUI file '%s'\n", kml_fn, nui_fn);
     }
   else if (kml_fn)
     {

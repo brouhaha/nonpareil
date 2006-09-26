@@ -38,7 +38,7 @@ char *calculator_chooser (char *path)
   GtkWidget *dialog;
   GtkWidget *file_chooser;
   GdkPixbuf *title_pixbuf;
-  GtkFileFilter *ncz_kml_filter;
+  GtkFileFilter *nui_kml_filter;
   gchar *f;
   char *fn = NULL;
 
@@ -70,14 +70,14 @@ char *calculator_chooser (char *path)
 
   file_chooser = gtk_file_chooser_widget_new (GTK_FILE_CHOOSER_ACTION_OPEN);
 
-  ncz_kml_filter = gtk_file_filter_new ();
+  nui_kml_filter = gtk_file_filter_new ();
 
-  gtk_file_filter_add_pattern (ncz_kml_filter, "*.kml");
+  gtk_file_filter_add_pattern (nui_kml_filter, "*.kml");
 
-  gtk_file_filter_add_pattern (ncz_kml_filter, "*.ncz");
+  gtk_file_filter_add_pattern (nui_kml_filter, "*.nui");
 
   gtk_file_chooser_set_filter (GTK_FILE_CHOOSER (file_chooser),
-			       ncz_kml_filter);
+			       nui_kml_filter);
 
   if (path)
     gtk_file_chooser_set_current_folder (GTK_FILE_CHOOSER (file_chooser),
