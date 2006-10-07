@@ -242,15 +242,8 @@ if not build_target_only:
 #-----------------------------------------------------------------------------
 
 if not build_target_only:
-    str2png_env = native_env.Copy ()
-
-    # pull in X11-related environment variables to make gdk-pixbuf library happy
-    for var in [ 'DISPLAY', 'XAUTHORITY', 'HOME' ]:
-        if var in os.environ:
-            str2png_env ['ENV'][var] = os.environ [var]
-
-    title_env = str2png_env.Copy (STR2PNG_STRING = 'NONPAREIL',
-                                  STR2PNG_OPTS = '-x 40 -y 44 -m 10')
+    title_env = native_env.Copy (STR2PNG_STRING = 'NONPAREIL',
+                                 STR2PNG_OPTS = '-x 40 -y 44 -m 10')
 
     title_env.STR2PNG (target = 'nonpareil_title',
                        source = build_env ['KML_41CV'])
@@ -258,8 +251,8 @@ if not build_target_only:
     native_env.PNG2C (target = '#build/common/nonpareil_title_png.c',
                       source = 'nonpareil_title.png')
             
-    rgoose_env = str2png_env.Copy (STR2PNG_STRING = '.',
-                                   STR2PNG_OPTS = '-x 40 -y 44')
+    rgoose_env = native_env.Copy (STR2PNG_STRING = '.',
+                                  STR2PNG_OPTS = '-x 40 -y 44')
 
     rgoose_env.STR2PNG (target = 'rgoose',
                         source = build_env ['KML_41CV'])
@@ -267,8 +260,8 @@ if not build_target_only:
     native_env.PNG2C (target = '#build/common/rgoose_png.c',
                       source = 'rgoose.png')
             
-    lgoose_env = str2png_env.Copy (STR2PNG_STRING = ',',
-                                   STR2PNG_OPTS = '-x 40 -y 44')
+    lgoose_env = native_env.Copy (STR2PNG_STRING = ',',
+                                  STR2PNG_OPTS = '-x 40 -y 44')
 
     lgoose_env.STR2PNG (target = 'lgoose',
                         source = build_env ['KML_41CV'])
