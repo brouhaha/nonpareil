@@ -331,7 +331,7 @@ int main (int argc, char *argv[])
 
   progname = newstr (argv [0]);
 
-  gdk_init (& argc, & argv);
+  g_type_init ();
 
   while (--argc)
     {
