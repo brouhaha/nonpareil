@@ -1,6 +1,6 @@
 # SConstruct for Nonpareil
 # $Id$
-# Copyright 2004, 2005 Eric L. Smith <eric@brouhaha.com>
+# Copyright 2004, 2005, 2006 Eric L. Smith <eric@brouhaha.com>
 
 # Nonpareil is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License version 2 as
@@ -18,7 +18,7 @@
 # the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
 # Boston, MA 02111, USA.
 
-release = '0.77'  # should get from a file, and use only if a release option
+release = '0.78'  # should get from a file, and use only if a release option
                   # is specified
 
 conf_file = 'nonpareil.conf'

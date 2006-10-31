@@ -1,40 +1,15 @@
 Nonpareil - a calculator simulator
-Copyright 1995, 2003, 2004, 2005 Eric L. Smith <eric@brouhaha.com>
+Copyright 1995, 2003, 2004, 2005, 2006 Eric L. Smith <eric@brouhaha.com>
 $Id$
 
 -----------------------------------------------------------------------------
 
 News:
 
-Release 0.77 fixes a bug inadvertently introduced in 0.67 which 
-prevented trigonometric functions from working correctly on the
-Classic series calculators, and may have caused other less obvious
-problems in those models.  This release also adds "Hard reset" and
-"Obdurate reset" commands on the edit menu.  "Hard reset" acts as a
-reset to the processor, while "Obdurate reset" also zeros all of RAM.
-Depending on the specific calculator model, a hard reset may result in
-loss of user data and/or programs; an obdurate reset will always clear
-all user data and programs.
-
-Release 0.76 has a minor fix to the build process so that the Windows
-executables will have a '.exe.' extension.  The HP-67 files that were
-inadventently included in the last several releases have been removed
-as Nonpareil is not yet able to simulate it correctly.  There are no
-code changes from release 0.74.
-
-Release 0.74 will prompt for a KML file if none is given on the command
-line.  There is now alpha-level support for Windows (win32).
-
-Release 0.73 fixes a problem that prevented 41CX simulation from
-working in 0.72.  The Phineas (timer) chip is now only "installed"
-when the .mod file requests it; in the case of the 41CX this occurs
-when the mainframe microcode is loaded.  Suitable .mod files of the
-82143A Printer and 82182A Time Module are now provided.
-
-Release 0.72 of Nonpareil is an interim development release, adding
-support for the HP 82143A printer (used with the HP-41C family).  The
-keyboard support for the HP-41C family and Voyager calculators now
-have two-key rollover.
+Release 0.78 fixes a build problem due to missing semicolons in
+kmly.y (which only were noticed by certain versions of bison),
+and eliminates the need for a X server to be available at build
+time.
 
 In this release, the following calculators are simulated:
 	HP-35, HP-45, HP-55, HP-80
@@ -47,15 +22,17 @@ Many menu commands are not yet implemented.
 
 Known bugs and deficiencies:
 
-* The HP-55 simulation does not correctly support user registers
-  .0 through .9.
-
 * The HP-41CX clock runs at very close to real time, but it does not
   currently initialize the calculator time and date from the host,
   nor track the host time and date.
 
 * The HP 82143A printer paper advance button does not work correctly in
   program mode.
+
+* The HP-55 simulation does not correctly support user registers
+  .0 through .9.
+
+* There may be problems with searches for labels in the HP-34C.
 
 -----------------------------------------------------------------------------
 
