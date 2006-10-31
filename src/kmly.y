@@ -1,6 +1,6 @@
 /*
 $Id$
-Copyright 2004 Eric L. Smith <eric@brouhaha.com>
+Copyright 2004, 2005, 2006 Eric L. Smith <eric@brouhaha.com>
 
 Nonpareil is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License version 2 as
@@ -75,6 +75,7 @@ int kml_cur_idx2;
 ----------------------------------------------------------------------------*/
 
 kml			:	sections
+			;
 
 sections		:	section
 			|	section sections
@@ -251,7 +252,7 @@ character_stmt		:	CHARACTER char_id SEGMENT segment_list END
 				}
 			;
 
-char_id			:	CHAR { $$ = $1 }
+char_id			:	CHAR { $$ = $1; }
 			|	INTEGER { $$ = $1; }
 			|	DEFAULT { $$ = -1; }
 			;
