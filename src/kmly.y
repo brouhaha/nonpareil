@@ -81,6 +81,7 @@ int kml_cur_idx2;
 ----------------------------------------------------------------------------*/
 
 kml			:	sections
+			;
 
 sections		:	section
 			|	section sections
@@ -264,7 +265,7 @@ character_stmt		:	CHARACTER char_id SEGMENT segment_list END
 				}
 			;
 
-char_id			:	CHAR { $$ = $1 }
+char_id			:	CHAR { $$ = $1; }
 			|	INTEGER { $$ = $1; }
 			|	DEFAULT { $$ = -1; }
 			;
