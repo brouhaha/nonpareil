@@ -166,6 +166,8 @@ void init_slide_switches (void)
 
 void set_slide_switch_position (int number, int position)
 {
+  if (! slide_switch_info [number])
+    return;
   gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (slide_switch_info [number]->widget [position]), TRUE);
   init_slide_switch (slide_switch_info [number]);
 }
