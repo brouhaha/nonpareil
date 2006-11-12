@@ -4,12 +4,16 @@
 ;
 ; Verified to match 21 ROM/anode driver part number 1818-0129
 
+; s 0 unused
 ; s 2 = stack lift enabled
 ; s 3 = radian angle mode (hardware switch)
 ; s 5 = power
 ; s 9 = dp hit
 ; s 13 = shift key
+; s 11 unused
+; s 12 unused
 ; s 14 = exponent entry
+; s 15 = key pressed (hardware) 
 
 	.arch woodstock
 
