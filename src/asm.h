@@ -1,6 +1,6 @@
 /*
 $Id$
-Copyright 1995, 2004, 2005 Eric L. Smith <eric@brouhaha.com>
+Copyright 1995, 2004, 2005, 2006 Eric L. Smith <eric@brouhaha.com>
 
 Nonpareil is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License version 2 as
@@ -36,6 +36,9 @@ extern int dsg;		/* delayed select group */
 extern char flag_char;  /* used to mark jumps across rom banks */
 
 extern int symtab_flag;
+
+extern int legal_flag;	// used to suppress warnings for unconditional
+			// branches after arithmetic instructions
 
 
 #define OTHER_INST 0

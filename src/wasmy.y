@@ -67,6 +67,7 @@ void wasm_error (char *s);
 %token KEY
 %token KEYS
 %token LEFT
+%token LEGAL
 %token LOAD
 %token NC
 %token NOP
@@ -98,15 +99,18 @@ void wasm_error (char *s);
 
 %%
 
-line		:	label instruction
-		|	label
-		|	instruction
-		|	pseudo_op
-		|	
-		|	error
+line		:	label
+		|	label operation
+		|	operation
+		|
 		;
 
 label:		IDENT ':'	{ do_label ($1); }
+		;
+
+operation	:	instruction
+		|	pseudo_op
+		|	error
 		;
 
 expr		: INTEGER { $$ = $1; }
@@ -130,17 +134,27 @@ expr		: INTEGER { $$ = $1; }
 
 pseudo_op	: ps_rom
 		| ps_symtab
+		| ps_legal
 		;
 
 ps_rom		: '.' ROM expr { $3 = range ($3, 0, MAXGROUP * MAXROM - 1);
+				 if (((group << 11) + (rom << 8) + pc ) != ($3 << 8))
+				   {
+				     fprintf (stderr, ".rom pseudo-op skipping locations\n");
+				     fprintf (stderr, "current: group %o, rom %o, pc %03o\n", group, rom, pc);
+				     fprintf (stderr, "arg: %o\n", $3);
+				     last_instruction_type = OTHER_INST;
+				   }
 				 group = dsg = ($3 >> 3);
 				 rom = dsr = ($3 & 7); 
 				 pc = 0;
-				 last_instruction_type = OTHER_INST;
 			         printf (" %d", $3); }
 		;
 
 ps_symtab	: '.' SYMTAB { symtab_flag = 1; }
+		;
+
+ps_legal	: '.' LEGAL { legal_flag = 1; }
 		;
 
 instruction	: jsb_inst
@@ -167,9 +181,11 @@ goto_inst	: goto_form { emit ((013 << 12) | (($1 & 0377) << 2) | 00003);
 		;
 
 goto_form       :  GO TO expr { $$ = $3; 
-				     if (last_instruction_type == ARITH_INST)
-				       asm_warning ("unconditional goto shouldn't follow  arithmetic instruction\n"); 
-				   }
+				if ((last_instruction_type == ARITH_INST) &&
+				    ! legal_flag)
+				  asm_warning ("unconditional goto shouldn't follow  arithmetic instruction\n"); 
+				legal_flag = 0;
+                              }
                 | IF NC GO TO expr { $$ = $5;
 				    if (last_instruction_type != ARITH_INST)
 				      asm_warning ("'if no carry go to' should only follow arithmetic instructions\n"); }

@@ -1,6 +1,6 @@
 /*
 $Id$
-Copyright 1995, 2004, 2005 Eric L. Smith <eric@brouhaha.com>
+Copyright 1995, 2004, 2005, 2006 Eric L. Smith <eric@brouhaha.com>
 
 Nonpareil is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License version 2 as
@@ -81,6 +81,9 @@ int objcode;
 
 int symtab_flag;
 
+int legal_flag;	// used to suppress warnings for unconditional
+		// branches after arithmetic instructions
+
 int last_instruction_type;
 
 
@@ -110,6 +113,24 @@ FILE *listfile = NULL;
 
 symtab_t *global_symtab;
 symtab_t *symtab [MAXGROUP] [MAXROM];  /* separate symbol tables for each ROM */
+
+
+void increment_pc (void)
+{
+  if (pc != 0377)
+    pc = (pc + 1) & 0xff;
+  else
+    {
+      pc = 0;
+      if (rom != 7)
+	rom++;
+      else
+	{
+	  rom = 0;
+	  group ^= 1;
+	}
+    }
+}
 
 
 void format_listing (void)
@@ -162,9 +183,11 @@ void do_pass (int p)
   errors = 0;
   warnings = 0;
   pc = 0;
-  dsr = rom;
-  dsg = group;
+  dsr = rom = 0;
+  dsg = group = 0;
+
   last_instruction_type = OTHER_INST;
+  legal_flag = 0;
 
   printf ("Pass %d rom", pass);
 
@@ -187,6 +210,7 @@ void do_pass (int p)
       objflag = 0;
       targflag = 0;
       flag_char = ' ';
+
       symtab_flag = 0;
 
       parser [arch] ();
@@ -214,7 +238,7 @@ void do_pass (int p)
 	}
 
       if (objflag)
-	pc = (pc + 1) & 0xff;
+	increment_pc ();
     }
 
   if ((pass == 2) && listfile)

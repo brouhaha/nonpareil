@@ -71,6 +71,7 @@ static keyword_t wasm_keywords [] =
   { "key",       KEY },
   { "keys",      KEYS },
   { "left",      LEFT },
+  { "legal",     LEGAL },
   { "load",      LOAD },
   { "n/c",       NC },
   { "nop",       NOP },
