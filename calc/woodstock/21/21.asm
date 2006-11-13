@@ -417,7 +417,8 @@ $kxexy:	jsb L0432
 
 k44:	a + 1 -> a[p]			; 9
 k43:	a + 1 -> a[p]			; 8
-k42:	go to krow5			; 7 - always taken
+k42:	.legal
+	go to krow5			; 7 - always taken
 
 k41:	jsb L0760			; -
 	0 - c - 1 -> c[s]
@@ -436,7 +437,8 @@ L0554:	0 -> c[wp]
 krow6:	a + 1 -> a[p]
 k64:	a + 1 -> a[p]		; 3
 k63:	a + 1 -> a[p]		; 2
-k62:	go to kdigit		; 1 - always taken
+k62:	.legal
+	go to kdigit		; 1 - always taken
 
 k61:	jsb L0760		; *
 	jsb $mpy21
@@ -494,7 +496,8 @@ ksto:	m1 exchange c
 krow5:	a + 1 -> a[p]
 k54:	a + 1 -> a[p]		; 6
 k53:	a + 1 -> a[p]		; 5
-k52:	go to krow6		; 4 - always taken
+k52:	.legal
+	go to krow6		; 4 - always taken
 
 k51:	jsb L0760		; +
 	go to L0546
