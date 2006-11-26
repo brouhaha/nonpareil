@@ -9,10 +9,12 @@
 		   lst_file*,
                    mod_file*)>
 <!ATTLIST calcdef
-          version  CDATA #REQUIRED
-          arch     CDATA #REQUIRED
-          platform CDATA #REQUIRED
-          model    CDATA #REQUIRED>
+          version   CDATA #REQUIRED
+          arch      CDATA #REQUIRED
+          platform  CDATA #REQUIRED
+          model     CDATA #REQUIRED
+          copyright CDATA #IMPLIED
+          license   CDATA #IMPLIED>
 
 <!ELEMENT keyboard (switch*, key+)>
 
@@ -30,6 +32,11 @@
           position CDATA #REQUIRED
           flag     CDATA #IMPLIED
 	  value    CDATA #IMPLIED>
+
+<!ELEMENT inst_clock EMPTY>
+<!ATTLIST inst_clock
+          freq     CDATA #REQUIRED
+          osc_type CDATA #IMPLIED>
 
 <!ELEMENT chip (part_info+, memory*, chargen*)>
 <!ATTLIST chip
@@ -62,7 +69,9 @@
 
 <!ELEMENT obj_file (#PCDATA)>
 <!ATTLIST obj_file
-          addr_space  CDATA #REQUIRED>
+          addr_space CDATA #REQUIRED
+          copyright  CDATA #IMPLIED
+          license    CDATA #IMPLIED>
 
 <!ELEMENT lst_file (#PCDATA)>
 
