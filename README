@@ -50,6 +50,14 @@ Nonpareil is a microcode-level simulator for electronic calculators.
 Currently it is able to simulate some of the HP calculators introduced
 between 1972 and 1982.
 
+Most of the Nonpareil package is distributed under the terms of the
+Free Software Foundation's General Public License, version 2.
+However, some of the associated files, particularly the ncd directory
+tree and the .ncd and .obj files generated from files in that tree are
+instead covered by a Creative Commons Attribution Sharealike 2.5
+license.  See the accompanying file COPYING for more detailed
+information.
+
 The HP-35, the first of HP's classic series of handheld calculators,
 was introduced in 1972 and described as the "Electronic Slide Rule".
 The HP-35 was a non-programmable scientific, and was followed by the
