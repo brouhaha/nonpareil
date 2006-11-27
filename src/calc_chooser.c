@@ -72,7 +72,7 @@ char *calculator_chooser (char *path)
 
   nui_kml_filter = gtk_file_filter_new ();
 
-  gtk_file_filter_add_pattern (nui_kml_filter, "*.kml");
+  //gtk_file_filter_add_pattern (nui_kml_filter, "*.kml");
 
   gtk_file_filter_add_pattern (nui_kml_filter, "*.nui");
 
