@@ -552,32 +552,6 @@ bool gui_remove_hardware (void *ref             UNUSED,
 }
 
 
-char *find_file_with_suffix (char *name, char *suffix)
-{
-  char *fn;
-  char *p;
-
-  if (name)
-    {
-      fn = find_file_in_path_list (name, suffix, default_path);
-      if (! fn)
-	fatal (2, "can't find %s file '%s'\n", suffix, name);
-      return fn;
-    }
-
-  // $$$ following is not portable!
-  p = strrchr (progname, '/');
-  if (p)
-    p++;
-  else
-    p = progname;
-
-  name = newstrcat (p, suffix);
-  fn = find_file_in_path_list (name, NULL, default_path);
-  return fn;
-}
-
-
 GdkPixbuf *load_pixbuf_from_file (char *image_name)
 {
   GError *error = NULL;
@@ -681,7 +655,7 @@ int main (int argc, char *argv[])
 {
   csim_t *csim;
   char *cmd_line_filename = NULL;
-  char *kml_fn = NULL;  // $$$ outdated
+  char *kml_fn = NULL;
   char *nui_fn = NULL;
   char *ncd_fn = NULL;
 
@@ -745,20 +719,12 @@ int main (int argc, char *argv[])
     }
 
   if (filename_suffix_match (cmd_line_filename, ".nui"))
-    nui_fn = find_file_with_suffix (cmd_line_filename, ".nui");
-  else if (filename_suffix_match (cmd_line_filename, ".kml"))
-    kml_fn = find_file_with_suffix (cmd_line_filename, ".kml");
+    nui_fn = find_file_with_suffix (cmd_line_filename, ".nui", default_path);
   else
     {
-      nui_fn = find_file_with_suffix (cmd_line_filename, ".nui");
+      nui_fn = find_file_with_suffix (cmd_line_filename, ".nui", default_path);
       if (! nui_fn)
-	{
-	  kml_fn = find_file_with_suffix (cmd_line_filename, ".kml");
-	  if (! kml_fn)
-	    {
-	      fatal (2, "Can't find NUI or KML file\n");
-	    }
-	}
+	fatal (2, "Can't find NUI or KML file\n");
     }
 
 
@@ -893,7 +859,7 @@ int main (int argc, char *argv[])
   if (! csim->gui_display)
     fatal (2, "can't initialize display\n");
 
-  ncd_fn = find_file_with_suffix (csim->kml->model, ".ncd");
+  ncd_fn = find_file_with_suffix (csim->kml->model, ".ncd", default_path);
   if (! ncd_fn)
     fatal (2, "can't find .ncd file\n");
 

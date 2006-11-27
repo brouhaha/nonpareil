@@ -132,6 +132,8 @@ char *base_filename_with_suffix (char *name, char *suffix);
 // string with the filename if found, or NULL otherwise.
 char *find_file_in_path_list (char *name, char *opt_suffix, char *path_list);
 
+char *find_file_with_suffix (char *name, char *suffix, char *default_path);
+
 
 // Useful for debugging.
 void hex_dump (FILE *f, void *p, size_t count);

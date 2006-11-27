@@ -399,6 +399,32 @@ char *find_file_in_path_list (char *name, char *opt_suffix, char *path_list)
 }
 
 
+char *find_file_with_suffix (char *name, char *suffix, char *default_path)
+{
+  char *fn;
+  char *p;
+
+  if (name)
+    {
+      fn = find_file_in_path_list (name, suffix, default_path);
+      if (! fn)
+	fatal (2, "can't find %s file '%s'\n", suffix, name);
+      return fn;
+    }
+
+  // $$$ following is not portable!
+  p = strrchr (progname, '/');
+  if (p)
+    p++;
+  else
+    p = progname;
+
+  name = newstrcat (p, suffix);
+  fn = find_file_in_path_list (name, NULL, default_path);
+  return fn;
+}
+
+
 void hex_dump (FILE *f, void *p, size_t count)
 {
   uint8_t *q = p;
