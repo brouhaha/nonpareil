@@ -372,19 +372,20 @@ nonpareil = nonpareil_env.Program (target = 'nonpareil',
 # udis
 #-----------------------------------------------------------------------------
 
-#udis_env = build_env.Copy ()
+udis_env = build_env.Copy ()
 
-#udis_packages = "gthread-2.0"
+udis_packages = "gthread-2.0"
 
-#udis_env.ParseConfig (pkg_config_cmd + udis_packages)
+udis_env.ParseConfig (pkg_config_cmd + udis_packages)
+udis_env.Append (CPPDEFINES = [('DEFAULT_PATH', build_env ['libdir'])])
 
-#udis_srcs = Split ("""dis.c""")
+udis_srcs = Split ("""dis.c""")
 
-#udis = udis_env.Program (target = 'udis',
-#                         source = (common_objs +
-#                                   sim_core_objs +
-#                                   common_dis_objs +
-#                                   udis_srcs))
+udis = udis_env.Program (target = 'udis',
+                         source = (common_objs +
+                                   sim_core_objs +
+                                   common_dis_objs +
+                                   udis_srcs))
 
 #-----------------------------------------------------------------------------
 # modutil
@@ -399,7 +400,7 @@ modutil = build_env.Program (target = 'modutil',
 # default targets
 #-----------------------------------------------------------------------------
 
-default_targets = [nonpareil, uasm, build_ncd, modutil]
+default_targets = [nonpareil, uasm, udis, build_ncd, modutil]
 # omit udis for now
 
 if (not cross) or build_target_only:

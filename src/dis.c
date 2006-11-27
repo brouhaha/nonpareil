@@ -31,10 +31,21 @@ MA 02111, USA.
 #include "arch.h"
 #include "model.h"
 #include "display.h"  // proc.h needs segment_bitmap_t
+#include "keyboard.h"
 #include "proc.h"
+#include "calcdef.h"
 #include "proc_int.h"
 #include "dis_woodstock.h"
 #include "dis_nut.h"
+
+#include "sound.h"  // ugh! needed for stub sound functions
+
+
+#ifdef DEFAULT_PATH
+char *default_path = MAKESTR(DEFAULT_PATH);
+#else
+char *default_path = NULL;
+#endif
 
 
 void usage (FILE *f)
@@ -49,11 +60,10 @@ void usage (FILE *f)
 
 int main (int argc, char *argv[])
 {
-  int model;
-  model_info_t *model_info;
+  char *ncd_fn;
   sim_t *sim;
-  int bank, page;
-  int max_bank, max_page, page_size, max_addr;
+  unsigned int bank, page;
+  unsigned int max_bank, max_page, page_size, max_addr;
   addr_t addr;
   int inst_len;
   char buf [100];
@@ -62,21 +72,18 @@ int main (int argc, char *argv[])
 
   g_thread_init (NULL);
 
-  model = find_model_by_name (argv [1]);
-  if (model == MODEL_UNKNOWN)
-    fatal (2, "unknown model\n");
+  if (argc != 2)
+    fatal (1, NULL);
 
-  model_info = get_model_info (model);
+  ncd_fn = find_file_with_suffix (argv [1], ".ncd", default_path);
+  if (! ncd_fn)
+    fatal (2, "can't find .ncd file\n");
 
-  sim = sim_init (model,
-		  NULL,  // char_gen
+  sim = sim_init (ncd_fn,
 		  NULL,  // install_hardware_callback
 		  NULL,  // install_hardware_callback_ref
 		  NULL,  // display_update_callback
 		  NULL); // display_udpate_callback_ref 
-
-  if (! sim_read_object_file (sim, argv [2]))
-    fatal (2, "can't read ROM file\n");
 
   max_bank = sim_get_max_rom_bank (sim);
   page_size = sim_get_rom_page_size (sim);
@@ -101,7 +108,7 @@ int main (int argc, char *argv[])
 		op2 = 0;
 	      }
 
-	    switch (model_info->cpu_arch)
+	    switch (sim->arch)
 	      {
 	      case ARCH_WOODSTOCK:
 		inst_len = woodstock_disassemble_inst (bank * max_addr + addr,
@@ -123,3 +130,22 @@ int main (int argc, char *argv[])
   
   exit (0);
 }
+
+
+// sound function stubs
+bool stop_sound (int id UNUSED)
+{
+  return true;
+}
+
+int synth_sound (float    frequency UNUSED,
+		 float    amplitude UNUSED,
+		 float    duration UNUSED,
+		 sample_t *waveform_table UNUSED,
+		 uint32_t waveform_table_length UNUSED)
+{
+  return 0;
+}
+
+sample_t squarewave_waveform_table [1] = { 0 };
+uint32_t squarewave_waveform_table_length = 1;
