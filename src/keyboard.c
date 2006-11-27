@@ -74,7 +74,7 @@ static void button_widget_pressed (GtkWidget *widget UNUSED,
 	  printf ("first button press, keycode %d\n", button->kml_button->keycode);
 #endif
 	  csim->button_pressed_first = button->number;
-	  sim_press_key (csim->sim, button->kml_button->keycode);
+	  sim_press_key (csim->sim, button->number);
 	}
 #ifdef KEYBOARD_DEBUG
       else
@@ -129,8 +129,7 @@ static void button_widget_released (GtkWidget *widget UNUSED,
 #endif
 	  sim_release_key (csim->sim);  // release the first one
 	  csim->button_pressed_first = csim->button_info [i]->number;
-	  sim_press_key (csim->sim,
-			 csim->button_info [i]->kml_button->keycode);
+	  sim_press_key (csim->sim, i);
 	}
       break;
     default:

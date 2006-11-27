@@ -38,9 +38,6 @@ MA 02111, USA.
 #include "display.h"
 #include "kml.h"
 #include "proc.h"
-#include "arch.h"
-#include "platform.h"
-#include "model.h"
 #include "state_io.h"
 
 
@@ -55,15 +52,7 @@ static void parse_state (sax_data_t *sdata, char **attrs)
 {
   int i;
   bool got_version = false;
-  bool got_arch = false;
-  bool got_platform = false;
-  bool got_model = false;
-
-  model_info_t *model_info;
-  arch_info_t *arch_info;
-
-  model_info = get_model_info (sim_get_model (sdata->sim));
-  arch_info = get_arch_info (model_info->cpu_arch);
+  bool got_ncd = false;
 
   for (i = 0; attrs && attrs [i]; i+= 2)
     {
@@ -74,38 +63,20 @@ static void parse_state (sax_data_t *sdata, char **attrs)
 		     attrs [i + 1]);
 	  got_version = true;
 	}
-      else if (strcmp (attrs [i], "model") == 0)
+      else if (strcmp (attrs [i], "ncd") == 0)
 	{
-	  if (strcmp (attrs [i + 1], model_info->name) != 0)
-	    fatal (3, "model '%s' doesn't match simulator model '%s'\n",
-		   attrs [i + 1], model_info->name);
-	  got_model = true;
-	}
-      else if (strcmp (attrs [i], "platform") == 0)
-	{
-	  if (strcmp (attrs [i + 1], platform_name [model_info->platform]) != 0)
-	    fatal (3, "platform '%s' doesn't match simulator platform '%s'\n",
-		   attrs [i + 1], platform_name [model_info->platform]);
-	  got_platform = true;
-	}
-      else if (strcmp (attrs [i], "arch") == 0)
-	{
-	  if (strcmp (attrs [i + 1], arch_info->name) != 0)
-	    fatal (3, "arch '%s' doesn't match simulator arch '%s'\n",
-		   attrs [i + 1], platform_name [model_info->platform]);
-	  got_arch = true;
+	  if (strcmp (attrs [i + 1], sim_get_ncd_fn (sdata->sim)) != 0)
+	    fatal (3, "NCD '%s' doesn't match simulator NCD '%s'\n",
+		   attrs [i + 1], sim_get_ncd_fn (sdata->sim));
+	  got_ncd = true;
 	}
       else
 	warning ("unknown attribute '%s' in 'loc' element\n", attrs [i]);
     }
   if (! got_version)
     warning ("state file doesn't have version\n");
-  if (! got_arch)
-    warning ("state file doesn't have arch\n");
-  if (! got_platform)
-    warning ("state file doesn't have platform\n");
-  if (! got_model)
-    warning ("state file doesn't have model\n");
+  if (! got_ncd)
+    warning ("state file doesn't have NCD\n");
 }
 
 
@@ -293,7 +264,7 @@ static void parse_loc (sax_data_t *sdata, char **attrs)
 }
 
 
-int xml_strcmp (const xmlChar *s1, const char *s2)
+static int xml_strcmp (const xmlChar *s1, const char *s2)
 {
   const char *s1c = (const char *) s1;
   return strcmp (s1c, s2);

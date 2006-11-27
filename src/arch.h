@@ -23,17 +23,22 @@ MA 02111, USA.
 /* CPU architectures: */
 
 #define ARCH_UNKNOWN   0
-#define ARCH_CLASSIC   1
-#define ARCH_WOODSTOCK 2
-#define ARCH_CRICKET   3
-#define ARCH_NUT       4
-#define ARCH_CAPRICORN 5
-#define ARCH_SATURN    6
-#define ARCH_68K       7
-#define ARCH_H8        8
-#define ARCH_SUNPLUS   9
-#define ARCH_ARM       10
 
+// Open architectures:
+#define ARCH_M68K      1
+#define ARCH_H8        2
+#define ARCH_SUNPLUS   3
+#define ARCH_ARM       4
+
+// HP proprietary architectures:
+#define ARCH_CLASSIC   5
+#define ARCH_WOODSTOCK 6
+#define ARCH_CRICKET   7
+#define ARCH_NUT       8
+#define ARCH_CAPRICORN 9
+#define ARCH_SATURN    10
+
+// TI proprietary architectures:
 #define ARCH_TMS1802   11
 #define ARCH_TMS0200   12
 #define ARCH_TMC0501   13  // variant 0 = TMC0501, variant 1 = TMC0501E

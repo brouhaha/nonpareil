@@ -144,7 +144,7 @@ typedef struct nut_reg_t
   // source_code_line_info_t *source_code_line_info [MAX_PAGE][MAX_BANK];
 
   // RAM:
-  uint16_t ram_addr;  // selected RAM address
+  addr_t ram_addr;  // selected RAM address
   bool *ram_exists;
   reg_t *ram;
   ram_access_fn_t **ram_read_fn;

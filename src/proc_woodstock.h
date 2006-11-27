@@ -126,6 +126,8 @@ typedef struct
   bool *rom_breakpoint;
 
   // RAM:
-  int ram_addr;  /* selected RAM address */
+  addr_t max_ram;  // highest existing ram address + 1
+  addr_t ram_addr;  /* selected RAM address */
+  bool *ram_exists;
   reg_t *ram;
 } act_reg_t;

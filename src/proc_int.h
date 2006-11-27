@@ -75,9 +75,7 @@ typedef struct
   int max_rom;
   bank_t max_bank;
 
-  void (* new_processor)       (sim_t *sim,
-				uint32_t arch_variant,
-				int ram_size);
+  void (* new_processor)       (sim_t *sim);
   void (* free_processor)      (sim_t *sim);
 
   bool (* parse_object_line)   (char        *buf,
@@ -126,8 +124,11 @@ typedef struct
 				addr_t     addr,
 				rom_word_t *val);
 
-  bool (* read_ram)            (sim_t *sim, int addr, uint64_t *val);
-  bool (* write_ram)           (sim_t *sim, int addr, uint64_t *val);
+  // RAM:
+  int (* get_max_ram_addr)     (sim_t      *sim);
+  bool (* create_ram)          (sim_t *sim, addr_t addr, addr_t size);
+  bool (* read_ram)            (sim_t *sim, addr_t addr, uint64_t *val);
+  bool (* write_ram)           (sim_t *sim, addr_t addr, uint64_t *val);
 
   /* for debugger: */
   void (* disassemble)         (sim_t *sim, int addr, char *buf, int len);
@@ -160,11 +161,14 @@ struct sim_t
 
   sim_thread_vars_t *thread_vars;
 
-  int model;
-  int platform;
+  char *ncd_fn;
+  calcdef_t *calcdef;
 
   int arch;
   uint32_t arch_flags;
+  int platform;
+  const char *model_name;
+
   processor_dispatch_t *proc;
 
   double words_per_usec;  /* Processor word times per microsecond, typically
@@ -173,7 +177,8 @@ struct sim_t
 
   uint64_t cycle_count;
 
-  segment_bitmap_t *char_gen;
+  const segment_bitmap_t *char_gen;
+  const hw_keycode_t *keycode_map;
 
   int display_digits;
   bool display_changed;
@@ -186,9 +191,6 @@ struct sim_t
   // slide switches
   uint8_t    switch_position [MAX_SWITCH];
   uint8_t    switch_position_flag [MAX_SWITCH] [MAX_SWITCH_POSITION];
-
-  // RAM:
-  uint16_t   max_ram;
 
   // ROM:
   bool       *breakpoint;

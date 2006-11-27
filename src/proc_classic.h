@@ -99,6 +99,9 @@ typedef struct
   bool *rom_breakpoint;
 
   // RAM
-  int ram_addr;  /* selected RAM address */
+  addr_t arch_max_ram;
+  addr_t max_ram;
+  addr_t ram_addr;  /* selected RAM address */
+  bool *ram_exists;
   reg_t *ram;
 } classic_cpu_reg_t;

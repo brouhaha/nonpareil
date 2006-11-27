@@ -29,7 +29,6 @@ MA 02111, USA.
 #define KML_FIRST_SEGMENT 'a'
 #define KML_MAX_SEGMENT 17
 
-#define KML_MAX_CHARACTER 128
 #define KML_MAX_ANNUNCIATOR 16
 
 #define KML_MAX_BUTTON 256
@@ -111,7 +110,6 @@ typedef struct
   kml_size_t size;
   kml_offset_t offset;
   kml_offset_t down;
-  int keycode;
   int virtual;
   int nohold;
   kml_command_list_t *onup;
@@ -138,12 +136,7 @@ typedef struct
 {
   char *title;
   char *author;
-  char *hardware;
   char *model;
-  int  class;
-  char *rom_fn;
-  char *rom_listing_fn;
-  char *patch_fn;
   char *image_fn;
   char *image_cr;
   char *default_overlay_image_fn;
@@ -160,8 +153,6 @@ typedef struct
   int display_digits;
   kml_size_t digit_size;
   kml_offset_t digit_offset;
-
-  segment_bitmap_t character_segment_map [KML_MAX_CHARACTER];
 
   char *segment_image_fn;             // used for "scaled" segment type
   bool has_segment_image_offset;

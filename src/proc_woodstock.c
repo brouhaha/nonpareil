@@ -1,6 +1,6 @@
 /*
 $Id$
-Copyright 2004, 2005 Eric L. Smith <eric@brouhaha.com>
+Copyright 2004, 2005, 2006 Eric L. Smith <eric@brouhaha.com>
 
 Nonpareil is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License version 2 as
@@ -30,12 +30,16 @@ MA 02111, USA.
 #include "platform.h"
 #include "util.h"
 #include "display.h"
+#include "keyboard.h"
 #include "proc.h"
+#include "calcdef.h"
 #include "proc_int.h"
 #include "digit_ops.h"
 #include "proc_woodstock.h"
 #include "dis_woodstock.h"
 
+
+#define MAX_RAM_ADDR 256
 
 #undef DEBUG_CRC
 #undef DEBUG_PIK
@@ -709,7 +713,7 @@ static void op_c_to_addr (sim_t *sim,
   if (sim->debug_flags & (1 << SIM_DEBUG_RAM_TRACE))
     printf ("RAM select %02x\n", act_reg->ram_addr);
 #endif
-  if (act_reg->ram_addr >= sim->max_ram)
+  if (act_reg->ram_addr >= act_reg->max_ram)
     printf ("c -> ram addr: address %d out of range\n", act_reg->ram_addr);
 }
 
@@ -720,7 +724,7 @@ static void op_c_to_data (sim_t *sim,
   act_reg_t *act_reg = get_chip_data (sim->first_chip);
   int i;
 
-  if (act_reg->ram_addr >= sim->max_ram)
+  if (act_reg->ram_addr >= act_reg->max_ram)
     {
       printf ("c -> data: address %02x out of range\n", act_reg->ram_addr);
       return;
@@ -745,7 +749,7 @@ static void op_data_to_c (sim_t *sim,
   act_reg_t *act_reg = get_chip_data (sim->first_chip);
   int i;
 
-  if (act_reg->ram_addr >= sim->max_ram)
+  if (act_reg->ram_addr >= act_reg->max_ram)
     {
       printf ("data -> c: address %d out of range, loading 0\n", act_reg->ram_addr);
       for (i = 0; i < WSIZE; i++)
@@ -774,7 +778,7 @@ static void op_c_to_register (sim_t *sim, int opcode)
   act_reg->ram_addr &= ~017;
   act_reg->ram_addr += (opcode >> 6);
 
-  if (act_reg->ram_addr >= sim->max_ram)
+  if (act_reg->ram_addr >= act_reg->max_ram)
     {
       printf ("c -> register: address %d out of range\n", act_reg->ram_addr);
       return;
@@ -801,7 +805,7 @@ static void op_register_to_c (sim_t *sim, int opcode)
   act_reg->ram_addr &= ~017;
   act_reg->ram_addr += (opcode >> 6);
 
-  if (act_reg->ram_addr >= sim->max_ram)
+  if (act_reg->ram_addr >= act_reg->max_ram)
     {
       printf ("register -> c: address %d out of range, loading 0\n", act_reg->ram_addr);
       for (i = 0; i < WSIZE; i++)
@@ -979,7 +983,7 @@ static void op_test_p_eq (sim_t *sim, int opcode)
 
   act_reg->inst_state = branch;
 
-  if ((act_reg->arch_variant & AV_P_WRAP_FUNNY) &&
+  if ((sim->arch_flags & AV_P_WRAP_FUNNY) &&
       (val == 0) &&
       (act_reg->p_change [1] == +1) &&
       (act_reg->p_change [2] == +1))
@@ -1003,7 +1007,7 @@ static void op_test_p_eq (sim_t *sim, int opcode)
 	  act_reg->carry = 1;
 	}
     }
-  else if ((act_reg->arch_variant & AV_P_WRAP_FUNNY) &&
+  else if ((sim->arch_flags & AV_P_WRAP_FUNNY) &&
 	   (val == 0) &&
 	   (act_reg->p_change [1] == -1) &&
 	   (act_reg->p_change [2] == -1))
@@ -1163,7 +1167,7 @@ static void op_crc_unknown (sim_t *sim,
     }
 }
 #else
-static void op_crc_unknown (sim_t *sim,
+static void op_crc_unknown (sim_t *sim UNUSED,
 			    int opcode UNUSED)
 {
 }
@@ -1460,7 +1464,7 @@ static void woodstock_print_state (sim_t *sim)
   print_reg ("m1: ", act_reg->m1);
   print_reg ("m2: ", act_reg->m2);
 
-  if (sim->source [mapped_addr])
+  if (sim->source && sim->source [mapped_addr])
     printf ("%s\n", sim->source [mapped_addr]);
   else
     {
@@ -1694,14 +1698,39 @@ static void woodstock_set_ext_flag (sim_t *sim, int flag, bool state)
 
 
 
-static bool woodstock_read_ram (sim_t *sim, int addr, uint64_t *val)
+static int woodstock_get_max_ram_addr (sim_t *sim)
+{
+  act_reg_t *act_reg = get_chip_data (sim->first_chip);
+
+  return act_reg->max_ram;;
+}
+
+
+static bool woodstock_create_ram (sim_t *sim, addr_t addr, addr_t size)
+{
+  act_reg_t *act_reg = get_chip_data (sim->first_chip);
+
+  if ((addr + size) > act_reg->max_ram)
+    act_reg->max_ram = addr + size;
+
+  while (size--)
+    {
+      act_reg->ram_exists [addr] = true;
+      addr++;
+    }
+
+  return true;
+}
+
+
+static bool woodstock_read_ram (sim_t *sim, addr_t addr, uint64_t *val)
 {
   act_reg_t *act_reg = get_chip_data (sim->first_chip);
   uint64_t data = 0;
   int i;
   bool status;
 
-  if (addr >= sim->max_ram)
+  if (addr >= act_reg->max_ram)
     {
       status = false;
       // warning ("woodstock_read_ram: address %d out of range\n", addr);
@@ -1723,13 +1752,13 @@ static bool woodstock_read_ram (sim_t *sim, int addr, uint64_t *val)
 }
 
 
-static bool woodstock_write_ram (sim_t *sim, int addr, uint64_t *val)
+static bool woodstock_write_ram (sim_t *sim, addr_t addr, uint64_t *val)
 {
   act_reg_t *act_reg = get_chip_data (sim->first_chip);
   uint64_t data;
   int i;
 
-  if (addr >= sim->max_ram)
+  if (addr >= act_reg->max_ram)
     {
       warning ("woodstock_write_ram: address %d out of range\n", addr);
       return false;
@@ -1783,9 +1812,9 @@ static void woodstock_reset (sim_t *sim)
 static void woodstock_clear_memory (sim_t *sim)
 {
   act_reg_t *act_reg = get_chip_data (sim->first_chip);
-  int addr;
+  addr_t addr;
 
-  for (addr = 0; addr < sim->max_ram; addr++)
+  for (addr = 0; addr < act_reg->max_ram; addr++)
     reg_zero (act_reg->ram [addr], 0, WSIZE - 1);
 }
 
@@ -1810,7 +1839,7 @@ static void woodstock_new_ram_addr_space (sim_t *sim, int max_ram)
 {
   act_reg_t *act_reg = get_chip_data (sim->first_chip);
 
-  sim->max_ram = max_ram;
+  act_reg->ram_exists = alloc (max_ram * sizeof (bool));
   act_reg->ram = alloc (max_ram * sizeof (reg_t));
 }
 
@@ -1849,22 +1878,20 @@ static void display_setup (sim_t *sim)
 }
 
 
-static void woodstock_new_processor (sim_t *sim,
-				     uint32_t arch_variant,
-				     int ram_size)
+static void woodstock_new_processor (sim_t *sim)
 {
   act_reg_t *act_reg;
 
   act_reg = alloc (sizeof (act_reg_t));
-
-  act_reg->arch_variant = arch_variant;
 
   install_chip (sim, & woodstock_cpu_chip_detail, act_reg);
 
   display_setup (sim);
 
   woodstock_new_rom_addr_space (sim, MAX_BANK, MAX_PAGE, PAGE_SIZE);
-  woodstock_new_ram_addr_space (sim, ram_size);
+
+  woodstock_new_ram_addr_space (sim, MAX_RAM_ADDR);
+  act_reg->max_ram = 0;
 
   init_ops (act_reg);
 
@@ -1931,6 +1958,8 @@ processor_dispatch_t woodstock_processor =
     .read_rom            = woodstock_read_rom,
     .write_rom           = woodstock_write_rom,
 
+    .get_max_ram_addr    = woodstock_get_max_ram_addr,
+    .create_ram          = woodstock_create_ram,
     .read_ram            = woodstock_read_ram,
     .write_ram           = woodstock_write_ram,
 

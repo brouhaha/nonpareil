@@ -1,6 +1,6 @@
 /*
 $Id$
-Copyright 1995, 2003, 2004, 2005 Eric L. Smith <eric@brouhaha.com>
+Copyright 1995, 2003, 2004, 2005, 2006 Eric L. Smith <eric@brouhaha.com>
 
 Nonpareil is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License version 2 as
@@ -31,7 +31,9 @@ MA 02111, USA.
 #include "model.h"
 #include "util.h"
 #include "display.h"
+#include "keyboard.h"
 #include "proc.h"
+#include "calcdef.h"
 #include "proc_int.h"
 #include "digit_ops.h"
 #include "coconut_lcd.h"
@@ -39,6 +41,9 @@ MA 02111, USA.
 #include "proc_nut.h"
 #include "dis_nut.h"
 #include "sound.h"
+
+
+#define MAX_RAM 1024  // possibly only 256 for Voyagers?
 
 
 #define KBD_RELEASE_DEBOUNCE_CYCLES 32
@@ -1048,7 +1053,6 @@ static void bender_pulse (sim_t *sim, uint64_t pulse_width)
 {
   nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
   float frequency;
-  model_info_t *model_info;
 
   if (pulse_width == nut_reg->bender_last_pulse_width)
     return;
@@ -1064,9 +1068,7 @@ static void bender_pulse (sim_t *sim, uint64_t pulse_width)
     printf ("bender pulse width %" PRId64 " cycles\n", pulse_width);
 #endif
 
-  model_info = get_model_info (sim->model);
-
-  frequency = model_info->clock_frequency / (112.0 * pulse_width);
+  frequency = calcdef_get_clock_frequency (sim->calcdef) / (112.0 * pulse_width);
 
 #ifdef SOUND_DEBUG
   printf ("frequency: %f\n", frequency);
@@ -1673,7 +1675,7 @@ static void nut_print_state (sim_t *sim)
   print_reg (nut_reg->c);
   printf ("\n");
 
-  if (sim->source [nut_reg->prev_pc])
+  if (sim->source && sim->source [nut_reg->prev_pc])
     printf ("%s\n", sim->source [nut_reg->prev_pc]);
   else
     {
@@ -1922,19 +1924,25 @@ static void nut_clear_memory (sim_t *sim)
   nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
   int addr;
 
-  for (addr = 0; addr < sim->max_ram; addr++)
+  for (addr = 0; addr < MAX_RAM; addr++)
     if (nut_reg->ram_exists [addr])
       reg_zero (nut_reg->ram [addr], 0, WSIZE - 1);
 }
 
 
-static bool nut_read_ram (sim_t *sim, int addr, uint64_t *val)
+static int nut_get_max_ram_addr (sim_t *sim UNUSED)
+{
+  return MAX_RAM;
+}
+
+
+static bool nut_read_ram (sim_t *sim, addr_t addr, uint64_t *val)
 {
   nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
   uint64_t data = 0;
   int i;
 
-  if (addr > sim->max_ram)
+  if (addr > MAX_RAM)
     fatal (2, "classic_read_ram: address %d out of range\n", addr);
   if (! nut_reg->ram_exists [addr])
     return false;
@@ -1952,13 +1960,13 @@ static bool nut_read_ram (sim_t *sim, int addr, uint64_t *val)
 }
 
 
-static bool nut_write_ram (sim_t *sim, int addr, uint64_t *val)
+static bool nut_write_ram (sim_t *sim, addr_t addr, uint64_t *val)
 {
   nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
   uint64_t data;
   int i;
 
-  if (addr > sim->max_ram)
+  if (addr > MAX_RAM)
     fatal (2, "sim_write_ram: address %d out of range\n", addr);
   if (! nut_reg->ram_exists [addr])
     return false;
@@ -1999,7 +2007,6 @@ static void nut_new_ram_addr_space (sim_t *sim, int max_ram)
 {
   nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
 
-  sim->max_ram = max_ram;
   nut_reg->ram_exists   = alloc (max_ram * sizeof (bool));
   nut_reg->ram          = alloc (max_ram * sizeof (reg_t));
   nut_reg->ram_read_fn  = alloc (max_ram * sizeof (ram_access_fn_t *));
@@ -2007,21 +2014,21 @@ static void nut_new_ram_addr_space (sim_t *sim, int max_ram)
 }
 
 
-static void nut_new_ram (sim_t *sim, int base_addr, int count)
+static bool nut_create_ram (sim_t *sim, addr_t addr, addr_t size)
 {
   nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
-  int i;
 
-  for (i = base_addr; i < (base_addr + count); i++)
-    nut_reg->ram_exists [i] = true;
+  while (size--)
+    nut_reg->ram_exists [addr++] = true;
+
+  return true;
 }
 
 
-static void nut_new_processor (sim_t *sim,
-			       uint32_t arch_variant UNUSED,
-			       int ram_size)
+static void nut_new_processor (sim_t *sim)
 {
   nut_reg_t *nut_reg;
+  int ram_size;
 
   nut_reg = alloc (sizeof (nut_reg_t));
 
@@ -2030,47 +2037,53 @@ static void nut_new_processor (sim_t *sim,
   nut_init_ops (nut_reg);
 
   nut_new_rom_addr_space (sim, MAX_BANK, MAX_PAGE, PAGE_SIZE);
+
   nut_new_ram_addr_space (sim, 1024);
+
   nut_new_pf_addr_space (sim, 256);
 
   switch (sim->platform)
     {
     case PLATFORM_COCONUT:
-      nut_new_ram (sim, 0x000, 0x010);
+      ram_size = 336;  // $$$ shouldn't be hard coded
+
+      nut_create_ram (sim, 0x000, 0x010);
       ram_size -= 16;
 
       if (ram_size > 320)
 	{
 	  // Base extended memory of 41CX
-	  nut_new_ram (sim, 0x40, 128);
+	  nut_create_ram (sim, 0x40, 128);
 	  ram_size = 320;
 	}
 
-      nut_new_ram (sim, 0x0c0, ram_size);
+      nut_create_ram (sim, 0x0c0, ram_size);
 
       coconut_display_init (sim);
 
       break;
 
     case PLATFORM_VOYAGER:
-      nut_new_ram (sim, 0x000, 8);
+      ram_size = 72;  // $$$ shouldn't be hard coded
+
+      nut_create_ram (sim, 0x000, 8);
       ram_size -= 8;
 
-      nut_new_ram (sim, 0x008, 3);  // I/O registers
+      nut_create_ram (sim, 0x008, 3);  // I/O registers
       nut_reg->ram_read_fn  [0x08] = nut_ram_read_zero;
       nut_reg->ram_write_fn [0x08] = nut_ram_write_ignore;
 
       if (ram_size > 40)
 	{
-	  nut_new_ram (sim, 0x010, 8);
+	  nut_create_ram (sim, 0x010, 8);
 	  ram_size -= 8;
 
-	  nut_new_ram (sim, 0x018, 3);  // I/O registers
+	  nut_create_ram (sim, 0x018, 3);  // I/O registers
 	  nut_reg->ram_read_fn  [0x18] = nut_ram_read_zero;
 	  nut_reg->ram_write_fn [0x18] = nut_ram_write_ignore;
 	}
 
-      nut_new_ram (sim, 0x100 - ram_size, ram_size);
+      nut_create_ram (sim, 0x100 - ram_size, ram_size);
 
       voyager_display_init (sim);
       break;
@@ -2140,6 +2153,8 @@ processor_dispatch_t nut_processor =
     .read_rom            = nut_read_rom,
     .write_rom           = nut_write_rom,
 
+    .get_max_ram_addr    = nut_get_max_ram_addr,
+    .create_ram          = nut_create_ram,
     .read_ram            = nut_read_ram,
     .write_ram           = nut_write_ram,
 

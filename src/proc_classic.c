@@ -1,6 +1,6 @@
 /*
 $Id$
-Copyright 2004, 2005 Eric L. Smith <eric@brouhaha.com>
+Copyright 2004, 2005, 2006 Eric L. Smith <eric@brouhaha.com>
 
 Nonpareil is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License version 2 as
@@ -28,7 +28,9 @@ MA 02111, USA.
 #include "arch.h"
 #include "util.h"
 #include "display.h"
+#include "keyboard.h"
 #include "proc.h"
+#include "calcdef.h"
 #include "proc_int.h"
 #include "digit_ops.h"
 #include "proc_classic.h"
@@ -424,11 +426,11 @@ static void op_c_to_addr (sim_t *sim,
 {
   classic_cpu_reg_t *cpu_reg = get_chip_data (sim->first_chip);
 
-  if (sim->max_ram > 10)
+  if (sim->arch_flags & 1)
     cpu_reg->ram_addr = cpu_reg->c [12] * 10 + cpu_reg->c [11];
   else
     cpu_reg->ram_addr = cpu_reg->c [12];
-  if (cpu_reg->ram_addr >= sim->max_ram)
+  if (cpu_reg->ram_addr >= cpu_reg->max_ram)
     printf ("c -> ram addr: address %d out of range\n", cpu_reg->ram_addr);
 }
 
@@ -439,7 +441,7 @@ static void op_c_to_data (sim_t *sim,
   classic_cpu_reg_t *cpu_reg = get_chip_data (sim->first_chip);
   int i;
 
-  if (cpu_reg->ram_addr >= sim->max_ram)
+  if (cpu_reg->ram_addr >= cpu_reg->max_ram)
     {
       printf ("c -> data: address %d out of range\n", cpu_reg->ram_addr);
       return;
@@ -455,7 +457,7 @@ static void op_data_to_c (sim_t *sim,
   classic_cpu_reg_t *cpu_reg = get_chip_data (sim->first_chip);
   int i;
 
-  if (cpu_reg->ram_addr >= sim->max_ram)
+  if (cpu_reg->ram_addr >= cpu_reg->max_ram)
     {
       printf ("data -> c: address %d out of range, loading 0\n", cpu_reg->ram_addr);
       for (i = 0; i < WSIZE; i++)
@@ -849,7 +851,7 @@ static void classic_print_state (sim_t *sim)
   print_reg ("c: ", cpu_reg->c);
   print_reg ("m: ", cpu_reg->m);
 
-  if (sim->source [cpu_reg->prev_pc])
+  if (sim->source && sim->source [cpu_reg->prev_pc])
     printf ("%s\n", sim->source [cpu_reg->prev_pc]);
   else
     {
@@ -975,7 +977,7 @@ static int parse_opcode (char *bin, int *opcode)
 	(*opcode) += 0;
       else
 	return (0);
-      *bin++;
+      bin++;
     }
   return (1);
 }
@@ -1066,21 +1068,49 @@ static void classic_reset (sim_t *sim)
 static void classic_clear_memory (sim_t *sim)
 {
   classic_cpu_reg_t *cpu_reg = get_chip_data (sim->first_chip);
-  int addr;
+  addr_t addr;
 
-  for (addr = 0; addr < sim->max_ram; addr++)
+  for (addr = 0; addr < cpu_reg->max_ram; addr++)
     reg_zero (cpu_reg->ram [addr], 0, WSIZE - 1);
 }
 
 
-static bool classic_read_ram (sim_t *sim, int addr, uint64_t *val)
+static int classic_get_max_ram_addr (sim_t *sim)
+{
+  classic_cpu_reg_t *cpu_reg = get_chip_data (sim->first_chip);
+
+  return cpu_reg->max_ram;
+}
+
+
+static bool classic_create_ram (sim_t *sim, addr_t addr, addr_t size)
+{
+  classic_cpu_reg_t *cpu_reg = get_chip_data (sim->first_chip);
+
+  if ((addr + size) > cpu_reg->arch_max_ram)
+    fatal (4, "ram addresses out of range\n");
+
+  if ((addr + size) > cpu_reg->max_ram)
+    cpu_reg->max_ram = addr + size;
+
+  while (size--)
+    {
+      cpu_reg->ram_exists [addr] = true;
+      addr++;
+    }
+
+  return true;
+}
+
+
+static bool classic_read_ram (sim_t *sim, addr_t addr, uint64_t *val)
 {
   classic_cpu_reg_t *cpu_reg = get_chip_data (sim->first_chip);
   uint64_t data = 0;
   int i;
   bool status;
 
-  if (addr >= sim->max_ram)
+  if (addr >= cpu_reg->max_ram)
     {
       status = false;
       warning ("classic_read_ram: address %d out of range\n", addr);
@@ -1102,13 +1132,13 @@ static bool classic_read_ram (sim_t *sim, int addr, uint64_t *val)
 }
 
 
-static bool classic_write_ram (sim_t *sim, int addr, uint64_t *val)
+static bool classic_write_ram (sim_t *sim, addr_t addr, uint64_t *val)
 {
   classic_cpu_reg_t *cpu_reg = get_chip_data (sim->first_chip);
   uint64_t data;
   int i;
 
-  if (addr >= sim->max_ram)
+  if (addr >= cpu_reg->max_ram)
     {
       warning ("classic_write_ram: address %d out of range\n", addr);
       return false;
@@ -1147,14 +1177,12 @@ static void classic_new_ram_addr_space (sim_t *sim, int max_ram)
 {
   classic_cpu_reg_t *cpu_reg = get_chip_data (sim->first_chip);
 
-  sim->max_ram = max_ram;
+  cpu_reg->ram_exists = alloc (max_ram * sizeof (bool));
   cpu_reg->ram = alloc (max_ram * sizeof (reg_t));
 }
 
 
-static void classic_new_processor (sim_t *sim,
-				   uint32_t arch_variant UNUSED,
-				   int ram_size)
+static void classic_new_processor (sim_t *sim)
 {
   classic_cpu_reg_t *cpu_reg;
 
@@ -1163,11 +1191,19 @@ static void classic_new_processor (sim_t *sim,
   install_chip (sim, & classic_cpu_chip_detail, cpu_reg);
 
   classic_new_rom_addr_space (sim, MAX_BANK, MAX_PAGE, PAGE_SIZE);
-  classic_new_ram_addr_space (sim, ram_size);
+
+  if (sim->arch_flags & 1)
+    cpu_reg->arch_max_ram = 100;
+  else
+    cpu_reg->arch_max_ram = 10;
+
+  classic_new_ram_addr_space (sim, cpu_reg->arch_max_ram);
+  cpu_reg->max_ram = 0;
+
+  cpu_reg->max_ram = cpu_reg->arch_max_ram; // $$$ wrong
 
   // RAM is contiguous starting from address 0.
-  sim->max_ram = ram_size;
-  cpu_reg->ram = alloc (ram_size * sizeof (reg_t));
+  cpu_reg->ram = alloc (cpu_reg->max_ram * sizeof (reg_t));
 
   sim->display_digits = MAX_DIGIT_POSITION;
   cpu_reg->display_scan_fn = classic_display_scan;
@@ -1232,6 +1268,8 @@ processor_dispatch_t classic_processor =
     .read_rom            = classic_read_rom,
     .write_rom           = classic_write_rom,
 
+    .get_max_ram_addr    = classic_get_max_ram_addr,
+    .create_ram          = classic_create_ram,
     .read_ram            = classic_read_ram,
     .write_ram           = classic_write_ram,
 

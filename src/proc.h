@@ -119,15 +119,16 @@ typedef void display_update_callback_fn_t (void *ref,
 /*
  * Create the sim thread, initially in idle state
  */
-sim_t *sim_init  (int model,
-		  segment_bitmap_t *char_gen,
+sim_t *sim_init  (char *ncd_fn,
 		  install_hardware_callback_fn_t *install_hardware_callback,
 		  void *install_hardware_callback_ref,
 		  display_update_callback_fn_t *display_update_callback,
 		  void *display_update_callback_ref);
 
 
-int sim_get_model (sim_t *sim);
+const char *sim_get_model_name (sim_t *sim);
+
+const char *sim_get_ncd_fn (sim_t *sim);
 
 
 bool sim_read_object_file (sim_t *sim,
@@ -208,7 +209,11 @@ bool sim_write_rom (sim_t      *sim,
 
 // RAM access routines
 // $$$ should be replaced by new memory API
-addr_t sim_get_max_ram (sim_t *sim);
+addr_t sim_get_max_ram_addr (sim_t *sim);
+
+bool sim_create_ram (sim_t *sim,
+		     addr_t addr,
+		     addr_t size);
 
 bool sim_read_ram (sim_t *sim,
 		   addr_t addr,

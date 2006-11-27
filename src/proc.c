@@ -19,6 +19,7 @@ Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
 MA 02111, USA.
 */
 
+#include <inttypes.h>
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -28,12 +29,15 @@ MA 02111, USA.
 
 #include <glib.h>
 
+#include <libxml/SAX.h>
+
 #include "util.h"
 #include "display.h"
+#include "keyboard.h"
 #include "proc.h"
 #include "arch.h"
 #include "platform.h"
-#include "model.h"
+#include "calcdef.h"
 #include "proc_int.h"
 #include "glib_async_queue_source.h"
 #include "mod1_file.h"
@@ -898,36 +902,17 @@ static gboolean gui_cmd_callback (gpointer data)
 // $$$ Some of the initialization here should be moved into
 // the thread function.
 
-sim_t *sim_init  (int model,
-		  segment_bitmap_t *char_gen,
+sim_t *sim_init  (char *ncd_fn,
 		  install_hardware_callback_fn_t *install_hardware_callback,
 		  void *install_hardware_callback_ref,
 		  display_update_callback_fn_t *display_update_callback,
 		  void *display_update_callback_ref)
 {
   sim_t *sim;
-  model_info_t *model_info = get_model_info (model);
   arch_info_t *arch_info;
 
   sim = alloc (sizeof (sim_t));
   sim->thread_vars = alloc (sizeof (sim_thread_vars_t));
-
-  sim->install_hardware_callback = install_hardware_callback;
-  sim->install_hardware_callback_ref = install_hardware_callback_ref;
-
-  // save display callback info
-  sim->display_update_callback = display_update_callback;
-  sim->display_update_callback_ref = display_update_callback_ref;
-
-  sim->model = model;
-
-  sim->platform = model_info->platform;
-
-  arch_info = get_arch_info (model_info->cpu_arch);
-  sim->arch = model_info->cpu_arch;
-  sim->proc = processor_dispatch [model_info->cpu_arch];
-
-  sim->words_per_usec = model_info->clock_frequency / (1.0e6 * arch_info->word_length);
 
   sim->thread_vars->cmd_q = g_async_queue_new ();
   sim->thread_vars->reply_q = g_async_queue_new ();
@@ -942,25 +927,51 @@ sim_t *sim_init  (int model,
 								 NULL,  // use main context
 								 gui_cmd_callback);
 
-  sim->source = alloc (sim->proc->max_bank * sim->proc->max_rom * sizeof (char *));
+  sim->install_hardware_callback = install_hardware_callback;
+  sim->install_hardware_callback_ref = install_hardware_callback_ref;
 
-  sim->proc->new_processor (sim,
-			    model_info->arch_variant,
-			    model_info->ram_size);
+  // save display callback info
+  sim->display_update_callback = display_update_callback;
+  sim->display_update_callback_ref = display_update_callback_ref;
 
-  sim->char_gen = char_gen;
+  sim->ncd_fn = ncd_fn;
 
-  sim->cycle_count = 0;
+  sim->calcdef = calcdef_load (sim, sim->ncd_fn);
+
+  sim->platform = calcdef_get_platform (sim->calcdef);
+  sim->arch = calcdef_get_arch (sim->calcdef);
+  sim->arch_flags = calcdef_get_arch_variant (sim->calcdef);
+
+  sim->proc = processor_dispatch [sim->arch];
+
+  arch_info = get_arch_info (sim->arch);
+  sim->words_per_usec = calcdef_get_clock_frequency (sim->calcdef) / (1.0e6 * arch_info->word_length);
+
+  sim->proc->new_processor (sim);
+
+  sim->cycle_count = 0;  // $$$ necessary?
+
+  // $$$ sim->source = alloc (sim->proc->max_bank * sim->proc->max_rom * sizeof (char *));
+
+  sim->char_gen = calcdef_get_char_gen (sim->calcdef);
+  sim->keycode_map = calcdef_get_keycode_map (sim->calcdef);
 
   sim->thread_vars->gthread = g_thread_create (sim_thread_func, sim, TRUE, NULL);
+
+  calcdef_init_memory (sim->calcdef);
 
   return (sim);
 }
 
 
-int sim_get_model (sim_t *sim)
+const char *sim_get_model_name (sim_t *sim)
 {
-  return sim->model;
+  return calcdef_get_model_name (sim->calcdef);
+}
+
+const char *sim_get_ncd_fn (sim_t *sim)
+{
+  return sim->ncd_fn;
 }
 
 
@@ -1318,9 +1329,17 @@ bool sim_write_rom (sim_t      *sim,
 }
 
 
-addr_t sim_get_max_ram (sim_t *sim)
+addr_t sim_get_max_ram_addr (sim_t *sim)
 {
-  return sim->max_ram;
+  return sim->proc->get_max_ram_addr (sim);
+}
+
+
+bool sim_create_ram (sim_t *sim,
+		     addr_t addr,
+		     addr_t size)
+{
+  return sim->proc->create_ram (sim, addr, size);
 }
 
 
@@ -1354,10 +1373,15 @@ bool sim_write_ram (sim_t   *sim,
 
 void sim_press_key (sim_t *sim, int keycode)
 {
+  hw_keycode_t hw_keycode;
+
+  // $$$ should range check keycode!
+  hw_keycode = sim->keycode_map [keycode + MAX_KEYCODE];
+
   sim_msg_t msg;
   memset (& msg, 0, sizeof (sim_msg_t));
   msg.cmd = CMD_PRESS_KEY;
-  msg.arg1 = keycode;
+  msg.arg1 = hw_keycode;
   send_cmd_to_sim_thread (sim, (gpointer) & msg);
 }
 
@@ -1367,6 +1391,7 @@ void sim_release_key (sim_t *sim)
   sim_msg_t msg;
   memset (& msg, 0, sizeof (sim_msg_t));
   msg.cmd = CMD_RELEASE_KEY;
+  //msg.arg1 = sim->keycode_map [keycode + MAX_KEYCODE];
   send_cmd_to_sim_thread (sim, (gpointer) & msg);
 }
 

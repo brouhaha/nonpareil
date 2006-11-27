@@ -56,8 +56,9 @@ static reg_display_t reg_display [MAX_REG];
 
 static GtkWidget *ram_window;
 static gboolean ram_visible;
+
 static int max_ram;
-#define MAX_RAM 1024
+#define MAX_RAM 1024  // maximum possible for any arch $$$ ugly, should eliminate
 static GtkWidget *ram_widget [MAX_RAM];
 static int ram_addr [MAX_RAM];
 
@@ -347,7 +348,7 @@ void debug_show_ram  (gpointer callback_data,
 
       gtk_container_add (GTK_CONTAINER (ram_window), scrolled_window);
 
-      limit = sim_get_max_ram (dg_sim);
+      limit = sim_get_max_ram_addr (dg_sim);
       for (addr = 0; addr < limit; addr++)
 	if (sim_read_ram (dg_sim, addr, & val))
 	  debug_window_add_ram (table, addr);

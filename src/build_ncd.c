@@ -260,18 +260,20 @@ void read_object_file (char *fn)
 }
 
 
-void handle_addr_space_element (xmlNode *element)
-{
-  xmlChar *name_str;
-  xmlChar *banks_str;
-  long addr_width;
-  long data_width;
+typedef void node_iter_fn_t (xmlNode *element);
 
-  name_str = get_attr_str (element, "name");
-  banks_str = get_attr_str (element, "banks");
-  addr_width = get_attr_num (element, "addr_width", 0);
-  data_width = get_attr_num (element, "data_width", 0);
+void iterate_named_elements (xmlNode *parent_element,
+			     char *element_name,
+			     node_iter_fn_t *fn)
+{
+  xmlNode *cur_node;
+
+  for (cur_node = parent_element->children; cur_node; cur_node = cur_node->next)
+    if ((cur_node->type == XML_ELEMENT_NODE) &&
+	(strcmp ((char *) cur_node->name, element_name) == 0))
+      fn (cur_node);
 }
+
 
 void handle_obj_file_element (xmlNode *element)
 {
@@ -300,10 +302,15 @@ void handle_memory_element (xmlNode *element)
   long base_addr;
   long size;
   addr_t addr;
-  bank_mask_t *bank_mask;
+  //bank_mask_t *bank_mask;
   bank_t bank;
 
   addr_space_str = get_attr_str (element, "addr_space");
+
+  // Don't care about data memory, only instructions
+  if (strcmp (addr_space_str, "inst") != 0)
+    return;
+
   banks_str = get_attr_str (element, "banks");
   base_addr = get_attr_num (element, "base_addr", 0);
   size = get_attr_num (element, "size", 0);
@@ -333,18 +340,11 @@ void handle_memory_element (xmlNode *element)
 }
 
 
-typedef void node_iter_fn_t (xmlNode *element);
-
-void iterate_named_elements (xmlNode *parent_element,
-			     char *element_name,
-			     node_iter_fn_t *fn)
+void handle_chip_element (xmlNode *element)
 {
-  xmlNode *cur_node;
-
-  for (cur_node = parent_element->children; cur_node; cur_node = cur_node->next)
-    if ((cur_node->type == XML_ELEMENT_NODE) &&
-	(strcmp ((char *) cur_node->name, element_name) == 0))
-      fn (cur_node);
+  iterate_named_elements (element,
+			  "memory",
+			  & handle_memory_element);
 }
 
 
@@ -422,16 +422,12 @@ int main (int argc, char *argv[])
   //printf ("arch '%s' = %d\n", arch_str, arch);
   
   iterate_named_elements (root_element,
-			  "addr_space",
-			  & handle_addr_space_element);
-
-  iterate_named_elements (root_element,
 			  "obj_file",
 			  & handle_obj_file_element);
 
   iterate_named_elements (root_element,
-			  "memory",
-			  & handle_memory_element);
+			  "chip",
+			  & handle_chip_element);
 
   xmlSetDocCompressMode (doc, 9);
 

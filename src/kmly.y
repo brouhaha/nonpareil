@@ -49,16 +49,15 @@ int kml_cur_idx2;
 %token <integer> CHAR
 
 %token ANNUNCIATOR  AUTHOR       BACKGROUND   BITMAP       BUTTON
-%token CHARACTER    CLASS        COLOR        CREDIT       DEBUG
-%token DEFAULT      DIGITS       DISPLAY      DOWN         ELSE
-%token END          FLAG         GLOBAL       HARDWARE     IFFLAG
-%token IFPRESSED    IMAGE        INCLUDE      KEYCODE      LCD
-%token LISTING      MAP          MENUITEM     MODEL        NOHOLD
-%token OFFSET       ONDOWN       ONUP         OUTIN        OVERLAY
-%token PATCH        POSITION     PRESS        PRINT        RELEASE
-%token RESETFLAG    ROM          SCANCODE     SEGMENT      SEGMENTS
-%token SETFLAG      SIZE         SWITCH       TITLE        TRANSPARENCY
-%token TYPE         VIRTUAL      ZOOM
+%token CLASS        COLOR        CREDIT       DEBUG        DEFAULT
+%token DIGITS       DISPLAY      DOWN         ELSE         END
+%token FLAG         GLOBAL       IFFLAG       IFPRESSED    IMAGE
+%token INCLUDE      LCD          MAP          MENUITEM     MODEL
+%token NOHOLD       OFFSET       ONDOWN       ONUP         OUTIN
+%token OVERLAY      POSITION     PRESS        PRINT        RELEASE
+%token RESETFLAG    SCANCODE     SEGMENT      SEGMENTS     SETFLAG
+%token SIZE         SWITCH       TITLE        TRANSPARENCY TYPE
+%token VIRTUAL      ZOOM
 
 
 %type <string>  image_stmt image_credit_stmt
@@ -70,8 +69,6 @@ int kml_cur_idx2;
 %type <cmdlist> resetflag_command menuitem_command ifflag_command
 %type <cmdlist> ifpressed_command
 
-%type <integer> char_id
-%type <integer> segment_list
 %type <integer> scancode_id
 
 %%
@@ -116,12 +113,7 @@ global_stmt_list	:	global_stmt
 
 global_stmt		:	title_stmt
 			|	author_stmt
-			|	hardware_stmt
 			|	model_stmt
-			|	class_stmt
-			|	rom_stmt
-			|	listing_stmt
-			|	patch_stmt
 			|	image_stmt { yy_kml->image_fn = newstr ($1); }
 			|	image_credit_stmt { yy_kml->image_cr = newstr ($1); }
 			|       OVERLAY DEFAULT image_stmt { yy_kml->default_overlay_image_fn = newstr ($3); }
@@ -135,17 +127,7 @@ title_stmt		:	TITLE STRING { yy_kml->title = newstr ($2); } ;
 
 author_stmt		:	AUTHOR STRING { yy_kml->author = newstr ($2); } ;
 
-hardware_stmt		:	HARDWARE STRING { yy_kml->hardware = newstr ($2); } ;
-
 model_stmt		:	MODEL STRING { yy_kml->model = newstr ($2); } ;
-
-class_stmt		:	CLASS INTEGER { yy_kml->class = $2; } ;
-
-rom_stmt		:	ROM STRING { yy_kml->rom_fn = newstr ($2); } ;
-
-listing_stmt		:	LISTING STRING { yy_kml->rom_listing_fn = newstr ($2); } ;
-
-patch_stmt		:	PATCH STRING { yy_kml->patch_fn = newstr ($2); } ;
 
 transparency_stmt	:	TRANSPARENCY INTEGER
 				{ yy_kml->has_transparency = 1;
@@ -221,7 +203,6 @@ display_stmt		:	zoom_stmt
 			|	offset_stmt { yy_kml->display_offset.x = $1.a;
 					      yy_kml->display_offset.y = $1.b; }
 			|	display_color_stmt
-			|	character_stmt
 			|	segments_section
 			|	annunciator_section
 			;
@@ -247,32 +228,6 @@ digit_param		:	size_stmt { yy_kml->digit_size.width = $1.a;
 					    yy_kml->digit_size.height = $1.b; }
 			|	offset_stmt { yy_kml->digit_offset.x = $1.a;
 					      yy_kml->digit_offset.y = $1.b; }
-			;
-
-character_stmt		:	CHARACTER char_id SEGMENT segment_list END
-				{
-				  if ($2 >= 0)
-				    {
-				      range_check ($2, 0, KML_MAX_CHARACTER - 1);
-				      yy_kml->character_segment_map [$2] = $4;
-				    }
-				  else
-				    {
-				      int i;
-				      for (i = 0; i < KML_MAX_CHARACTER; i++)
-					yy_kml->character_segment_map [i] = $4;
-				    }
-				}
-			;
-
-char_id			:	CHAR { $$ = $1; }
-			|	INTEGER { $$ = $1; }
-			|	DEFAULT { $$ = -1; }
-			;
-
-segment_list		:	{ $$ = 0; }
-			|	CHAR segment_list { range_check_char ($1, KML_FIRST_SEGMENT, KML_FIRST_SEGMENT + KML_MAX_SEGMENT - 1);
-						    $$ = (1 << ($1 - KML_FIRST_SEGMENT)) + $2; }
 			;
 
 segments_section	:	SEGMENTS segments_stmt_list END ;
@@ -478,7 +433,6 @@ button_stmt		:	type_stmt
 				{ yy_kml->button [kml_cur_idx]->down.x = $1.a;
 				  yy_kml->button [kml_cur_idx]->down.y = $1.b; }
 			|	outin_stmt
-			|	keycode_stmt
 			|	virtual_stmt
 			|	nohold_stmt
 			|	onup_stmt
@@ -488,8 +442,6 @@ button_stmt		:	type_stmt
 type_stmt		:	TYPE INTEGER { yy_kml->button [kml_cur_idx]->type = $2; } ;
 
 outin_stmt		:	OUTIN INTEGER INTEGER { yyerror ("OUTIN not supported"); } ;
-
-keycode_stmt		:	KEYCODE INTEGER { yy_kml->button [kml_cur_idx]->keycode = $2; } ;
 
 virtual_stmt		:	VIRTUAL { yy_kml->button [kml_cur_idx]->virtual = 1; } ;
 

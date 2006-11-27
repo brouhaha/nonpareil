@@ -188,11 +188,7 @@ void free_kml (kml_t *kml)
   /* ISO/IEC 9899 paragraph 7.20.3.2 says free(NULL) has no effect. */
   free (kml->title);
   free (kml->author);
-  free (kml->hardware);
   free (kml->model);
-  free (kml->rom_fn);
-  free (kml->rom_listing_fn);
-  free (kml->patch_fn);
   free (kml->image_fn);
 
   for (i = 0; i < KML_MAX_GLOBAL_COLOR; i++)
@@ -248,10 +244,7 @@ static void print_kml_global (FILE *f, kml_t *kml)
   fprintf (f, "global\n");
   print_kml_string (f, "title",        kml->title);
   print_kml_string (f, "author",       kml->author);
-  print_kml_string (f, "hardware",     kml->hardware);
   print_kml_string (f, "model",        kml->model);
-  print_kml_string (f, "rom",          kml->rom_fn);
-  print_kml_string (f, "rom_listing",  kml->rom_listing_fn);
   print_kml_string (f, "image",        kml->image_fn);
   if (kml->has_transparency)
     fprintf (f, "\ttransparency %d\n", kml->transparency_threshold);

@@ -27,16 +27,18 @@ MA 02111, USA.
 static arch_info_t arch_info [ARCH_MAX] =
   {
     [ARCH_UNKNOWN]   = { "unknown",    0 },
+
+    [ARCH_M68K]      = { "m68k",       8 },  // 32-bit longword
+    [ARCH_H8]        = { "h8",         8 },
+    [ARCH_SUNPLUS]   = { "sunplus",    8 },
+    [ARCH_ARM]       = { "arm",        8 },  // 32-bit word
+
     [ARCH_CLASSIC]   = { "classic",   56 },
     [ARCH_WOODSTOCK] = { "woodstock", 56 },
     [ARCH_CRICKET]   = { "cricket",   48 },
     [ARCH_NUT]       = { "nut",       56 },
     [ARCH_CAPRICORN] = { "capricorn",  8 },
     [ARCH_SATURN]    = { "saturn",     4 },  // 64-bit word
-    [ARCH_68K]       = { "68k",        8 },  // 32-bit longword
-    [ARCH_H8]        = { "h8",         8 },
-    [ARCH_SUNPLUS]   = { "sunplus",    8 },
-    [ARCH_ARM]       = { "arm",        8 },  // 32-bit word
 
     [ARCH_TMS1802]   = { "tms1802",   64 },
     [ARCH_TMS0200]   = { "tms0200",   64 },

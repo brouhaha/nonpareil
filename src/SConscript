@@ -48,6 +48,8 @@ build_env.Append (CPPPATH = ['#/build/common'])  # generated includes
 # fields within structs/unions.
 build_env.Append (CCFLAGS = ['-std=gnu99', '-Wall', '-Wextra'])
 
+# build_env.Append (LIBS = ['-lefence'])
+
 build_env.Append (YACCFLAGS = [ '-d', '-v' ])
 
 if build_env ['debug'] :
@@ -66,17 +68,17 @@ if cross and ming and build_target_only:
     build_env.Replace (PROGSUFFIX = '.exe')
 
 if ming and (build_target_only or not cross):
-    build_env.Append (CPPDEFINES = { 'MINGW': '1',
-                                     'MS_WINDOWS' : '1'})
+    build_env.Append (CPPDEFINES = [('MINGW', 1),
+                                    ('MS_WINDOWS', 1)])
 
 if build_env ['has_debugger_gui'] or build_env ['has_debugger_cli']:
-    build_env.Append (CPPDEFINES = {'HAS_DEBUGGER': 1})
+    build_env.Append (CPPDEFINES = [('HAS_DEBUGGER', 1)])
 
 if build_env ['has_debugger_gui']:
-    build_env.Append (CPPDEFINES = {'HAS_DEBUGGER_GUI': 1})
+    build_env.Append (CPPDEFINES = [('HAS_DEBUGGER_GUI', 1)])
 
 if build_env ['has_debugger_cli']:
-    build_env.Append (CPPDEFINES = {'HAS_DEBUGGER_CLI': 1})
+    build_env.Append (CPPDEFINES = [('HAS_DEBUGGER_CLI', 1)])
 
 #-----------------------------------------------------------------------------
 # common components
@@ -85,7 +87,9 @@ if build_env ['has_debugger_cli']:
 common_srcs = Split ("""util.c arch.c model.c platform.c pixbuf_util.c""")
 common_objs = [build_env.Object(src) for src in common_srcs]
 
-sim_core_srcs = Split ("""proc.c glib_async_queue_source.c
+sim_core_srcs = Split ("""calcdef.c
+                          proc.c
+                          glib_async_queue_source.c
                           digit_ops.c
                           proc_classic.c
                           proc_woodstock.c
@@ -106,7 +110,7 @@ state_io_srcs = Split ("""state_write.c state_read.c""")
 state_io_objs = [build_env.Object(src) for src in state_io_srcs];
 state_io_packages = "gtk+-2.0 gdk-2.0 gdk-pixbuf-2.0 glib-2.0 libxml-2.0 libgsf-1"
 
-release_env = build_env.Copy (CPPDEFINES = { 'NONPAREIL_RELEASE': build_env ['RELEASE']})
+release_env = build_env.Copy (CPPDEFINES = [ ('NONPAREIL_RELEASE', build_env ['RELEASE'])])
 release_obj = release_env.Object ('release.c')
 common_objs.append (release_obj)
 
@@ -119,7 +123,7 @@ build_env.ParseConfig(pkg_config_cmd + state_io_packages)
 if not build_target_only:
     str2png_env = build_env.Copy ()
 
-    str2png_env.Append (CPPDEFINES = {'DEFAULT_PATH': 'image'})
+    str2png_env.Append (CPPDEFINES = [('DEFAULT_PATH', 'image')])
 
     str2png_srcs = Split ("""str2png.c""")
 
@@ -332,18 +336,18 @@ if (not ming) or (cross and not build_target_only):
 
 csim_env = nonpareil_env.Copy ()
 if not ming:
-    csim_env.Append (CPPDEFINES = {'DEFAULT_PATH': build_env ['libdir']})
+    csim_env.Append (CPPDEFINES = [('DEFAULT_PATH', build_env ['libdir'])])
 
 if build_env ['target'] == 'win32':
-    csim_env.Append (CPPDEFINES = {'SHAPE_DEFAULT': "false"})
+    csim_env.Append (CPPDEFINES = [('SHAPE_DEFAULT', "false")])
 
 if build_env ['has_debugger_cli']:
     debugger_cli_env = csim_env.Copy ()
     if build_env ['use_tcl']:
-        debugger_cli_env.Append (CPPDEFINES = {'USE_TCL': 1})
+        debugger_cli_env.Append (CPPDEFINES = [('USE_TCL', 1)])
         nonpareil_env.Append (LIBS = 'tcl')
     if build_env ['use_readline']:
-        debugger_cli_env.Append (CPPDEFINES = {'USE_READLINE': 1})
+        debugger_cli_env.Append (CPPDEFINES = [('USE_READLINE', 1)])
         nonpareil_env.Append (LIBS = 'readline')
     nonpareil_objs.append (debugger_cli_env.Object (nonpareil_debugger_cli_srcs))
 
@@ -417,7 +421,7 @@ if build_env ['build_target_only'] == 0:
 if build_env ['build_target_only'] == 0:
     headers = Split ("""util.h
                         calc_chooser.h
-                        arch.h model.h platform.h kml.h
+                        calcdef.h arch.h model.h platform.h kml.h
                         proc.h proc_int.h glib_async_queue_source.h
                         digit_ops.h
                         proc_classic.h proc_nut.h proc_woodstock.h

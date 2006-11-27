@@ -493,9 +493,9 @@ gboolean move_window_callback (GtkWidget *widget UNUSED,
 void set_default_state_path (csim_t *csim)
 {
   const char *p;
-  model_info_t *model_info;
+  const char *model_name;
 
-  model_info = get_model_info (sim_get_model (csim->sim));
+  model_name = sim_get_model_name (csim->sim);
 
   p = g_get_home_dir ();
   strcpy (csim->state_fn, p);
@@ -516,7 +516,7 @@ void set_default_state_path (csim_t *csim)
     }
 
   max_strncat (csim->state_fn, "/", sizeof (csim->state_fn));
-  max_strncat (csim->state_fn, model_info->name, sizeof (csim->state_fn));
+  max_strncat (csim->state_fn, model_name, sizeof (csim->state_fn));
   max_strncat (csim->state_fn, ".nst", sizeof (csim->state_fn));
 }
 
@@ -681,12 +681,9 @@ int main (int argc, char *argv[])
 {
   csim_t *csim;
   char *cmd_line_filename = NULL;
+  char *kml_fn = NULL;  // $$$ outdated
   char *nui_fn = NULL;
-  char *kml_fn = NULL;
-  char *rom_fn;
-#ifdef HAS_DEBUGGER
-  char *listing_fn;
-#endif
+  char *ncd_fn = NULL;
 
   csim = alloc (sizeof (csim_t));
 
@@ -797,9 +794,6 @@ int main (int argc, char *argv[])
   if (! csim->kml->image_fn)
     fatal (2, "No image file spsecified in KML\n");
 
-  if (! csim->kml->rom_fn)
-    fatal (2, "No ROM file specified in KML\n");
-
   if (! csim->kml->model)
     fatal (2, "No model specified in KML\n");
 
@@ -899,8 +893,11 @@ int main (int argc, char *argv[])
   if (! csim->gui_display)
     fatal (2, "can't initialize display\n");
 
-  csim->sim = sim_init (model,
-			csim->kml->character_segment_map,  // char_gen
+  ncd_fn = find_file_with_suffix (csim->kml->model, ".ncd");
+  if (! ncd_fn)
+    fatal (2, "can't find .ncd file\n");
+
+  csim->sim = sim_init (ncd_fn,
 			gui_install_hardware,
 			csim,  // install_hardware_callback_ref
 			(display_update_callback_fn_t *) gui_display_update,
@@ -954,26 +951,6 @@ int main (int argc, char *argv[])
 		    "destroy",
 		    GTK_SIGNAL_FUNC (main_window_destroy_callback),
 		    csim);
-
-  // $$$
-  rom_fn = find_file_in_path_list (csim->kml->rom_fn, NULL, default_path);
-  if (! rom_fn)
-    fatal (2, "can't find ROM file '%s'\n", csim->kml->rom_fn);
-
-  if (! sim_read_object_file (csim->sim, rom_fn))
-    fatal (2, "can't read object file '%s'\n", rom_fn);
-
-#ifdef HAS_DEBUGGER
-  if (csim->kml->rom_listing_fn)
-    {
-      listing_fn = find_file_in_path_list (csim->kml->rom_listing_fn, NULL, default_path);
-      if (! listing_fn)
-	warning ("can't find ROM listing file '%s'\n", csim->kml->rom_listing_fn);
-      else if (! sim_read_listing_file (csim->sim, listing_fn))
-	warning ("can't read ROM listing file '%s'\n", listing_fn);
-    }
-#endif
-  // $$$
 
   sim_reset (csim->sim);
 

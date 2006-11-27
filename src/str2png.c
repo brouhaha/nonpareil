@@ -38,6 +38,174 @@ MA 02111, USA.
 #include "pixbuf_util.h"
 
 
+#define SA 0x0001
+#define SB 0x0002
+#define SC 0x0004
+#define SD 0x0008
+#define SE 0x0010
+#define SF 0x0020
+#define SG 0x0040
+#define SH 0x0080
+#define SI 0x0100
+#define SJ 0x0200
+#define SK 0x0400
+#define SL 0x0800
+#define SM 0x1000
+#define SN 0x2000
+
+segment_bitmap_t character_segment_map [128] =
+  {
+//  [0xxx] = SA+SB+SC+SD+SE+SF+SG+SH+SI+SJ+SK+SL+SM+SN,
+    [0x00] = SA+SB+   SD+SE+SF+   SH+SI,
+    [0x01] = SA+SB+SC+   SE+SF+SG+SH,
+    [0x02] = SA+SB+SC+SD+         SH+SI+SJ,
+    [0x03] = SA+      SD+SE+SF,
+    [0x04] = SA+SB+SC+SD+            SI+SJ,
+    [0x05] = SA+      SD+SE+SF+SG+SH,
+    [0x06] = SA+         SE+SF+SG+SH,
+    [0x07] = SA+   SC+SD+SE+SF+   SH,
+
+    [0x08] =    SB+SC+   SE+SF+SG+SH,
+    [0x09] = SA+      SD+            SI+SJ,
+    [0x0a] =    SB+SC+SD+SE,
+    [0x0b] =             SE+SF+SG+         SK+   SM,
+    [0x0c] =          SD+SE+SF,
+    [0x0d] =    SB+SC+   SE+SF+            SK+SL,
+    [0x0e] =    SB+SC+   SE+SF+               SL+SM,
+    [0x0f] = SA+SB+SC+SD+SE+SF,
+
+    [0x10] = SA+SB+      SE+SF+SG+SH,
+    [0x11] = SA+SB+SC+SD+SE+SF+                  SM,
+    [0x12] = SA+SB+      SE+SF+SG+SH+            SM,
+    [0x13] = SA+   SC+SD+   SF+SG+SH,
+    [0x14] = SA+                     SI+SJ,
+    [0x15] =    SB+SC+SD+SE+SF,
+    [0x16] =             SE+SF+            SK+      SN,
+    [0x17] =    SB+SC+   SE+SF+                  SM+SN,
+
+    [0x18] =                               SK+SL+SM+SN,
+    [0x19] =                            SJ+SK+SL,
+    [0x1a] = SA+      SD+                  SK+      SN,
+    [0x1b] = SA+      SD+SE+SF,
+    [0x1c] =                                  SL+SM,
+    [0x1d] = SA+SB+SC+SD,
+    [0x1e] = SA+SB+                        SK+      SN,
+    [0x1f] =          SD,
+
+    [0x20] = 0,
+    [0x21] =                         SI+SJ,
+    [0x22] =                SF+      SI,
+    [0x23] =    SB+SC+SD+      SG+SH+SI+SJ,
+    [0x24] = SA+   SC+SD+   SF+SG+SH+SI+SJ,
+    [0x25] =       SC+      SF+SG+SH+      SK+SL+SM+SN,
+    [0x26] = SA+   SC+SD+                  SK+SL+SM+SN,
+    [0x27] =                         SI,
+
+    [0x28] =                               SK+   SM,
+    [0x29] =                                  SL+   SN,
+    [0x2a] =                   SG+SH+SI+SJ+SK+SL+SM+SN,
+    [0x2b] =                   SG+SH+SI+SJ,
+    [0x2c] =                   SG+SH+      SK+   SM,
+    [0x2d] =                   SG+SH,
+    [0x2e] =                   SG+SH+         SL+   SN,
+    [0x2f] =                               SK+      SN,
+
+    [0x30] = SA+SB+SC+SD+SE+SF+            SK+      SN,
+    [0x31] =    SB+SC,
+    [0x32] = SA+SB+   SD+SE+   SG+SH,
+    [0x33] = SA+SB+SC+SD+      SG+SH,
+    [0x34] =    SB+SC+      SF+SG+SH,
+    [0x35] = SA+   SC+SD+         SH+         SL,
+    [0x36] = SA+   SC+SD+SE+SF+SG+SH,
+    [0x37] = SA+SB+SC,
+
+    [0x38] = SA+SB+SC+SD+SE+SF+SG+SH,
+    [0x39] = SA+SB+SC+SD+   SF+SG+SH,
+    [0x3a] = SA+SB+SC+SD+SE+SF+SG+SH+SI+SJ+SK+SL+SM+SN,  // FUL starburst (all segs)
+    [0x3b] =                   SG+                  SN,  // SEM ;
+    [0x3c] =          SD+                  SK+      SN,  // <
+    [0x3d] =          SD+      SG+SH,                    // =
+    [0x3e] =          SD+                     SL+SM,     // >
+    [0x3f] = SA+SB+         SF+   SH+   SJ,              // ?
+
+    [0x40] =             SE+SF+SG+SH,                    // APP lazy T
+    [0x41] =       SC+SD+SE+   SG+               SM,     // a
+    [0x42] =       SC+SD+SE+SF+SG+SH,                    // b
+    [0x43] =          SD+SE+   SG+SH,                    // c
+    [0x44] =    SB+SC+SD+SE+   SG+SH,                    // d
+    [0x45] =          SD+SE+   SG+                  SN,  // e
+    [0x46] = SA,                                         // OVE overbar (hangman head only)
+    [0x47] = SA+                     SI,                 // SUP high-T (hangman neck)
+
+    [0x48] = SA+                     SI+            SN,  // HAN left leg
+    [0x49] = SA+                     SI+         SM+SN,  // HAN right leg
+    [0x4a] = SA+               SG+   SI+         SM+SN,  // HAN left arm
+    [0x4b] = SA+               SG+SH+SI+         SM+SN,  // HAN right arm (full hangman)
+    [0x4c] =    SB+               SH+SI+            SN,  // MIC Greek mu
+    [0x4d] =          SD+      SG+SH+      SK+      SN,  // NOT not equal
+    [0x4e] = SA+      SD+                     SL+   SN,  // SIG Greek Sigma
+    [0x4f] =          SD+               SJ+SK+      SN,  // ANG angle symbol
+
+    // Halfnut models have additonal characters 0x50 through 0x7f, which
+    // display as spaces on fullnuts.  See CHHU Chronicle V2N4 for
+    // details.
+
+    [0x50] =                   SG+SH+            SM+SN,  // DC1 pi          (user 0x11)
+    [0x51] =          SD+                        SM+SN,  // BEL Greek alpha (user 0x07)
+    [0x52] = SA+      SD+         SH+      SK+   SM+SN,  // BAC Greek beta  (user 0x08)
+    [0x53] =                   SG+SH+   SJ,              // HTA Greek gamma (user 0x09)
+    [0x54] =                SF+SG+SH+   SJ+      SM,     // UN
+    [0x55] =             SE+   SG+SH+               SN,  // VTA Greek sigma (user 0x0b)
+    [0x56] = SA,                                         // OVE overbar (dupl. 0x46)
+    [0x57] = SA+SB+      SE+SF,                          // ESC Greek Gamma (user 0x1b)
+
+    [0x58] = SA+                     SI+            SN,  // HAN left leg  (dupl. 0x48)
+    [0x59] = SA+                     SI+         SM+SN,  // HAN rigth leg (dupl. 0x49)
+    [0x5a] = SA+               SG+   SI+         SM+SN,  // HAN left arm  (dupl. 0x4a)
+    [0x5b] = SA+               SG+SH+SI+         SM+SN,  // HAN rigth arm (dupl. 0x4b)
+    [0x5c] =    SB+               SH+SI+            SN,  // MIC Greek mu  (dupl. 0x4c)
+    [0x5d] =          SD+      SG+SH+      SK+      SN,  // NOT not equal (dupl. 0x4d)
+    [0x5e] =                                  SL+SM+SN,  // DC3 Greek lamda (user 0x13)
+    [0x5f] =          SD+               SJ+SK+      SN,  // ANG angle sym (dupl 0x4f)
+
+    [0x60] = SA+                     SI,                 // SUP high-T    (dupl 0x47)
+    [0x61] =       SC+SD+SE+   SG+               SM,     // a             (dupl 0x41)
+    [0x62] =       SC+SD+SE+SF+SG+SH,                    // b             (dupl 0x42)
+    [0x63] =          SD+SE+   SG+SH,                    // c             (dupl 0x43)
+    [0x64] =    SB+SC+SD+SE+   SG+SH,                    // d             (dupl 0x44)
+    [0x65] =          SD+SE+   SG+                  SN,  // e             (dupl 0x45)
+    [0x66] =                      SH+   SJ+SK,           // f
+    [0x67] =       SC+SD+         SH+            SM,     // g
+
+    [0x68] =       SC+   SE+SF+SG+SH,                    // h
+    [0x69] =             SE,                             // i
+    [0x6a] =       SC+SD,                                // j
+    [0x6b] =             SE+SF+SG+SH+            SM,     // k
+    [0x6c] =             SE+SF,                          // l
+    [0x6d] =       SC+   SE+   SG+SH+   SJ,              // m
+    [0x6e] =       SC+   SE+   SG+SH,                    // n
+    [0x6f] =       SC+SD+SE+   SG+SH,                    // o
+
+    [0x70] =             SE+SF+SG+            SL,        // p
+    [0x71] =                SF+SG+            SL+SM,     // q
+    [0x72] =             SE+   SG+SH,                    // r
+    [0x73] =          SD+         SH+            SM,     // s
+    [0x74] =                SG+SH+SI+            SM,     // t
+    [0x75] =       SC+SD+SE,                             // u
+    [0x76] =             SE+                        SN,  // v
+    [0x77] =       SC+   SE+                     SM+SN,  // w
+
+    [0x78] =                   SG+SH+   SJ+         SN,  // x
+    [0x79] =       SC+SD+                        SM,     // y
+    [0x7a] =          SD+      SG+                  SN,  // z
+    [0x7b] =                      SH+      SK+   SM,     // LEF {
+    [0x7c] =          SD+                  SK+   SM+SN,  // DEL Greek Delta
+    [0x7d] =                   SG+            SL+   SN,  // RIG }
+    [0x7e] = SA+      SD+                     SL+   SN,  // SIG Greek Sigma (dupl. 0x4e)
+    [0x7f] =             SE+SF+SG+SH                     // APP lazy T (dupl. 0x40)
+  };
+
+
 char *default_path = MAKESTR(DEFAULT_PATH);
 
 
@@ -286,7 +454,7 @@ void draw_char (int x, int y, char c)
   else if ((c >= 'a') && (c <= '~'))
     m = c;
 
-  segments = kml->character_segment_map [m];
+  segments = character_segment_map [m];
 
   for (i = 0; i < KML_MAX_SEGMENT; i++)
     {
