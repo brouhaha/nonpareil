@@ -212,7 +212,7 @@ static int woodstock_disassemble_00 (int addr, int op1, int op2,
       snprintf (buf, len, "data register -> c %d", arg);
       break;
     case 074:
-      snprintf (buf, len, "p = %d", p_set_map [arg]);
+      snprintf (buf, len, "p <- %d", p_set_map [arg]);
       break;
     }
 

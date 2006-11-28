@@ -22,6 +22,7 @@ MA 02111, USA.
 %name-prefix="casm_"
 
 %{
+#include <stdbool.h>
 #include <stdio.h>
 
 #include "symtab.h"
@@ -114,10 +115,10 @@ expr		: INTEGER { $$ = $1; }
                           else
                             {
 			      symtab_t *table;
-			      if ($1 [0] == '$')
-				table = global_symtab;
-			      else
+			      if (local_label_flag && ($1 [0] != '$'))
 				table = symtab [group][rom];
+			      else
+				table = global_symtab;
 			      if (! lookup_symbol (table, $1, &$$))
 				{
 				  error ("undefined symbol '%s'\n", $1);
@@ -136,6 +137,7 @@ ps_rom		: '.' ROM expr { $3 = range ($3, 0, MAXGROUP * MAXROM - 1);
 				 rom = dsr = ($3 & 7); 
 				 pc = 0;
 				 last_instruction_type = OTHER_INST;
+				 local_label_flag = true;
 			         printf (" %d", $3); }
 		;
 

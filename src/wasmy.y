@@ -22,6 +22,7 @@ MA 02111, USA.
 %name-prefix="wasm_"
 
 %{
+#include <stdbool.h>
 #include <stdio.h>
 
 #include "symtab.h"
@@ -119,10 +120,10 @@ expr		: INTEGER { $$ = $1; }
                           else
                             {
 			      symtab_t *table;
-			      if ($1 [0] == '$')
-				table = global_symtab;
-			      else
+			      if (local_label_flag && ($1 [0] != '$'))
 				table = symtab [group][rom];
+			      else
+				table = global_symtab;
 			      if (! lookup_symbol (table, $1, &$$))
 				{
 				  error ("undefined symbol '%s'\n", $1);
@@ -148,13 +149,14 @@ ps_rom		: '.' ROM expr { $3 = range ($3, 0, MAXGROUP * MAXROM - 1);
 				 group = dsg = ($3 >> 3);
 				 rom = dsr = ($3 & 7); 
 				 pc = 0;
+				 local_label_flag = true;
 			         printf (" %d", $3); }
 		;
 
-ps_symtab	: '.' SYMTAB { symtab_flag = 1; }
+ps_symtab	: '.' SYMTAB { symtab_flag = true; }
 		;
 
-ps_legal	: '.' LEGAL { legal_flag = 1; }
+ps_legal	: '.' LEGAL { legal_flag = true; }
 		;
 
 instruction	: jsb_inst
@@ -184,7 +186,7 @@ goto_form       :  GO TO expr { $$ = $3;
 				if ((last_instruction_type == ARITH_INST) &&
 				    ! legal_flag)
 				  asm_warning ("unconditional goto shouldn't follow  arithmetic instruction\n"); 
-				legal_flag = 0;
+				legal_flag = false;
                               }
                 | IF NC GO TO expr { $$ = $5;
 				    if (last_instruction_type != ARITH_INST)

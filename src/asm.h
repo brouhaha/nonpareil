@@ -35,11 +35,12 @@ extern int dsg;		/* delayed select group */
 
 extern char flag_char;  /* used to mark jumps across rom banks */
 
-extern int symtab_flag;
+extern bool symtab_flag;
 
-extern int legal_flag;	// used to suppress warnings for unconditional
+extern bool legal_flag;	// used to suppress warnings for unconditional
 			// branches after arithmetic instructions
 
+extern bool local_label_flag;  // true if ROM-local labels are in use
 
 #define OTHER_INST 0
 #define ARITH_INST 1

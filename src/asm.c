@@ -76,21 +76,23 @@ int dsg;	/* delayed select group */
 
 char flag_char;
 
-int objflag;	/* used to remember args to emit() */
+bool obj_flag;	/* used to remember args to emit() */
 int objcode;
 
-int symtab_flag;
+bool symtab_flag;
 
-int legal_flag;	// used to suppress warnings for unconditional
-		// branches after arithmetic instructions
+bool legal_flag;	// used to suppress warnings for unconditional
+			// branches after arithmetic instructions
+
+bool local_label_flag;  // true if ROM-local labels are in use
 
 int last_instruction_type;
 
 
-int targflag;	/* used to remember args to target() */
-int targgroup;
-int targrom;
-int targpc;
+bool targ_flag;	/* used to remember args to target() */
+int targ_group;
+int targ_rom;
+int targ_pc;
 
 char linebuf [MAX_LINE];
 char *lineptr;
@@ -141,7 +143,7 @@ void format_listing (void)
 
   if (arch == ARCH_CLASSIC)
     {
-      if (objflag)
+      if (obj_flag)
 	{
 	  listptr += sprintf (listptr, "L%1o%1o%03o:  ", group, rom, pc);
 	  for (i = 0x200; i; i >>= 1)
@@ -151,9 +153,9 @@ void format_listing (void)
       else
 	listptr += sprintf (listptr, "                   ");
 
-      if (targflag)
-	listptr += sprintf (listptr, "  -> L%1o%1o%03o", targgroup, targrom,
-			    targpc);
+      if (targ_flag)
+	listptr += sprintf (listptr, "  -> L%1o%1o%03o", targ_group, targ_rom,
+			    targ_pc);
       else
 	listptr += sprintf (listptr, "           ");
 	  
@@ -162,8 +164,8 @@ void format_listing (void)
     }
   else
     {
-      if (objflag)
-	listptr += sprintf (listptr, "%06o  %04o ", objcode, (rom << 8) + pc);
+      if (obj_flag)
+	listptr += sprintf (listptr, "%06o  %04o ", objcode, (group << 11) + (rom << 8) + pc);
       else
 	listptr += sprintf (listptr, "             ");
     }
@@ -187,7 +189,8 @@ void do_pass (int p)
   dsg = group = 0;
 
   last_instruction_type = OTHER_INST;
-  legal_flag = 0;
+  legal_flag = false;
+  local_label_flag = false;
 
   printf ("Pass %d rom", pass);
 
@@ -207,11 +210,11 @@ void do_pass (int p)
       errptr = & errbuf [0];
       errbuf [0] = '\0';
 
-      objflag = 0;
-      targflag = 0;
+      obj_flag = false;
+      targ_flag = false;
       flag_char = ' ';
 
-      symtab_flag = 0;
+      symtab_flag = false;
 
       parser [arch] ();
 
@@ -219,7 +222,7 @@ void do_pass (int p)
 	{
 	  if (symtab_flag)
 	    {
-	      if (listfile)
+	      if (listfile && local_label_flag)
 		print_symbol_table (symtab [group] [rom], listfile);
 	    }
 	  else
@@ -237,7 +240,7 @@ void do_pass (int p)
 	    }
 	}
 
-      if (objflag)
+      if (obj_flag)
 	increment_pc ();
     }
 
@@ -279,6 +282,10 @@ int main (int argc, char *argv[])
 	      list_fn = argv [1];
 	      argc--;
 	      argv++;
+	    }
+	  else if (strcmp (argv [0], "-s") == 0)
+	    {
+	      symtab_flag = true;
 	    }
 	  else
 	    fatal (1, "unrecognized option '%s'\n", argv [0]);
@@ -348,32 +355,32 @@ void do_label (char *s)
   int prev_val;
   symtab_t *table;
 
-  if (*s == '$')
-    table = global_symtab;
-  else
+  if (local_label_flag && (*s != '$'))
     table = symtab [group][rom];
+  else
+    table = global_symtab;
 
   if (pass == 1)
     {
-      if (! create_symbol (table, s, (rom << 8) + pc, lineno))
+      if (! create_symbol (table, s, (group << 11) + (rom << 8) + pc, lineno))
 	error ("multiply defined symbol '%s'\n", s);
     }
   else if (! lookup_symbol (table, s, & prev_val))
     error ("undefined symbol '%s'\n", s);
-  else if (prev_val != ((rom << 8) + pc))
+  else if (prev_val != ((group << 11) + (rom << 8) + pc))
     error ("phase error for symbol '%s'\n", s);
 }
 
 
 static void write_obj_classic (FILE *f, int opcode)
 {
-    fprintf (f, "%04o:%04o\n", (group << 11) | (rom << 8) | pc, opcode &01777);
+  fprintf (f, "%04o:%04o\n", (group << 11) | (rom << 8) | pc, opcode &01777);
 }
 
 
 static void write_obj_woodstock (FILE *f, int opcode)
 {
-    fprintf (f, "%04o:%04o\n", (rom << 8) | pc, opcode &01777);
+  fprintf (f, "%04o:%04o\n", (group << 11) | (rom << 8) | pc, opcode &01777);
 }
 
 
@@ -387,7 +394,7 @@ static write_obj_t *write_obj [ARCH_MAX] =
 static void emit_core (int op, int inst_type)
 {
   objcode = op;
-  objflag = 1;
+  obj_flag = true;
   last_instruction_type = inst_type;
 
   if ((pass == 2) && objfile)
@@ -412,10 +419,10 @@ void emit_test (int op)
 
 void target (int g, int r, int p)
 {
-  targflag = 1;
-  targgroup = g & 01;
-  targrom = r & 07;
-  targpc = p & 00377;
+  targ_flag = true;
+  targ_group = g & 01;
+  targ_rom = r & 07;
+  targ_pc = p & 00377;
 }
 
 int range (int val, int min, int max)

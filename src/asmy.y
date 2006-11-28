@@ -22,6 +22,7 @@ MA 02111, USA.
 %name-prefix="asm_"
 
 %{
+#include <stdbool.h>
 #include <stdio.h>
 
 #include "symtab.h"
