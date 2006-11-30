@@ -70,12 +70,12 @@ static char *woodstock_misc_00_mnem [16] =
 static char *woodstock_misc_10_mnem [16] =
   {
     "clear regs",
-    "clear s",
+    "clear status",
     "display toggle",
     "display off",
-    "m1 exch c",
+    "m1 exchange c",
     "m1 -> c",
-    "m2 exch c",
+    "m2 exchange c",
     "m2 -> c",
     "stack -> a",
     "down rotate",
@@ -83,8 +83,8 @@ static char *woodstock_misc_10_mnem [16] =
     "c -> stack",
     "decimal",
     "???",
-    "f -> a",
-    "f exch a"
+    "f -> a[x]",
+    "f exchange a[x]"
   };
 
 
@@ -120,14 +120,15 @@ static char *woodstock_misc_60_mnem [16] =
     "???",
     "???",
     "bank switch",
-    "c -> addr",
+    "c -> data address",
     "clear data registers",
     "c -> data",
     "rom checksum",
     "???",
     "???",
-    "???"   // "hi i'm woodstock" in HP-25 source code.  Apparently a NOP
-            // to ACT, but used by CRC or PIK.
+    "hi i'm woodstock"   // "hi i'm woodstock" in HP-25 source code.
+    			 // Apparently a NOP to ACT, but may be used by CRC
+			 // or PIK.
   };
 
 
@@ -192,7 +193,7 @@ static int woodstock_disassemble_00 (int addr, int op1, int op2,
       inst_len = 2;
       break;
     case 050:
-      snprintf (buf, len, "c -> data register %d", arg);
+      snprintf (buf, len, "c -> register %d", arg);
       break;
     case 054:
       l = snprintf (buf, len, "if p # %d", p_test_map [arg]);
@@ -209,7 +210,10 @@ static int woodstock_disassemble_00 (int addr, int op1, int op2,
       snprintf (buf, len, "delayed rom %02o", arg);
       break;
     case 070:
-      snprintf (buf, len, "data register -> c %d", arg);
+      if (arg == 0)
+	snprintf (buf, len, "data -> c");
+      else
+	snprintf (buf, len, "register -> c %d", arg);
       break;
     case 074:
       snprintf (buf, len, "p <- %d", p_set_map [arg]);
