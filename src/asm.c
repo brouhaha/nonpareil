@@ -67,32 +67,30 @@ int lineno;
 int errors;
 int warnings;
 
-int group;	/* current rom group */
-int rom;	/* current rom */
-int pc;		/* current pc */
+addr_t pc;		/* current pc */
 
-int dsr;	/* delayed select rom */
-int dsg;	/* delayed select group */
+// for "delayed select rom" and "delayed select group":
+addr_t delayed_pc_mask [2];
+addr_t delayed_pc_bits [2];
 
 char flag_char;
 
 bool obj_flag;	/* used to remember args to emit() */
 int objcode;
 
-bool symtab_flag;
+bool symtab_pseudoop_flag;  // set by parser for .symtab directive
 
 bool legal_flag;	// used to suppress warnings for unconditional
 			// branches after arithmetic instructions
 
 bool local_label_flag;  // true if ROM-local labels are in use
+int local_label_current_rom;
 
 int last_instruction_type;
 
 
-bool targ_flag;	/* used to remember args to target() */
-int targ_group;
-int targ_rom;
-int targ_pc;
+bool target_flag;	/* used to remember args to target() */
+addr_t target_addr;
 
 char linebuf [MAX_LINE];
 char *lineptr;
@@ -114,65 +112,94 @@ FILE *listfile = NULL;
 
 
 symtab_t *global_symtab;
-symtab_t *symtab [MAXGROUP] [MAXROM];  /* separate symbol tables for each ROM */
+symtab_t *symtab [MAXROM];  /* separate symbol tables for each '.rom' directive */
 
 
 void increment_pc (void)
 {
-  if (pc != 0377)
-    pc = (pc + 1) & 0xff;
-  else
-    {
-      pc = 0;
-      if (rom != 7)
-	rom++;
-      else
-	{
-	  rom = 0;
-	  group ^= 1;
-	}
-    }
+  pc = (pc + 1) & 07777;
 }
 
 
-void format_listing (void)
+void value_fmt_fn_classic (int value, char *buf, int buf_len)
+{
+  snprintf (buf, buf_len, "%01o%01o%03o", (value >> 11) & 01,
+	                                  (value >> 8) & 07,
+	                                  value & 0377);
+}
+
+
+static value_fmt_fn_t *value_fmt_fn [ARCH_MAX] =
+{
+  [ARCH_UNKNOWN]   = NULL,
+  [ARCH_CLASSIC]   = value_fmt_fn_classic,
+  [ARCH_WOODSTOCK] = NULL  // default OK
+};
+
+
+void format_listing_unknown (void)
+{
+  listptr += sprintf (listptr, "%4d   ", lineno);
+  listptr += sprintf (listptr, "             ");
+  strcat (listptr, linebuf);
+  listptr += strlen (listptr);
+}
+
+void format_listing_classic (void)
 {
   int i;
 
   listptr += sprintf (listptr, "%4d   ", lineno);
 
-  if (arch == ARCH_CLASSIC)
+  if (obj_flag)
     {
-      if (obj_flag)
-	{
-	  listptr += sprintf (listptr, "L%1o%1o%03o:  ", group, rom, pc);
-	  for (i = 0x200; i; i >>= 1)
-	    *listptr++ = (objcode & i) ? '1' : '.';
-	  *listptr = '\0';
-	}
-      else
-	listptr += sprintf (listptr, "                   ");
-
-      if (targ_flag)
-	listptr += sprintf (listptr, "  -> L%1o%1o%03o", targ_group, targ_rom,
-			    targ_pc);
-      else
-	listptr += sprintf (listptr, "           ");
-	  
-      listptr += sprintf (listptr, "  %c%c%c%c%c    ", flag_char, flag_char,
-			  flag_char, flag_char, flag_char);
+      listptr += sprintf (listptr, "L%1o%1o%03o:  ",
+			  pc >> 11,
+			  (pc >> 8) & 7,
+			  pc & 0377);
+      for (i = 0x200; i; i >>= 1)
+	*listptr++ = (objcode & i) ? '1' : '.';
+      *listptr = '\0';
     }
   else
-    {
-      if (obj_flag)
-	listptr += sprintf (listptr, "%06o  %04o ", objcode, (group << 11) + (rom << 8) + pc);
-      else
-	listptr += sprintf (listptr, "             ");
-    }
+    listptr += sprintf (listptr, "                   ");
+
+  if (target_flag)
+    listptr += sprintf (listptr, "  -> L%1o%1o%03o",
+			(target_addr >> 11),
+			(target_addr >> 8) & 3,
+			target_addr & 0377);
+  else
+    listptr += sprintf (listptr, "           ");
+  
+  listptr += sprintf (listptr, "  %c%c%c%c%c    ", flag_char, flag_char,
+		      flag_char, flag_char, flag_char);
   
   strcat (listptr, linebuf);
   listptr += strlen (listptr);
 }
+
+void format_listing_woodstock (void)
+{
+  listptr += sprintf (listptr, "%4d   ", lineno);
+
+  if (obj_flag)
+    listptr += sprintf (listptr, "%06o  %04o ", objcode, pc);
+  else
+    listptr += sprintf (listptr, "             ");
+  
+  strcat (listptr, linebuf);
+  listptr += strlen (listptr);
+}
+
+typedef void (format_listing_t) (void);
+
+static format_listing_t *format_listing [ARCH_MAX] =
+{
+  [ARCH_UNKNOWN]   = format_listing_unknown,
+  [ARCH_CLASSIC]   = format_listing_classic,
+  [ARCH_WOODSTOCK] = format_listing_woodstock
+};
 
 void do_pass (int p)
 {
@@ -185,8 +212,7 @@ void do_pass (int p)
   errors = 0;
   warnings = 0;
   pc = 0;
-  dsr = rom = 0;
-  dsg = group = 0;
+  delayed_pc_mask [0] = 0;
 
   last_instruction_type = OTHER_INST;
   legal_flag = false;
@@ -211,23 +237,29 @@ void do_pass (int p)
       errbuf [0] = '\0';
 
       obj_flag = false;
-      targ_flag = false;
+      target_flag = false;
       flag_char = ' ';
 
-      symtab_flag = false;
+      symtab_pseudoop_flag = false;
+
+      delayed_pc_mask [1] = delayed_pc_mask [0];
+      delayed_pc_bits [1] = delayed_pc_bits [0];
+      delayed_pc_mask [0] = 0;
 
       parser [arch] ();
 
       if (pass == 2)
 	{
-	  if (symtab_flag)
+	  if (symtab_pseudoop_flag)
 	    {
 	      if (listfile && local_label_flag)
-		print_symbol_table (symtab [group] [rom], listfile);
+		print_symbol_table (symtab [local_label_current_rom],
+				    listfile,
+				    value_fmt_fn [arch]);
 	    }
 	  else
 	    {
-	      format_listing ();
+	      format_listing [arch] ();
 	      if (listfile)
 		fprintf (listfile, "%s\n", listbuf);
 	      if (errptr != & errbuf [0])
@@ -247,7 +279,9 @@ void do_pass (int p)
   if ((pass == 2) && listfile)
     {
       fprintf (listfile, "\nGlobal symbols:\n\n");
-      print_symbol_table (global_symtab, listfile);
+      print_symbol_table (global_symtab,
+			  listfile,
+			  value_fmt_fn [arch]);
       fprintf (listfile, "\n");
     }
 
@@ -259,6 +293,7 @@ int main (int argc, char *argv[])
 {
   char *obj_fn = NULL;
   char *list_fn = NULL;
+  int rom;
 
   progname = argv [0];
 
@@ -283,10 +318,6 @@ int main (int argc, char *argv[])
 	      argc--;
 	      argv++;
 	    }
-	  else if (strcmp (argv [0], "-s") == 0)
-	    {
-	      symtab_flag = true;
-	    }
 	  else
 	    fatal (1, "unrecognized option '%s'\n", argv [0]);
 	}
@@ -303,13 +334,12 @@ int main (int argc, char *argv[])
   if (! global_symtab)
     fatal (2, "symbol table allocation failed\n");
 
-  for (group = 0; group < MAXGROUP; group++)
-    for (rom = 0; rom < MAXROM; rom++)
-      {
-	symtab [group] [rom] = alloc_symbol_table ();
-	if (! symtab [group] [rom])
-	  fatal (2, "symbol table allocation failed\n");
-      }
+  for (rom = 0; rom < MAXROM; rom++)
+    {
+      symtab [rom] = alloc_symbol_table ();
+      if (! symtab [rom])
+	fatal (2, "symbol table allocation failed\n");
+    }
 
   srcfile = fopen (src_fn, "r");
 
@@ -329,9 +359,6 @@ int main (int argc, char *argv[])
       if (! listfile)
 	fatal (2, "can't open listing file '%s'\n", list_fn);
     }
-
-  rom = 0;
-  group = 0;
 
   do_pass (1);
 
@@ -356,31 +383,31 @@ void do_label (char *s)
   symtab_t *table;
 
   if (local_label_flag && (*s != '$'))
-    table = symtab [group][rom];
+    table = symtab [local_label_current_rom];
   else
     table = global_symtab;
 
   if (pass == 1)
     {
-      if (! create_symbol (table, s, (group << 11) + (rom << 8) + pc, lineno))
+      if (! create_symbol (table, s, pc, lineno))
 	error ("multiply defined symbol '%s'\n", s);
     }
   else if (! lookup_symbol (table, s, & prev_val))
     error ("undefined symbol '%s'\n", s);
-  else if (prev_val != ((group << 11) + (rom << 8) + pc))
+  else if (prev_val != pc)
     error ("phase error for symbol '%s'\n", s);
 }
 
 
 static void write_obj_classic (FILE *f, int opcode)
 {
-  fprintf (f, "%04o:%04o\n", (group << 11) | (rom << 8) | pc, opcode &01777);
+  fprintf (f, "%04o:%04o\n", pc, opcode &01777);
 }
 
 
 static void write_obj_woodstock (FILE *f, int opcode)
 {
-  fprintf (f, "%04o:%04o\n", (group << 11) | (rom << 8) | pc, opcode &01777);
+  fprintf (f, "%04o:%04o\n", pc, opcode &01777);
 }
 
 
@@ -417,12 +444,27 @@ void emit_test (int op)
   emit_core (op, TEST_INST);
 }
 
-void target (int g, int r, int p)
+void target (addr_t addr)
 {
-  targ_flag = true;
-  targ_group = g & 01;
-  targ_rom = r & 07;
-  targ_pc = p & 00377;
+  target_flag = true;
+  target_addr = addr;
+}
+
+void delayed_select (addr_t mask, addr_t bits)
+{
+  delayed_pc_mask [0] = mask;
+  delayed_pc_bits [0] = bits;
+}
+
+addr_t get_next_pc (void)
+{
+  addr_t next_pc;
+
+  next_pc = pc + 1;
+  next_pc &= ~ delayed_pc_mask [1];
+  next_pc |= (delayed_pc_mask [1] & delayed_pc_bits [1]);
+
+  return next_pc;
 }
 
 int range (int val, int min, int max)

@@ -22,25 +22,23 @@ MA 02111, USA.
 
 extern int arch;
 
+typedef uint16_t addr_t;
+
 int pass;
 extern int lineno;
 extern int errors;
 
-extern int group;	/* current rom group */
-extern int rom;		/* current rom */
-extern int pc;		/* current pc */
-
-extern int dsr;		/* delayed select rom */
-extern int dsg;		/* delayed select group */
+extern addr_t pc;	/* current pc */
 
 extern char flag_char;  /* used to mark jumps across rom banks */
 
-extern bool symtab_flag;
+extern bool symtab_pseudoop_flag;
 
 extern bool legal_flag;	// used to suppress warnings for unconditional
 			// branches after arithmetic instructions
 
 extern bool local_label_flag;  // true if ROM-local labels are in use
+extern int local_label_current_rom;
 
 #define OTHER_INST 0
 #define ARITH_INST 1
@@ -53,11 +51,10 @@ extern char linebuf [MAX_LINE];
 extern char *lineptr;
 
 
-#define MAXGROUP 2
-#define MAXROM 16     /* max 8 for classic, 16 for woodstock */
+#define MAXROM 16     /* classic and woodstock */
 
 extern symtab_t *global_symtab;
-extern symtab_t *symtab [MAXGROUP] [MAXROM];  /* separate symbol tables for each ROM */
+extern symtab_t *symtab [MAXROM];  /* separate symbol tables for each ROM */
 
 void do_label (char *s);
 
@@ -67,7 +64,10 @@ void emit_arith (int op);  /* use for arithmetic instructions that may set carry
 void emit_test  (int op);  /* use for test instructions */
 
 
-void target (int g, int r, int p);
+void target (addr_t addr);  // set the target address of the current instruction
+// for "delayed select rom" and "delayed select group":
+void delayed_select (addr_t mask, addr_t bits);
+addr_t get_next_pc (void);
 
 
 /*

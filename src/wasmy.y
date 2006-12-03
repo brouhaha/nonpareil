@@ -23,6 +23,7 @@ MA 02111, USA.
 
 %{
 #include <stdbool.h>
+#include <stdint.h>
 #include <stdio.h>
 
 #include "symtab.h"
@@ -121,7 +122,7 @@ expr		: INTEGER { $$ = $1; }
                             {
 			      symtab_t *table;
 			      if (local_label_flag && ($1 [0] != '$'))
-				table = symtab [group][rom];
+				table = symtab [local_label_current_rom];
 			      else
 				table = global_symtab;
 			      if (! lookup_symbol (table, $1, &$$))
@@ -138,23 +139,22 @@ pseudo_op	: ps_rom
 		| ps_legal
 		;
 
-ps_rom		: '.' ROM expr { $3 = range ($3, 0, MAXGROUP * MAXROM - 1);
-				 if (((group << 11) + (rom << 8) + pc ) != ($3 << 8))
+ps_rom		: '.' ROM expr { $3 = range ($3, 0, MAXROM - 1);
+				 if (pc != ($3 << 8))
 				   {
 				     fprintf (stderr, ".rom pseudo-op skipping locations\n");
-				     fprintf (stderr, "current: group %o, rom %o, pc %03o\n", group, rom, pc);
+				     fprintf (stderr, "current pc %05o\n", pc);
 				     fprintf (stderr, "arg: %o\n", $3);
 				     last_instruction_type = OTHER_INST;
 				   }
-				 group = dsg = ($3 >> 3);
-				 rom = dsr = ($3 & 7); 
-				 pc = 0;
+				 pc = ($3 << 8);
 				 local_label_flag = true;
+				 local_label_current_rom = $3;
 			         printf (" %d", $3); }
 		;
 
-ps_symtab	: '.' SYMTAB { symtab_flag = true; }
-		;
+ps_symtab	: '.' SYMTAB { symtab_pseudoop_flag = true; }
+	;
 
 ps_legal	: '.' LEGAL { legal_flag = true; }
 		;
@@ -170,31 +170,36 @@ instruction	: jsb_inst
 		| pik_inst
 	        ;
 
-jsb_inst        : JSB expr { emit ((001 << 12) | (($2 & 0377) << 2) | 00001); 
-			     target (dsg, dsr, $2);
-			     dsg = group;
-			     dsr = rom; }
+jsb_inst        : JSB expr { if ((pass == 2) && ($2 >> 8) != get_next_pc () >> 8)
+		               asm_warning ("target in incorrect rom (incorrect or missing delayed select?)\n");
+		             emit ((001 << 12) | (($2 & 0377) << 2) | 00001); 
+			     target ($2); }
                 ;
 
 goto_inst	: goto_form { emit ((013 << 12) | (($1 & 0377) << 2) | 00003);
-			      target (dsg, dsr, $1);
-			      dsg = group;
-			      dsr = rom; }
+			      target ($1); }
 		;
 
 goto_form       :  GO TO expr { $$ = $3; 
 				if ((last_instruction_type == ARITH_INST) &&
 				    ! legal_flag)
 				  asm_warning ("unconditional goto shouldn't follow  arithmetic instruction\n"); 
+				if ((pass == 2) && ($3 >> 8) != get_next_pc () >> 8)
+				  asm_warning ("target in incorrect rom (incorrect or missing delayed select?)\n");
 				legal_flag = false;
                               }
                 | IF NC GO TO expr { $$ = $5;
-				    if (last_instruction_type != ARITH_INST)
-				      asm_warning ("'if no carry go to' should only follow arithmetic instructions\n"); }
+				     if (last_instruction_type != ARITH_INST)
+				       asm_warning ("'if no carry go to' should only follow arithmetic instructions\n");
+				     if ((pass == 2) && ($5 >> 8) != get_next_pc () >> 8)
+				       asm_warning ("target in incorrect rom (incorrect or missing delayed select?)\n");
+		                   }
 		;
 
 then_inst	: THEN GO TO expr { if (last_instruction_type != TEST_INST)
 				      asm_warning ("'then go to' should only follow 'if' instructions\n");
+		                    if ((pass == 2) && ($4 >> 10) != get_next_pc () >> 10)
+				      asm_warning ("target in incorrect rom (incorrect or missing delayed select?)\n");
 				    emit ((014 << 12) | ($4 & 01777));
 				  }
 		;
@@ -417,16 +422,26 @@ inst_f_exch_a	: F EXCHANGE A FIELDSPEC    { $4 = range ($4, 3, 3);
 					      emit (01710); } ;
 inst_clr_reg    : CLEAR REGISTERS           { emit (00010); } ;
 
-inst_sel_rom    : SELECT ROM expr           { $3 = range ($3, 0, 15);
+inst_sel_rom    : SELECT ROM expr           { addr_t tgt = ($3 << 8) + ((pc + 1) & 0377);
+					      $3 = range ($3, 0, 15);
                                               emit (($3 << 6) | 00040);
-					      target (dsg, $3, (pc + 1) & 0377);
-					      dsr = rom;
-					      dsg = group;
-					      flag_char = '*'; } ;
+					      target (tgt);
+					      flag_char = '*'; }
+		| SELECT ROM expr '(' expr ')'
+					    { addr_t tgt = ($3 << 8) + ((pc + 1) & 0377);
+					      $3 = range ($3, 0, 15);
+					      emit (($3 << 6) | 00040);
+					      target (tgt);
+					      if ((pass == 2) && ($5 != tgt))
+						{
+						  error ("'select rom' target value incorrect - requested %05o, actual %05o\n", $5, tgt);
+						}
+					      flag_char = '*'; }
+		;
 
 inst_del_rom    : DELAYED ROM expr          { $3 = range ($3, 0, 15); 
                                               emit (($3 << 6) | 00064);
-					      dsr = $3;
+					      delayed_select (017 << 8, $3 << 8);
 					      flag_char = '$'; } ;
 
 inst_key_to_rom	: KEYS ARROW ROM ADDRESS    { emit (00020); } ;

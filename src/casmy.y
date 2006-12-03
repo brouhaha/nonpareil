@@ -23,6 +23,7 @@ MA 02111, USA.
 
 %{
 #include <stdbool.h>
+#include <stdint.h>
 #include <stdio.h>
 
 #include "symtab.h"
@@ -116,7 +117,7 @@ expr		: INTEGER { $$ = $1; }
                             {
 			      symtab_t *table;
 			      if (local_label_flag && ($1 [0] != '$'))
-				table = symtab [group][rom];
+				table = symtab [local_label_current_rom];
 			      else
 				table = global_symtab;
 			      if (! lookup_symbol (table, $1, &$$))
@@ -132,16 +133,15 @@ pseudo_op	: ps_rom
 		| ps_symtab
 		;
 
-ps_rom		: '.' ROM expr { $3 = range ($3, 0, MAXGROUP * MAXROM - 1);
-				 group = dsg = ($3 >> 3);
-				 rom = dsr = ($3 & 7); 
-				 pc = 0;
+ps_rom		: '.' ROM expr { $3 = range ($3, 0, 7);
+				 pc = $3 << 8;
 				 last_instruction_type = OTHER_INST;
 				 local_label_flag = true;
+				 local_label_current_rom = $3;
 			         printf (" %d", $3); }
 		;
 
-ps_symtab	: '.' SYMTAB { symtab_flag = 1; }
+ps_symtab	: '.' SYMTAB { symtab_pseudoop_flag = 1; }
 		;
 
 instruction	: jsb_inst
@@ -154,15 +154,11 @@ instruction	: jsb_inst
 	        ;
 
 jsb_inst        : JSB expr { emit (($2 << 2) | 0x001); 
-			     target (dsg, dsr, $2);
-			     dsg = group;
-			     dsr = rom; }
+			     target ($2); }
                 ;
 
 goto_inst	: goto_form { emit (($1 << 2) | 0x003);
-			      target (dsg, dsr, $1);
-			      dsg = group;
-			      dsr = rom; }
+			      target ($1); }
 		;
 
 goto_form       : GO TO expr      { $$ = $3; 
@@ -346,19 +342,17 @@ inst_clr_reg    : CLEAR REGISTERS           { emit (0x3a8); } ;
 
 inst_sel_rom    : SELECT ROM expr           { $3 = range ($3, 0, 7);
                                               emit (($3 << 7) | 0x010);
-					      target (dsg, $3, (pc + 1) & 0xff);
-					      dsr = rom;
-					      dsg = group;
+					      target (($3 << 8) + ((pc + 1) & 0377));
 					      flag_char = '*'; } ;
 
 inst_del_rom    : DELAYED SELECT ROM expr   { $4 = range ($4, 0, 7); 
                                               emit (($4 << 7) | 0x074);
-					      dsr = $4;
+					      delayed_select (07 << 8, $4 << 8);
 					      flag_char = '$'; } ;
 
 inst_del_grp    : DELAYED SELECT GROUP expr { $4 = range ($4, 0, 1); 
                                               emit (($4 << 7) | 0x234);
-					      dsg = $4;
+					      delayed_select (01 << 11, $4 << 11);
 					      flag_char = '#'; } ;
 
 inst_c_to_addr	: C ARROW DATA ADDRESS      { emit (0x270); } ;
