@@ -36,7 +36,6 @@ MA 02111, USA.
 #include "proc_int.h"
 #include "digit_ops.h"
 #include "proc_woodstock.h"
-#include "dis_woodstock.h"
 
 
 #define MAX_RAM_ADDR 256
@@ -1324,25 +1323,6 @@ static void init_ops (act_reg_t *act_reg)
 }
 
 
-static void woodstock_disassemble (sim_t *sim, int addr, char *buf, int len)
-{
-  act_reg_t *act_reg = get_chip_data (sim->first_chip);
-
-  rom_word_t op1, op2;
-
-  if (act_reg->inst_state == branch)  /* second word of conditional branch */
-    {
-      snprintf (buf, len, "...");
-      return;
-    }
-
-  op1 = woodstock_get_ucode (act_reg, addr);
-  op2 = woodstock_get_ucode (act_reg, addr + 1);
-
-  woodstock_disassemble_inst (addr, op1, op2, buf, len);
-}
-
-
 static void display_scan_advance (sim_t *sim)
 {
   act_reg_t *act_reg = get_chip_data (sim->first_chip);
@@ -1470,7 +1450,7 @@ static void woodstock_print_state (sim_t *sim)
     {
       char buf [80];
       printf ("%" PRId64 ": ", sim->cycle_count);
-      woodstock_disassemble (sim, act_reg->prev_pc, buf, sizeof (buf));
+      // $$$ woodstock_disassemble (sim, act_reg->prev_pc, buf, sizeof (buf));
       printf ("%s\n", buf);
     }
 }

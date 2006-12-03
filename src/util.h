@@ -137,3 +137,6 @@ char *find_file_with_suffix (char *name, char *suffix, char *default_path);
 
 // Useful for debugging.
 void hex_dump (FILE *f, void *p, size_t count);
+
+int buf_printf (char **buf, int *len, char *fmt, ...);
+

@@ -344,3 +344,34 @@ void sim_send_display_update_to_gui (sim_t *sim);
 void sim_send_chip_msg_to_gui (sim_t  *sim,
 			       chip_t *chip,
 			       void   *data);
+
+
+// instruction flow type returned by disassembler:
+
+typedef enum
+{
+  flow_no_branch,
+  flow_cond_branch,
+  flow_uncond_branch,
+  flow_uncond_branch_keycode,
+  flow_uncond_branch_computed,
+  flow_subroutine_call,
+  flow_subroutine_return,
+  flow_bank_switch,
+  MAX_FLOW_TYPE
+} flow_type_t;
+
+bool sim_disassemble (sim_t  *sim,
+		      // input and output:
+		      bank_t *bank,
+		      addr_t *addr,
+		      bool   *carry_known_clear,
+		      addr_t *delayed_select_mask,
+		      addr_t *delayed_select_addr,
+		      // output:
+		      flow_type_t *flow_type,
+		      bank_t *target_bank,
+		      addr_t *target_addr,
+		      char *buf,
+		      int len);
+

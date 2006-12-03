@@ -428,8 +428,9 @@ if build_env ['build_target_only'] == 0:
                         proc_classic.h proc_nut.h proc_woodstock.h
                         state_io.h
                         debugger_gui.h debugger_cli.h
-                        dis_woodstock.h dis_nut.h
+                        dis.h
                         display.h printer.h
+                        keyboard.h cbutton.h
                         voyager_lcd.h
                         coconut_lcd.h helios.h phineas.h
                         csim.h about.h goose.h pixbuf_util.h sound.h scancode.h

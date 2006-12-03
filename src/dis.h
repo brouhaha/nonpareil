@@ -1,6 +1,6 @@
 /*
 $Id$
-Copyright 2004, 2005 Eric L. Smith <eric@brouhaha.com>
+Copyright 1995, 2004, 2005, 2006 Eric L. Smith <eric@brouhaha.com>
 
 Nonpareil is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License version 2 as
@@ -19,5 +19,6 @@ Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
 MA 02111, USA.
 */
 
-int woodstock_disassemble_inst (int addr, int op1, int op2,
-				char *buf, int len);
+extern bool pass_two;
+
+int dis_printf (char **buf, int *len, char *fmt, ...);

@@ -1718,3 +1718,31 @@ void *get_chip_data (chip_t *chip)
 {
   return chip->chip_data;
 }
+
+
+bool sim_disassemble (sim_t  *sim,
+		      // input and output:
+		      bank_t *bank,
+		      addr_t *addr,
+		      bool   *carry_known_clear,
+		      addr_t *delayed_select_mask,
+		      addr_t *delayed_select_addr,
+		      // output:
+		      flow_type_t *flow_type,
+		      bank_t *target_bank,
+		      addr_t *target_addr,
+		      char *buf,
+		      int len)
+{
+  return sim->proc->disassemble (sim,
+				 bank,
+				 addr,
+				 carry_known_clear,
+				 delayed_select_mask,
+				 delayed_select_addr,
+				 flow_type,
+				 target_bank,
+				 target_addr,
+				 buf,
+				 len);
+}

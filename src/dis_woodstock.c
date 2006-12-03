@@ -19,8 +19,18 @@ Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
 MA 02111, USA.
 */
 
+#include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
+#include <string.h>
+
+#include "arch.h"
+#include "platform.h"
+#include "util.h"
+#include "display.h"
+#include "keyboard.h"
+#include "proc.h"
+#include "calcdef.h"
 
 
 static uint8_t p_set_map [16] =
@@ -30,292 +40,285 @@ static uint8_t p_test_map [16] =
   {  4,  8, 12,  2,  9,  1,  6,  3,  1, 13,  5,  0, 11, 10,  7,  4 };
 
 
-static int woodstock_disassemble_branch (char *mnem, int addr, int op1,
-					 char *buf, int len)
+typedef struct misc_inst_info_t
 {
-  int l;
-  int target;
+  struct misc_inst_info_t *subtable;
+  char *mnem;
+  char *arg_0_mnem;
+  uint8_t *map;
+  flow_type_t flow;
+} misc_inst_info_t;
 
-  target = (addr & 07400) + (op1 >> 2);
-
-  l = snprintf (buf, len, "%s %04o", mnem, target);
-  buf += l;
-  len -= l;
-
-  return (1);
-}
-
-
-static char *woodstock_misc_00_mnem [16] =
-  {
-    "???",
-    "???",
-    "???",
-    "crc f1?",
-    "???",
-    "???",
-    "???",
-    "???",
-    "???",
-    "???",
-    "???",
-    "???",
-    "???",
-    "???",
-    "???",
-    "???"
-  };
-
-
-static char *woodstock_misc_10_mnem [16] =
-  {
-    "clear regs",
-    "clear status",
-    "display toggle",
-    "display off",
-    "m1 exchange c",
-    "m1 -> c",
-    "m2 exchange c",
-    "m2 -> c",
-    "stack -> a",
-    "down rotate",
-    "y -> a",
-    "c -> stack",
-    "decimal",
-    "???",
-    "f -> a[x]",
-    "f exchange a[x]"
-  };
-
-
-static char *woodstock_misc_20_mnem [16] =
-  {
-    "keys -> rom address",
-    "keys -> a",
-    "a -> rom address",
-    "reset twf",
-    "binary",
-    "rotate a left",
-    "p - 1 -> p",
-    "p + 1 -> p",
-    "return",
-    "???",
-    "???",
-    "???",
-    "???",
-    "???",
-    "???",
-    "???"
-  };
-
-
-static char *woodstock_misc_60_mnem [16] =
-  {
-    "???",
-    "???",
-    "???",
-    "???",
-    "???",
-    "???",
-    "???",
-    "???",
-    "bank switch",
-    "c -> data address",
-    "clear data registers",
-    "c -> data",
-    "rom checksum",
-    "???",
-    "???",
-    "hi i'm woodstock"   // "hi i'm woodstock" in HP-25 source code.
-    			 // Apparently a NOP to ACT, but may be used by CRC
-			 // or PIK.
-  };
-
-
-static void woodstock_disassemble_then (int addr, int op2, char *buf, int len)
+static misc_inst_info_t misc_00_info [16] =
 {
-  snprintf (buf, len, " then go to %04o", (addr & 006000) + op2);
-}
+  [00000 >> 6] = { NULL, NULL,              NULL, NULL, flow_no_branch },
+  [00100 >> 6] = { NULL, NULL,              NULL, NULL, flow_no_branch },
+  [00200 >> 6] = { NULL, NULL,              NULL, NULL, flow_no_branch },
+  [00300 >> 6] = { NULL, "crc f1?",         NULL, NULL, flow_no_branch },
+  [00400 >> 6] = { NULL, NULL,              NULL, NULL, flow_no_branch },
+  [00500 >> 6] = { NULL, NULL,              NULL, NULL, flow_no_branch },
+  [00600 >> 6] = { NULL, NULL,              NULL, NULL, flow_no_branch },
+  [00700 >> 6] = { NULL, NULL,              NULL, NULL, flow_no_branch },
+  [01000 >> 6] = { NULL, NULL,              NULL, NULL, flow_no_branch },
+  [01100 >> 6] = { NULL, NULL,              NULL, NULL, flow_no_branch },
+  [01200 >> 6] = { NULL, NULL,              NULL, NULL, flow_no_branch },
+  [01300 >> 6] = { NULL, NULL,              NULL, NULL, flow_no_branch },
+  [01400 >> 6] = { NULL, NULL,              NULL, NULL, flow_no_branch },
+  [01500 >> 6] = { NULL, NULL,              NULL, NULL, flow_no_branch },
+  [01600 >> 6] = { NULL, NULL,              NULL, NULL, flow_no_branch },
+  [01700 >> 6] = { NULL, NULL,              NULL, NULL, flow_no_branch },
+};
 
-
-static int woodstock_disassemble_00 (int addr, int op1, int op2,
-				     char *buf, int len)
+static misc_inst_info_t misc_10_info [16] =
 {
-  int arg = op1 >> 6;
-  int l;
-  int inst_len = 1;
+  [00010 >> 6] = { NULL, "clear regs",           NULL, NULL, flow_no_branch },
+  [00110 >> 6] = { NULL, "clear status",         NULL, NULL, flow_no_branch },
+  [00210 >> 6] = { NULL, "display toggle",       NULL, NULL, flow_no_branch },
+  [00310 >> 6] = { NULL, "display off",          NULL, NULL, flow_no_branch },
+  [00410 >> 6] = { NULL, "m1 exchange c",        NULL, NULL, flow_no_branch },
+  [00510 >> 6] = { NULL, "m1 -> c",              NULL, NULL, flow_no_branch },
+  [00610 >> 6] = { NULL, "m2 exchange c",        NULL, NULL, flow_no_branch },
+  [00710 >> 6] = { NULL, "m2 -> c",              NULL, NULL, flow_no_branch },
+  [01010 >> 6] = { NULL, "stack -> a",           NULL, NULL, flow_no_branch },
+  [01110 >> 6] = { NULL, "down rotate",          NULL, NULL, flow_no_branch },
+  [01210 >> 6] = { NULL, "y -> a",               NULL, NULL, flow_no_branch },
+  [01310 >> 6] = { NULL, "c -> stack",           NULL, NULL, flow_no_branch },
+  [01410 >> 6] = { NULL, "decimal",              NULL, NULL, flow_no_branch },
+  [01510 >> 6] = { NULL, NULL,                   NULL, NULL, flow_no_branch },
+  [01610 >> 6] = { NULL, "f -> a[x]",            NULL, NULL, flow_no_branch },
+  [01710 >> 6] = { NULL, "f exchange a[x]",      NULL, NULL, flow_no_branch },
+};
 
-  switch (op1 & 074)
-    {
-    case 000:
-      snprintf (buf, len, "%s", woodstock_misc_00_mnem [arg]);
-      break;
-    case 004:
-      snprintf (buf, len, "1 -> s %d", arg);
-      break;
-    case 010:
-      snprintf (buf, len, "%s", woodstock_misc_10_mnem [arg]);
-      break;
-    case 014:
-      snprintf (buf, len, "0 -> s %d", arg);
-      break;
-    case 020:
-      snprintf (buf, len, "%s", woodstock_misc_20_mnem [arg]);
-      break;
-    case 024:
-      l = snprintf (buf, len, "if 1 = s %d", arg);
-      buf += l;
-      len -= l;
-      if (len > 0)
-	woodstock_disassemble_then (addr + 1, op2, buf, len);
-      inst_len = 2;
-      break;
-    case 030:
-      snprintf (buf, len, "load constant %d", arg);
-      break;
-    case 034:
-      l = snprintf (buf, len, "if 0 = s %d", arg);
-      buf += l;
-      len -= l;
-      if (len > 0)
-	woodstock_disassemble_then (addr + 1, op2, buf, len);
-      inst_len = 2;
-      break;
-    case 040:
-      snprintf (buf, len, "select rom %02o", arg);
-      break;
-    case 044:
-      l = snprintf (buf, len, "if p = %d", p_test_map [arg]);
-      buf += l;
-      len -= l;
-      if (len > 0)
-	woodstock_disassemble_then (addr + 1, op2, buf, len);
-      inst_len = 2;
-      break;
-    case 050:
-      snprintf (buf, len, "c -> register %d", arg);
-      break;
-    case 054:
-      l = snprintf (buf, len, "if p # %d", p_test_map [arg]);
-      buf += l;
-      len -= l;
-      if (len > 0)
-	woodstock_disassemble_then (addr + 1, op2, buf, len);
-      inst_len = 2;
-      break;
-    case 060:
-      snprintf (buf, len, "%s", woodstock_misc_60_mnem [op1 >> 6]);
-      break;
-    case 064:
-      snprintf (buf, len, "delayed rom %02o", arg);
-      break;
-    case 070:
-      if (arg == 0)
-	snprintf (buf, len, "data -> c");
-      else
-	snprintf (buf, len, "register -> c %d", arg);
-      break;
-    case 074:
-      snprintf (buf, len, "p <- %d", p_set_map [arg]);
-      break;
-    }
+static misc_inst_info_t misc_20_info [16] =
+{
+  [00020 >> 6] = { NULL, "keys -> rom address",  NULL, NULL, flow_uncond_branch_keycode },
+  [00120 >> 6] = { NULL, "keys -> a",            NULL, NULL, flow_no_branch },
+  [00220 >> 6] = { NULL, "a -> rom address",     NULL, NULL, flow_uncond_branch_computed },
+  [00320 >> 6] = { NULL, "reset twf",            NULL, NULL, flow_no_branch },
+  [00420 >> 6] = { NULL, "binary",               NULL, NULL, flow_no_branch },
+  [00520 >> 6] = { NULL, "rotate a left",        NULL, NULL, flow_no_branch },
+  [00620 >> 6] = { NULL, "p - 1 -> p",           NULL, NULL, flow_no_branch },
+  [00720 >> 6] = { NULL, "p + 1 -> p",           NULL, NULL, flow_no_branch },
+  [01020 >> 6] = { NULL, "return",               NULL, NULL, flow_subroutine_return },
+  [01120 >> 6] = { NULL, NULL,                   NULL, NULL, flow_no_branch },
+  [01220 >> 6] = { NULL, NULL,                   NULL, NULL, flow_no_branch },
+  [01320 >> 6] = { NULL, NULL,                   NULL, NULL, flow_no_branch },
+  [01420 >> 6] = { NULL, NULL,                   NULL, NULL, flow_no_branch },
+  [01520 >> 6] = { NULL, NULL,                   NULL, NULL, flow_no_branch },
+  [01620 >> 6] = { NULL, NULL,                   NULL, NULL, flow_no_branch },
+  [01720 >> 6] = { NULL, NULL,                   NULL, NULL, flow_no_branch },
+};
 
-  return (inst_len);
-}
- 
+static misc_inst_info_t misc_60_info [16] =
+{
+  [00060 >> 6] = { NULL, NULL,                   NULL, NULL, flow_no_branch },
+  [00160 >> 6] = { NULL, NULL,                   NULL, NULL, flow_no_branch },
+  [00260 >> 6] = { NULL, NULL,                   NULL, NULL, flow_no_branch },
+  [00360 >> 6] = { NULL, NULL,                   NULL, NULL, flow_no_branch },
+  [00460 >> 6] = { NULL, NULL,                   NULL, NULL, flow_no_branch },
+  [00560 >> 6] = { NULL, NULL,                   NULL, NULL, flow_no_branch },
+  [00660 >> 6] = { NULL, NULL,                   NULL, NULL, flow_no_branch },
+  [00760 >> 6] = { NULL, NULL,                   NULL, NULL, flow_no_branch },
+  [01060 >> 6] = { NULL, "bank_switch",          NULL, NULL, flow_bank_switch },
+  [01160 >> 6] = { NULL, "c -> data address",    NULL, NULL, flow_no_branch },
+  [01260 >> 6] = { NULL, "clear data registers", NULL, NULL, flow_no_branch },
+  [01360 >> 6] = { NULL, "c -> data",            NULL, NULL, flow_no_branch },
+  [01460 >> 6] = { NULL, "rom checksum",         NULL, NULL, flow_no_branch },
+  [01560 >> 6] = { NULL, NULL,                   NULL, NULL, flow_no_branch },
+  [01660 >> 6] = { NULL, NULL,                   NULL, NULL, flow_no_branch },
+  [01760 >> 6] = { NULL, "hi i'm woodstock",     NULL, NULL, flow_no_branch },
+};
 
-static char *woodstock_arith_mnem [32] [2] =
+static misc_inst_info_t misc_info [16] =
+{
+  { misc_00_info, NULL,                NULL,         NULL,       flow_no_branch },
+  { NULL,         "1 -> s %d",         NULL,         NULL,       flow_no_branch },
+  { misc_10_info, NULL,                NULL,         NULL,       flow_no_branch },
+  { NULL,         "0 -> s %d",         NULL,         NULL,       flow_no_branch },
+  { misc_20_info, NULL,                NULL,         NULL,       flow_no_branch },
+  { NULL,         "if 1 = s %d",       NULL,         NULL,       flow_cond_branch },
+  { NULL,         "load constant %d",  NULL,         NULL,       flow_no_branch },
+  { NULL,         "if 0 = s %d",       NULL,         NULL,       flow_cond_branch },
+  { NULL,         "select rom @%02o",  NULL,         NULL,       flow_no_branch },
+  { NULL,         "if p = %d",         NULL,         p_test_map, flow_cond_branch },
+  { NULL,         "c -> register %d",  NULL,         NULL,       flow_no_branch },
+  { NULL,         "if p # %d",         NULL,         p_test_map, flow_cond_branch },
+  { misc_60_info, NULL,                NULL,         NULL,       flow_no_branch },
+  { NULL,         "delayed rom @%02o", NULL,         NULL,       flow_no_branch },
+  { NULL,         "register -> c %d",  "data -> c",  NULL,       flow_no_branch },
+  { NULL,         "p <- %d",           NULL,         p_set_map,  flow_no_branch },
+};
+
+
+typedef struct
+{
+  char *mnem;
+  bool can_set_carry;
+  bool cond_branch;
+} arith_inst_info_t;
+
+static arith_inst_info_t arith_info [32] =
   {
-    { "0 -> a", NULL },
-    { "0 -> b", NULL },
-    { "a exchange b", NULL },
-    { "a -> b", NULL },
-    { "a exchange c", NULL },
-    { "c -> a", NULL },
-    { "b -> c", NULL },
-    { "b exchange c", NULL },
-    { "0 -> c", NULL },
-    { "a + b -> a", NULL },
-    { "a + c -> a", NULL },
-    { "c + c -> c", NULL },
-    { "a + c -> c", NULL },
-    { "a + 1 -> a", NULL },
-    { "shift left a", NULL },
-    { "c + 1 -> c", NULL },
-    { "a - b -> a", NULL },
-    { "a - c -> c", NULL },
-    { "a - 1 -> a", NULL },
-    { "c - 1 -> c", NULL },
-    { "0 - c -> c", NULL },
-    { "0 - c - 1 -> c", NULL },
-    { "if b", " = 0" },
-    { "if c", " = 0" },
-    { "if a >= c", NULL },
-    { "if a >= b", NULL },
-    { "if a", " # 0" },
-    { "if c", " # 0" },
-    { "a - c -> a", NULL },
-    { "shift right a", NULL },
-    { "shift right b", NULL },
-    { "shift right c", NULL }
+    { "0 -> a",         false, false },
+    { "0 -> b",         false, false },
+    { "a exchange b",   false, false },
+    { "a -> b",         false, false },
+    { "a exchange c",   false, false },
+    { "c -> a",         false, false },
+    { "b -> c",         false, false },
+    { "b exchange c",   false, false },
+    { "0 -> c",         false, false },
+    { "a + b -> a",     true,  false },
+    { "a + c -> a",     true,  false },
+    { "c + c -> c",     true,  false },
+    { "a + c -> c",     true,  false },
+    { "a + 1 -> a",     true,  false },
+    { "shift left a",   false, false },
+    { "c + 1 -> c",     true,  false },
+    { "a - b -> a",     true,  false },
+    { "a - c -> c",     true,  false },
+    { "a - 1 -> a",     true,  false },
+    { "c - 1 -> c",     true,  false },
+    { "0 - c -> c",     true,  false },
+    { "0 - c - 1 -> c", true,  false },
+    { "if b = 0",       false, true },
+    { "if c = 0",       false, true },
+    { "if a >= c",      false, true },
+    { "if a >= b",      false, true },
+    { "if a # 0",       false, true },
+    { "if c # 0",       false, true },
+    { "a - c -> a",     true,  false },
+    { "shift right a",  false, false },
+    { "shift right b",  false, false },
+    { "shift right c",  false, false }
   };
 
-static char *woodstock_field_mnem [8] =
+static char *field_mnem [8] =
   { "p", "wp", "xs", "x", "s", "m", "w", "ms" };
 
 
-static int woodstock_disassemble_arith (int addr, int op1, int op2,
-					char *buf, int len)
+static bool two_word_inst (rom_word_t op1)
 {
-  int l;
-  int op = op1 >> 5;
-  int field = (op1 >> 2) & 7;
+  if (op1 & 01)  // "jsb" and "if n/c goto" instructions are single word
+    return false;
+  
+  if (op1 & 02)  // arithmetic comparisons are two word
+    return arith_info [op1 >> 5].cond_branch;
 
-  l = snprintf (buf, len, "%s[%s]",
-		woodstock_arith_mnem [op] [0],
-		woodstock_field_mnem [field]);
-  buf += l;
-  len -= l;
-  if (len <= 0)
-    return (0);
-  if (woodstock_arith_mnem [op] [1])
-    {
-      l = snprintf (buf, len, "%s", woodstock_arith_mnem [op] [1]);
-      buf += l;
-      len -= l;
-    }
-  if (len <= 0)
-    return (0);
-  if ((op < 0x16) || (op > 0x1b))
-    return (1);
-  woodstock_disassemble_then (addr + 1, op2, buf, len);
-  return (2);
+  uint16_t misc_op = op1 & 074;
+  return (misc_op & 04) && (misc_op >= 024) && (misc_op <= 054);
 }
 
 
-int woodstock_disassemble_inst (int addr, int op1, int op2,
-				char *buf, int len)
+bool woodstock_disassemble (sim_t  *sim,
+			    // input and output:
+			    bank_t *bank,
+			    addr_t *addr,
+			    bool   *carry_known_clear,
+			    addr_t *delayed_select_mask,
+			    addr_t *delayed_select_addr,
+			    // output:
+			    flow_type_t *flow_type,
+			    bank_t *target_bank,
+			    addr_t *target_addr,
+			    char *buf,
+			    int len)
 {
-  int l;
+  bool two_word;
+  bool new_carry_known_clear = true;
+  addr_t new_delayed_select_mask = 0;
+  addr_t new_delayed_select_addr = 0;
 
-  l = snprintf (buf, len, "%o-%04o: %04o ",
-		addr >> 12, addr & 07777, op1);
-  buf += l;
-  len -= l;
-  if (len <= 0)
-    return (0);
+  rom_word_t op1, op2;
+
+  if (! sim_read_rom (sim, *bank, *addr, & op1))
+    return false;
+  (*addr) = ((*addr) + 1) & 07777;
+
+  two_word = two_word_inst (op1);
+  if (two_word)
+    {
+      if (! sim_read_rom (sim, *bank, *addr, & op2))
+	return false;
+      (*addr) = ((*addr) + 1) & 07777;
+    }
+
+  *flow_type = flow_no_branch;
 
   switch (op1 & 3)
     {
     case 0:
-      return (woodstock_disassemble_00 (addr, op1, op2, buf, len));
+      // misc
+      {
+	int inst = (op1 >> 2) & 017;
+	int arg = op1 >> 6;
+	if (misc_info [inst].map)
+	  arg = misc_info [inst].map [arg];
+	if (misc_info [inst].subtable)
+	  {
+	    if (misc_info [inst].subtable [arg].mnem)
+	      buf_printf (& buf, & len, "%s", misc_info [inst].subtable [arg].mnem);
+	    else
+	      buf_printf (& buf, & len, "op @%04o", op1);
+	    *flow_type = misc_info [inst].subtable [arg].flow;
+	  }
+	else
+	  {
+	    if ((arg == 0) && misc_info [inst].arg_0_mnem)
+	      buf_printf (& buf, & len, misc_info [inst].arg_0_mnem);
+	    else
+	      buf_printf (& buf, & len, misc_info [inst].mnem, arg);
+	    *flow_type = misc_info [inst].flow;
+	  }
+      }
+      break;
     case 1:
-      return (woodstock_disassemble_branch ("jsb ", addr, op1, buf, len));
+      // jsb
+      buf_printf (& buf, & len, "jsb %%s");
+      *target_bank = *bank;
+      *target_addr = ((*addr) & 07400) + (op1 >> 2);
+      // $$$ need to handle delayed selects
+      *flow_type = flow_subroutine_call;
+      break;
     case 2:
-      return (woodstock_disassemble_arith (addr, op1, op2, buf, len));
+      // arith
+      {
+	int op = op1 >> 5;
+	int field = (op1 >> 2) & 7;
+	buf_printf (& buf, & len, "%s[%s]",
+		    arith_info [op].mnem,
+		    field_mnem [field]);
+	if (arith_info [op].can_set_carry)
+	  new_carry_known_clear = false;
+      }
+      break;
     case 3:
-      return (woodstock_disassemble_branch ("if n/c go to ", addr, op1, buf, len));
+      // if n/c go to
+      if (* carry_known_clear)
+	{
+	  *flow_type = flow_uncond_branch;
+	  buf_printf (& buf, & len, "go to %%s");
+	}
+      else
+	{
+	  *flow_type = flow_cond_branch;
+	  buf_printf (& buf, & len, "if n/c go to %%s");
+	}
+      *target_bank = *bank;
+      *target_addr = ((*addr) & 07400) + (op1 >> 2);
+      // $$$ need to handle delayed selects
+      break;
     }
 
-  return (0);  // can't happen, but avoid compiler warning
+  if (two_word)
+    {
+      buf_printf (& buf, & len, " then go to %%s");
+      *flow_type = flow_cond_branch;
+    }
+
+  *carry_known_clear = new_carry_known_clear;
+  *delayed_select_mask = new_delayed_select_mask;
+  *delayed_select_addr = new_delayed_select_addr;
+
+  return true;
 }

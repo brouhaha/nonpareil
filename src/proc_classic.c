@@ -1273,6 +1273,6 @@ processor_dispatch_t classic_processor =
     .read_ram            = classic_read_ram,
     .write_ram           = classic_write_ram,
 
-    .disassemble         = classic_disassemble,
+    .disassemble         = NULL,  // $$$
     .print_state         = classic_print_state
   };

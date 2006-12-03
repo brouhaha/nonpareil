@@ -441,3 +441,20 @@ void hex_dump (FILE *f, void *p, size_t count)
       fprintf (f, "\n");
     }
 }
+
+
+int buf_printf (char **buf, int *len, char *fmt, ...)
+{
+  int l = 0;
+  va_list ap;
+
+  va_start (ap, fmt);
+  if ((*len) > 0)
+    l = vsnprintf (*buf, *len, fmt, ap);
+  va_end (ap);
+
+  (*buf) += l;
+  (*len) -= l;
+
+  return l;
+}

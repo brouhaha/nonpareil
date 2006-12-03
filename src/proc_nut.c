@@ -39,7 +39,6 @@ MA 02111, USA.
 #include "coconut_lcd.h"
 #include "voyager_lcd.h"
 #include "proc_nut.h"
-#include "dis_nut.h"
 #include "sound.h"
 
 
@@ -2158,6 +2157,6 @@ processor_dispatch_t nut_processor =
     .read_ram            = nut_read_ram,
     .write_ram           = nut_write_ram,
 
-    .disassemble         = nut_disassemble,
+    .disassemble         = NULL,  // $$$
     .print_state         = nut_print_state
   };

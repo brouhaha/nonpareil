@@ -130,8 +130,20 @@ typedef struct
   bool (* read_ram)            (sim_t *sim, addr_t addr, uint64_t *val);
   bool (* write_ram)           (sim_t *sim, addr_t addr, uint64_t *val);
 
-  /* for debugger: */
-  void (* disassemble)         (sim_t *sim, int addr, char *buf, int len);
+  // for debugger:
+  bool (* disassemble)         (sim_t  *sim,
+				// input and output:
+				bank_t *bank,
+				addr_t *addr,
+				bool   *carry_known_clear,
+				addr_t *delayed_select_mask,
+				addr_t *delayed_select_addr,
+				// output:
+				flow_type_t *flow_type,
+				bank_t *target_bank,
+				addr_t *target_addr,
+				char *buf,
+				int len);
 
   void (* print_state)         (sim_t *sim);
 } processor_dispatch_t;
