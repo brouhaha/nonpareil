@@ -129,16 +129,33 @@ int lookup_symbol (symtab_t *table, char *name, int *value)
   return (0);
 }
 
-static void print_symbols (FILE *f, sym_t *p)
+static void default_value_fmt_fn (int value, char *buf, int buf_len)
 {
-  if (! p)
-    return;
-  print_symbols (f, p->left);
-  fprintf (f, "%05o %s %d\n", p->value, p->name, p->lineno);
-  print_symbols (f, p->right);
+  snprintf (buf, buf_len, "0%05o", value);
 }
 
-void print_symbol_table (symtab_t *table, FILE *f)
+static void print_symbols (FILE *f,
+			   sym_t *p,
+			   value_fmt_fn_t *value_fmt_fn)
 {
-  print_symbols (f, table->root);
+  char buf [80];
+
+  if (! p)
+    return;
+
+  print_symbols (f, p->left, value_fmt_fn);
+
+  if (! value_fmt_fn)
+    value_fmt_fn = & default_value_fmt_fn;
+  value_fmt_fn (p->value, buf, sizeof (buf));
+  fprintf (f, "%s %s %d\n", buf, p->name, p->lineno);
+
+  print_symbols (f, p->right, value_fmt_fn);
+}
+
+void print_symbol_table (symtab_t *table,
+			 FILE *f,
+			 value_fmt_fn_t *value_fmt_fn)
+{
+  print_symbols (f, table->root, value_fmt_fn);
 }

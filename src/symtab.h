@@ -33,4 +33,6 @@ int create_symbol (symtab_t *table, char *name, int value, int lineno);
 /* returns 1 for success, 0 if not found */
 int lookup_symbol (symtab_t *table, char *name, int *value);
 
-void print_symbol_table (symtab_t *table, FILE *f);
+typedef void value_fmt_fn_t (int value, char *buf, int buf_len);
+
+void print_symbol_table (symtab_t *table, FILE *f, value_fmt_fn_t *value_fmt_fn);
