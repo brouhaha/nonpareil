@@ -131,22 +131,22 @@ static misc_inst_info_t misc_60_info [16] =
 
 static misc_inst_info_t misc_info [16] =
 {
-  { misc_00_info, NULL,                NULL,         NULL,       flow_no_branch },
-  { NULL,         "1 -> s %d",         NULL,         NULL,       flow_no_branch },
-  { misc_10_info, NULL,                NULL,         NULL,       flow_no_branch },
-  { NULL,         "0 -> s %d",         NULL,         NULL,       flow_no_branch },
-  { misc_20_info, NULL,                NULL,         NULL,       flow_no_branch },
-  { NULL,         "if 1 = s %d",       NULL,         NULL,       flow_cond_branch },
-  { NULL,         "load constant %d",  NULL,         NULL,       flow_no_branch },
-  { NULL,         "if 0 = s %d",       NULL,         NULL,       flow_cond_branch },
-  { NULL,         "select rom @%02o",  NULL,         NULL,       flow_no_branch },
-  { NULL,         "if p = %d",         NULL,         p_test_map, flow_cond_branch },
-  { NULL,         "c -> register %d",  NULL,         NULL,       flow_no_branch },
-  { NULL,         "if p # %d",         NULL,         p_test_map, flow_cond_branch },
-  { misc_60_info, NULL,                NULL,         NULL,       flow_no_branch },
-  { NULL,         "delayed rom @%02o", NULL,         NULL,       flow_no_branch },
-  { NULL,         "register -> c %d",  "data -> c",  NULL,       flow_no_branch },
-  { NULL,         "p <- %d",           NULL,         p_set_map,  flow_no_branch },
+  { misc_00_info, NULL,                     NULL,         NULL,       flow_no_branch },
+  { NULL,         "1 -> s %d",              NULL,         NULL,       flow_no_branch },
+  { misc_10_info, NULL,                     NULL,         NULL,       flow_no_branch },
+  { NULL,         "0 -> s %d",              NULL,         NULL,       flow_no_branch },
+  { misc_20_info, NULL,                     NULL,         NULL,       flow_no_branch },
+  { NULL,         "if 1 = s %d",            NULL,         NULL,       flow_cond_branch },
+  { NULL,         "load constant %d",       NULL,         NULL,       flow_no_branch },
+  { NULL,         "if 0 = s %d",            NULL,         NULL,       flow_cond_branch },
+  { NULL,         "select rom @%02o (%%s)", NULL,         NULL,       flow_select_rom },
+  { NULL,         "if p = %d",              NULL,         p_test_map, flow_cond_branch },
+  { NULL,         "c -> register %d",       NULL,         NULL,       flow_no_branch },
+  { NULL,         "if p # %d",              NULL,         p_test_map, flow_cond_branch },
+  { misc_60_info, NULL,                     NULL,         NULL,       flow_no_branch },
+  { NULL,         "delayed rom @%02o",      NULL,         NULL,       flow_delayed_rom },
+  { NULL,         "register -> c %d",       "data -> c",  NULL,       flow_no_branch },
+  { NULL,         "p <- %d",                NULL,         p_set_map,  flow_no_branch },
 };
 
 
@@ -159,38 +159,38 @@ typedef struct
 
 static arith_inst_info_t arith_info [32] =
   {
-    { "0 -> a",         false, false },
-    { "0 -> b",         false, false },
-    { "a exchange b",   false, false },
-    { "a -> b",         false, false },
-    { "a exchange c",   false, false },
-    { "c -> a",         false, false },
-    { "b -> c",         false, false },
-    { "b exchange c",   false, false },
-    { "0 -> c",         false, false },
-    { "a + b -> a",     true,  false },
-    { "a + c -> a",     true,  false },
-    { "c + c -> c",     true,  false },
-    { "a + c -> c",     true,  false },
-    { "a + 1 -> a",     true,  false },
-    { "shift left a",   false, false },
-    { "c + 1 -> c",     true,  false },
-    { "a - b -> a",     true,  false },
-    { "a - c -> c",     true,  false },
-    { "a - 1 -> a",     true,  false },
-    { "c - 1 -> c",     true,  false },
-    { "0 - c -> c",     true,  false },
-    { "0 - c - 1 -> c", true,  false },
-    { "if b = 0",       false, true },
-    { "if c = 0",       false, true },
-    { "if a >= c",      false, true },
-    { "if a >= b",      false, true },
-    { "if a # 0",       false, true },
-    { "if c # 0",       false, true },
-    { "a - c -> a",     true,  false },
-    { "shift right a",  false, false },
-    { "shift right b",  false, false },
-    { "shift right c",  false, false }
+    { "0 -> a[%s]",         false, false },
+    { "0 -> b[%s]",         false, false },
+    { "a exchange b[%s]",   false, false },
+    { "a -> b[%s]",         false, false },
+    { "a exchange c[%s]",   false, false },
+    { "c -> a[%s]",         false, false },
+    { "b -> c[%s]",         false, false },
+    { "b exchange c[%s]",   false, false },
+    { "0 -> c[%s]",         false, false },
+    { "a + b -> a[%s]",     true,  false },
+    { "a + c -> a[%s]",     true,  false },
+    { "c + c -> c[%s]",     true,  false },
+    { "a + c -> c[%s]",     true,  false },
+    { "a + 1 -> a[%s]",     true,  false },
+    { "shift left a[%s]",   false, false },
+    { "c + 1 -> c[%s]",     true,  false },
+    { "a - b -> a[%s]",     true,  false },
+    { "a - c -> c[%s]",     true,  false },
+    { "a - 1 -> a[%s]",     true,  false },
+    { "c - 1 -> c[%s]",     true,  false },
+    { "0 - c -> c[%s]",     true,  false },
+    { "0 - c - 1 -> c[%s]", true,  false },
+    { "if b[%s] = 0",       false, true },
+    { "if c[%s] = 0",       false, true },
+    { "if a[%s] >= c",      false, true },
+    { "if a[%s] >= b",      false, true },
+    { "if a[%s] # 0",       false, true },
+    { "if c[%s] # 0",       false, true },
+    { "a - c -> a[%s]",     true,  false },
+    { "shift right a[%s]",  false, false },
+    { "shift right b[%s]",  false, false },
+    { "shift right c[%s]",  false, false }
   };
 
 static char *field_mnem [8] =
@@ -229,19 +229,11 @@ bool woodstock_disassemble (sim_t  *sim,
   addr_t new_delayed_select_mask = 0;
   addr_t new_delayed_select_addr = 0;
 
-  rom_word_t op1, op2;
+  rom_word_t op1;
 
   if (! sim_read_rom (sim, *bank, *addr, & op1))
     return false;
   (*addr) = ((*addr) + 1) & 07777;
-
-  two_word = two_word_inst (op1);
-  if (two_word)
-    {
-      if (! sim_read_rom (sim, *bank, *addr, & op2))
-	return false;
-      (*addr) = ((*addr) + 1) & 07777;
-    }
 
   *flow_type = flow_no_branch;
 
@@ -270,6 +262,18 @@ bool woodstock_disassemble (sim_t  *sim,
 	      buf_printf (& buf, & len, misc_info [inst].mnem, arg);
 	    *flow_type = misc_info [inst].flow;
 	  }
+	if ((*flow_type) == flow_select_rom)
+	  {
+	    *flow_type = flow_uncond_branch;
+	    *target_bank = *bank;
+	    *target_addr = (arg << 8) + ((*addr) & 0377);
+	  }
+	else if ((*flow_type) == flow_delayed_rom)
+	  {
+	    *flow_type = flow_no_branch;
+	    new_delayed_select_mask = 017 << 8;
+	    new_delayed_select_addr = arg << 8;
+	  }
       }
       break;
     case 1:
@@ -285,9 +289,7 @@ bool woodstock_disassemble (sim_t  *sim,
       {
 	int op = op1 >> 5;
 	int field = (op1 >> 2) & 7;
-	buf_printf (& buf, & len, "%s[%s]",
-		    arith_info [op].mnem,
-		    field_mnem [field]);
+	buf_printf (& buf, & len, arith_info [op].mnem, field_mnem [field]);
 	if (arith_info [op].can_set_carry)
 	  new_carry_known_clear = false;
       }
@@ -310,10 +312,31 @@ bool woodstock_disassemble (sim_t  *sim,
       break;
     }
 
+  two_word = two_word_inst (op1);
   if (two_word)
     {
+      rom_word_t op2;
+
+      if (*delayed_select_mask)
+	warning ("delayed select precedes two-word instruction!\n");
+      if (! sim_read_rom (sim, *bank, *addr, & op2))
+	return false;
+      (*addr) = ((*addr) + 1) & 07777;
       buf_printf (& buf, & len, " then go to %%s");
       *flow_type = flow_cond_branch;
+      *target_bank = *bank;
+      *target_addr = ((*addr) & 06000) + op2;
+    }
+
+  if (*delayed_select_mask)
+    {
+      if (*flow_type == flow_no_branch)
+	{
+	  warning ("delayed select precedes non-branch instruction!\n");
+	  *flow_type == flow_uncond_branch;
+	}
+      *target_addr = (*target_addr & ~ *delayed_select_mask) | 
+		     (*delayed_select_mask & *delayed_select_addr);
     }
 
   *carry_known_clear = new_carry_known_clear;

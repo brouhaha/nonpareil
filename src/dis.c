@@ -90,7 +90,7 @@ static void disassemble (sim_t *sim)
   int page_size;
   bank_t bank, max_bank, target_bank;
   addr_t addr, max_addr, target_addr;
-  addr_t delayed_select_mask, delayed_select_addr;
+  addr_t delayed_select_mask = 0, delayed_select_addr = 0;
   flow_type_t flow_type;
   bool carry_known_clear;
   char buf [100];

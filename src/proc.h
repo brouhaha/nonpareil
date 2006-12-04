@@ -358,6 +358,8 @@ typedef enum
   flow_subroutine_call,
   flow_subroutine_return,
   flow_bank_switch,
+  flow_select_rom,  // used internally to disassembler
+  flow_delayed_rom,  // used internally to disassembler
   MAX_FLOW_TYPE
 } flow_type_t;
 
