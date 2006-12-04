@@ -84,21 +84,45 @@ static flow_type_info_t flow_type_info [MAX_FLOW_TYPE] =
 };
 
 
+bank_t max_bank;
+int page_size;
+uint8_t max_page;
+addr_t max_addr;
+
+#define SYM_CALL 0x01
+#define SYM_JUMP 0x02
+#define SYM_KEY  0x04
+uint8_t *symtab;
+
+
+void set_symbol (bank_t bank, addr_t addr, uint8_t type)
+{
+  uint8_t *sym = & symtab [bank * max_addr + addr];
+  (*sym) |= type;
+}
+
+
+void get_symbol (bank_t bank, addr_t addr, char *buf, int len)
+{
+  uint8_t *sym = & symtab [bank * max_addr + addr];
+  if (*sym & SYM_CALL)
+    snprintf (buf, len, "S%04o", addr);
+  else if (*sym & SYM_JUMP)
+    snprintf (buf, len, "L%04o", addr);
+  else
+    buf [0] = '\0';
+}
+
+
 static void disassemble (sim_t *sim)
 {
-  uint8_t page, max_page;
-  int page_size;
-  bank_t bank, max_bank, target_bank;
-  addr_t addr, max_addr, target_addr;
+  uint8_t page;
+  bank_t bank, target_bank;
+  addr_t addr, target_addr, base_addr;
   addr_t delayed_select_mask = 0, delayed_select_addr = 0;
   flow_type_t flow_type;
   bool carry_known_clear;
   char buf [100];
-
-  max_bank = sim_get_max_rom_bank (sim);
-  page_size = sim_get_rom_page_size (sim);
-  max_addr = sim_get_max_rom_addr (sim);
-  max_page = max_addr / page_size;
 
   for (bank = 0; bank < max_bank; bank++)
     for (page = 0; page < max_page; page++)
@@ -107,6 +131,7 @@ static void disassemble (sim_t *sim)
 	  addr = page * page_size;
 	  while (addr < ((page + 1) * page_size))
 	    {
+	      base_addr = addr;
 	      if (! sim_disassemble (sim,
 				     & bank,
 				     & addr,
@@ -120,21 +145,29 @@ static void disassemble (sim_t *sim)
 				     sizeof (buf)))
 		{
 		  warning ("disassembler error at bank %d addr %05o\n", bank, (addr + 1) % max_addr);
+		  break;
 		}
 	      if (! pass_two)
 		{
 		  if (flow_type_info [flow_type].has_target)
 		    {
-		      // $$$ create label
+		      if (flow_type == flow_subroutine_call)
+			set_symbol (target_bank, target_addr, SYM_CALL);
+		      else
+			set_symbol (target_bank, target_addr, SYM_JUMP);
 		    }
 		}
 	      else
 		{
-		  // $$$ print label (if applicable)
+		  char label [8];
+		  get_symbol (bank, base_addr, label, sizeof (label));
+		  if (label [0])
+		    printf ("%s:  ", label);
+		  else
+		    printf ("        ");
 		  if (flow_type_info [flow_type].has_target)
 		    {
-		      char label [10];
-		      sprintf (label, "L%04o", target_addr);
+		      get_symbol (target_bank, target_addr, label, sizeof (label));
 		      printf (buf, label);
 		    }
 		  else
@@ -187,6 +220,13 @@ int main (int argc, char *argv[])
 		  NULL,  // install_hardware_callback_ref
 		  NULL,  // display_update_callback
 		  NULL); // display_udpate_callback_ref 
+
+  max_bank = sim_get_max_rom_bank (sim);
+  page_size = sim_get_rom_page_size (sim);
+  max_addr = sim_get_max_rom_addr (sim);
+  max_page = max_addr / page_size;
+
+  symtab = alloc (max_bank * max_addr * sizeof (uint8_t));
 
   asm_mode = false;
   pass_two = false;
