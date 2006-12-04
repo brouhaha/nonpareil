@@ -51,7 +51,7 @@ typedef struct misc_inst_info_t
 
 static misc_inst_info_t misc_00_info [16] =
 {
-  [00000 >> 6] = { NULL, NULL,              NULL, NULL, flow_no_branch },
+  [00000 >> 6] = { NULL, "nop",             NULL, NULL, flow_no_branch },
   [00100 >> 6] = { NULL, NULL,              NULL, NULL, flow_no_branch },
   [00200 >> 6] = { NULL, NULL,              NULL, NULL, flow_no_branch },
   [00300 >> 6] = { NULL, "crc f1?",         NULL, NULL, flow_no_branch },
