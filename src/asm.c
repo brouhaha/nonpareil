@@ -377,7 +377,7 @@ int main (int argc, char *argv[])
 }
 
 
-void do_label (char *s)
+void define_symbol (char *s, int value)
 {
   int prev_val;
   symtab_t *table;
@@ -389,13 +389,19 @@ void do_label (char *s)
 
   if (pass == 1)
     {
-      if (! create_symbol (table, s, pc, lineno))
+      if (! create_symbol (table, s, value, lineno))
 	error ("multiply defined symbol '%s'\n", s);
     }
   else if (! lookup_symbol (table, s, & prev_val))
     error ("undefined symbol '%s'\n", s);
-  else if (prev_val != pc)
+  else if (prev_val != value)
     error ("phase error for symbol '%s'\n", s);
+}
+
+
+void do_label (char *s)
+{
+  define_symbol (s, pc);
 }
 
 

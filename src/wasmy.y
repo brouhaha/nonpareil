@@ -53,6 +53,7 @@ void wasm_error (char *s);
 
 %token ADDRESS
 %token BINARY
+%token CHECKSUM
 %token CLEAR
 %token CONSTANT
 %token DATA
@@ -60,6 +61,7 @@ void wasm_error (char *s);
 %token DELAYED
 %token DISPLAY
 %token DOWN
+%token EQU
 %token EXCHANGE
 %token GO
 %token HI
@@ -74,6 +76,7 @@ void wasm_error (char *s);
 %token NC
 %token NOP
 %token OFF
+%token ORG
 %token PIK
 %token REGISTER
 %token REGISTERS
@@ -104,6 +107,7 @@ void wasm_error (char *s);
 line		:	label
 		|	label operation
 		|	operation
+		|	pseudo_op_special_label
 		|
 		;
 
@@ -134,10 +138,20 @@ expr		: INTEGER { $$ = $1; }
 			}
 		;
 
-pseudo_op	: ps_rom
+pseudo_op	: ps_org
+		| ps_rom
 		| ps_symtab
 		| ps_legal
 		;
+
+pseudo_op_special_label	: ps_equ ;
+
+ps_equ		: IDENT '.' EQU expr { $4 = range ($4, 0, 07777);
+				       define_symbol ($1, $4); };
+
+ps_org		: '.' ORG expr { $3 = range ($3, 0, 07777);
+				 pc = $3;
+				 last_instruction_type = OTHER_INST; };
 
 ps_rom		: '.' ROM expr { $3 = range ($3, 0, MAXROM - 1);
 				 if (pc != ($3 << 8))
@@ -397,6 +411,7 @@ misc_inst       : inst_load_const
 		| inst_return
 		| inst_binary
 		| inst_decimal
+		| inst_rom_checksum
 		| inst_woodstock
                 ;
 
@@ -460,6 +475,8 @@ inst_rotate_left_a : ROTATE LEFT A          { emit (00520); } ;
 inst_return	: RETURN                    { emit (01020); } ;
 
 inst_noop       : NOP			    { emit (00000); } ;
+
+inst_rom_checksum : ROM CHECKSUM            { emit (01460); } ;
 
 inst_woodstock	: HI IAM WOODSTOCK	    { emit (01760); } ;
 

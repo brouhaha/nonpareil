@@ -55,6 +55,7 @@ static keyword_t wasm_keywords [] =
 
   { "address",   ADDRESS },
   { "binary",    BINARY },
+  { "checksum",  CHECKSUM },
   { "clear",     CLEAR },
   { "constant",  CONSTANT },
   { "data",      DATA },
@@ -62,6 +63,7 @@ static keyword_t wasm_keywords [] =
   { "delayed",   DELAYED },
   { "display",   DISPLAY },
   { "down",      DOWN },
+  { "equ",       EQU },
   { "exchange",  EXCHANGE },
   { "go",        GO },
   { "hi",        HI },
@@ -76,6 +78,7 @@ static keyword_t wasm_keywords [] =
   { "n/c",       NC },
   { "nop",       NOP },
   { "off",       OFF },
+  { "org",       ORG },
   { "pik",       PIK },
   { "register",  REGISTER },
   { "registers", REGISTERS },

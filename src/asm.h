@@ -56,6 +56,7 @@ extern char *lineptr;
 extern symtab_t *global_symtab;
 extern symtab_t *symtab [MAXROM];  /* separate symbol tables for each ROM */
 
+void define_symbol (char *s, int value);
 void do_label (char *s);
 
 
