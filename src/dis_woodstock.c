@@ -333,7 +333,7 @@ bool woodstock_disassemble (sim_t  *sim,
       if (*flow_type == flow_no_branch)
 	{
 	  warning ("delayed select precedes non-branch instruction!\n");
-	  *flow_type == flow_uncond_branch;
+	  *flow_type = flow_uncond_branch;
 	}
       *target_addr = (*target_addr & ~ *delayed_select_mask) | 
 		     (*delayed_select_mask & *delayed_select_addr);
