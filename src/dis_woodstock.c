@@ -33,6 +33,9 @@ MA 02111, USA.
 #include "calcdef.h"
 
 
+#define STATE_THEN_GOTO 1
+
+
 static uint8_t p_set_map [16] =
   { 14,  4,  7,  8, 11,  2, 10, 12,  1,  3, 13,  6,  0,  9,  5, 14 };
 
@@ -210,10 +213,98 @@ static bool two_word_inst (rom_word_t op1)
 }
 
 
+static void disassemble_misc (rom_word_t op1,
+			      bank_t *bank,
+			      addr_t *addr,
+			      flow_type_t *flow_type,
+			      bank_t *target_bank,
+			      addr_t *target_addr,
+			      char *buf,
+			      int len,
+			      addr_t *new_delayed_select_mask,
+			      addr_t *new_delayed_select_addr)
+{
+  int inst = (op1 >> 2) & 017;
+  int arg = op1 >> 6;
+
+  if (misc_info [inst].map)
+    arg = misc_info [inst].map [arg];
+  if (misc_info [inst].subtable)
+    {
+      if (misc_info [inst].subtable [arg].mnem)
+	buf_printf (& buf, & len, "%s", misc_info [inst].subtable [arg].mnem);
+      else
+	buf_printf (& buf, & len, "op @%04o", op1);
+      *flow_type = misc_info [inst].subtable [arg].flow;
+    }
+  else
+    {
+      if ((arg == 0) && misc_info [inst].arg_0_mnem)
+	buf_printf (& buf, & len, misc_info [inst].arg_0_mnem);
+      else
+	buf_printf (& buf, & len, misc_info [inst].mnem, arg);
+      *flow_type = misc_info [inst].flow;
+    }
+  if ((*flow_type) == flow_select_rom)
+    {
+      *flow_type = flow_uncond_branch;
+      *target_bank = *bank;
+      *target_addr = (arg << 8) + ((*addr) & 0377);
+    }
+  else if ((*flow_type) == flow_delayed_rom)
+    {
+      *flow_type = flow_no_branch;
+      *new_delayed_select_mask = 017 << 8;
+      *new_delayed_select_addr = arg << 8;
+    }
+}
+
+
+static void disassemble_jsb (rom_word_t op1,
+			     bank_t *bank,
+			     addr_t *addr,
+			     flow_type_t *flow_type,
+			     bank_t *target_bank,
+			     addr_t *target_addr,
+			     char *buf,
+			     int len)
+{
+      buf_printf (& buf, & len, "jsb %%s");
+      *target_bank = *bank;
+      *target_addr = ((*addr) & 07400) + (op1 >> 2);
+      *flow_type = flow_subroutine_call;
+}
+
+static void disassemble_nc_goto (rom_word_t op1,
+				 bank_t *bank,
+				 addr_t *addr,
+				 bool *carry_known_clear,
+				 flow_type_t *flow_type,
+				 bank_t *target_bank,
+				 addr_t *target_addr,
+				 char *buf,
+				 int len)
+{
+  if (* carry_known_clear)
+    {
+      *flow_type = flow_uncond_branch;
+      buf_printf (& buf, & len, "go to %%s");
+    }
+  else
+    {
+      *flow_type = flow_cond_branch;
+      buf_printf (& buf, & len, "if n/c go to %%s");
+    }
+  *target_bank = *bank;
+  *target_addr = ((*addr) & 07400) + (op1 >> 2);
+}
+
+
 bool woodstock_disassemble (sim_t  *sim,
 			    // input and output:
 			    bank_t *bank,
 			    addr_t *addr,
+			    int    *state,  // use 0 for start of normal instr
 			    bool   *carry_known_clear,
 			    addr_t *delayed_select_mask,
 			    addr_t *delayed_select_addr,
@@ -224,7 +315,6 @@ bool woodstock_disassemble (sim_t  *sim,
 			    char *buf,
 			    int len)
 {
-  bool two_word;
   bool new_carry_known_clear = true;
   addr_t new_delayed_select_mask = 0;
   addr_t new_delayed_select_addr = 0;
@@ -237,106 +327,69 @@ bool woodstock_disassemble (sim_t  *sim,
 
   *flow_type = flow_no_branch;
 
-  switch (op1 & 3)
+  if (*state == STATE_THEN_GOTO)
     {
-    case 0:
-      // misc
-      {
-	int inst = (op1 >> 2) & 017;
-	int arg = op1 >> 6;
-	if (misc_info [inst].map)
-	  arg = misc_info [inst].map [arg];
-	if (misc_info [inst].subtable)
-	  {
-	    if (misc_info [inst].subtable [arg].mnem)
-	      buf_printf (& buf, & len, "%s", misc_info [inst].subtable [arg].mnem);
-	    else
-	      buf_printf (& buf, & len, "op @%04o", op1);
-	    *flow_type = misc_info [inst].subtable [arg].flow;
-	  }
-	else
-	  {
-	    if ((arg == 0) && misc_info [inst].arg_0_mnem)
-	      buf_printf (& buf, & len, misc_info [inst].arg_0_mnem);
-	    else
-	      buf_printf (& buf, & len, misc_info [inst].mnem, arg);
-	    *flow_type = misc_info [inst].flow;
-	  }
-	if ((*flow_type) == flow_select_rom)
-	  {
-	    *flow_type = flow_uncond_branch;
-	    *target_bank = *bank;
-	    *target_addr = (arg << 8) + ((*addr) & 0377);
-	  }
-	else if ((*flow_type) == flow_delayed_rom)
-	  {
-	    *flow_type = flow_no_branch;
-	    new_delayed_select_mask = 017 << 8;
-	    new_delayed_select_addr = arg << 8;
-	  }
-      }
-      break;
-    case 1:
-      // jsb
-      buf_printf (& buf, & len, "jsb %%s");
-      *target_bank = *bank;
-      *target_addr = ((*addr) & 07400) + (op1 >> 2);
-      // $$$ need to handle delayed selects
-      *flow_type = flow_subroutine_call;
-      break;
-    case 2:
-      // arith
-      {
-	int op = op1 >> 5;
-	int field = (op1 >> 2) & 7;
-	buf_printf (& buf, & len, arith_info [op].mnem, field_mnem [field]);
-	if (arith_info [op].can_set_carry)
-	  new_carry_known_clear = false;
-      }
-      break;
-    case 3:
-      // if n/c go to
-      if (* carry_known_clear)
-	{
-	  *flow_type = flow_uncond_branch;
-	  buf_printf (& buf, & len, "go to %%s");
-	}
-      else
-	{
-	  *flow_type = flow_cond_branch;
-	  buf_printf (& buf, & len, "if n/c go to %%s");
-	}
-      *target_bank = *bank;
-      *target_addr = ((*addr) & 07400) + (op1 >> 2);
-      // $$$ need to handle delayed selects
-      break;
-    }
-
-  two_word = two_word_inst (op1);
-  if (two_word)
-    {
-      rom_word_t op2;
-
-      if (*delayed_select_mask)
-	warning ("delayed select precedes two-word instruction!\n");
-      if (! sim_read_rom (sim, *bank, *addr, & op2))
-	return false;
-      (*addr) = ((*addr) + 1) & 07777;
-      buf_printf (& buf, & len, " then go to %%s");
+      buf_printf (& buf, & len, "  then go to %%s");
       *flow_type = flow_cond_branch;
       *target_bank = *bank;
-      *target_addr = ((*addr) & 06000) + op2;
+      *target_addr = ((*addr) & 06000) + op1;
+      *state = STATE_INITIAL;
     }
-
-  if (*delayed_select_mask)
+  else
     {
-      if (*flow_type == flow_no_branch)
+      switch (op1 & 3)
 	{
-	  warning ("delayed select precedes non-branch instruction!\n");
-	  *flow_type = flow_uncond_branch;
+	case 0:  // misc
+	  disassemble_misc (op1, bank, addr,
+			    flow_type,
+			    target_bank, target_addr,
+			    buf, len,
+			    & new_delayed_select_mask,
+			    & new_delayed_select_addr);
+	  break;
+	case 1:  // jsb
+	  disassemble_jsb (op1, bank, addr,
+			   flow_type,
+			   target_bank, target_addr,
+			   buf, len);
+	  break;
+	case 2:
+	  // arith
+	  {
+	    int op = op1 >> 5;
+	    int field = (op1 >> 2) & 7;
+	    buf_printf (& buf, & len, arith_info [op].mnem, field_mnem [field]);
+	    if (arith_info [op].can_set_carry)
+	      new_carry_known_clear = false;
+	  }
+	  break;
+	case 3:
+	  // if n/c go to
+	  disassemble_nc_goto (op1, bank, addr,
+			       carry_known_clear,
+			       flow_type,
+			       target_bank, target_addr,
+			       buf, len);
+	  break;
 	}
-      *target_addr = (*target_addr & ~ *delayed_select_mask) | 
-		     (*delayed_select_mask & *delayed_select_addr);
+
+      if (two_word_inst (op1))
+	{
+	  if (*delayed_select_mask)
+	    warning ("delayed select precedes two-word instruction!\n");
+	  *state = STATE_THEN_GOTO;
+	}
+
+      if (*delayed_select_mask)
+	{
+	  if (*flow_type == flow_no_branch)
+	    {
+	      warning ("delayed select precedes non-branch instruction!\n");
+	      *flow_type = flow_uncond_branch;
+	    }
+	  *target_addr = (*target_addr & ~ *delayed_select_mask) | 
+	    (*delayed_select_mask & *delayed_select_addr);
+	}
     }
 
   *carry_known_clear = new_carry_known_clear;

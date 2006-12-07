@@ -119,9 +119,10 @@ static void disassemble (sim_t *sim)
   uint8_t page;
   bank_t bank, target_bank;
   addr_t addr, target_addr, base_addr;
+  int state = STATE_INITIAL;
+  bool carry_known_clear;
   addr_t delayed_select_mask = 0, delayed_select_addr = 0;
   flow_type_t flow_type;
-  bool carry_known_clear;
   char buf [100];
 
   for (bank = 0; bank < max_bank; bank++)
@@ -129,12 +130,14 @@ static void disassemble (sim_t *sim)
       if (sim_page_exists (sim, bank, page))
 	{
 	  addr = page * page_size;
-	  while (addr < ((page + 1) * page_size))
+	  while ((addr >= page * page_size) &&
+		 (addr < ((page + 1) * page_size)))
 	    {
 	      base_addr = addr;
 	      if (! sim_disassemble (sim,
 				     & bank,
 				     & addr,
+				     & state,
 				     & carry_known_clear,
 				     & delayed_select_mask,
 				     & delayed_select_addr,
@@ -231,7 +234,9 @@ int main (int argc, char *argv[])
   asm_mode = false;
   pass_two = false;
   disassemble (sim);
+
   pass_two = true;
+  printf ("\t.arch woodstock\n\n");
   disassemble (sim);
 
   exit (0);

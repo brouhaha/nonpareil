@@ -138,6 +138,7 @@ void woodstock_disassemble (sim_t  *sim,
 			    // input and output:
 			    bank_t *bank,
 			    addr_t *addr,
+			    int    *state,  // use 0 for start of normal instr
 			    bool   *carry_known_clear,
 			    addr_t *delayed_select_mask,
 			    addr_t *delayed_select_addr,
