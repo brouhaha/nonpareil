@@ -55,6 +55,35 @@ typedef uint16_t rom_word_t;
 rom_word_t rom [MAX_BANK] [MAX_ADDR];
 
 
+struct element_info
+{
+  struct element_info *next;
+  xmlNode *element;
+};
+
+static struct element_info *deferred_unlink_list = NULL;
+
+
+static void defer_unlink_element (xmlNode *element)
+{
+  struct element_info *ei;
+
+  ei = alloc (sizeof (struct element_info));
+  ei->next = deferred_unlink_list;
+  ei->element = element;
+  deferred_unlink_list = ei;
+}
+
+
+static void handle_deferred_unlink_elements (void)
+{
+  struct element_info *p;
+
+  for (p = deferred_unlink_list; p; p = p -> next)
+    xmlUnlinkNode (p->element);
+}
+
+
 void usage (FILE *f)
 {
   fprintf (f, "%s:  Microcode-level calculator simulator\n",
@@ -284,7 +313,7 @@ void handle_obj_file_element (xmlNode *element)
   obj_fn = xmlNodeGetContent (element);
   if (! obj_fn)
     fatal (2, "no content\n");
-  printf ("obj_file '%s', addr_space '%s'\n", obj_fn, addr_space_str);
+  //printf ("obj_file '%s', addr_space '%s'\n", obj_fn, addr_space_str);
 
   // $$$ check that the address space exists!
   if (strcmp ((char *) addr_space_str, "inst") != 0)
@@ -292,7 +321,7 @@ void handle_obj_file_element (xmlNode *element)
 
   read_object_file ((char *) obj_fn);
 
-  xmlUnlinkNode (element);
+  defer_unlink_element (element);
 }
 
 void handle_memory_element (xmlNode *element)
@@ -315,8 +344,8 @@ void handle_memory_element (xmlNode *element)
   base_addr = get_attr_num (element, "base_addr", 0);
   size = get_attr_num (element, "size", 0);
 
-  printf ("memory: addr space '%s', banks '%s', base_addr %ld, size %ld\n",
-	  addr_space_str, banks_str, base_addr, size);
+  //printf ("memory: addr space '%s', banks '%s', base_addr %ld, size %ld\n",
+  //	  addr_space_str, banks_str, base_addr, size);
 
   bank = banks_str [0] - '0';  // $$$ ugly hack
 
@@ -327,6 +356,9 @@ void handle_memory_element (xmlNode *element)
       xmlAttr *data_attr;
       char addr_str [6];
       char data_str [6];
+
+      if (rom [bank] [addr] == 0xffff)
+	fatal (4, "uninitialized ROM at bank %d addr %04o\n", bank, addr);
 
       // $$$ check that values for all banks we care about match
 
@@ -429,8 +461,9 @@ int main (int argc, char *argv[])
 			  "chip",
 			  & handle_chip_element);
 
-  xmlSetDocCompressMode (doc, 9);
+  handle_deferred_unlink_elements ();
 
+  xmlSetDocCompressMode (doc, 9);
   xmlSaveFormatFileEnc (dest_fn, doc, "UTF-8", 1);
 
   xmlFreeDoc (doc);
