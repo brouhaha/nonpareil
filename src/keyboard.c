@@ -53,6 +53,11 @@ struct button_info_t
 };
 
 
+// NOTE: keyboard rollover support needs to move into simulator core,
+// as it is model-specific.  A general rollover framework should be
+// implemented there.
+
+
 // The real hardware has two-key rollover.  If one key is pressed, the
 // hardware recognizes it immediately.  But if additional keys are
 // pressed before the first key is released, none are recognized until
@@ -110,7 +115,8 @@ static void button_widget_released (GtkWidget *widget UNUSED,
 #ifdef KEYBOARD_DEBUG
       printf ("last key release, keycode=%d\n", button->kml_button->keycode);
 #endif
-      sim_release_key (csim->sim);
+      i = csim->button_pressed_first;
+      sim_release_key (csim->sim, i);
       break;
     case 1:
       // There were multiple keys pressed, and all but one have been
@@ -127,7 +133,7 @@ static void button_widget_released (GtkWidget *widget UNUSED,
 	  printf ("rollover pressing keycode=%d\n", 
 		  csim->button_info [i]->kml_button->keycode);
 #endif
-	  sim_release_key (csim->sim);  // release the first one
+	  sim_release_key (csim->sim, csim->button_pressed_first);  // release the first one
 	  csim->button_pressed_first = csim->button_info [i]->number;
 	  sim_press_key (csim->sim, i);
 	}

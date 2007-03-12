@@ -1026,7 +1026,7 @@ static void classic_press_key (sim_t *sim, int keycode)
   cpu_reg->key_flag = true;
 }
 
-static void classic_release_key (sim_t *sim)
+static void classic_release_key (sim_t *sim, int keycode UNUSED)
 {
   classic_cpu_reg_t *cpu_reg = get_chip_data (sim->first_chip);
 

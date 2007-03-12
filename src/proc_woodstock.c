@@ -1662,7 +1662,7 @@ static void woodstock_press_key (sim_t *sim, int keycode)
   act_reg->key_flag = true;
 }
 
-static void woodstock_release_key (sim_t *sim)
+static void woodstock_release_key (sim_t *sim, int keycode UNUSED)
 {
   act_reg_t *act_reg = get_chip_data (sim->first_chip);
 

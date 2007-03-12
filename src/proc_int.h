@@ -96,7 +96,7 @@ typedef struct
 
   /* I/O */
   void (* press_key)           (sim_t *sim, int keycode);
-  void (* release_key)         (sim_t *sim);
+  void (* release_key)         (sim_t *sim, int keycode);
   void (* set_ext_flag)        (sim_t *sim, int flag, bool state);
 
   /* memory access: */

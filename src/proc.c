@@ -759,8 +759,7 @@ static void handle_sim_cmd (sim_t *sim, sim_msg_t *msg)
       msg->reply = OK;
       break;
     case CMD_RELEASE_KEY:
-      // $$$ might be nice to allow releasing a specific key!
-      sim->proc->release_key (sim);
+      sim->proc->release_key (sim, msg->arg1);
       msg->reply = OK;
       break;
     case CMD_SET_EXT_FLAG:
@@ -1373,12 +1372,12 @@ bool sim_write_ram (sim_t   *sim,
 
 void sim_press_key (sim_t *sim, int keycode)
 {
+  sim_msg_t msg;
   hw_keycode_t hw_keycode;
 
   // $$$ should range check keycode!
   hw_keycode = sim->keycode_map [keycode + MAX_KEYCODE];
 
-  sim_msg_t msg;
   memset (& msg, 0, sizeof (sim_msg_t));
   msg.cmd = CMD_PRESS_KEY;
   msg.arg1 = hw_keycode;
@@ -1386,12 +1385,17 @@ void sim_press_key (sim_t *sim, int keycode)
 }
 
 
-void sim_release_key (sim_t *sim)
+void sim_release_key (sim_t *sim, int keycode)
 {
   sim_msg_t msg;
+  hw_keycode_t hw_keycode;
+
+  // $$$ should range check keycode!
+  hw_keycode = sim->keycode_map [keycode + MAX_KEYCODE];
+
   memset (& msg, 0, sizeof (sim_msg_t));
   msg.cmd = CMD_RELEASE_KEY;
-  //msg.arg1 = sim->keycode_map [keycode + MAX_KEYCODE];
+  msg.arg1 = hw_keycode;
   send_cmd_to_sim_thread (sim, (gpointer) & msg);
 }
 

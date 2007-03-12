@@ -673,10 +673,20 @@ static void init_ops (tmc_reg_t *tmc_reg)
 }
 
 
-static void tmc1500_disassemble (sim_t *sim UNUSED,
-				 int   addr UNUSED,
-				 char  *buf UNUSED,
-				 int   len  UNUSED)
+bool tmc1500_disassemble (sim_t *sim UNUSED,
+			  // input and output:
+			  bank_t *bank UNUSED,
+			  addr_t *addr UNUSED,
+			  int    *state UNUSED,
+			  bool   *carry_known_clear UNUSED,
+			  addr_t *delayed_select_mask UNUSED,
+			  addr_t *delayed_select_addr UNUSED,
+			  // output:
+			  flow_type_t *flow_type UNUSED,
+			  bank_t *target_bank UNUSED,
+			  addr_t *target_addr UNUSED,
+			  char *buf UNUSED,
+			  int len UNUSED)
 {
   // tmc_reg_t *tmc_reg = get_chip_data (sim->first_chip);
 
@@ -687,6 +697,7 @@ static void tmc1500_disassemble (sim_t *sim UNUSED,
 
   tmc1500_disassemble_inst (addr, op, buf, len);
 #endif
+  return false;
 }
 
 
@@ -829,7 +840,7 @@ static void tmc1500_press_key (sim_t *sim, int keycode)
   tmc_reg->key_flag = true;
 }
 
-static void tmc1500_release_key (sim_t *sim)
+static void tmc1500_release_key (sim_t *sim, int keycode UNUSED)
 {
   tmc_reg_t *tmc_reg = get_chip_data (sim->first_chip);
 
@@ -846,7 +857,7 @@ static void tmc1500_set_ext_flag (sim_t *sim UNUSED,
 
 
 static bool tmc1500_read_ram (sim_t    *sim UNUSED,
-			      int      addr UNUSED,
+			      addr_t   addr UNUSED,
 			      uint64_t *val UNUSED)
 {
   return false;
@@ -854,7 +865,7 @@ static bool tmc1500_read_ram (sim_t    *sim UNUSED,
 
 
 static bool tmc1500_write_ram (sim_t    *sim UNUSED,
-			       int      addr UNUSED,
+			       addr_t   addr UNUSED,
 			       uint64_t *val UNUSED)
 {
   return false;
@@ -931,9 +942,7 @@ static void display_setup (sim_t *sim)
 }
 
 
-static void tmc1500_new_processor (sim_t    *sim,
-				   uint32_t arch_variant UNUSED,
-				   int      ram_size     UNUSED)
+static void tmc1500_new_processor (sim_t    *sim)
 {
   tmc_reg_t *tmc_reg;
 

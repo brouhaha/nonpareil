@@ -293,7 +293,8 @@ bool sim_write_register (sim_t   *sim,
 void sim_press_key (sim_t *sim,
 		    int keycode);
 
-void sim_release_key (sim_t *sim);
+void sim_release_key (sim_t *sim,
+		      int keycode);
 
 // sets up an association between a switch position and an ext flag
 void sim_set_switch_flag (sim_t *sim,

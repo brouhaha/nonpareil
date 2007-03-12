@@ -1858,7 +1858,7 @@ static void nut_press_key (sim_t *sim, int keycode)
   chip_event (sim, event_wake, NULL, 0, NULL);
 }
 
-static void nut_release_key (sim_t *sim)
+static void nut_release_key (sim_t *sim, int keycode UNUSED)
 {
   nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
 
