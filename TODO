@@ -5,13 +5,11 @@ $Id$
 
 Needed for next release:
 
-  NCD files:
-    Make building ncd files work.
-	fix "two environments were specified for .../21.lst"
-    Make Nonpareil read the ncd file (back end).
-    Remove hardware keycode information, etc. from KML
+  Put CC license notice in microcode source and object files and NCD files.
 
-  Rename NCZ files to NUI files.
+  NCD files:
+    Make Nonpareil read the ncd file (back end).
+    Remove hardware keycode information, character generator, etc. from KML
 
   Fix scons install, source tarball, Windows binary targets (broken with
   major build system overhaul)
@@ -27,6 +25,12 @@ Needed for next release:
 
 
 Build process:
+
+  As assembly object is depended on assembler, .ncd should be dependent
+  on build-ncd.
+
+
+Packaging:
 
   Create an RPM .spec file.
 
@@ -122,12 +126,11 @@ Internals:
       GDK pixmaps.  Create offscreen pixmap from pixbuf with
       gdk_draw_pixbuf().  Use gdk_draw_drawable() to blit to display.
 
-  Change Phineas to store vars in binary, convert to BCD only for
-      Nut read/write instructions
+  Phineas:
+      init from system time
+      store vars in binary, convert to BCD only for Nut read/write instructions
 
   Split proc.c into separate GUI thread and simulator thread portions.
-
-  Create new XML-based ROM file format.
 
   New memory API.
 
@@ -161,13 +164,17 @@ KML:
 
 Assembler:
 
+  Add copyright/license directive, to pass comments through to object file.
+
+  Finish ".crc" and ".crc reset" directives for Spice series.
+
   Fix "delayed select" and branch targets (Classic, possibly Woodstock)
 
   Clean up memory usage of symbols in CASM.  As of 21-Apr-2006, I don't
   remember exactly what this means, but maybe it will come back to me
   if I study the code.
 
-  Implement symbol cross-reference in CASM
+  Implement symbol cross-reference.
 
   Allow keywords to be used as labels, by making putting a "label"
   production in the parser which can be either an identifier or any
@@ -200,7 +207,10 @@ Debugger:
 
   Implement async queue based functions needed by debugger.
 
-  Display source code using GtkSourceView
+  Display source code:
+     GtkSourceView      http://gtksourceview.sourceforge.net/
+     GtkEditor          http://gtkeditor.sourceforge.net/
+     Scintilla          http://scintilla.sourceforge.net/
 
 
 Better model support:
@@ -221,19 +231,20 @@ Better model support:
 
       Woodstock:
 		early HP-29C
-		HP-67 (0227: early rev not compatible with 1820-1596 AMI ACT)
+		HP-67 (1818-0227: early rev not compatible with 1820-1596 AMI ACT)
 
       Topcat:
 		HP-91
 		HP-92
 		HP-95C
-		HP-97 (0225: early rev not compatible with 1820-1596 AMI ACT)
+		HP-97 (1818-0225: early rev not compatible with 1820-1596 AMI ACT)
 
       Sting:	HP-10 (optical)
 		early HP-19C
 
       Spice:
 		HP-31E
+		early 32E (might not use 1820-2162 processor?)
 		HP-33E
 
       Cricket:
@@ -244,6 +255,9 @@ Better model support:
   Add Woodstock microinstructions for card reader (HP-67, HP-97)
 
   Add Woodstock microinstructions for printer (HP-19C, HP-91, HP-92, HP-95C, HP-97)
+
+  Specify ACT flag wiring in NCD
+  For Topcat, 19C, specify ACT key scanner wiring in NCD
 
   Add HP-65 microinstructions for program memory access.
 
