@@ -55,6 +55,7 @@ static char *credits_people [] =
   "David Hicks",
   "John Hogerhuis",
   "HrastProgrammer",
+  "David Jedelsky",
   "Steven Knight",
   "Allen Kossow",
   "Wlodek Mier-J\u0119drzejowicz",

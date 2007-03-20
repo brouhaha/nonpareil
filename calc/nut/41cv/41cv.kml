@@ -20,10 +20,7 @@
 global
 	title "41CV Programmable Scientific Calculator"
 	author "Eric Smith <eric@brouhaha.com>"
-	hardware "Coconut"
 	model "41cv"
-	rom "41cv.mod"
-#	listing "41c.lst"
 	image "41c.png"
 	color 0 137 0 6	  # background color, used when transparency is off
 end

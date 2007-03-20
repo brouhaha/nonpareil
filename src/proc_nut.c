@@ -751,6 +751,37 @@ static void nut_ram_write_ignore (nut_reg_t *nut_reg UNUSED,
   ;
 }
 
+static void voyager_display_ram_19_read (nut_reg_t *nut_reg UNUSED,
+					 int addr           UNUSED,
+					 reg_t *reg)
+{
+  int i;
+  for (i = 0; i < WSIZE; i++)
+    (*reg) [i] = nut_reg->ram [addr] [i];
+
+  // The least significant 7 bits of the register (bits 6..0) don't really
+  // exist, and read back as the complement of bit 7.
+  if (! ((* reg) [1] & 0x8))
+    {
+      (*reg) [1] = 0x7;
+      (*reg) [0] = 0xf;
+    }
+}
+
+static void voyager_display_ram_19_write (nut_reg_t *nut_reg UNUSED,
+					  int addr           UNUSED,
+					  reg_t *reg)
+{
+  int i;
+  for (i = 0; i < WSIZE; i++)
+    nut_reg->ram [addr] [i] = (*reg) [i];
+
+  // The least significant 7 bits of the register (bits 6..0) don't really
+  // exist, and read back as the complement of bit 7.
+  nut_reg->ram [addr] [1] &= 0x8;
+  nut_reg->ram [addr] [0] =  0x0;
+}
+
 static void op_c_to_dadd (sim_t *sim,
 			  int opcode UNUSED)
 {
@@ -2080,6 +2111,8 @@ static void nut_new_processor (sim_t *sim)
 	  nut_create_ram (sim, 0x018, 3);  // I/O registers
 	  nut_reg->ram_read_fn  [0x18] = nut_ram_read_zero;
 	  nut_reg->ram_write_fn [0x18] = nut_ram_write_ignore;
+	  nut_reg->ram_read_fn  [0x19] = voyager_display_ram_19_read;
+	  nut_reg->ram_write_fn [0x19] = voyager_display_ram_19_write;
 	}
 
       nut_create_ram (sim, 0x100 - ram_size, ram_size);
