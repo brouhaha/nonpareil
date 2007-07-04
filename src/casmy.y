@@ -1,6 +1,6 @@
 /*
 $Id$
-Copyright 1995, 2003, 2004, 2005 Eric L. Smith <eric@brouhaha.com>
+Copyright 1995, 2003, 2004, 2005, 2007 Eric L. Smith <eric@brouhaha.com>
 
 Nonpareil is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License version 2 as
@@ -64,9 +64,11 @@ void casm_error (char *s);
 %token DOWN
 %token EXCHANGE
 %token FOR
+%token FULL
 %token GO
 %token GROUP
 %token IF
+%token INITIALIZE
 %token INSERT
 %token JSB
 %token KEYS
@@ -133,12 +135,12 @@ pseudo_op	: ps_rom
 		| ps_symtab
 		;
 
-ps_rom		: '.' ROM expr { $3 = range ($3, 0, 7);
+ps_rom		: '.' ROM expr { $3 = range ($3, 000, 017);
 				 pc = $3 << 8;
 				 last_instruction_type = OTHER_INST;
 				 local_label_flag = true;
 				 local_label_current_rom = $3;
-			         printf (" %d", $3); }
+			         printf (" %02o", $3); }
 		;
 
 ps_symtab	: '.' SYMTAB { symtab_pseudoop_flag = 1; }
@@ -327,6 +329,8 @@ misc_inst       : inst_load_const
 		| inst_mem_insert
 		| inst_mark_srch
 		| inst_srch_label
+		| inst_mem_init
+		| inst_mem_full
                 ;
 
 inst_load_const : LOAD CONSTANT expr        { $3 = range ($3, 0, 9); 
@@ -369,6 +373,8 @@ inst_mem_delete : MEMORY DELETE             { emit (0x180); } ;
 inst_rom_to_buf	: ROM ADDRESS ARROW BUFFER  { emit (0x200); } ;
 inst_srch_label	: SEARCH FOR LABEL          { emit (0x280); } ;
 inst_ptr_adv	: POINTER ADVANCE           { emit (0x300); } ;
+inst_mem_init   : MEMORY INITIALIZE         { emit (0x380); } ;
+inst_mem_full   : MEMORY FULL ARROW A       { emit (0x078); } ;
 
 %%
 
