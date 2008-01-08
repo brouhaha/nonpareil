@@ -212,6 +212,7 @@ if not build_target_only:
 
 uasm_srcs = Split ("""asm.c symtab.c
             	      asml.l asmy.y
+		      asm_cond_l.l asm_cond_y.y
                       casml.l casmy.y
                       wasml.l wasmy.y""")
 

@@ -1,6 +1,6 @@
 /*
 $Id$
-Copyright 1995, 2004, 2005, 2006 Eric L. Smith <eric@brouhaha.com>
+Copyright 1995, 2004, 2005, 2006, 2007, 2008 Eric L. Smith <eric@brouhaha.com>
 
 Nonpareil is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License version 2 as
@@ -61,13 +61,16 @@ typedef void (write_obj_t)(FILE *f, int opcode);
 
 static write_obj_t *write_obj [ARCH_MAX];
 
-
 int pass;
 int lineno;
 int errors;
 int warnings;
 
+bool asm_cond_parse_error;
+
+
 addr_t pc;		/* current pc */
+uint32_t bank_mask;
 
 // for "delayed select rom" and "delayed select group":
 addr_t delayed_pc_mask [2];
@@ -113,6 +116,80 @@ FILE *listfile = NULL;
 
 symtab_t *global_symtab;
 symtab_t *symtab [MAXROM];  /* separate symbol tables for each '.rom' directive */
+
+
+#define MAX_COND_NEST_LEVEL 63
+static int cond_nest_level;
+static uint64_t cond_state;
+static uint64_t cond_else;
+
+static void cond_init (void)
+{
+  cond_nest_level = 0;
+  cond_state = 1;
+  cond_else = 0;
+}
+
+void pseudo_if (int val)
+{
+  if (cond_nest_level >= MAX_COND_NEST_LEVEL)
+    {
+      error ("conditionals nested too deep");
+      return;
+    }
+  cond_nest_level++;
+  cond_state <<= 1;
+  cond_else <<= 1;
+  cond_state |= (val != 0);
+}
+
+void pseudo_ifdef (char *s)
+{
+  symtab_t *table;
+  int val;
+
+  if (cond_nest_level >= MAX_COND_NEST_LEVEL)
+    {
+      error ("conditionals nested too deep");
+      return;
+    }
+  if (local_label_flag && (*s != '$'))
+    table = symtab [local_label_current_rom];
+  else
+    table = global_symtab;
+  cond_nest_level++;
+  cond_state <<= 1;
+  cond_else <<= 1;
+  cond_state |= lookup_symbol (table, s, & val);
+}
+
+void pseudo_else (void)
+{
+  if (! cond_nest_level)
+    {
+      error ("else without conditional");
+      return;
+    }
+  if (cond_else & 1)
+    {
+      error ("second else for same conditional");
+      return;
+    }
+  cond_else |= 1;
+  cond_state ^= 1;
+}
+
+void pseudo_endif (void)
+{
+  if (! cond_nest_level)
+    {
+      error ("endif without conditional");
+      return;
+    }
+  cond_nest_level--;
+  cond_state >>= 1;
+  cond_else >>= 1;
+}
 
 
 void increment_pc (void)
@@ -211,7 +288,10 @@ void do_pass (int p)
   lineno = 0;
   errors = 0;
   warnings = 0;
+
+  cond_init ();
   pc = 0;
+  bank_mask = 0;
   delayed_pc_mask [0] = 0;
 
   last_instruction_type = OTHER_INST;
@@ -228,7 +308,6 @@ void do_pass (int p)
 	linebuf [i - 1] = '\0';
 
       lineno++;
-      lineptr = & linebuf [0];
 
       listptr = & listbuf [0];
       listbuf [0] = '\0';
@@ -246,7 +325,19 @@ void do_pass (int p)
       delayed_pc_bits [1] = delayed_pc_bits [0];
       delayed_pc_mask [0] = 0;
 
-      parser [arch] ();
+      // first try to parse a conditional pseudo-op
+      lineptr = & linebuf [0];
+      asm_cond_parse_error = false;
+      asm_cond_parse ();
+
+      if (asm_cond_parse_error)
+	{
+	  if (cond_state & 1)
+	    {
+	      lineptr = & linebuf [0];
+	      parser [arch] ();
+	    }
+	}
 
       if (pass == 2)
 	{
@@ -276,6 +367,9 @@ void do_pass (int p)
 	increment_pc ();
     }
 
+  if (cond_nest_level != 0)
+    error ("unterminated conditional(s)");
+
   if ((pass == 2) && listfile)
     {
       fprintf (listfile, "\nGlobal symbols:\n\n");
@@ -289,6 +383,42 @@ void do_pass (int p)
 }
 
 
+static void parse_define_option (char *opt)
+{
+  char *name;
+  long value;
+
+  name = opt + 2;  // skip the "-D"
+  if (! *name)
+    goto syntax_err;  // must be a name
+
+  char *equals = strchr (name, '=');
+  if (equals)
+    {
+      char *val_end_ptr;
+      *equals = '\0';
+      if (! * (equals + 1))  // must be a value after the equals
+	goto syntax_err;
+      value = strtol (equals + 1, & val_end_ptr, 0);
+      if (* val_end_ptr)
+	goto syntax_err;  // extra characters that can't be parsed as a value
+    }
+  else
+    value = 1;
+
+  fprintf (stderr, "defining '%s' to have value %d\n", name, value);
+
+  if (! create_symbol (global_symtab, name, value, 0))
+    fatal (1, "duplicate symbol in '-D' option: '%s'\n", name);
+
+  return;
+
+ syntax_err:
+  fatal (1, "malformed '-D' option\n");
+  return;
+}
+
+
 int main (int argc, char *argv[])
 {
   char *obj_fn = NULL;
@@ -296,6 +426,10 @@ int main (int argc, char *argv[])
   int rom;
 
   progname = argv [0];
+
+  global_symtab = alloc_symbol_table ();
+  if (! global_symtab)
+    fatal (2, "symbol table allocation failed\n");
 
   while (--argc)
     {
@@ -318,6 +452,10 @@ int main (int argc, char *argv[])
 	      argc--;
 	      argv++;
 	    }
+	  else if (strncmp (argv [0], "-D", 2) == 0)
+	    {
+	      parse_define_option (argv [0]);
+	    }
 	  else
 	    fatal (1, "unrecognized option '%s'\n", argv [0]);
 	}
@@ -329,10 +467,6 @@ int main (int argc, char *argv[])
 
   if (! src_fn)
     fatal (1, "source file must be specified\n");
-
-  global_symtab = alloc_symbol_table ();
-  if (! global_symtab)
-    fatal (2, "symbol table allocation failed\n");
 
   for (rom = 0; rom < MAXROM; rom++)
     {
@@ -366,7 +500,7 @@ int main (int argc, char *argv[])
 
   do_pass (2);
 
-  err_printf ("%d errors, %d warnings\n", errors, warnings);
+  err_printf ("%d errors detected, %d warnings\n", errors, warnings);
 
   fclose (srcfile);
   if (objfile)
@@ -407,13 +541,26 @@ void do_label (char *s)
 
 static void write_obj_classic (FILE *f, int opcode)
 {
-  fprintf (f, "%04o:%04o\n", pc, opcode &01777);
+  if (f)
+    fprintf (f, "%04o:%04o\n", pc, opcode &01777);
 }
 
 
 static void write_obj_woodstock (FILE *f, int opcode)
 {
-  fprintf (f, "%04o:%04o\n", pc, opcode &01777);
+  if (f)
+    {
+      if (bank_mask)
+	{
+	  int i;
+	  fprintf (f, "[");
+	  for (i = 0; i < (8 * sizeof (bank_mask)); i++)
+	    if (bank_mask & (1 << i))
+	      fprintf (f, "%d", i);
+	  fprintf (f, "]");
+	}
+      fprintf (f, "%04o:%04o\n", pc, opcode &01777);
+    }
 }
 
 
@@ -430,7 +577,7 @@ static void emit_core (int op, int inst_type)
   obj_flag = true;
   last_instruction_type = inst_type;
 
-  if ((pass == 2) && objfile)
+  if (pass == 2)
     write_obj [arch] (objfile, op);
 }
 
@@ -466,7 +613,7 @@ addr_t get_next_pc (void)
 {
   addr_t next_pc;
 
-  next_pc = pc + 1;
+  next_pc = (pc + 1) & 07777;  // $$$ Woodstock-specific, need to fix
   next_pc &= ~ delayed_pc_mask [1];
   next_pc |= (delayed_pc_mask [1] & delayed_pc_bits [1]);
 
@@ -559,5 +706,3 @@ int keyword (char *string, keyword_t *table)
     }
   return 0;
 }
-
-

@@ -1,6 +1,6 @@
 /*
 $Id$
-Copyright 1995, 2003, 2004, 2006 Eric L. Smith <eric@brouhaha.com>
+Copyright 1995, 2003, 2004, 2006, 2007, 2008 Eric L. Smith <eric@brouhaha.com>
 
 Nonpareil is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License version 2 as
@@ -54,6 +54,7 @@ static keyword_t wasm_keywords [] =
   { "y",         Y },
 
   { "address",   ADDRESS },
+  { "bank",       BANK },
   { "binary",    BINARY },
   { "checksum",  CHECKSUM },
   { "clear",     CLEAR },
@@ -63,6 +64,7 @@ static keyword_t wasm_keywords [] =
   { "delayed",   DELAYED },
   { "display",   DISPLAY },
   { "down",      DOWN },
+  { "dw",        DW },
   { "equ",       EQU },
   { "exchange",  EXCHANGE },
   { "go",        GO },
@@ -119,12 +121,14 @@ digit		[0-9]
 
 lglobal		[$]
 lfirst		[a-zA-Z0-9]
-lmiddle		[a-zA-Z0-9+\-*/.:?=<>']
-lend		[a-zA-Z0-9+\-*/.?=<>]
+lmiddle		[a-zA-Z0-9+\-*/.:?=<>'_]
+lend		[a-zA-Z0-9+\-*/.?=<>_]
 
 lb		\[
 rb		\]
+
 %%
+
 {digit}+	{ wasm_lval.integer = atoi (yytext); return INTEGER; }
 
 @{octaldig}+	{ sscanf (yytext+1, "%o", &wasm_lval.integer); return INTEGER; }

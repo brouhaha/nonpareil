@@ -1,6 +1,6 @@
 /*
 $Id$
-Copyright 1995, 2004, 2005, 2006 Eric L. Smith <eric@brouhaha.com>
+Copyright 1995, 2004, 2005, 2006, 2007, 2008 Eric L. Smith <eric@brouhaha.com>
 
 Nonpareil is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License version 2 as
@@ -52,6 +52,7 @@ void wasm_error (char *s);
 %token A B C F M1 M2 P S Y
 
 %token ADDRESS
+%token BANK
 %token BINARY
 %token CHECKSUM
 %token CLEAR
@@ -61,6 +62,7 @@ void wasm_error (char *s);
 %token DELAYED
 %token DISPLAY
 %token DOWN
+%token DW
 %token EQU
 %token EXCHANGE
 %token GO
@@ -104,44 +106,43 @@ void wasm_error (char *s);
 
 %%
 
-line		:	label
-		|	label operation
-		|	operation
+line		:	'.' pseudo_op
 		|	pseudo_op_special_label
+		|	label '.' pseudo_op_label
+		|	label
+		|	label instruction
+		|	instruction
 		|
-		;
-
-label:		IDENT ':'	{ do_label ($1); }
-		;
-
-operation	:	instruction
-		|	pseudo_op
 		|	error
 		;
 
+label		: IDENT ':'	{ do_label ($1); }
+		;
+
 expr		: INTEGER { $$ = $1; }
-		| IDENT { if (pass == 1)
-                            $$ = 0;
-                          else
-                            {
-			      symtab_t *table;
-			      if (local_label_flag && ($1 [0] != '$'))
-				table = symtab [local_label_current_rom];
-			      else
-				table = global_symtab;
-			      if (! lookup_symbol (table, $1, &$$))
-				{
-				  error ("undefined symbol '%s'\n", $1);
-				  $$ = 0;
-				}
+		| IDENT { symtab_t *table;
+			  if (local_label_flag && ($1 [0] != '$'))
+			    table = symtab [local_label_current_rom];
+			  else
+			    table = global_symtab;
+			  if (! lookup_symbol (table, $1, &$$))
+			    {
+			      if (pass == 2)
+				error ("undefined symbol '%s'\n", $1);
+			      $$ = 0;
 			    }
 			}
 		;
 
 pseudo_op	: ps_org
+		| ps_bank
 		| ps_rom
 		| ps_symtab
 		| ps_legal
+		| ps_dw
+		;
+
+pseudo_op_label	: ps_dw
 		;
 
 pseudo_op_special_label	: ps_equ ;
@@ -149,32 +150,40 @@ pseudo_op_special_label	: ps_equ ;
 ps_equ		: IDENT '.' EQU expr { $4 = range ($4, 0, 07777);
 				       define_symbol ($1, $4); };
 
-ps_org		: '.' ORG expr { $3 = range ($3, 0, 07777);
-				 pc = $3;
-				 last_instruction_type = OTHER_INST; };
+ps_org		: ORG expr { $2 = range ($2, 0, 07777);
+			     pc = $2;
+			     last_instruction_type = OTHER_INST; };
 
-ps_rom		: '.' ROM expr { $3 = range ($3, 0, MAXROM - 1);
-				 if (pc != ($3 << 8))
-				   {
-				     fprintf (stderr, ".rom pseudo-op skipping locations\n");
-				     fprintf (stderr, "current pc %05o\n", pc);
-				     fprintf (stderr, "arg: %o\n", $3);
-				     last_instruction_type = OTHER_INST;
-				   }
-				 pc = ($3 << 8);
-				 local_label_flag = true;
-				 local_label_current_rom = $3;
-			         printf (" %d", $3); }
+ps_bank		: BANK expr { $2 = range ($2, 0, 1);
+			      bank_mask = 1 << $2; };
+
+ps_rom		: ROM expr { $2 = range ($2, 0, MAXROM - 1);
+			     if (pc != ($2 << 8))
+			       {
+			         fprintf (stderr, ".rom pseudo-op skipping locations\n");
+				 fprintf (stderr, "current pc %05o\n", pc);
+				 fprintf (stderr, "arg: %o\n", $2);
+				 last_instruction_type = OTHER_INST;
+			       }
+			     pc = ($2 << 8);
+			     local_label_flag = true;
+			     local_label_current_rom = $2;
+			     printf (" %d", $2); }
 		;
 
-ps_symtab	: '.' SYMTAB { symtab_pseudoop_flag = true; }
-	;
+ps_symtab	: SYMTAB { symtab_pseudoop_flag = true; }
+		;
 
-ps_legal	: '.' LEGAL { legal_flag = true; }
+ps_legal	: LEGAL { legal_flag = true; }
+		;
+
+ps_dw		: DW expr { $2 = range ($2, 0, 01777);
+                            emit ($2); }
 		;
 
 instruction	: jsb_inst
 	        | goto_inst
+		| legal_goto_inst
 		| then_inst
 	        | arith_inst
 		| status_inst
@@ -189,6 +198,8 @@ jsb_inst        : JSB expr { if ((pass == 2) && ($2 >> 8) != get_next_pc () >> 8
 		             emit ((001 << 12) | (($2 & 0377) << 2) | 00001); 
 			     target ($2); }
                 ;
+
+legal_goto_inst	: LEGAL { legal_flag = true; } goto_inst ;
 
 goto_inst	: goto_form { emit ((013 << 12) | (($1 & 0377) << 2) | 00003);
 			      target ($1); }
@@ -412,6 +423,7 @@ misc_inst       : inst_load_const
 		| inst_binary
 		| inst_decimal
 		| inst_rom_checksum
+		| inst_bank_toggle
 		| inst_woodstock
                 ;
 
@@ -452,12 +464,22 @@ inst_sel_rom    : SELECT ROM expr           { addr_t tgt = ($3 << 8) + ((pc + 1)
 						  error ("'select rom' target value incorrect - requested %05o, actual %05o\n", $5, tgt);
 						}
 					      flag_char = '*'; }
+		| SELECT ROM ADDRESS expr 
+					    { addr_t tgt = $4;
+					      emit (((tgt >> 2) & 01700) | 00040);
+					      target (tgt);
+					      flag_char = '*'; }
 		;
 
 inst_del_rom    : DELAYED ROM expr          { $3 = range ($3, 0, 15); 
                                               emit (($3 << 6) | 00064);
 					      delayed_select (017 << 8, $3 << 8);
-					      flag_char = '$'; } ;
+					      flag_char = '$'; }
+		| DELAYED ROM ADDRESS expr  { int rom = ($4 >> 8) & 017;
+					      emit ((rom << 6) | 00064);
+					      delayed_select (017 << 8, rom << 8);
+					      flag_char = '$'; }
+	        ;
 
 inst_key_to_rom	: KEYS ARROW ROM ADDRESS    { emit (00020); } ;
 
@@ -477,6 +499,8 @@ inst_return	: RETURN                    { emit (01020); } ;
 inst_noop       : NOP			    { emit (00000); } ;
 
 inst_rom_checksum : ROM CHECKSUM            { emit (01460); } ;
+
+inst_bank_toggle: BANK TOGGLE               { emit (01060); } ;
 
 inst_woodstock	: HI IAM WOODSTOCK	    { emit (01760); } ;
 

@@ -1,6 +1,6 @@
 /*
 $Id$
-Copyright 1995, 2004, 2005, 2006 Eric L. Smith <eric@brouhaha.com>
+Copyright 1995, 2004, 2005, 2006, 2007, 2008 Eric L. Smith <eric@brouhaha.com>
 
 Nonpareil is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License version 2 as
@@ -24,11 +24,14 @@ extern int arch;
 
 typedef uint16_t addr_t;
 
-int pass;
+extern int pass;
 extern int lineno;
 extern int errors;
 
+extern bool asm_cond_parse_error;
+
 extern addr_t pc;	/* current pc */
+extern uint32_t bank_mask;  // 0 for all banks, or one bit set for each bank
 
 extern char flag_char;  /* used to mark jumps across rom banks */
 
@@ -52,6 +55,13 @@ extern char *lineptr;
 
 
 #define MAXROM 16     /* classic and woodstock */
+
+
+void pseudo_if (int val);
+void pseudo_ifdef (char *s);
+void pseudo_else (void);
+void pseudo_endif (void);
+
 
 extern symtab_t *global_symtab;
 extern symtab_t *symtab [MAXROM];  /* separate symbol tables for each ROM */
@@ -94,9 +104,10 @@ int asm_warning (char *format, ...);
 
 /* lexers: */
 
-int asm_lex  (void);  /* generic, used only to parse .arch directive */
-int casm_lex (void);  /* classic */
-int wasm_lex (void);  /* woodstock */
+int asm_lex      (void);  // generic, used only to parse .arch directive
+int asm_cond_lex (void);  // used to parse conditional assembly directives
+int casm_lex     (void);  // classic
+int wasm_lex     (void);  // woodstock
 
 
 /* parsers: */
@@ -104,10 +115,10 @@ typedef int (parser_t)(void);
 
 extern parser_t *parser [ARCH_MAX];
 
-
-int asm_parse  (void);  /* generic, used only to parse .arch directive */
-int casm_parse (void);  /* classic */
-int wasm_parse (void);  /* woodstock */
+int asm_parse      (void);  // generic, used only to parse .arch directive
+int asm_cond_parse (void);  // used to parse conditional assembly directives
+int casm_parse     (void);  // classic
+int wasm_parse     (void);  // woodstock
 
 
 typedef struct keyword
