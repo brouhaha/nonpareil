@@ -1,6 +1,6 @@
 /*
 $Id$
-Copyright 1995, 2004 Eric L. Smith <eric@brouhaha.com>
+Copyright 1995, 2004, 2008 Eric L. Smith <eric@brouhaha.com>
 
 Nonpareil is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License version 2 as
@@ -67,29 +67,29 @@ void free_symbol_table (symtab_t *t)
   free (t);
 }
 
-static int insert_symbol (sym_t **p, sym_t *newsym)
+static bool insert_symbol (sym_t **p, sym_t *newsym)
 {
   int i;
 
   if (! *p)
     {
       (*p) = newsym;
-      return (1);
+      return true;
     }
 
   i = strcasecmp (newsym->name, (*p)->name);
 
   if (i == 0)
-    return (0);
+    return false;
   else if (i < 0)
-    return (insert_symbol (& ((*p)->left), newsym));
+    return insert_symbol (& ((*p)->left), newsym);
   else
-    return (insert_symbol (& ((*p)->right), newsym));
+    return insert_symbol (& ((*p)->right), newsym);
 }
 
 
-/* returns 1 for success, 0 if duplicate name */
-int create_symbol (symtab_t *table, char *name, int value, int lineno)
+/* returns true for success, false if duplicate name */
+bool create_symbol (symtab_t *table, char *name, int value, int lineno)
 {
   sym_t *newsym;
 
@@ -107,8 +107,8 @@ int create_symbol (symtab_t *table, char *name, int value, int lineno)
   return (insert_symbol (& table->root, newsym));
 }
 
-/* returns 1 for success, 0 if not found */
-int lookup_symbol (symtab_t *table, char *name, int *value)
+/* returns true for success, false if not found */
+bool lookup_symbol (symtab_t *table, char *name, int *value)
 {
   sym_t *p = table->root;
   int i;
@@ -119,14 +119,14 @@ int lookup_symbol (symtab_t *table, char *name, int *value)
       if (i == 0)
 	{
 	  *value = p->value;
-	  return (1);
+	  return true;
 	}
       if (i < 0)
 	p = p->left;
       else
 	p = p->right;
     }
-  return (0);
+  return false;
 }
 
 static void default_value_fmt_fn (int value, char *buf, int buf_len)

@@ -1,6 +1,6 @@
 /*
 $Id$
-Copyright 1995, 2004 Eric L. Smith <eric@brouhaha.com>
+Copyright 1995, 2004, 2008 Eric L. Smith <eric@brouhaha.com>
 
 Nonpareil is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License version 2 as
@@ -27,11 +27,11 @@ symtab_t *alloc_symbol_table (void);
 /* free a symbol table */
 void free_symbol_table (symtab_t *table);
 
-/* returns 1 for success, 0 if duplicate name */
-int create_symbol (symtab_t *table, char *name, int value, int lineno);
+/* returns true for success, false if duplicate name */
+bool create_symbol (symtab_t *table, char *name, int value, int lineno);
 
-/* returns 1 for success, 0 if not found */
-int lookup_symbol (symtab_t *table, char *name, int *value);
+/* returns true for success, false if not found */
+bool lookup_symbol (symtab_t *table, char *name, int *value);
 
 typedef void value_fmt_fn_t (int value, char *buf, int buf_len);
 
