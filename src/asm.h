@@ -28,7 +28,7 @@ extern int pass;
 extern int lineno;
 extern int errors;
 
-extern bool asm_cond_parse_error;
+extern bool parse_error;
 
 extern addr_t pc;	/* current pc */
 extern uint32_t bank_mask;  // 0 for all banks, or one bit set for each bank
@@ -56,6 +56,10 @@ extern char *lineptr;
 
 #define MAXROM 16     /* classic and woodstock */
 
+
+void pseudo_include (char *s);
+
+bool get_cond_state (void);
 
 void pseudo_if (int val);
 void pseudo_ifdef (char *s);

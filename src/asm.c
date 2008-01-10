@@ -51,7 +51,7 @@ void usage (FILE *f)
 
 parser_t *parser [ARCH_MAX] =
   {
-    [ARCH_UNKNOWN]   = asm_parse,
+    [ARCH_UNKNOWN]   = NULL,
     [ARCH_CLASSIC]   = casm_parse,
     [ARCH_WOODSTOCK] = wasm_parse
   };
@@ -66,7 +66,7 @@ int lineno;
 int errors;
 int warnings;
 
-bool asm_cond_parse_error;
+bool parse_error;
 
 
 addr_t pc;		/* current pc */
@@ -109,13 +109,38 @@ char *listptr;
 
 char *src_fn = NULL;
 
-FILE *srcfile  = NULL;
-FILE *objfile  = NULL;
-FILE *listfile = NULL;
+#define MAX_INCLUDE_NEST 128
+
+static int include_nest;
+
+static FILE *srcfile [MAX_INCLUDE_NEST];
+static FILE *objfile  = NULL;
+static FILE *listfile = NULL;
 
 
 symtab_t *global_symtab;
 symtab_t *symtab [MAXROM];  /* separate symbol tables for each '.rom' directive */
+
+
+static void open_source (char *fn)
+{
+  if (++include_nest == MAX_INCLUDE_NEST)
+    fatal (2, "include files nested too deep\n");
+  srcfile [include_nest] = fopen (src_fn, "r");
+  if (! srcfile [include_nest])
+    fatal (2, "can't open input file '%s'\n", fn);
+}
+
+static bool close_source (void)
+{
+  fclose (srcfile [include_nest--]);
+  return include_nest >= 0;
+}
+
+void pseudo_include (char *s)
+{
+  open_source (s);
+}
 
 
 #define MAX_COND_NEST_LEVEL 63
@@ -128,6 +153,11 @@ static void cond_init (void)
   cond_nest_level = 0;
   cond_state = 1;
   cond_else = 0;
+}
+
+bool get_cond_state (void)
+{
+  return cond_state & 1;
 }
 
 void pseudo_if (int val)
@@ -278,7 +308,37 @@ static format_listing_t *format_listing [ARCH_MAX] =
   [ARCH_WOODSTOCK] = format_listing_woodstock
 };
 
-void do_pass (int p)
+
+static void parse_source_line (void)
+{
+  lineptr = & linebuf [0];
+  parse_error = false;
+  asm_cond_parse ();
+  if (! parse_error)
+    return;  // successfully parsed a conditional assembly directive
+
+  if (! (cond_state & 1))
+    return;  // conditional false, don't try to parse
+
+  lineptr = & linebuf [0];
+  parse_error = false;
+  asm_parse ();
+  if (! parse_error)
+    return;  // successfully parsed a directive
+
+  if (! parser [arch])
+    {
+      error ("architecture not defined");
+      return;
+    }
+
+  lineptr = & linebuf [0];
+  parse_error = false;
+  parser [arch] ();
+}
+
+
+static void do_pass (int p)
 {
   int i;
 
@@ -300,8 +360,18 @@ void do_pass (int p)
 
   printf ("Pass %d rom", pass);
 
-  while (fgets (linebuf, MAX_LINE, srcfile))
+  while (1)
     {
+      if (! fgets (linebuf, MAX_LINE, srcfile [include_nest]))
+	{
+	  if (ferror (srcfile [include_nest]))
+	    fatal (2, "error reading source file\n");
+	  if (close_source ())
+	    continue;
+	  else
+	    break;
+	}
+
       /* remove newline */
       i = strlen (linebuf);
       if (linebuf [i - 1] == '\n')
@@ -325,19 +395,7 @@ void do_pass (int p)
       delayed_pc_bits [1] = delayed_pc_bits [0];
       delayed_pc_mask [0] = 0;
 
-      // first try to parse a conditional pseudo-op
-      lineptr = & linebuf [0];
-      asm_cond_parse_error = false;
-      asm_cond_parse ();
-
-      if (asm_cond_parse_error)
-	{
-	  if (cond_state & 1)
-	    {
-	      lineptr = & linebuf [0];
-	      parser [arch] ();
-	    }
-	}
+      parse_source_line ();
 
       if (pass == 2)
 	{
@@ -406,7 +464,7 @@ static void parse_define_option (char *opt)
   else
     value = 1;
 
-  fprintf (stderr, "defining '%s' to have value %d\n", name, value);
+  fprintf (stderr, "defining '%s' to have value %ld\n", name, value);
 
   if (! create_symbol (global_symtab, name, value, 0))
     fatal (1, "duplicate symbol in '-D' option: '%s'\n", name);
@@ -475,11 +533,6 @@ int main (int argc, char *argv[])
 	fatal (2, "symbol table allocation failed\n");
     }
 
-  srcfile = fopen (src_fn, "r");
-
-  if (! srcfile)
-    fatal (2, "can't open input file '%s'\n", src_fn);
-
   if (obj_fn)
     {
       objfile = fopen (obj_fn, "w");
@@ -494,15 +547,15 @@ int main (int argc, char *argv[])
 	fatal (2, "can't open listing file '%s'\n", list_fn);
     }
 
+  include_nest = -1;
+  open_source (src_fn);
   do_pass (1);
 
-  rewind (srcfile);
-
+  open_source (src_fn);
   do_pass (2);
 
   err_printf ("%d errors detected, %d warnings\n", errors, warnings);
 
-  fclose (srcfile);
   if (objfile)
     fclose (objfile);
   if (listfile)

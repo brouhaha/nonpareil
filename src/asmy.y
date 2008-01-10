@@ -1,6 +1,6 @@
 /*
 $Id$
-Copyright 1995 Eric L. Smith <eric@brouhaha.com>
+Copyright 1995, 2006, 2008 Eric L. Smith <eric@brouhaha.com>
 
 Nonpareil is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License version 2 as
@@ -38,33 +38,41 @@ void asm_error (char *s);
     char *string;
   }
 
-%token <string> IDENT
-
 %token ARCH
+%token INCLUDE
+
+%token <string> IDENT
+%token <string> STRING
 
 %%
 
-line		: pseudo_op
+line		: '.' pseudo_op
 		|	
 		| error
 		;
 
 pseudo_op	: ps_arch
+		| ps_include
 		;
 
-ps_arch		: '.' ARCH IDENT
+ps_arch		: ARCH IDENT
 		  {
-		    int a = find_arch_by_name ($3);
+		    int a = find_arch_by_name ($2);
 		    if (a == ARCH_UNKNOWN)
-		      error ("unrecognized architecture '%s'\n", $3);
+		      error ("unrecognized architecture '%s'\n", $2);
 		    else
 		      arch = a;
 		  }
 		;
 
+ps_include	: INCLUDE STRING {
+                                   if (get_cond_state ())
+                                     pseudo_include ($2);
+                                 };
+
 %%
 
 void asm_error (char *s)
 {
-  error ("%s\n", s);
+  parse_error = true;
 }

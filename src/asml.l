@@ -1,6 +1,6 @@
 /*
 $Id$
-Copyright 1995, 2003, 2004 Eric L. Smith <eric@brouhaha.com>
+Copyright 1995, 2003, 2004, 2008 Eric L. Smith <eric@brouhaha.com>
 
 Nonpareil is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License version 2 as
@@ -36,6 +36,7 @@ MA 02111, USA.
 static keyword_t asm_keywords [] =
 {
   { "arch",      ARCH },
+  { "include",   INCLUDE },
   { NULL,        0 }
 };
 
@@ -63,6 +64,11 @@ alphanum	[a-zA-Z0-9_]
                           asm_lval.string = newstr (yytext);
                           return IDENT;
                         }
+
+\"[^\"\n]\"		{
+			  asm_lval.string = newstrn (yytext + 1, strlen (yytext) - 1);
+			  return STRING;
+			}
 
 \;.*		;
 [ \t]+		;

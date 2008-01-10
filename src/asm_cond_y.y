@@ -86,5 +86,5 @@ expr		: INTEGER { $$ = $1; }
 
 void asm_cond_error (char *s)
 {
-  asm_cond_parse_error = true;
+  parse_error = true;
 }
