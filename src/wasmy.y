@@ -79,7 +79,7 @@ void wasm_error (char *s);
 %token NOP
 %token OFF
 %token ORG
-%token PIK
+%token PICK
 %token REGISTER
 %token REGISTERS
 %token RESET
@@ -125,7 +125,7 @@ expr		: INTEGER { $$ = $1; }
 			    table = symtab [local_label_current_rom];
 			  else
 			    table = global_symtab;
-			  if (! lookup_symbol (table, $1, &$$))
+			  if (! lookup_symbol (table, $1, &$$, lineno))
 			    {
 			      if (pass == 2)
 				error ("undefined symbol '%s'\n", $1);
@@ -190,7 +190,7 @@ instruction	: jsb_inst
 	        | pointer_inst
 		| ram_inst
 		| misc_inst
-		| pik_inst
+		| pick_inst
 	        ;
 
 jsb_inst        : JSB expr { if ((pass == 2) && ($2 >> 8) != get_next_pc () >> 8)
@@ -504,9 +504,9 @@ inst_bank_toggle: BANK TOGGLE               { emit (01060); } ;
 
 inst_woodstock	: HI IAM WOODSTOCK	    { emit (01760); } ;
 
-pik_inst        : pik_key_inst ;
+pick_inst       : pick_key_inst ;
 
-pik_key_inst	: PIK KEY '?'               { emit (01320); } ;
+pick_key_inst	: PICK KEY '?'               { emit (01320); } ;
 
 %%
 

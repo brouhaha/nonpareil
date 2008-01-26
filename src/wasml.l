@@ -81,7 +81,7 @@ static keyword_t wasm_keywords [] =
   { "nop",       NOP },
   { "off",       OFF },
   { "org",       ORG },
-  { "pik",       PIK },
+  { "pick",      PICK },
   { "register",  REGISTER },
   { "registers", REGISTERS },
   { "regs",      REGISTERS },
@@ -122,7 +122,7 @@ digit		[0-9]
 lglobal		[$]
 lfirst		[a-zA-Z0-9]
 lmiddle		[a-zA-Z0-9+\-*/.:?=<>'_]
-lend		[a-zA-Z0-9+\-*/.?=<>_]
+lend		[a-zA-Z0-9+\-*/.=<>_]
 
 lb		\[
 rb		\]
