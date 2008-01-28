@@ -57,6 +57,7 @@ void wasm_error (char *s);
 %token CHECKSUM
 %token CLEAR
 %token CONSTANT
+%token CRC
 %token DATA
 %token DECIMAL
 %token DELAYED
@@ -65,6 +66,7 @@ void wasm_error (char *s);
 %token DW
 %token EQU
 %token EXCHANGE
+%token FSC
 %token GO
 %token HI
 %token IAM
@@ -88,6 +90,7 @@ void wasm_error (char *s);
 %token ROM
 %token ROTATE
 %token SELECT
+%token SF
 %token SHIFT
 %token STACK
 %token STATUS
@@ -191,6 +194,7 @@ instruction	: jsb_inst
 		| ram_inst
 		| misc_inst
 		| pick_inst
+		| crc_inst
 	        ;
 
 jsb_inst        : JSB expr { if ((pass == 2) && ($2 >> 8) != get_next_pc () >> 8)
@@ -507,6 +511,20 @@ inst_woodstock	: HI IAM WOODSTOCK	    { emit (01760); } ;
 pick_inst       : pick_key_inst ;
 
 pick_key_inst	: PICK KEY '?'               { emit (01320); } ;
+
+crc_inst        : crc_sf_inst
+		| crc_fsc_inst
+		;
+
+crc_sf_inst	: CRC SF expr	             { $3 = range ($3, 1, 11) ;
+                                               emit ((($3 < 8) ? 00000 : 00060) +
+						     (($3 & 7) << 7));
+					     } ;
+
+crc_fsc_inst	: CRC FSC expr	             { $3 = range ($3, 0, 11) ;
+                                               emit ((($3 < 8) ? 00100 : 00160) +
+						     (($3 & 7) << 7));
+                                             } ;
 
 %%
 
