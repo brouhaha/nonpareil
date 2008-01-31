@@ -186,6 +186,28 @@ void trim_trailing_whitespace (char *s)
 }
 
 
+void expand_tabs (char *d,
+		  size_t dest_size,
+		  char *s,
+		  unsigned int tab_width)
+{
+  int di = 0;
+  while ((*s) && (di < (dest_size - 1)))  // leave space for trailing null
+    {
+      char c = *(s++);
+      if (c == '\t')
+	{
+	  int n = tab_width - (di % tab_width);  // spaces needed
+	  while (n-- && (di < (dest_size - 1)))
+	    d [di++] = ' ';
+	}
+      else
+	d [di++] = c;
+    }
+  d [di] = '\0';  // add trailing null
+}
+
+
 // The following work on Fedora Core 3, both i386 and x86_64 architectures.
 // But to do this right I either need to have a compile-time configuration
 // test, or code my own implmentation.

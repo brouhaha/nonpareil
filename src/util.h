@@ -85,6 +85,13 @@ char *max_strncat (char *dest, const char *src, size_t n);
 
 void trim_trailing_whitespace (char *s);
 
+// copy a string from s to d, expanding tabs
+// may truncate if source string is too long
+void expand_tabs (char *d,
+		  size_t dest_size,
+		  char *s,
+		  unsigned int tab_width);
+
 
 // Replacements for strtoul and strtoull:
 
