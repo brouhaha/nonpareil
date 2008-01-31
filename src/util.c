@@ -191,7 +191,7 @@ void expand_tabs (char *d,
 		  char *s,
 		  unsigned int tab_width)
 {
-  int di = 0;
+  size_t di = 0;
   while ((*s) && (di < (dest_size - 1)))  // leave space for trailing null
     {
       char c = *(s++);
