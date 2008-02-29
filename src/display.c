@@ -1,6 +1,6 @@
 /*
 $Id: csim.c 417 2004-06-15 07:34:30Z eric $
-Copyright 1995, 2004, 2005, 2006 Eric L. Smith <eric@brouhaha.com>
+Copyright 1995, 2004, 2005, 2006, 2008 Eric Smith <eric@brouhaha.com>
 
 Nonpareil is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License version 2 as
