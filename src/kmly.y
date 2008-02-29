@@ -1,6 +1,6 @@
 /*
 $Id$
-Copyright 2004, 2006 Eric L. Smith <eric@brouhaha.com>
+Copyright 2004, 2006, 2008 Eric L. Smith <eric@brouhaha.com>
 
 Nonpareil is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License version 2 as
@@ -48,16 +48,54 @@ int kml_cur_idx2;
 %token <string> STRING
 %token <integer> CHAR
 
-%token ANNUNCIATOR  AUTHOR       BACKGROUND   BITMAP       BUTTON
-%token CLASS        COLOR        CREDIT       DEBUG        DEFAULT
-%token DIGITS       DISPLAY      DOWN         ELSE         END
-%token FLAG         GLOBAL       IFFLAG       IFPRESSED    IMAGE
-%token INCLUDE      LCD          MAP          MENUITEM     MODEL
-%token NOHOLD       OFFSET       ONDOWN       ONUP         OUTIN
-%token OVERLAY      POSITION     PRESS        PRINT        RELEASE
-%token RESETFLAG    SCANCODE     SEGMENT      SEGMENTS     SETFLAG
-%token SIZE         SWITCH       TITLE        TRANSPARENCY TYPE
-%token VIRTUAL      ZOOM
+%token ANNUNCIATOR
+%token ANNUNCIATORS
+%token AUTHOR
+%token BACKGROUND
+%token BITMAP
+%token BUTTON
+%token CLASS
+%token COLOR
+%token CREDIT
+%token DEBUG
+%token DEFAULT
+%token DIGITS
+%token DISPLAY
+%token DOWN
+%token ELSE
+%token END
+%token FLAG
+%token GLOBAL
+%token IFFLAG
+%token IFPRESSED
+%token IMAGE
+%token INCLUDE
+%token LCD
+%token MAP
+%token MENUITEM
+%token MODEL
+%token NOHOLD
+%token OFFSET
+%token ONDOWN
+%token ONUP
+%token OUTIN
+%token OVERLAY
+%token POSITION
+%token PRESS
+%token PRINT
+%token RELEASE
+%token RESETFLAG
+%token SCANCODE
+%token SEGMENT
+%token SEGMENTS
+%token SETFLAG
+%token SIZE
+%token SWITCH
+%token TITLE
+%token TRANSPARENCY
+%token TYPE
+%token VIRTUAL
+%token ZOOM
 
 
 %type <string>  image_stmt image_credit_stmt
@@ -270,7 +308,19 @@ segment_param		:	COLOR INTEGER INTEGER INTEGER
  annunciator section
 ----------------------------------------------------------------------------*/
 
-annunciator_section	:	ANNUNCIATOR INTEGER
+annunciator_section     :       ANNUNCIATORS annunciator_item_list END ;
+
+annunciator_item_list   :	annunciator_item
+			|	annunciator_item annunciator_item_list
+			;
+
+annunciator_item	:	annunciator_image
+			|	annunciator_def
+			;
+
+annunciator_image	:	image_stmt { yy_kml->annunciator_image_fn = $1; } ;
+
+annunciator_def		:	ANNUNCIATOR INTEGER
 				{ range_check ($2, 0, KML_MAX_ANNUNCIATOR - 1);
 				  kml_cur_idx = $2;
 				  yy_kml->annunciator [$2] = alloc (sizeof (kml_annunciator_t)); }

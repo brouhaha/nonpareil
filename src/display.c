@@ -52,6 +52,8 @@ struct gui_display_t
   GdkPixbuf *segment_pixbuf [KML_MAX_SEGMENT];
 
   segment_bitmap_t display_segments [KML_MAX_DIGITS];
+
+  GdkPixbuf *annunciator_image_pixbuf;
 };
 
 
@@ -342,9 +344,9 @@ static void init_annunciator (gui_display_t *d, int i)
 #endif
       for (x = 0; x < kml->annunciator [i]->size.width; x++)
 	{
-	  get_pixbuf_pixel (d->csim->file_pixbuf, 
-			    kml->display_offset.x + kml->annunciator [i]->offset.x + x,
-			    kml->display_offset.y + kml->annunciator [i]->offset.y + y,
+	  get_pixbuf_pixel (d->annunciator_image_pixbuf,
+			    kml->annunciator [i]->offset.x + x,
+			    kml->annunciator [i]->offset.y + y,
 			    & r, & g, & b);
 
 	  bit = (r == 0) && (g == 0) && (b == 0);
@@ -396,6 +398,17 @@ static void init_annunciator (gui_display_t *d, int i)
 static void init_annunciators (gui_display_t *d)
 {
   int i;
+  kml_t *kml = d->csim->kml;
+
+  if (kml->annunciator_image_fn)
+    d->annunciator_image_pixbuf = load_pixbuf (d->csim,
+					       kml->annunciator_image_fn);
+  else
+    d->annunciator_image_pixbuf = gdk_pixbuf_new_subpixbuf (d->csim->file_pixbuf,
+							    kml->display_offset.x,
+							    kml->display_offset.y,
+							    kml->display_size.width,
+							    kml->display_size.height);
 
   for (i = 0; i < KML_MAX_ANNUNCIATOR; i++)
     if (d->csim->kml->annunciator [i])

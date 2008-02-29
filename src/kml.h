@@ -1,6 +1,6 @@
 /*
 $Id$
-Copyright 2004, 2005, 2006 Eric L. Smith <eric@brouhaha.com>
+Copyright 2004, 2005, 2006, 2008 Eric L. Smith <eric@brouhaha.com>
 
 Nonpareil is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License version 2 as
@@ -166,6 +166,7 @@ typedef struct
   kml_offset_t display_offset;
   color_t *display_color [KML_MAX_DISPLAY_COLOR];
 
+  char *annunciator_image_fn;
   kml_annunciator_t *annunciator [KML_MAX_ANNUNCIATOR];
 
   kml_switch_t *kswitch [KML_MAX_SWITCH];
