@@ -1,5 +1,5 @@
 TODO-ports list for Nonpareil
-Copyright 2003, 2004, 2005 Eric L. Smith <eric@brouhaha.com>
+Copyright 2003, 2004, 2005, 2006, 2008 Eric L. Smith <eric@brouhaha.com>
 $Id$
 
 Build process:
@@ -18,7 +18,8 @@ Ports:
         http://members.lycos.co.uk/alexv6/Cross_mingw_building_HOWTO.html
 
     Libraries and Toolkits:
-      GTK+ for Windows:  ftp://ftp.gtk.org/pub/gtk/v2.8/win32/
+      GTK+ for Windows:  http://www.gtk.org/download-windows.html
+                         ftp://ftp.gtk.org/pub/gtk/v2.8/win32/
 			 http://www.gimp.org/~tml/gimp/win32/
 
       GTK+ for Windows runtime installer:
@@ -38,5 +39,10 @@ Ports:
     be a useful reference:
       http://gaim.sourceforge.net/win32/
 
+    Python/PyGTK/GTK installer:
+      http://aruiz.typepad.com/siliconisland/2006/12/allinone_win32_.html
+
   MacOS X
     http://www.macgimp.org/index.php?topic=gtk
+    http://developer.imendio.com/projects/gtk-macosx/
+    http://www.macports.org/
