@@ -1,6 +1,6 @@
 /*
 $Id$
-Copyright 1995, 2004, 2005, 2006 Eric L. Smith <eric@brouhaha.com>
+Copyright 1995, 2004, 2005, 2006, 2008 Eric Smith <eric@brouhaha.com>
 
 Nonpareil is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License version 2 as
@@ -425,6 +425,8 @@ static GtkItemFactoryEntry menu_items [] =
     { "/Debug/Show RAM", NULL,        debug_show_ram, 1, "<Item>", 0 },
     { "/Debug/Run",     NULL,         debug_run,     1, "<Item>", 0 },
     { "/Debug/Step",    NULL,         debug_step,    1, "<Item>", 0 },
+    { "/Debug/sep1",     NULL,         NULL,          0, "<Separator>", 0 },
+    { "/Debug/Log File", NULL,        debug_log,     2, "<ToggleItem>", 0 },
     { "/Debug/Trace",   NULL,         debug_trace,   1, "<ToggleItem>", 0 },
     { "/Debug/Key Trace", NULL,     debug_key_trace, 1, "<ToggleItem>", 0 },
     { "/Debug/RAM Trace", NULL,     debug_ram_trace, 1, "<ToggleItem>", 0 },
@@ -870,7 +872,7 @@ int main (int argc, char *argv[])
 			csim->gui_display);  // display_update_callback_ref
 
 #ifdef HAS_DEBUGGER_GUI
-  init_debugger_gui (csim->sim);
+  init_debugger_gui (csim);
 #endif
 
 #ifdef HAS_DEBUGGER_CLI

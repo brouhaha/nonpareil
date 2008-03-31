@@ -1,6 +1,6 @@
 /*
 $Id$
-Copyright 1995, 2004, 2005, 2006 Eric L. Smith <eric@brouhaha.com>
+Copyright 1995, 2004, 2005, 2006, 2008 Eric Smith <eric@brouhaha.com>
 
 Nonpareil is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License version 2 as
@@ -215,6 +215,14 @@ struct sim_t
 
   install_hardware_callback_fn_t *install_hardware_callback;
   void *install_hardware_callback_ref;
+
+  // debug log
+  debug_trace_callback_fn_t *debug_trace_callback;
+  void *debug_trace_callback_ref;
+
+  char *log_msg;
+  int log_msg_index;
+  int log_msg_space;
 };
 
 
@@ -240,3 +248,8 @@ struct plugin_module_t
   int port;
   chip_t *chip;
 };
+
+
+// debug logging
+void log_printf (sim_t *sim, char *fmt, ...);
+void log_send (sim_t *sim);

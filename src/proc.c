@@ -1,6 +1,6 @@
 /*
 $Id$
-Copyright 1995, 2004, 2005, 2006 Eric L. Smith <eric@brouhaha.com>
+Copyright 1995, 2004, 2005, 2006, 2007, 2008 Eric Smith <eric@brouhaha.com>
 
 Nonpareil is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License version 2 as
@@ -20,6 +20,7 @@ MA 02111, USA.
 */
 
 #include <inttypes.h>
+#include <stdarg.h>
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -137,6 +138,7 @@ typedef enum
 {
   CMD_DISPLAY_UPDATE,
   CMD_CHIP_ASYNC_MSG,
+  CMD_DEBUG_TRACE_MSG,
   CMD_BREAKPOINT_HIT
 } gui_cmd_t;
 
@@ -890,6 +892,11 @@ static gboolean gui_cmd_callback (gpointer data)
 				msg->chip->callback_ref,
 				msg->data);
       break;
+    case CMD_DEBUG_TRACE_MSG:
+      if (sim->debug_trace_callback)
+	sim->debug_trace_callback (sim->debug_trace_callback_ref,
+				   msg->data);
+      break;
     case CMD_BREAKPOINT_HIT:
       break;
     }
@@ -962,6 +969,20 @@ sim_t *sim_init  (char *ncd_fn,
   return (sim);
 }
 
+
+void sim_init_debug_trace_callback (sim_t *sim,
+				    debug_trace_callback_fn_t *debug_trace_callback,
+				    void *debug_trace_callback_ref)
+{
+  sim->debug_trace_callback_ref = debug_trace_callback_ref;
+  sim->debug_trace_callback = debug_trace_callback;
+}
+
+
+int sim_get_arch (sim_t *sim)
+{
+  return sim->arch;
+}
 
 const char *sim_get_model_name (sim_t *sim)
 {
@@ -1751,4 +1772,53 @@ bool sim_disassemble (sim_t  *sim,
 				 target_addr,
 				 buf,
 				 len);
+}
+
+
+void log_printf (sim_t *sim, char *fmt, ...)
+{
+  int i;
+  va_list ap;
+
+  if (! sim->log_msg)
+    {
+      sim->log_msg_index = 0;
+      sim->log_msg_space = 81;
+      sim->log_msg = alloc (sim->log_msg_space);
+    }
+
+  va_start (ap, fmt);
+
+  if (sim->log_msg_space)
+    {
+      i = vsnprintf (& sim->log_msg [sim->log_msg_index],
+		     sim->log_msg_space,
+		     fmt,
+		     ap);
+
+      sim->log_msg_index += i;
+      sim->log_msg_space -= i;
+    }
+
+  va_end (ap);
+}
+
+void log_send (sim_t *sim)
+{
+  gui_msg_t *msg;
+
+  if (! sim->log_msg)
+    return;
+
+  msg = g_async_queue_try_pop (sim->thread_vars->gui_cmd_free_q);
+  if (! msg)
+    msg = alloc (sizeof (gui_msg_t));
+
+  msg->sim = sim;
+  msg->cmd = CMD_DEBUG_TRACE_MSG;
+  msg->data = sim->log_msg;
+
+  g_async_queue_source_push (sim->thread_vars->gui_cmd_q_source, msg);
+
+  sim->log_msg = NULL;
 }

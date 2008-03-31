@@ -1,6 +1,6 @@
 /*
 $Id$
-Copyright 1995, 2004, 2005, 2006 Eric L. Smith <eric@brouhaha.com>
+Copyright 1995, 2004, 2005, 2006, 2008 Eric Smith <eric@brouhaha.com>
 
 Nonpareil is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License version 2 as
@@ -30,9 +30,16 @@ MA 02111, USA.
 #include <gdk/gdk.h>
 #include <gtk/gtk.h>
 
+#include <gsf/gsf-infile.h>
+
 #include "util.h"
 #include "display.h"
+#include "kml.h"
 #include "proc.h"
+#include "csim.h"
+
+
+static FILE *log_file;
 
 
 static GtkWidget *reg_window;
@@ -221,7 +228,7 @@ void debug_add_reg_all_chips (sim_t *sim,
 			  
 
 
-static sim_t *dg_sim;  // $$$ ugly!
+static csim_t *dg_csim;  // $$$ ugly!
 
 
 void debug_show_reg  (gpointer callback_data,
@@ -247,7 +254,7 @@ void debug_show_reg  (gpointer callback_data,
 
       max_reg = 0;
 
-      debug_add_reg_all_chips (dg_sim, notebook);
+      debug_add_reg_all_chips (dg_csim->sim, notebook);
     }
 
   reg_window_visible = ! reg_window_visible;
@@ -270,7 +277,7 @@ static void update_ram_window (void)
 
   for (index = 0; index < max_ram; index++)
     {
-      if (sim_read_ram (dg_sim, ram_addr [index], & val))
+      if (sim_read_ram (dg_csim->sim, ram_addr [index], & val))
 	snprintf (buf, sizeof (buf), "%014" PRIx64, val);
       else
 	snprintf (buf, sizeof (buf), "err");
@@ -348,9 +355,9 @@ void debug_show_ram  (gpointer callback_data,
 
       gtk_container_add (GTK_CONTAINER (ram_window), scrolled_window);
 
-      limit = sim_get_max_ram_addr (dg_sim);
+      limit = sim_get_max_ram_addr (dg_csim->sim);
       for (addr = 0; addr < limit; addr++)
-	if (sim_read_ram (dg_sim, addr, & val))
+	if (sim_read_ram (dg_csim->sim, addr, & val))
 	  debug_window_add_ram (table, addr);
     }
 
@@ -370,7 +377,7 @@ void debug_run       (gpointer callback_data,
 		      guint    callback_action,
 		      GtkWidget *widget)
 {
-  sim_start (dg_sim);
+  sim_start (dg_csim->sim);
 }
 
 
@@ -378,7 +385,56 @@ void debug_step      (gpointer callback_data,
 		      guint    callback_action,
 		      GtkWidget *widget)
 {
-  sim_single_inst (dg_sim);
+  sim_single_inst (dg_csim->sim);
+}
+
+
+void debug_log     (gpointer callback_data,
+		    guint    callback_action,
+		    GtkWidget *widget)
+{
+  GtkWidget *dialog;
+  gboolean state = gtk_check_menu_item_get_active (GTK_CHECK_MENU_ITEM (widget));
+  if (state)
+    {
+      dialog = gtk_file_chooser_dialog_new ("Debug log file",
+					GTK_WINDOW (dg_csim->main_window),
+					GTK_FILE_CHOOSER_ACTION_SAVE,
+					GTK_STOCK_CANCEL,
+					GTK_RESPONSE_CANCEL,
+					GTK_STOCK_SAVE,
+					GTK_RESPONSE_ACCEPT,
+					NULL);
+      if (gtk_dialog_run (GTK_DIALOG (dialog)) == GTK_RESPONSE_ACCEPT)
+	{
+	  char *fn = gtk_file_chooser_get_filename (GTK_FILE_CHOOSER (dialog));
+	  log_file = fopen (fn, "w");
+	  if (log_file)
+	    {
+	      printf ("logging to '%s'\n", fn);
+	    }
+	  else
+	    {
+	      printf ("not logging, error opening '%s'\n", fn);
+	      gtk_check_menu_item_set_active (GTK_CHECK_MENU_ITEM (widget), false);
+	    }
+	  g_free (fn);
+	}
+      else
+	{
+	  printf ("logging cancelled\n");
+	  gtk_check_menu_item_set_active (GTK_CHECK_MENU_ITEM (widget), false);
+	  log_file = NULL;
+	}
+      gtk_widget_destroy (dialog);
+    }
+  else
+    {
+      printf ("closing log\n");
+      if (log_file)
+	fclose (log_file);
+      log_file = NULL;
+    }
 }
 
 
@@ -386,8 +442,8 @@ void debug_trace     (gpointer callback_data,
 		      guint    callback_action,
 		      GtkWidget *widget)
 {
-  sim_set_debug_flag (dg_sim, SIM_DEBUG_TRACE,
-		      ! sim_get_debug_flag (dg_sim, SIM_DEBUG_TRACE));
+  gboolean state = gtk_check_menu_item_get_active (GTK_CHECK_MENU_ITEM (widget));
+  sim_set_debug_flag (dg_csim->sim, SIM_DEBUG_TRACE, state);
 }
 
 
@@ -395,8 +451,8 @@ void debug_key_trace (gpointer callback_data,
 		      guint    callback_action,
 		      GtkWidget *widget)
 {
-  sim_set_debug_flag (dg_sim, SIM_DEBUG_KEY_TRACE,
-		      ! sim_get_debug_flag (dg_sim, SIM_DEBUG_KEY_TRACE));
+  gboolean state = gtk_check_menu_item_get_active (GTK_CHECK_MENU_ITEM (widget));
+  sim_set_debug_flag (dg_csim->sim, SIM_DEBUG_KEY_TRACE, state);
 }
 
 
@@ -404,12 +460,25 @@ void debug_ram_trace (gpointer callback_data,
 		      guint    callback_action,
 		      GtkWidget *widget)
 {
-  sim_set_debug_flag (dg_sim, SIM_DEBUG_RAM_TRACE,
-		      ! sim_get_debug_flag (dg_sim, SIM_DEBUG_RAM_TRACE));
+  gboolean state = gtk_check_menu_item_get_active (GTK_CHECK_MENU_ITEM (widget));
+  sim_set_debug_flag (dg_csim->sim, SIM_DEBUG_RAM_TRACE, state);
 }
 
 
-void init_debugger_gui (sim_t *sim)
+void debug_trace_callback (void *ref,
+			   char *msg)
 {
-  dg_sim = sim;  // $$$ ugly!
+  if (log_file)
+    fputs (msg, log_file);
+  free (msg);
+}
+
+
+void init_debugger_gui (csim_t *csim)
+{
+  dg_csim = csim;  // $$$ ugly!
+
+  sim_init_debug_trace_callback (csim->sim,
+				 debug_trace_callback,
+				 NULL);
 }

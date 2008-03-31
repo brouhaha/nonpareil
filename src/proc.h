@@ -1,6 +1,6 @@
 /*
 $Id$
-Copyright 1995, 2004, 2005, 2006 Eric L. Smith <eric@brouhaha.com>
+Copyright 1995, 2004, 2005, 2006, 2007, 2008 Eric Smith <eric@brouhaha.com>
 
 Nonpareil is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License version 2 as
@@ -116,6 +116,10 @@ typedef void display_update_callback_fn_t (void *ref,
 					   segment_bitmap_t *segments);
 
 
+typedef void debug_trace_callback_fn_t (void *ref,
+					char *msg);
+
+
 /*
  * Create the sim thread, initially in idle state
  */
@@ -124,6 +128,10 @@ sim_t *sim_init  (char *ncd_fn,
 		  void *install_hardware_callback_ref,
 		  display_update_callback_fn_t *display_update_callback,
 		  void *display_update_callback_ref);
+
+void sim_init_debug_trace_callback (sim_t *sim,
+				    debug_trace_callback_fn_t *debug_trace_callback,
+				    void *debug_trace_callback_ref);
 
 
 const char *sim_get_model_name (sim_t *sim);
@@ -345,6 +353,9 @@ void sim_send_display_update_to_gui (sim_t *sim);
 void sim_send_chip_msg_to_gui (sim_t  *sim,
 			       chip_t *chip,
 			       void   *data);
+
+void sim_set_debug_trace_msg_to_gui (sim_t *sim,
+				     char *msg);
 
 
 // instruction flow type returned by disassembler:

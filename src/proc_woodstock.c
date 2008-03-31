@@ -1,6 +1,6 @@
 /*
 $Id$
-Copyright 2004, 2005, 2006 Eric L. Smith <eric@brouhaha.com>
+Copyright 2004, 2005, 2006, 2007, 2008 Eric Smith <eric@brouhaha.com>
 
 Nonpareil is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License version 2 as
@@ -1422,6 +1422,16 @@ static void print_reg (char *label, reg_t reg)
   printf ("\n");
 }
 
+static void log_print_reg (sim_t *sim, char *label, reg_t reg)
+{
+  int i;
+  log_printf (sim, "%s", label);
+  for (i = WSIZE - 1; i >= 0; i--)
+    log_printf (sim, "%x", reg [i]);
+  log_printf (sim, "\n");
+  log_send (sim);
+}
+
 static void woodstock_print_state (sim_t *sim)
 {
   act_reg_t *act_reg = get_chip_data (sim->first_chip);
@@ -1432,27 +1442,30 @@ static void woodstock_print_state (sim_t *sim)
   bank = get_effective_bank (act_reg, act_reg->prev_pc);
   mapped_addr = bank * (MAX_PAGE * PAGE_SIZE) + act_reg->prev_pc;
 
-  printf ("pc=%05o  radix=%d  p=%d  f=%x  stat:",
+  log_printf (sim, "pc=%05o  radix=%d  p=%d  f=%x  stat:",
 	  mapped_addr, arithmetic_base (act_reg), act_reg->p, act_reg->f);
   for (i = 0; i < 16; i++)
     if (act_reg->s [i])
-      printf (" %d", i);
-  printf ("\n");
-  print_reg ("a:  ", act_reg->a);
-  print_reg ("b:  ", act_reg->b);
-  print_reg ("c:  ", act_reg->c);
-  print_reg ("m1: ", act_reg->m1);
-  print_reg ("m2: ", act_reg->m2);
+      log_printf (sim, " %d", i);
+  log_printf (sim, "\n");
+  log_send (sim);
+  log_print_reg (sim, "a:  ", act_reg->a);
+  log_print_reg (sim, "b:  ", act_reg->b);
+  log_print_reg (sim, "c:  ", act_reg->c);
+  log_print_reg (sim, "m1: ", act_reg->m1);
+  log_print_reg (sim, "m2: ", act_reg->m2);
 
   if (sim->source && sim->source [mapped_addr])
-    printf ("%s\n", sim->source [mapped_addr]);
+    log_printf (sim, "%s", sim->source [mapped_addr]);
   else
     {
       char buf [80];
-      printf ("%" PRId64 ": ", sim->cycle_count);
+      log_printf (sim, "%" PRId64 ": ", sim->cycle_count);
       // $$$ woodstock_disassemble (sim, act_reg->prev_pc, buf, sizeof (buf));
-      printf ("%s\n", buf);
+      log_printf (sim, "%s\n", buf);
     }
+  log_printf (sim, "\n");
+  log_send (sim);
 }
 
 

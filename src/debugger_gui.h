@@ -1,6 +1,6 @@
 /*
 $Id$
-Copyright 1995, 2004, 2005 Eric L. Smith <eric@brouhaha.com>
+Copyright 1995, 2004, 2005, 2008 Eric Smith <eric@brouhaha.com>
 
 Nonpareil is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License version 2 as
@@ -20,7 +20,7 @@ MA 02111, USA.
 */
 
 
-void init_debugger_gui (sim_t *sim);
+void init_debugger_gui (csim_t *csim);
 
 
 void debug_run       (gpointer callback_data,
@@ -28,6 +28,10 @@ void debug_run       (gpointer callback_data,
 		      GtkWidget *widget);
 
 void debug_step      (gpointer callback_data,
+		      guint    callback_action,
+		      GtkWidget *widget);
+
+void debug_log       (gpointer callback_data,
 		      guint    callback_action,
 		      GtkWidget *widget);
 
