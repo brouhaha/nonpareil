@@ -1,6 +1,6 @@
 /*
 $Id$
-Copyright 2004, 2005, 2006 Eric L. Smith <eric@brouhaha.com>
+Copyright 2004, 2005, 2006, 2008 Eric Smith <eric@brouhaha.com>
 
 Nonpareil is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License version 2 as
@@ -825,13 +825,14 @@ static void classic_display_scan (sim_t *sim)
 }
 
 
-static void print_reg (char *label, reg_t reg)
+static void log_print_reg (sim_t *sim, char *label, reg_t reg)
 {
   int i;
   printf ("%s", label);
   for (i = WSIZE - 1; i >= 0; i--)
-    printf ("%x", reg [i]);
-  printf ("\n");
+    log_printf (sim, "%x", reg [i]);
+  log_printf (sim, "\n");
+  log_send (sim);
 }
 
 static void classic_print_state (sim_t *sim)
@@ -839,26 +840,30 @@ static void classic_print_state (sim_t *sim)
   classic_cpu_reg_t *cpu_reg = get_chip_data (sim->first_chip);
 
   int i;
-  printf ("pc=%05o  p=%d  stat:",
-	  (cpu_reg->group << 12) + (cpu_reg->rom << 9) + (cpu_reg->pc),
-	  cpu_reg->p);
+  log_printf (sim, "pc=%05o  p=%d  stat:",
+	      (cpu_reg->group << 12) + (cpu_reg->rom << 9) + (cpu_reg->pc),
+	      cpu_reg->p);
   for (i = 0; i < SSIZE; i++)
     if (cpu_reg->s [i])
-      printf (" %d", i);
-  printf ("\n");
-  print_reg ("a: ", cpu_reg->a);
-  print_reg ("b: ", cpu_reg->b);
-  print_reg ("c: ", cpu_reg->c);
-  print_reg ("m: ", cpu_reg->m);
+      log_printf (sim, " %d", i);
+  log_printf (sim, "\n");
+  log_send (sim);
+
+  log_print_reg (sim, "a: ", cpu_reg->a);
+  log_print_reg (sim, "b: ", cpu_reg->b);
+  log_print_reg (sim, "c: ", cpu_reg->c);
+  log_print_reg (sim, "m: ", cpu_reg->m);
 
   if (sim->source && sim->source [cpu_reg->prev_pc])
-    printf ("%s\n", sim->source [cpu_reg->prev_pc]);
+    log_printf (sim, "%s", sim->source [cpu_reg->prev_pc]);
   else
     {
       char buf [80];
       classic_disassemble (sim, cpu_reg->prev_pc, buf, sizeof (buf));
-      printf ("%s\n", buf);
+      log_printf (sim, "%s\n", buf);
     }
+  log_printf (sim, "\n");
+  log_send (sim);
 }
 
 

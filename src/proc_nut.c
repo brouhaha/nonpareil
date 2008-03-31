@@ -1,6 +1,6 @@
 /*
 $Id$
-Copyright 1995, 2003, 2004, 2005, 2006 Eric L. Smith <eric@brouhaha.com>
+Copyright 1995, 2003, 2004, 2005, 2006, 2008 Eric Smith <eric@brouhaha.com>
 
 Nonpareil is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License version 2 as
@@ -1676,13 +1676,24 @@ static void print_reg (reg_t reg)
 }
 
 
-static void print_stat (sim_t *sim)
+static void log_print_reg (sim_t *sim, char *label, reg_t reg)
+{
+  int i;
+  log_printf (sim, "%s", label);
+  for (i = WSIZE - 1; i >= 0; i--)
+    log_printf (sim, "%x", reg [i]);
+  log_printf (sim, "\n");
+  log_send (sim);
+}
+
+
+static void log_print_stat (sim_t *sim)
 {
   nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
 
   int i;
   for (i = 0; i < SSIZE; i++)
-    printf (nut_reg->s [i] ? "%x" : ".", i);
+    log_printf (sim, nut_reg->s [i] ? "%x" : ".", i);
 }
 
 
@@ -1690,29 +1701,29 @@ static void nut_print_state (sim_t *sim)
 {
   nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
 
-  printf ("cycle %5" PRId64 "  ", sim->cycle_count);
-  printf ("%c=%x ", (nut_reg->q_sel) ? 'p' : 'P', nut_reg->p);
-  printf ("%c=%x ", (nut_reg->q_sel) ? 'Q' : 'q', nut_reg->q);
-  printf ("carry=%d ", nut_reg->carry);
-  printf (" stat=");
-  print_stat (sim);
-  printf ("\n");
-  printf (" a=");
-  print_reg (nut_reg->a);
-  printf (" b=");
-  print_reg (nut_reg->b);
-  printf (" c=");
-  print_reg (nut_reg->c);
-  printf ("\n");
+  log_printf (sim, "cycle %5" PRId64 "  ", sim->cycle_count);
+  log_printf (sim, "%c=%x ", (nut_reg->q_sel) ? 'p' : 'P', nut_reg->p);
+  log_printf (sim, "%c=%x ", (nut_reg->q_sel) ? 'Q' : 'q', nut_reg->q);
+  log_printf (sim, "carry=%d ", nut_reg->carry);
+  log_printf (sim, " stat=");
+  log_print_stat (sim);
+  log_printf (sim, "\n");
+  log_send (sim);
+
+  log_print_reg (sim, "a=", nut_reg->a);
+  log_print_reg (sim, "b=", nut_reg->b);
+  log_print_reg (sim, "c=", nut_reg->c);
 
   if (sim->source && sim->source [nut_reg->prev_pc])
-    printf ("%s\n", sim->source [nut_reg->prev_pc]);
+    log_printf (sim, "%s", sim->source [nut_reg->prev_pc]);
   else
     {
       char buf [80];
       nut_disassemble (sim, nut_reg->prev_pc, buf, sizeof (buf));
-      printf (" %s\n", buf);
+      log_printf (sim, " %s", buf);
     }
+  log_printf (sim, "\n");
+  log_send (sim);
 }
 
 static bool nut_execute_cycle (sim_t *sim)
