@@ -1,6 +1,6 @@
 /*
 $Id$
-Copyright 1995, 2003, 2004, 2005 Eric L. Smith <eric@brouhaha.com>
+Copyright 1995, 2003-2008 Eric Smith <eric@brouhaha.com>
 
 Nonpareil is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License version 2 as
@@ -72,16 +72,6 @@ enum
 
 
 typedef uint16_t rom_addr_t;
-
-
-typedef enum
-  {
-    norm,
-    long_branch,
-    cxisa,
-    ldi,
-    selprf         // "smart" peripheral selected (NPIC, PIL)
-  } inst_state_t;
 
 
 struct nut_reg_t;
@@ -182,3 +172,20 @@ typedef struct nut_reg_t
 
   chip_t *helios_chip;    // opaque
 } nut_reg_t;
+
+
+// defined in dis_nut.c:
+bool nut_disassemble (sim_t        *sim,
+		      // input and output:
+		      bank_t       *bank,
+		      addr_t       *addr,
+		      inst_state_t *inst_state,
+		      bool         *carry_known_clear,
+		      addr_t       *delayed_select_mask,
+		      addr_t       *delayed_select_addr,
+		      // output:
+		      flow_type_t  *flow_type,
+		      bank_t       *target_bank,
+		      addr_t       *target_addr,
+		      char         *buf,
+		      int          len);

@@ -1,6 +1,6 @@
 /*
 $Id$
-Copyright 1995, 2003, 2004, 2005, 2006, 2008 Eric Smith <eric@brouhaha.com>
+Copyright 1995, 2003-2008 Eric Smith <eric@brouhaha.com>
 
 Nonpareil is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License version 2 as
@@ -604,7 +604,7 @@ static void op_long_branch (sim_t *sim, int opcode)
 {
   nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
 
-  nut_reg->inst_state = long_branch;
+  nut_reg->inst_state = inst_nut_long_branch;
   nut_reg->first_word = opcode;
   nut_reg->carry = nut_reg->prev_carry;  // remember carry for second word
 }
@@ -615,7 +615,7 @@ static void op_long_branch_word_2 (sim_t *sim, int opcode)
   nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
   rom_addr_t target;
 
-  nut_reg->inst_state = norm;
+  nut_reg->inst_state = inst_normal;
   target = (nut_reg->first_word >> 2) | ((opcode & 0x3fc) << 6);
 
   if ((opcode & 0x001) == nut_reg->prev_carry)
@@ -943,7 +943,7 @@ static void op_selprf (sim_t *sim, int opcode)
   nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
 
   nut_reg->selprf = opcode >> 6;
-  nut_reg->inst_state = selprf;
+  nut_reg->inst_state = inst_nut_selprf;
 }
 
 
@@ -959,7 +959,7 @@ static void op_smart_periph (sim_t *sim, int opcode)
   if ((opcode & 0x03f) == 0x003)
     nut_reg->carry = flag;
   if (opcode & 1)
-    nut_reg->inst_state = norm;
+    nut_reg->inst_state = inst_normal;
 }
 
 
@@ -1430,7 +1430,7 @@ static void op_rom_to_c (sim_t *sim,
 			  (nut_reg->c [5] << 8) |
 			  (nut_reg->c [4] << 4) |
 			  (nut_reg->c [3]));
-  nut_reg->inst_state = cxisa;
+  nut_reg->inst_state = inst_nut_cxisa;
 }
 
 static void op_rom_to_c_cycle_2 (sim_t *sim, int opcode)
@@ -1441,7 +1441,7 @@ static void op_rom_to_c_cycle_2 (sim_t *sim, int opcode)
   nut_reg->c [1] = (opcode >> 4) & 0x0f;
   nut_reg->c [0] = opcode & 0x0f;
 
-  nut_reg->inst_state = norm;
+  nut_reg->inst_state = inst_normal;
 }
 
 static void op_clear_abc (sim_t *sim,
@@ -1459,7 +1459,7 @@ static void op_ldi (sim_t *sim,
 {
   nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
 
-  nut_reg->inst_state = ldi;
+  nut_reg->inst_state = inst_nut_ldi;
 }
 
 static void op_ldi_cycle_2 (sim_t *sim, int opcode)
@@ -1470,7 +1470,7 @@ static void op_ldi_cycle_2 (sim_t *sim, int opcode)
   nut_reg->c [1] = (opcode >> 4) & 0x0f;
   nut_reg->c [0] = opcode & 0x00f;
 
-  nut_reg->inst_state = norm;
+  nut_reg->inst_state = inst_normal;
 }
 
 static void op_or (sim_t *sim,
@@ -1647,27 +1647,6 @@ static void nut_init_ops (nut_reg_t *nut_reg)
 }
 
 
-static void nut_disassemble (sim_t *sim, int addr, char *buf, int len)
-{
-  nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
-  int op1, op2;
-
-  switch (nut_reg->inst_state)
-    {
-    case long_branch:   snprintf (buf, len, "(long branch)"); return;
-    case cxisa:         snprintf (buf, len, "(cxisa)");       return;
-    case ldi:           snprintf (buf, len, "(immediate)");   return;
-    case selprf:        snprintf (buf, len, "(selprf)");      return;
-    case norm:          break;
-    }
-
-  op1 = nut_get_ucode (nut_reg, addr);
-  op2 = nut_get_ucode (nut_reg, addr + 1);
-
-  nut_disassemble_inst (addr, op1, op2, buf, len);
-}
-
-
 static void print_reg (reg_t reg)
 {
   int i;
@@ -1719,8 +1698,16 @@ static void nut_print_state (sim_t *sim)
   else
     {
       char buf [80];
-      nut_disassemble (sim, nut_reg->prev_pc, buf, sizeof (buf));
-      log_printf (sim, " %s", buf);
+      if (sim_disassemble_runtime (sim,
+				   0,                 // bank $$$ wrong
+				   nut_reg->prev_pc,  // addr
+				   nut_reg->inst_state,
+				   nut_reg->carry,
+				   false,             // del_rom_flag
+				   0,                 // del_rom
+				   buf,
+				   sizeof (buf)))
+	log_printf (sim, "%04x: %s", nut_reg->prev_pc, buf);
     }
   log_printf (sim, "\n");
   log_send (sim);
@@ -1741,7 +1728,7 @@ static bool nut_execute_cycle (sim_t *sim)
       ((sim->cycle_count - nut_reg->bender_last_transition_cycle) > BENDER_MAX_PULSE_WIDTH))
     bender_off (sim);
 
-  if (nut_reg->inst_state == cxisa)
+  if (nut_reg->inst_state == inst_nut_cxisa)
     nut_reg->prev_pc = nut_reg->cxisa_addr;
   else
     nut_reg->prev_pc = nut_reg->pc;
@@ -1758,28 +1745,28 @@ static bool nut_execute_cycle (sim_t *sim)
 
   switch (nut_reg->inst_state)
     {
-    case norm:
+    case inst_normal:
       nut_reg->pc++;
       (* nut_reg->op_fcn [opcode]) (sim, opcode);
       break;
-    case long_branch:
+    case inst_nut_long_branch:
       nut_reg->pc++;
       op_long_branch_word_2 (sim, opcode);
       break;
-    case cxisa:
+    case inst_nut_cxisa:
       op_rom_to_c_cycle_2 (sim, opcode);
       break;
-    case ldi:
+    case inst_nut_ldi:
       nut_reg->pc++;
       op_ldi_cycle_2 (sim, opcode);
       break;
-    case selprf:
+    case inst_nut_selprf:
       nut_reg->pc++;
       op_smart_periph (sim, opcode);
       break;
     default:
       printf ("nut: bad inst_state %d!\n", nut_reg->inst_state);
-      nut_reg->inst_state = norm;
+      nut_reg->inst_state = inst_normal;
       break;
     }
   sim->cycle_count++;
@@ -1801,7 +1788,7 @@ static bool nut_execute_instruction (sim_t *sim)
 	return false;
 #endif
     }
-  while (nut_reg->inst_state != norm);
+  while (nut_reg->inst_state != inst_normal);
   return true;
 }
 
@@ -1950,7 +1937,7 @@ static void nut_reset (sim_t *sim)
   /* wake from deep sleep */
   nut_reg->awake = true;
   nut_reg->pc = 0;
-  nut_reg->inst_state = norm;
+  nut_reg->inst_state = inst_normal;
   nut_reg->carry = 1;
 
   nut_reg->kb_state = KB_IDLE;
@@ -2201,6 +2188,6 @@ processor_dispatch_t nut_processor =
     .read_ram            = nut_read_ram,
     .write_ram           = nut_write_ram,
 
-    .disassemble         = NULL,  // $$$
+    .disassemble         = nut_disassemble,
     .print_state         = nut_print_state
   };

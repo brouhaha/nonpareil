@@ -1322,6 +1322,13 @@ bool sim_read_rom  (sim_t      *sim,
 		    addr_t     addr,
 		    rom_word_t *val)
 {
+#if 1
+  // Disgusting hack to avoid deadlock when simulation thread is tracing
+  // and calls disassembler, which calls sim_read_rom().  Can't send
+  // message to sim thread since we're it.  But by doing this, we've
+  // potentially lost atomicity.
+  return sim->proc->read_rom (sim, bank, addr, val);
+#else
   sim_msg_t msg;
   memset (& msg, 0, sizeof (sim_msg_t));
   msg.arg1 = bank;
@@ -1330,6 +1337,7 @@ bool sim_read_rom  (sim_t      *sim,
   msg.cmd = CMD_READ_ROM;
   send_cmd_to_sim_thread (sim, (gpointer) & msg);
   return (msg.reply == OK);
+#endif
 }
 
 
@@ -1745,25 +1753,25 @@ void *get_chip_data (chip_t *chip)
 }
 
 
-bool sim_disassemble (sim_t  *sim,
+bool sim_disassemble (sim_t        *sim,
 		      // input and output:
-		      bank_t *bank,
-		      addr_t *addr,
-		      int    *state,  // use 0 for start of normal instr
-		      bool   *carry_known_clear,
-		      addr_t *delayed_select_mask,
-		      addr_t *delayed_select_addr,
+		      bank_t       *bank,
+		      addr_t       *addr,
+		      inst_state_t *inst_state,
+		      bool         *carry_known_clear,
+		      addr_t       *delayed_select_mask,
+		      addr_t       *delayed_select_addr,
 		      // output:
-		      flow_type_t *flow_type,
-		      bank_t *target_bank,
-		      addr_t *target_addr,
-		      char *buf,
-		      int len)
+		      flow_type_t  *flow_type,
+		      bank_t       *target_bank,
+		      addr_t       *target_addr,
+		      char         *buf,
+		      int          len)
 {
   return sim->proc->disassemble (sim,
 				 bank,
 				 addr,
-				 state,
+				 inst_state,
 				 carry_known_clear,
 				 delayed_select_mask,
 				 delayed_select_addr,
@@ -1772,6 +1780,67 @@ bool sim_disassemble (sim_t  *sim,
 				 target_addr,
 				 buf,
 				 len);
+}
+
+flow_type_info_t flow_type_info [MAX_FLOW_TYPE] =
+{
+  [flow_no_branch]              = { false, false },
+  [flow_cond_branch]            = { true,  false },
+  [flow_uncond_branch]          = { true,  true },
+  [flow_uncond_branch_keycode]  = { false, true },
+  [flow_uncond_branch_computed] = { false, true },
+  [flow_subroutine_call]        = { true,  false },
+  [flow_cond_subroutine_return] = { false, false },
+  [flow_subroutine_return]      = { false, true },
+  [flow_bank_switch]            = { true,  true }
+};
+
+bool sim_disassemble_runtime (sim_t        *sim,
+			      bank_t       bank,
+			      addr_t       addr,
+			      inst_state_t inst_state,
+			      bool         carry,
+			      bool         del_rom_flag,
+			      uint8_t      del_rom,
+			      char         *buf,
+			      int          len)
+{
+  bool stat;
+  bool carry_known_clear = ! carry;
+  addr_t delayed_select_mask = del_rom_flag ? 07400 : 00000;
+  addr_t delayed_select_addr = del_rom << 8;
+  bank_t target_bank;
+  addr_t target_addr;
+  flow_type_t flow_type;
+
+  char target_str [10];
+  char buf1 [80];
+
+  stat = sim_disassemble (sim,
+			  & bank,
+			  & addr,
+			  & inst_state,
+			  & carry_known_clear,
+			  & delayed_select_mask,
+			  & delayed_select_addr,
+			  & flow_type,
+			  & target_bank,
+			  & target_addr,
+			  buf1,
+			  sizeof (buf1));
+
+  if (! stat)
+    return false;
+
+  if (flow_type_info [flow_type].has_target)
+    {
+      snprintf (target_str, sizeof (target_str), "%o-%04o", target_bank, target_addr);
+      snprintf (buf, len, buf1, target_str);
+    }
+  else
+    snprintf (buf, len, buf1);
+
+  return true;
 }
 
 

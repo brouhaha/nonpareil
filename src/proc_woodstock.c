@@ -387,31 +387,31 @@ static void op_arith (sim_t *sim, int opcode)
 	       & act_reg->carry, arithmetic_base (act_reg));
       break;
     case 0x16:  /* if b[f] = 0 */
-      act_reg->inst_state = branch;
+      act_reg->inst_state = inst_woodstock_then_goto;
       reg_test_nonequal (act_reg->b, NULL, first, last, & act_reg->carry);
       break;
     case 0x17:  /* if c[f] = 0 */
-      act_reg->inst_state = branch;
+      act_reg->inst_state = inst_woodstock_then_goto;
       reg_test_nonequal (act_reg->c, NULL, first, last, & act_reg->carry);
       break;
     case 0x18:  /* if a >= c[f] */
-      act_reg->inst_state = branch;
+      act_reg->inst_state = inst_woodstock_then_goto;
       reg_sub (NULL, act_reg->a, act_reg->c,
 	       first, last,
 	       & act_reg->carry, arithmetic_base (act_reg));
       break;
     case 0x19:  /* if a >= b[f] */
-      act_reg->inst_state = branch;
+      act_reg->inst_state = inst_woodstock_then_goto;
       reg_sub (NULL, act_reg->a, act_reg->b,
 	       first, last,
 	       & act_reg->carry, arithmetic_base (act_reg));
       break;
     case 0x1a:  /* if a[f] # 0 */
-      act_reg->inst_state = branch;
+      act_reg->inst_state = inst_woodstock_then_goto;
       reg_test_equal (act_reg->a, NULL, first, last, & act_reg->carry);
       break;
     case 0x1b:  /* if c[f] # 0 */
-      act_reg->inst_state = branch;
+      act_reg->inst_state = inst_woodstock_then_goto;
       reg_test_equal (act_reg->c, NULL, first, last, & act_reg->carry);
       break;
     case 0x1c:  /* a - c -> a[f] */
@@ -665,7 +665,7 @@ static void op_rom_selftest (sim_t *sim,
   act_reg_t *act_reg = get_chip_data (sim->first_chip);
 
   act_reg->crc = 01777;
-  act_reg->inst_state = selftest;
+  act_reg->inst_state = inst_woodstock_selftest;
   act_reg->pc &= ~ 01777;  // start from beginning of current 1K ROM bank
   printf ("starting ROM CRC of bank %d addr %04o\n", act_reg->bank, act_reg->pc);
 }
@@ -680,7 +680,7 @@ static void rom_selftest_done (sim_t *sim)
 	  act_reg->crc == 0x078 ? "good" : "bad");
   if (act_reg->crc != 0x078)
     act_reg->s [5] = 1;  // indicate error
-  act_reg->inst_state = norm;
+  act_reg->inst_state = inst_normal;
   op_return (sim, 0);
 }
 
@@ -944,7 +944,7 @@ static void op_test_s_eq_0 (sim_t *sim, int opcode)
 {
   act_reg_t *act_reg = get_chip_data (sim->first_chip);
 
-  act_reg->inst_state = branch;
+  act_reg->inst_state = inst_woodstock_then_goto;
   act_reg->carry = act_reg->s [opcode >> 6];
 }
 
@@ -953,7 +953,7 @@ static void op_test_s_eq_1 (sim_t *sim, int opcode)
 {
   act_reg_t *act_reg = get_chip_data (sim->first_chip);
 
-  act_reg->inst_state = branch;
+  act_reg->inst_state = inst_woodstock_then_goto;
   act_reg->carry = ! act_reg->s [opcode >> 6];
 }
 
@@ -980,7 +980,7 @@ static void op_test_p_eq (sim_t *sim, int opcode)
   act_reg_t *act_reg = get_chip_data (sim->first_chip);
   digit_t val = p_test_map [opcode >> 6];
 
-  act_reg->inst_state = branch;
+  act_reg->inst_state = inst_woodstock_then_goto;
 
   if ((sim->arch_flags & AV_P_WRAP_FUNNY) &&
       (val == 0) &&
@@ -1461,8 +1461,16 @@ static void woodstock_print_state (sim_t *sim)
     {
       char buf [80];
       log_printf (sim, "%" PRId64 ": ", sim->cycle_count);
-      // $$$ woodstock_disassemble (sim, act_reg->prev_pc, buf, sizeof (buf));
-      log_printf (sim, "%s\n", buf);
+      if (sim_disassemble_runtime (sim,
+				   bank,
+				   act_reg->prev_pc,  // addr
+				   act_reg->inst_state,
+				   act_reg->carry,
+				   act_reg->del_rom_flag,
+				   act_reg->del_rom,
+				   buf,
+				   sizeof (buf)))
+	log_printf (sim, "%s", buf);
     }
   log_printf (sim, "\n");
   log_send (sim);
@@ -1496,7 +1504,7 @@ static bool woodstock_execute_cycle (sim_t *sim)
 
 #ifdef HAS_DEBUGGER
   if ((sim->debug_flags & (1 << SIM_DEBUG_KEY_TRACE)) &&
-      (act_reg->inst_state == norm))
+      (act_reg->inst_state == inst_normal))
     {
       if ((opcode == 00020) | (opcode == 00120))
 	sim->debug_flags |= (1 << SIM_DEBUG_TRACE);
@@ -1505,15 +1513,15 @@ static bool woodstock_execute_cycle (sim_t *sim)
     }
 
   if ((sim->debug_flags & (1 << SIM_DEBUG_TRACE)) &&
-      (act_reg->inst_state != selftest))
+      (act_reg->inst_state != inst_woodstock_selftest))
     {
       woodstock_print_state (sim);
     }
 #endif /* HAS_DEBUGGER */
 
   prev_inst_state = act_reg->inst_state;
-  if (act_reg->inst_state == branch)
-    act_reg->inst_state = norm;
+  if (act_reg->inst_state == inst_woodstock_then_goto)
+    act_reg->inst_state = inst_normal;
 
   act_reg->prev_carry = act_reg->carry;
   act_reg->carry = 0;
@@ -1530,19 +1538,23 @@ static bool woodstock_execute_cycle (sim_t *sim)
 
   switch (prev_inst_state)
     {
-    case norm:
+    case inst_normal:
       (* act_reg->op_fcn [opcode]) (sim, opcode);
       break;
-    case branch:
+    case inst_woodstock_then_goto:
       if (! act_reg->prev_carry)
 	act_reg->pc = (act_reg->pc & ~01777) | opcode;
       break;
-    case selftest:
+    case inst_woodstock_selftest:
       crc_update (sim, opcode);
       if (opcode == 01060)
 	op_bank_switch (sim, opcode);  // bank switch even in self-test
       if (! (act_reg->pc & 01777))    // end of 1K ROM bank?
 	rom_selftest_done (sim);
+      break;
+    default:
+      printf ("woodstock: bad inst_state %d!\n", prev_inst_state);
+      act_reg->inst_state = inst_normal;
       break;
     }
 
@@ -1563,7 +1575,7 @@ static bool woodstock_execute_instruction (sim_t *sim)
       if (! woodstock_execute_cycle (sim))
 	return false;
     }
-  while (act_reg->inst_state != norm);
+  while (act_reg->inst_state != inst_normal);
   return true;
 }
 
@@ -1781,7 +1793,7 @@ static void woodstock_reset (sim_t *sim)
   act_reg->pc = 0;
   act_reg->del_rom_flag = 0;
 
-  act_reg->inst_state = norm;
+  act_reg->inst_state = inst_normal;
 
   act_reg->sp = 0;
 

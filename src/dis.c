@@ -1,6 +1,6 @@
 /*
 $Id$
-Copyright 2005, 2006 Eric L. Smith <eric@brouhaha.com>
+Copyright 2005, 2006, 2007, 2008 Eric Smith <eric@brouhaha.com>
 
 Nonpareil is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License version 2 as
@@ -51,7 +51,7 @@ char *default_path = NULL;
 void usage (FILE *f)
 {
   fprintf (f, "udis - %s\n", nonpareil_release);
-  fprintf (f, "Copyright 2004, 2005, 2006 Eric L. Smith\n");
+  fprintf (f, "Copyright 2005, 2006, 2007, 2008 Eric Smith <eric@brouhaha.com>\n");
   fprintf (f, "http://nonpareil.brouhaha.com/\n");
   fprintf (f, "\n");
   fprintf (f, "usage: %s [options] model\n", progname);
@@ -64,24 +64,7 @@ void usage (FILE *f)
 bool asm_mode;
 bool pass_two;
 
-
-typedef struct
-{
-  bool has_target;
-  bool ends_flow;
-} flow_type_info_t;
-
-static flow_type_info_t flow_type_info [MAX_FLOW_TYPE] =
-{
-  [flow_no_branch]              = { false, false},
-  [flow_cond_branch]            = { true,  false},
-  [flow_uncond_branch]          = { true,  true},
-  [flow_uncond_branch_keycode]  = { false, true},
-  [flow_uncond_branch_computed] = { false, true},
-  [flow_subroutine_call]        = { true,  false},
-  [flow_subroutine_return]      = { false, true},
-  [flow_bank_switch]            = { true,  true}
-};
+bool hex_addr_mode;
 
 
 bank_t max_bank;
@@ -106,9 +89,9 @@ void get_symbol (bank_t bank, addr_t addr, char *buf, int len)
 {
   uint8_t *sym = & symtab [bank * max_addr + addr];
   if (*sym & SYM_CALL)
-    snprintf (buf, len, "S%04o", addr);
+    snprintf (buf, len, hex_addr_mode ? "S%04x" : "S%05o", bank * max_addr + addr);
   else if (*sym & SYM_JUMP)
-    snprintf (buf, len, "L%04o", addr);
+    snprintf (buf, len, hex_addr_mode ? "L%04x" : "L%05o", bank * max_addr + addr);
   else
     buf [0] = '\0';
 }
@@ -119,7 +102,7 @@ static void disassemble (sim_t *sim)
   uint8_t page;
   bank_t bank, target_bank;
   addr_t addr, target_addr, base_addr;
-  int state = STATE_INITIAL;
+  inst_state_t inst_state = inst_normal;
   bool carry_known_clear;
   addr_t delayed_select_mask = 0, delayed_select_addr = 0;
   flow_type_t flow_type;
@@ -129,6 +112,7 @@ static void disassemble (sim_t *sim)
     for (page = 0; page < max_page; page++)
       if (sim_page_exists (sim, bank, page))
 	{
+	  fprintf (stderr, "disassembling bank %d page %d\n", bank, page);
 	  addr = page * page_size;
 	  while ((addr >= page * page_size) &&
 		 (addr < ((page + 1) * page_size)))
@@ -137,7 +121,7 @@ static void disassemble (sim_t *sim)
 	      if (! sim_disassemble (sim,
 				     & bank,
 				     & addr,
-				     & state,
+				     & inst_state,
 				     & carry_known_clear,
 				     & delayed_select_mask,
 				     & delayed_select_addr,
@@ -189,6 +173,8 @@ int main (int argc, char *argv[])
   char *model_str = NULL;
   char *ncd_fn;
   sim_t *sim;
+  int arch;
+  arch_info_t *arch_info;
 
   progname = argv [0];
 
@@ -231,12 +217,16 @@ int main (int argc, char *argv[])
 
   symtab = alloc (max_bank * max_addr * sizeof (uint8_t));
 
+  arch = sim_get_arch (sim);
+  arch_info = get_arch_info (arch);
+  hex_addr_mode = (arch == ARCH_NUT);
+
   asm_mode = false;
   pass_two = false;
   disassemble (sim);
 
   pass_two = true;
-  printf ("\t.arch woodstock\n\n");
+  printf ("\t.arch %s\n\n", arch_info->name);
   disassemble (sim);
 
   exit (0);

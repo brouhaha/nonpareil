@@ -1,6 +1,6 @@
 /*
 $Id$
-Copyright 1995, 2003, 2004, 2005 Eric L. Smith <eric@brouhaha.com>
+Copyright 1995, 2003-2008 Eric Smith <eric@brouhaha.com>
 
 Nonpareil is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License version 2 as
@@ -37,14 +37,6 @@ typedef digit_t reg_t [WSIZE];
 
 
 typedef uint16_t rom_addr_t;
-
-
-typedef enum
-  {
-    norm,
-    branch,
-    selftest
-  } inst_state_t;
 
 
 // Architecture variants:
@@ -134,17 +126,17 @@ typedef struct
 
 
 // defined in dis_woodstock.c:
-void woodstock_disassemble (sim_t  *sim,
+bool woodstock_disassemble (sim_t        *sim,
 			    // input and output:
-			    bank_t *bank,
-			    addr_t *addr,
-			    int    *state,  // use 0 for start of normal instr
-			    bool   *carry_known_clear,
-			    addr_t *delayed_select_mask,
-			    addr_t *delayed_select_addr,
+			    bank_t       *bank,
+			    addr_t       *addr,
+			    inst_state_t *inst_state,
+			    bool         *carry_known_clear,
+			    addr_t       *delayed_select_mask,
+			    addr_t       *delayed_select_addr,
 			    // output:
-			    flow_type_t *flow_type,
-			    bank_t *target_bank,
-			    addr_t *target_addr,
-			    char *buf,
-			    int len);
+			    flow_type_t  *flow_type,
+			    bank_t       *target_bank,
+			    addr_t       *target_addr,
+			    char         *buf,
+			    int          len);

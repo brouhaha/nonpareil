@@ -1,6 +1,6 @@
 /*
 $Id$
-Copyright 2004, 2005 Eric L. Smith <eric@brouhaha.com>
+Copyright 2004, 2005, 2007, 2008 Eric Smith <eric@brouhaha.com>
 
 Nonpareil is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License version 2 as
@@ -19,43 +19,95 @@ Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
 MA 02111, USA.
 */
 
+#include <stdbool.h>
+#include <stdint.h>
 #include <stdio.h>
 
+#include "arch.h"
+#include "platform.h"
+#include "util.h"
+#include "display.h"
+#include "keyboard.h"
+#include "proc.h"
+#include "calcdef.h"
+#include "digit_ops.h"
+#include "proc_nut.h"
 
-static int nut_disassemble_short_branch (int addr, int op1,
-					 char *buf, int len)
+
+static int nut_disassemble_short_branch (rom_word_t op1,
+					 bank_t *bank,
+					 addr_t *addr, 
+					 bool *carry_known_clear,
+					 flow_type_t *flow_type,
+					 bank_t *target_bank,
+					 addr_t *target_addr,
+					 char *buf,
+					 int len)
 {
-  int offset, cond, target;
+  int offset;
+  bool cond_c, uncond;
 
   offset = (op1 >> 3) & 0x3f;
   if (op1 & 0x200)
     offset -= 64;
-  target = addr + offset;
+  *target_addr = ((*addr) + offset - 1) & 0xffff;
+  *target_bank = *bank;
 
-  cond = (op1 >> 2) & 1;
+  cond_c = (op1 >> 2) & 1;
 
-  snprintf (buf, len, "?%s goto %05o", cond ? "c " : "nc", target);
+  if ((! cond_c) && * carry_known_clear)
+    uncond = true;
 
-  return (1);
+  *flow_type = uncond ? flow_uncond_branch : flow_cond_branch;
+
+  if (! uncond)
+    buf_printf (& buf, & len, "?%s ", cond_c ? "c " : "nc");
+  buf_printf (& buf, & len, "goto %%s");
+
+  return true;
 }
 
 
-static int nut_disassemble_long_branch (int op1, int op2,
-					char *buf, int len)
+static bool nut_disassemble_long_branch (rom_word_t op1,
+					 rom_word_t op2,
+					 bank_t *bank,
+					 bool *carry_known_clear,
+					 flow_type_t *flow_type,
+					 bank_t *target_bank,
+					 addr_t *target_addr,
+					 char *buf,
+					 int len)
 {
-  int cond, type, target;
+  bool cond_c, type, uncond;
 
-  target = (op1 >> 2) | ((op2 & 0x3fc) << 6);
+  *target_addr = (op1 >> 2) | ((op2 & 0x3fc) << 6);
+  *target_bank = *bank;
 
-  cond = op2 & 0x001;
-
+  cond_c = op2 & 0x001;
   type = op2 & 0x002;
 
-  snprintf (buf, len, "?%s %s %05o", cond ? "c " : "nc",
-	    type ? "goto" : "call", target);
+  if ((! cond_c) && * carry_known_clear)
+    uncond = true;
 
-  return (2);
+  if (type)
+    *flow_type = uncond ? flow_uncond_branch : flow_cond_branch;
+  else
+    *flow_type = flow_subroutine_call;
+
+  if (! uncond)
+    buf_printf (& buf, & len, "?%s ", cond_c ? "c " : "nc");
+  buf_printf (& buf, & len, "%s %%s", type ? "goto" : "call");
+
+  return true;
 }
+
+
+typedef struct
+{
+  char *mnem;
+  bool can_set_carry;
+  flow_type_t flow_type;
+} inst_info_t;
 
 
 static char *nut_op00 [16] =
@@ -100,24 +152,24 @@ static char *nut_op18 [16] =
   };
 
 
-static char *nut_op20 [16] =
+static inst_info_t nut_op20 [16] =
   { 
-    /* 0x020 */ "pop",
-    /* 0x060 */ "powoff",
-    /* 0x0a0 */ "sel p", 
-    /* 0x0e0 */ "sel q",
-    /* 0x120 */ "? p=q",
-    /* 0x160 */ "lld",
-    /* 0x1a0 */ "clear abc",
-    /* 0x130 */ "goto c",
-    /* 0x220 */ "c=keys",
-    /* 0x260 */ "set hex",
-    /* 0x2a0 */ "set dec",
-    /* 0x2e0 */ "disp off",
-    /* 0x320 */ "disp toggle",
-    /* 0x360 */ "?c rtn",
-    /* 0x3a0 */ "?nc rtn",
-    /* 0x3e0 */ "rtn"
+    { /* 0x020 */ "pop",         false, flow_no_branch },
+    { /* 0x060 */ "powoff",      false, flow_no_branch },
+    { /* 0x0a0 */ "sel p",       false, flow_no_branch },
+    { /* 0x0e0 */ "sel q",       false, flow_no_branch },
+    { /* 0x120 */ "? p=q",       true,  flow_no_branch  },
+    { /* 0x160 */ "lld",         true,  flow_no_branch  },
+    { /* 0x1a0 */ "clear abc",   false, flow_no_branch },
+    { /* 0x1e0 */ "goto c",      false, flow_no_branch },
+    { /* 0x220 */ "c=keys",      false, flow_no_branch },
+    { /* 0x260 */ "set hex",     false, flow_no_branch },
+    { /* 0x2a0 */ "set dec",     false, flow_no_branch },
+    { /* 0x2e0 */ "disp off",    false, flow_no_branch },
+    { /* 0x320 */ "disp toggle", false, flow_no_branch },
+    { /* 0x360 */ "?c rtn",      false, flow_cond_subroutine_return },
+    { /* 0x3a0 */ "?nc rtn",     false, flow_cond_subroutine_return },
+    { /* 0x3e0 */ "rtn",         false, flow_subroutine_return }
   };
 
 
@@ -147,141 +199,257 @@ static int tmap [16] =
 { 3, 4, 5, 10, 8, 6, 11, -1, 2, 9, 7, 13, 1, 12, 0, -1 };
 
 
-static int nut_disassemble_00 (int op1, int op2, char *buf, int len)
+static int nut_disassemble_misc (int op1,
+				 int op2,
+				 bool *new_carry_known_clear,
+				 flow_type_t *flow_type,
+				 char *buf,
+				 int len)
 {
   int arg = op1 >> 6;
-  int inst_len = 1;
 
   switch (op1 & 0x03c)
     {
     case 0x000:
-      snprintf (buf, len, "%s", nut_op00 [op1 >> 6]);
+      buf_printf (& buf, & len, "%s", nut_op00 [op1 >> 6]);
       break;
     case 0x004:
       if (op1 == 0x3c4)
-	snprintf (buf, len, "clr s");
+	buf_printf (& buf, & len, "clr s");
       else
-	snprintf (buf, len, "s=0 %d", tmap [arg]);
+	buf_printf (& buf, & len, "s=0 %d", tmap [arg]);
       break;
     case 0x008:
       if (op1 == 0x3c8)
-	snprintf (buf, len, "clr kb");
+	buf_printf (& buf, & len, "clr kb");
       else
-	snprintf (buf, len, "s=1 %d", tmap [arg]);
+	buf_printf (& buf, & len, "s=1 %d", tmap [arg]);
       break;
     case 0x00c:
       if (op1 == 0x3cc)
-	snprintf (buf, len, "? kb");
+	buf_printf (& buf, & len, "? kb");
       else
-	snprintf (buf, len, "? s=0 %d", tmap [arg]);
+	buf_printf (& buf, & len, "? s=0 %d", tmap [arg]);
+      *new_carry_known_clear = false;
       break;
     case 0x010:
-      snprintf (buf, len, "lc %d", arg);
+      buf_printf (& buf, & len, "lc %d", arg);
       break;
     case 0x014:
       if (op1 == 0x3d4)
-	snprintf (buf, len, "dec pt");
+	buf_printf (& buf, & len, "dec pt");
       else
-	snprintf (buf, len, "? pt= %d", tmap [arg]);
+	{
+	  buf_printf (& buf, & len, "? pt= %d", tmap [arg]);
+	  *new_carry_known_clear = false;
+	}
       break;
     case 0x018:
-      snprintf (buf, len, "%s", nut_op18 [op1 >> 6]);
+      buf_printf (& buf, & len, "%s", nut_op18 [op1 >> 6]);
       break;
     case 0x01c:
       if (op1 == 0x3dc)
-	snprintf (buf, len, "inc pt");
+	buf_printf (& buf, & len, "inc pt");
       else
-	snprintf (buf, len, "pt= %d", tmap [arg]);
+	{
+	  buf_printf (& buf, & len, "pt= %d", tmap [arg]);
+	  *new_carry_known_clear = false;
+	}
       break;
     case 0x020:
-      snprintf (buf, len, "%s", nut_op20 [op1 >> 6]);
+      buf_printf (& buf, & len, "%s", nut_op20 [op1 >> 6].mnem);
+      if (nut_op20 [op1 >> 6].can_set_carry)
+	*new_carry_known_clear = false;
+      *flow_type = nut_op20 [op1 >> 6].flow_type;
       break;
     case 0x024:
-      snprintf (buf, len, "selprf %d", arg);
+      buf_printf (& buf, & len, "selprf %d", arg);
       break;
     case 0x028:
-      snprintf (buf, len, "wrreg %d", arg);
+      buf_printf (& buf, & len, "wrreg %d", arg);
       break;
     case 0x02c:
-      snprintf (buf, len, "? ext %d", tmap [arg]);
+      buf_printf (& buf, & len, "? ext %d", tmap [arg]);
+      *new_carry_known_clear = false;
       break;
     case 0x030:
       if (op1 == 0x130)
-	 {
-	    snprintf (buf, len, "ldi %04o", op2);
-	    inst_len = 2;
-	 }
+	buf_printf (& buf, & len, "ldi %04o", op2);
       else
-	snprintf (buf, len, "%s", nut_op30 [op1 >> 6]);
+	buf_printf (& buf, & len, "%s", nut_op30 [op1 >> 6]);
       break;
     case 0x034:
-      snprintf (buf, len, "??? %d", arg);
+      buf_printf (& buf, & len, "??? %d", arg);
       break;
     case 0x038:
-      snprintf (buf, len, "rdreg %d", arg);
+      buf_printf (& buf, & len, "rdreg %d", arg);
       break;
     case 0x03c:
       if (op1 == 0x3fc)
-	snprintf (buf, len, "disp compensation");
+	buf_printf (& buf, & len, "disp compensation");
       else
-	snprintf (buf, len, "? rcr %d", tmap [arg]);
+	buf_printf (& buf, & len, "rcr %d", tmap [arg]);
       break;
     }
 
-  return (inst_len);
+  return true;
 }
  
 
-static char *nut_arith_mnem [32] =
+static inst_info_t nut_arith_info [32] =
   {
-    "a=0",    "b=0",    "c=0",    "ab ex",
-    "b=a",    "ac ex",  "c=b",    "bc ex",
-    "a=c",    "a=a+b",  "a=a+c",  "a=a+1",
-    "a=a-b",  "a=a-1",  "a=a-c",  "c=c+c",
-    "c=a+c",  "c=c+1",  "c=a-c",  "c=c-1",
-    "c=-c",   "c=-c-1", "? b<>0", "? c<>0",
-    "? a<c",  "? a<b",  "? a<>0", "? a<>c",
-    "a sr",   "b sr",   "c sr",   "a sl"
+    { "a=0",     false, flow_no_branch },
+    { "b=0",     false, flow_no_branch },
+    { "c=0",     false, flow_no_branch },
+    { "ab ex",   false, flow_no_branch },
+    { "b=a",     false, flow_no_branch },
+    { "ac ex",   false, flow_no_branch },
+    { "c=b",     false, flow_no_branch },
+    { "bc ex",   false, flow_no_branch },
+    { "a=c",     false, flow_no_branch },
+    { "a=a+b",   true,  flow_no_branch },
+    { "a=a+c",   true,  flow_no_branch },
+    { "a=a+1",   true,  flow_no_branch },
+    { "a=a-b",   true,  flow_no_branch },
+    { "a=a-1",   true,  flow_no_branch },
+    { "a=a-c",   true,  flow_no_branch },
+    { "c=c+c",   true,  flow_no_branch },
+    { "c=a+c",   true,  flow_no_branch },
+    { "c=c+1",   true,  flow_no_branch },
+    { "c=a-c",   true,  flow_no_branch },
+    { "c=c-1",   true,  flow_no_branch },
+    { "c=-c",    true,  flow_no_branch },
+    { "c=-c-1",  true,  flow_no_branch },
+    { "? b<>0",  true,  flow_no_branch },
+    { "? c<>0",  true,  flow_no_branch },
+    { "? a<c",   true,  flow_no_branch },
+    { "? a<b",   true,  flow_no_branch },
+    { "? a<>0",  true,  flow_no_branch },
+    { "? a<>c",  true,  flow_no_branch },
+    { "a sr",    false, flow_no_branch },
+    { "b sr",    false, flow_no_branch },
+    { "c sr",    false, flow_no_branch },
+    { "a sl",    false, flow_no_branch }
   };
 
 static char *nut_field_mnem [8] =
   { "p", "x", "wp", "w", "pq", "xs", "m", "s" };
 
 
-static int nut_disassemble_arith (int op1, char *buf, int len)
+static int nut_disassemble_arith (int op1,
+				  bool *new_carry_known_clear,
+				  char *buf,
+				  int len)
 {
-  int l;
   int op = op1 >> 5;
   int field = (op1 >> 2) & 7;
 
-  l = snprintf (buf, len, "%-8s%s",
-		nut_arith_mnem [op],
-		nut_field_mnem [field]);
-  return (1);
+  buf_printf (& buf, & len, "%-8s%s",
+	     nut_arith_info [op].mnem,
+	     nut_field_mnem [field]);
+  if (nut_arith_info [op].can_set_carry)
+    *new_carry_known_clear = false;
+  return true;
 }
 
 
-int nut_disassemble_inst (int addr, int op1, int op2,
-			  char *buf, int len)
+static bool nut_two_word_instruction (rom_word_t op1)
 {
-  int l;
+  bool two_word = false;
 
-  l = snprintf (buf, len, "%05o: %04o ", addr, op1);
-  buf += l;
-  len -= l;
-  if (len <= 0)
-    return (0);
+  switch (op1 & 3)
+    {
+    case 0:  // misc
+      two_word = ((op1 & 0x3c) == 0x30);  // ldi
+      break;
+    case 1:  two_word = true; break;   // long branch
+    case 2:  two_word = false; break;  // arith
+    case 3:  two_word = false; break;  // short branch
+    }
+
+  return two_word;
+}
+
+
+bool nut_disassemble (sim_t        *sim,
+		      // input and output:
+		      bank_t       *bank,
+		      addr_t       *addr,
+		      inst_state_t *inst_state,
+		      bool         *carry_known_clear,
+		      addr_t       *delayed_select_mask UNUSED,
+		      addr_t       *delayed_select_addr UNUSED,
+		      // output:
+		      flow_type_t  *flow_type,
+		      bank_t       *target_bank,
+		      addr_t       *target_addr,
+		      char         *buf,
+		      int          len)
+{
+  bool new_carry_known_clear = true;
+  bool status;
+  bool two_word;
+  rom_word_t op1;
+  rom_word_t op2 = 0;
+
+  if ((*inst_state) != inst_normal)
+    return false;
+
+  *flow_type = flow_no_branch;
+
+  if (! sim_read_rom (sim, *bank, *addr, & op1))
+    return false;
+  (*addr) = ((*addr) + 1) & 0xffff;
+
+  two_word = nut_two_word_instruction (op1);
+  if (two_word)
+    {
+      if (! sim_read_rom (sim, *bank, *addr, & op2))
+	return false;
+      (*addr) = ((*addr) + 1) & 0xffff;
+    }
 
   switch (op1 & 3)
     {
     case 0:
-      return (nut_disassemble_00 (op1, op2, buf, len));
+      status = nut_disassemble_misc (op1,
+				     op2,
+				     & new_carry_known_clear,
+				     flow_type,
+				     buf,
+				     len);
+      break;
     case 1:
-      return (nut_disassemble_long_branch (op1, op2, buf, len));
+      status = nut_disassemble_long_branch (op1,
+					    op2,
+					    bank,
+					    carry_known_clear,
+					    flow_type,
+					    target_bank,
+					    target_addr,
+					    buf,
+					    len);
+      break;
     case 2:
-      return (nut_disassemble_arith (op1, buf, len));
+      status = nut_disassemble_arith (op1,
+				      & new_carry_known_clear,
+				      buf,
+				      len);
+      break;
     case 3:
-      return (nut_disassemble_short_branch (addr, op1, buf, len));
+      status = nut_disassemble_short_branch (op1,
+					     bank,
+					     addr,
+					     carry_known_clear,
+					     flow_type,
+					     target_bank,
+					     target_addr,
+					     buf,
+					     len);
+      break;
     }
-  return (0);  // can't happen, but avoid compiler warning
+
+  *carry_known_clear = new_carry_known_clear;
+
+  return status;
 }

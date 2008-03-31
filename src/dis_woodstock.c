@@ -1,6 +1,6 @@
 /*
 $Id$
-Copyright 2005 Eric L. Smith <eric@brouhaha.com>
+Copyright 2005, 2006, 2007, 2008 Eric Smith <eric@brouhaha.com>
 
 Nonpareil is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License version 2 as
@@ -31,6 +31,8 @@ MA 02111, USA.
 #include "keyboard.h"
 #include "proc.h"
 #include "calcdef.h"
+#include "digit_ops.h"
+#include "proc_woodstock.h"
 
 
 #define STATE_THEN_GOTO 1
@@ -300,20 +302,20 @@ static void disassemble_nc_goto (rom_word_t op1,
 }
 
 
-bool woodstock_disassemble (sim_t  *sim,
+bool woodstock_disassemble (sim_t        *sim,
 			    // input and output:
-			    bank_t *bank,
-			    addr_t *addr,
-			    int    *state,  // use 0 for start of normal instr
-			    bool   *carry_known_clear,
-			    addr_t *delayed_select_mask,
-			    addr_t *delayed_select_addr,
+			    bank_t       *bank,
+			    addr_t       *addr,
+			    inst_state_t *inst_state,
+			    bool         *carry_known_clear,
+			    addr_t       *delayed_select_mask,
+			    addr_t       *delayed_select_addr,
 			    // output:
-			    flow_type_t *flow_type,
-			    bank_t *target_bank,
-			    addr_t *target_addr,
-			    char *buf,
-			    int len)
+			    flow_type_t  *flow_type,
+			    bank_t       *target_bank,
+			    addr_t       *target_addr,
+			    char         *buf,
+			    int          len)
 {
   bool new_carry_known_clear = true;
   addr_t new_delayed_select_mask = 0;
@@ -327,13 +329,13 @@ bool woodstock_disassemble (sim_t  *sim,
 
   *flow_type = flow_no_branch;
 
-  if (*state == STATE_THEN_GOTO)
+  if (*inst_state == inst_woodstock_then_goto)
     {
       buf_printf (& buf, & len, "  then go to %%s");
       *flow_type = flow_cond_branch;
       *target_bank = *bank;
       *target_addr = ((*addr) & 06000) + op1;
-      *state = STATE_INITIAL;
+      *inst_state = inst_normal;
     }
   else
     {
@@ -377,7 +379,7 @@ bool woodstock_disassemble (sim_t  *sim,
 	{
 	  if (*delayed_select_mask)
 	    warning ("delayed select precedes two-word instruction!\n");
-	  *state = STATE_THEN_GOTO;
+	  *inst_state = inst_woodstock_then_goto;
 	}
 
       if (*delayed_select_mask)
@@ -398,3 +400,5 @@ bool woodstock_disassemble (sim_t  *sim,
 
   return true;
 }
+
+

@@ -367,7 +367,8 @@ typedef enum
   flow_uncond_branch,
   flow_uncond_branch_keycode,
   flow_uncond_branch_computed,
-  flow_subroutine_call,
+  flow_subroutine_call,  // conditional or unconditional
+  flow_cond_subroutine_return,
   flow_subroutine_return,
   flow_bank_switch,
   flow_select_rom,  // used internally to disassembler
@@ -375,20 +376,46 @@ typedef enum
   MAX_FLOW_TYPE
 } flow_type_t;
 
-#define STATE_INITIAL 0
+typedef struct
+{
+  bool has_target;
+  bool ends_flow;
+} flow_type_info_t;
 
-bool sim_disassemble (sim_t  *sim,
+extern flow_type_info_t flow_type_info [MAX_FLOW_TYPE];
+
+typedef enum
+{
+  inst_normal,
+  inst_woodstock_then_goto,
+  inst_woodstock_selftest,
+  inst_nut_long_branch,
+  inst_nut_cxisa,
+  inst_nut_ldi,
+  inst_nut_selprf         // "smart" peripheral selected (NPIC, PIL)
+} inst_state_t;
+
+bool sim_disassemble (sim_t        *sim,
 		      // input and output:
-		      bank_t *bank,
-		      addr_t *addr,
-		      int    *state,  // use 0 for start of normal instr
-		      bool   *carry_known_clear,
-		      addr_t *delayed_select_mask,
-		      addr_t *delayed_select_addr,
+		      bank_t       *bank,
+		      addr_t       *addr,
+		      inst_state_t *inst_state,
+		      bool         *carry_known_clear,
+		      addr_t       *delayed_select_mask,
+		      addr_t       *delayed_select_addr,
 		      // output:
-		      flow_type_t *flow_type,
-		      bank_t *target_bank,
-		      addr_t *target_addr,
-		      char *buf,
-		      int len);
+		      flow_type_t  *flow_type,
+		      bank_t       *target_bank,
+		      addr_t       *target_addr,
+		      char         *buf,
+		      int          len);
 
+bool sim_disassemble_runtime (sim_t        *sim,
+			      bank_t       bank,
+			      addr_t       addr,
+			      inst_state_t inst_state,
+			      bool         carry,
+			      bool         del_rom_flag,
+			      uint8_t      del_rom,
+			      char         *buf,
+			      int          len);
