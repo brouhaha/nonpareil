@@ -190,7 +190,7 @@ void pseudo_ifdef (char *s)
   cond_nest_level++;
   cond_state <<= 1;
   cond_else <<= 1;
-  cond_state |= lookup_symbol (table, s, & val);
+  cond_state |= lookup_symbol (table, s, & val, lineno);
 }
 
 void pseudo_else (void)
@@ -338,9 +338,68 @@ static void parse_source_line (void)
 }
 
 
+static void process_line (char *inbuf)
+{
+  // remove trailing whitespace including newline if present
+  trim_trailing_whitespace (inbuf);
+
+  expand_tabs (linebuf,
+	       sizeof (linebuf),
+	       inbuf,
+	       8);
+
+  lineno++;
+
+  listptr = & listbuf [0];
+  listbuf [0] = '\0';
+
+  errptr = & errbuf [0];
+  errbuf [0] = '\0';
+
+  obj_flag = false;
+  target_flag = false;
+  flag_char = ' ';
+
+  symtab_pseudoop_flag = false;
+
+  delayed_pc_mask [1] = delayed_pc_mask [0];
+  delayed_pc_bits [1] = delayed_pc_bits [0];
+  delayed_pc_mask [0] = 0;
+
+  parse_source_line ();
+
+  if (pass == 2)
+    {
+      if (symtab_pseudoop_flag)
+	{
+	  if (listfile && local_label_flag)
+	    print_symbol_table (symtab [local_label_current_rom],
+				listfile,
+				value_fmt_fn [arch]);
+	}
+      else
+	{
+	  format_listing [arch] ();
+	  if (listfile)
+	    fprintf (listfile, "%s\n", listbuf);
+	  if (errptr != & errbuf [0])
+	    {
+	      fprintf (stderr, "%s\n", listbuf);
+	      if (listfile)
+		fprintf (listfile, "%s", errbuf);
+	      fprintf (stderr, "%s",   errbuf);
+	    }
+	}
+    }
+
+  if (obj_flag)
+    increment_pc ();
+}
+
+
 static void do_pass (int p)
 {
-  int i;
+  char inbuf [MAX_LINE];
 
   arch = ARCH_UNKNOWN;
   
@@ -362,7 +421,7 @@ static void do_pass (int p)
 
   while (1)
     {
-      if (! fgets (linebuf, MAX_LINE, srcfile [include_nest]))
+      if (! fgets (inbuf, MAX_LINE, srcfile [include_nest]))
 	{
 	  if (ferror (srcfile [include_nest]))
 	    fatal (2, "error reading source file\n");
@@ -372,57 +431,7 @@ static void do_pass (int p)
 	    break;
 	}
 
-      /* remove newline */
-      i = strlen (linebuf);
-      if (linebuf [i - 1] == '\n')
-	linebuf [i - 1] = '\0';
-
-      lineno++;
-
-      listptr = & listbuf [0];
-      listbuf [0] = '\0';
-
-      errptr = & errbuf [0];
-      errbuf [0] = '\0';
-
-      obj_flag = false;
-      target_flag = false;
-      flag_char = ' ';
-
-      symtab_pseudoop_flag = false;
-
-      delayed_pc_mask [1] = delayed_pc_mask [0];
-      delayed_pc_bits [1] = delayed_pc_bits [0];
-      delayed_pc_mask [0] = 0;
-
-      parse_source_line ();
-
-      if (pass == 2)
-	{
-	  if (symtab_pseudoop_flag)
-	    {
-	      if (listfile && local_label_flag)
-		print_symbol_table (symtab [local_label_current_rom],
-				    listfile,
-				    value_fmt_fn [arch]);
-	    }
-	  else
-	    {
-	      format_listing [arch] ();
-	      if (listfile)
-		fprintf (listfile, "%s\n", listbuf);
-	      if (errptr != & errbuf [0])
-		{
-		  fprintf (stderr, "%s\n", listbuf);
-		  if (listfile)
-		    fprintf (listfile, "%s", errbuf);
-		  fprintf (stderr, "%s",   errbuf);
-		}
-	    }
-	}
-
-      if (obj_flag)
-	increment_pc ();
+      process_line (inbuf);
     }
 
   if (cond_nest_level != 0)
@@ -579,7 +588,7 @@ void define_symbol (char *s, int value)
       if (! create_symbol (table, s, value, lineno))
 	error ("multiply defined symbol '%s'\n", s);
     }
-  else if (! lookup_symbol (table, s, & prev_val))
+  else if (! lookup_symbol (table, s, & prev_val, lineno))
     error ("undefined symbol '%s'\n", s);
   else if (prev_val != value)
     error ("phase error for symbol '%s'\n", s);
@@ -605,7 +614,7 @@ static void write_obj_woodstock (FILE *f, int opcode)
     {
       if (bank_mask)
 	{
-	  int i;
+	  unsigned int i;
 	  fprintf (f, "[");
 	  for (i = 0; i < (8 * sizeof (bank_mask)); i++)
 	    if (bank_mask & (1 << i))
@@ -683,6 +692,31 @@ int range (int val, int min, int max)
   return val;
 }
 
+
+// returns 0 if no bits are set
+static int rightmost_one (uint64_t v)
+{
+  int b = 0;
+  if (! v)
+    return 0;
+  while (! (v & 1))
+    {
+      v >>= 1;
+      b++;
+    }
+  return b;
+}
+
+
+int range_mask (int val, uint64_t mask)
+{
+  if ((val < 0) || (val > 63) || ! (mask & (1 << val)))
+    {
+      val = rightmost_one (val);
+      error ("value out of range, using %d", val);
+    }
+  return val;
+}
 
 /*
  * print to both listing file and standard error

@@ -74,7 +74,7 @@ expr		: INTEGER { $$ = $1; }
 		          // Note: symbols used in conditionals must be
                           // defined before reference, so that they will
                           // be valid during phase 1.
-                          if (! lookup_symbol (global_symtab, $1, &$$))
+		          if (! lookup_symbol (global_symtab, $1, &$$, lineno))
 		            {
 			      error ("undefined symbol '%s'\n", $1);
 			      $$ = 0;

@@ -122,7 +122,7 @@ expr		: INTEGER { $$ = $1; }
 				table = symtab [local_label_current_rom];
 			      else
 				table = global_symtab;
-			      if (! lookup_symbol (table, $1, &$$))
+			      if (! lookup_symbol (table, $1, &$$, lineno))
 				{
 				  error ("undefined symbol '%s'\n", $1);
 				  $$ = 0;
@@ -367,6 +367,7 @@ inst_return	: RETURN                    { emit (0x030); } ;
 inst_buf_to_rom	: BUFFER ARROW ROM ADDRESS  { emit (0x040); } ;
 
 inst_noop       : NO OPERATION              { emit (0x000); } ;
+
 inst_mem_insert	: MEMORY INSERT             { emit (0x080); } ;
 inst_mark_srch	: MARK AND SEARCH           { emit (0x100); } ;
 inst_mem_delete : MEMORY DELETE             { emit (0x180); } ;

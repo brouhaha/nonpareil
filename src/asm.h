@@ -93,6 +93,14 @@ int range (int val, int min, int max);
 
 
 /*
+ * Check that val is in a specified subset of [0, 63] based on a bit mask.
+ * If so, return val. 
+ * If not, issue an error and return min.
+ */
+int range_mask (int val, uint64_t mask);
+
+
+/*
  * print to both listing error buffer and standard error
  *
  * Use this for general messages.  Don't use this for warnings or errors

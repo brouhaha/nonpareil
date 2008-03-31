@@ -57,6 +57,7 @@ void wasm_error (char *s);
 %token CHECKSUM
 %token CLEAR
 %token CONSTANT
+%token CR
 %token CRC
 %token DATA
 %token DECIMAL
@@ -69,6 +70,7 @@ void wasm_error (char *s);
 %token FSC
 %token GO
 %token HI
+%token HOME
 %token IAM
 %token IF
 %token JSB
@@ -82,6 +84,7 @@ void wasm_error (char *s);
 %token OFF
 %token ORG
 %token PICK
+%token PRINT
 %token REGISTER
 %token REGISTERS
 %token RESET
@@ -508,7 +511,23 @@ inst_bank_toggle: BANK TOGGLE               { emit (01060); } ;
 
 inst_woodstock	: HI IAM WOODSTOCK	    { emit (01760); } ;
 
-pick_inst       : pick_key_inst ;
+pick_inst       : pick_print_inst 
+		| pick_home_inst
+		| pick_cr_inst
+		| pick_key_inst
+		;
+
+pick_print_inst	: PICK PRINT expr            {
+					       $3 = range_mask ($3, 0x4f);
+					       if ($3 == 6)
+						 emit (01660);
+					       else
+						 emit (01420 + ($3 << 6));
+                                             };
+
+pick_home_inst  : PICK PRINT HOME '?'        { emit (01120); } ;
+
+pick_cr_inst    : PICK PRINT CR '?'          { emit (01220); } ;
 
 pick_key_inst	: PICK KEY '?'               { emit (01320); } ;
 
