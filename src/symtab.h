@@ -31,7 +31,7 @@ void free_symbol_table (symtab_t *table);
 bool create_symbol (symtab_t *table, char *name, int value, int lineno);
 
 /* returns true for success, false if not found */
-bool lookup_symbol (symtab_t *table, char *name, int *value);
+bool lookup_symbol (symtab_t *table, char *name, int *value, int lineno);
 
 typedef void value_fmt_fn_t (int value, char *buf, int buf_len);
 
