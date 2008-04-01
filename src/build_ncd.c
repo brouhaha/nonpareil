@@ -1,6 +1,6 @@
 /*
 $Id$
-Copyright 2006 Eric L. Smith <eric@brouhaha.com>
+Copyright 2006, 2007, 2008 Eric Smith <eric@brouhaha.com>
 
 Nonpareil is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License version 2 as
@@ -26,6 +26,7 @@ MA 02111, USA.
  */
 
 
+#include <ctype.h>
 #include <stdarg.h>
 #include <stdbool.h>
 #include <stdint.h>
@@ -45,7 +46,7 @@ int arch;
 char *obj_path = NULL;
 
 #define MAX_BANK 2
-#define MAX_ADDR 4096
+#define MAX_ADDR 16384
 
 typedef uint8_t bank_t;
 typedef uint32_t bank_mask_t;
@@ -148,6 +149,28 @@ static bool parse_octal (char *oct, int digits, int *val)
 }
 
 
+static bool parse_hex (char *hex, int digits, int *val)
+{
+  *val = 0;
+  int d;
+
+  while (digits--)
+    {
+      if (! isxdigit (*hex))
+	return (false);
+      if ((*hex) <= '9')
+	d = *hex - '0';
+      else if ((*hex) >= 'a')
+	d = 10 + *hex - 'a';
+      else
+	d = 10 + *hex - 'A';
+      (*val) = ((*val) << 4) + d;
+      hex++;
+    }
+  return (true);
+}
+
+
 static bool classic_parse_object_line (char        *buf,
 				       bank_mask_t *bank_mask,
 				       addr_t      *addr,
@@ -242,6 +265,62 @@ static bool woodstock_parse_object_line (char        *buf,
 }
 
 
+static bool nut_parse_object_line (char        *buf,
+				   bank_mask_t *bank_mask,
+				   addr_t      *addr,
+				   rom_word_t  *opcode)
+{
+  int a, b, o;
+
+  if (buf [0] == '#')  /* comment? */
+    return (false);
+
+  if (buf [0] == '[')  // banks?
+    {
+      *bank_mask = 0;
+      buf++;
+      while ((*buf) != ']')
+	{
+	  if (! parse_octal (buf, 1, & b))
+	    {
+	      fprintf (stderr, "invalid bank in object line '%s'\n", buf);
+	      return false;
+	    }
+	  buf++;
+	  *bank_mask |= (1 << b);
+	}
+      buf++;
+    }
+  else
+    *bank_mask = (1 << MAX_BANK) - 1;
+
+  if (strlen (buf) != 8)
+    return (false);
+
+  if (buf [4] != ':')
+    {
+      fprintf (stderr, "invalid object file format '%s'\n", buf);
+      return (false);
+    }
+
+  if (! parse_hex (& buf [0], 4, & a))
+    {
+      fprintf (stderr, "invalid address in object line '%s'\n", buf);
+      return (false);
+    }
+
+  if (! parse_hex (& buf [5], 3, & o))
+    {
+      fprintf (stderr, "invalid opcode in object line '%s'\n", buf);
+      return (false);
+    }
+
+  *addr = a;
+  *opcode = o;
+  return (true);
+}
+
+
 void read_object_file (char *fn)
 {
   char *fn2;
@@ -273,6 +352,9 @@ void read_object_file (char *fn)
 	  break;
 	case ARCH_WOODSTOCK:
 	  ok = woodstock_parse_object_line (buf, & bank_mask, & addr, & opcode);
+	  break;
+	case ARCH_NUT:
+	  ok = nut_parse_object_line (buf, & bank_mask, & addr, & opcode);
 	  break;
 	default:
 	  fatal (3, "unrecognized or unsupported architecture %d\n", arch);
@@ -446,6 +528,7 @@ int main (int argc, char *argv[])
     {
     case ARCH_CLASSIC:
     case ARCH_WOODSTOCK:
+    case ARCH_NUT:
       break;
     default:
       fatal (3, "unrecognized or unsupported architecture '%s'\n", arch_str);
