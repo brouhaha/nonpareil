@@ -74,11 +74,19 @@ typedef enum
   CHIP_CPU,
   CHIP_DISPLAY,
 
-  // coconut & peripherals
-  CHIP_PHINEAS,
-  CHIP_HELIOS,
+  // woodstock
+  CHIP_PICK,		// Printer Interface Control and Keyboard in Topcat
+  CHIP_CRC,             // Card Reader Controller in 67/97
 
-  MAX_CHIP_TYPE  // must be last
+  // coconut & peripherals
+  CHIP_PHINEAS,		// timer chip in 82184A Time Module, 41CX
+  CHIP_HELIOS,		// NPIC chip in 82143A Printer
+  CHIP_HYSTER,          // 82104A card reader
+  CHIP_CHESHIRE,        // 82153A bar code wand
+  CHIP_GRAPENUTS,       // 82160A HP-IL interface
+  CHIP_BLINKY,          // 82442A infrared printer interface (for 82440A/B)
+
+  MAX_CHIP_TYPE 	// must be last
 } chip_type_t;
 
 
