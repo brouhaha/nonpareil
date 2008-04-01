@@ -1,6 +1,6 @@
 /*
 $Id$
-Copyright 1995, 2004, 2005, 2006 Eric L. Smith <eric@brouhaha.com>
+Copyright 1995, 2004, 2005, 2006, 2007, 2008 Eric Smith <eric@brouhaha.com>
 
 Nonpareil is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License version 2 as
@@ -96,6 +96,7 @@ static void add_slide_switch (gui_switches_t *switches, int i)
 	  sim_set_switch_flag (switches->csim->sim,
 			       i,
 			       pos,
+			       NULL,
 			       ks->position [pos]->flag);
 
 	// should handle case with no image_fn (use subpixbuf of base image)

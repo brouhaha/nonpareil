@@ -142,6 +142,8 @@ void sim_init_debug_trace_callback (sim_t *sim,
 				    void *debug_trace_callback_ref);
 
 
+int sim_get_arch (sim_t *sim);
+
 const char *sim_get_model_name (sim_t *sim);
 
 const char *sim_get_ncd_fn (sim_t *sim);
@@ -168,7 +170,8 @@ bool sim_remove_module (plugin_module_t *module);
  * the simulator thread, and wait for a reply.
  */
 
-// If data is passed, chip becomes responsible for freeing it.
+// If data is passed, chip becomes responsible for freeing it, or returning
+// it to the GUI via an asynchronous notification.
 void sim_event        (sim_t  *sim,
 		       int    event,
 		       chip_t *chip,  // NULL for all chips
@@ -316,6 +319,7 @@ void sim_release_key (sim_t *sim,
 void sim_set_switch_flag (sim_t *sim,
 			  uint8_t sw,
 			  uint8_t position,
+			  chip_t *chip,
 			  int flag);
 
 bool sim_set_switch (sim_t *sim,
@@ -326,9 +330,15 @@ bool sim_get_switch (sim_t *sim,
 		     uint8_t sw,
 		     uint8_t *position);
 
-void sim_set_ext_flag (sim_t *sim,
-		       int flag,
-		       bool state);
+void sim_set_ext_flag_input (sim_t *sim,
+			     chip_t *chip,
+			     int flag,
+			     bool state);
+
+void sim_pulse_ext_flag_input (sim_t *sim,
+			       chip_t *chip,
+			       int flag,
+			       bool state);
 
 void sim_get_display_update (sim_t *sim);
 

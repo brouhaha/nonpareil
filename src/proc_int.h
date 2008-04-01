@@ -92,9 +92,10 @@ typedef struct
   bool (* execute_instruction) (sim_t *sim);
 
   /* I/O */
-  void (* press_key)           (sim_t *sim, int keycode);
-  void (* release_key)         (sim_t *sim, int keycode);
-  void (* set_ext_flag)        (sim_t *sim, int flag, bool state);
+  void (* press_key)            (sim_t *sim, int keycode);
+  void (* release_key)          (sim_t *sim, int keycode);
+  void (* set_ext_flag_input)   (sim_t *sim, chip_t *chip, int flag, bool state);
+  void (* pulse_ext_flag_input) (sim_t *sim, chip_t *chip, int flag, bool state);
 
   /* memory access: */
   bool (* set_bank_group)      (sim_t      *sim,
@@ -200,6 +201,7 @@ struct sim_t
 
   // slide switches
   uint8_t    switch_position [MAX_SWITCH];
+  chip_t    *switch_position_chip [MAX_SWITCH] [MAX_SWITCH_POSITION];
   uint8_t    switch_position_flag [MAX_SWITCH] [MAX_SWITCH_POSITION];
 
   // ROM:

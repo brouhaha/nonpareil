@@ -1694,7 +1694,21 @@ static void woodstock_release_key (sim_t *sim, int keycode UNUSED)
   act_reg->key_flag = false;
 }
 
-static void woodstock_set_ext_flag (sim_t *sim, int flag, bool state)
+static void woodstock_set_ext_flag_input (sim_t *sim,
+					  chip_t *chip UNUSED,
+					  int flag,
+					  bool state)
+{
+  act_reg_t *act_reg = get_chip_data (sim->first_chip);
+
+  act_reg->ext_flag [flag] = state;
+}
+
+// $$$ pulse currently owrks same as set, which is wrong
+static void woodstock_pulse_ext_flag_input (sim_t *sim,
+					    chip_t *chip UNUSED,
+					    int flag,
+					    bool state)
 {
   act_reg_t *act_reg = get_chip_data (sim->first_chip);
 
@@ -1948,9 +1962,10 @@ processor_dispatch_t woodstock_processor =
     .execute_cycle       = woodstock_execute_cycle,
     .execute_instruction = woodstock_execute_instruction,
 
-    .press_key           = woodstock_press_key,
-    .release_key         = woodstock_release_key,
-    .set_ext_flag        = woodstock_set_ext_flag,
+    .press_key            = woodstock_press_key,
+    .release_key          = woodstock_release_key,
+    .set_ext_flag_input   = woodstock_set_ext_flag_input,
+    .pulse_ext_flag_input = woodstock_pulse_ext_flag_input,
 
     .set_bank_group      = NULL,
     .get_max_rom_bank    = woodstock_get_max_rom_bank,

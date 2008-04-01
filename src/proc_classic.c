@@ -1061,7 +1061,21 @@ static void classic_release_key (sim_t *sim, int keycode UNUSED)
   cpu_reg->key_flag = false;
 }
 
-static void classic_set_ext_flag (sim_t *sim, int flag, bool state)
+static void classic_set_ext_flag_input (sim_t *sim,
+					chip_t *chip UNUSED,
+					int flag,
+					bool state)
+{
+  classic_cpu_reg_t *cpu_reg = get_chip_data (sim->first_chip);
+
+  cpu_reg->ext_flag [flag] = state;
+}
+
+// $$$ pulse currently works same as set, which is wrong
+static void classic_pulse_ext_flag_input (sim_t *sim,
+					  chip_t *chip UNUSED,
+					  int flag,
+					  bool state)
 {
   classic_cpu_reg_t *cpu_reg = get_chip_data (sim->first_chip);
 
@@ -1285,9 +1299,10 @@ processor_dispatch_t classic_processor =
     .execute_cycle       = classic_execute_instruction,
     .execute_instruction = classic_execute_instruction,
 
-    .press_key           = classic_press_key,
-    .release_key         = classic_release_key,
-    .set_ext_flag        = classic_set_ext_flag,
+    .press_key            = classic_press_key,
+    .release_key          = classic_release_key,
+    .set_ext_flag_input   = classic_set_ext_flag_input,
+    .pulse_ext_flag_input = classic_pulse_ext_flag_input,
 
     .set_bank_group      = NULL,
     .get_max_rom_bank    = classic_get_max_rom_bank,

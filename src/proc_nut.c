@@ -1667,7 +1667,6 @@ static void nut_init_ops (nut_reg_t *nut_reg)
   nut_reg->op_fcn [0x370] = op_or;
   nut_reg->op_fcn [0x3b0] = op_and;
   nut_reg->op_fcn [0x3f0] = op_c_to_pfad;
-
 }
 
 
@@ -1924,9 +1923,19 @@ static void nut_release_key (sim_t *sim, int keycode UNUSED)
     nut_reg->kb_state = KB_RELEASED;
 }
 
-static void nut_set_ext_flag (sim_t *sim UNUSED,
-			      int flag   UNUSED,
-			      bool state UNUSED)
+
+static void nut_set_ext_flag_input (sim_t *sim UNUSED,
+				    chip_t *chip UNUSED,
+				    int flag   UNUSED,
+				    bool state UNUSED)
+{
+  ;  // not yet implemented
+}
+
+static void nut_pulse_ext_flag_input (sim_t *sim UNUSED,
+				      chip_t *chip UNUSED,
+				      int flag   UNUSED,
+				      bool state UNUSED)
 {
   ;  // not yet implemented
 }
@@ -2196,9 +2205,10 @@ processor_dispatch_t nut_processor =
     .execute_cycle       = nut_execute_cycle,
     .execute_instruction = nut_execute_instruction,
 
-    .press_key           = nut_press_key,
-    .release_key         = nut_release_key,
-    .set_ext_flag        = nut_set_ext_flag,
+    .press_key            = nut_press_key,
+    .release_key          = nut_release_key,
+    .set_ext_flag_input   = nut_set_ext_flag_input,
+    .pulse_ext_flag_input = nut_pulse_ext_flag_input,
 
     .set_bank_group      = nut_set_bank_group,
     .get_max_rom_bank    = nut_get_max_rom_bank,
