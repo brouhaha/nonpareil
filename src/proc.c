@@ -382,7 +382,7 @@ bool sim_read_object_file (sim_t *sim, char *fn)
 	continue;
       if (sim->proc->parse_object_line (buf, & bank_mask, & addr, & opcode))
 	{
-	  for (bank = 0; bank < sim->proc->max_bank; bank++)
+	  for (bank = 0; bank < sim->proc->get_max_rom_bank (sim); bank++)
 	    if (bank_mask & (1 << bank))
 	      {
 		if (! sim_write_rom (sim, bank, addr, & opcode))
@@ -422,10 +422,10 @@ bool sim_read_listing_file (sim_t *sim, char *fn)
       trim_trailing_whitespace (buf);
       if (sim->proc->parse_listing_line (buf, & bank_mask, & addr, & opcode))
 	{
-	  for (bank = 0; bank < sim->proc->max_bank; bank++)
+	  for (bank = 0; bank < sim->proc->get_max_rom_bank (sim); bank++)
 	    if (bank_mask & (1 << bank))
 	      {
-		int i = bank * sim->proc->max_rom + addr;
+		int i = bank * sim->proc->get_rom_page_size (sim) + addr;
 		if (sim_read_rom (sim, bank, addr, & obj_opcode))
 		  {
 		    fprintf (stderr, "listing line for which there was no code in object file, bank %d address %o\n",
@@ -1556,7 +1556,6 @@ void sim_send_chip_msg_to_gui (sim_t  *sim,
 extern processor_dispatch_t classic_processor;
 extern processor_dispatch_t woodstock_processor;
 extern processor_dispatch_t nut_processor;
-extern processor_dispatch_t tmc1500_processor;
 
 processor_dispatch_t *processor_dispatch [ARCH_MAX] =
   {
@@ -1567,8 +1566,6 @@ processor_dispatch_t *processor_dispatch [ARCH_MAX] =
     [ARCH_NUT]       = & nut_processor,
     [ARCH_CAPRICORN] = NULL,
     [ARCH_SATURN]    = NULL,
-
-    [ARCH_TMC1500]   = & tmc1500_processor
   };
 
 

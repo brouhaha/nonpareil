@@ -96,8 +96,7 @@ sim_core_srcs = Split ("""calcdef.c
                           proc_nut.c
                           coconut_lcd.c phineas.c helios.c helios_chargen.c
                           voyager_lcd.c
-                          mod1_file.c
-                          proc_tmc1500.c""")
+                          mod1_file.c""")
 sim_core_objs = [build_env.Object(src) for src in sim_core_srcs];
 
 common_dis_srcs = Split ("""dis_woodstock.c dis_nut.c""")

@@ -219,6 +219,30 @@ static bool nut_set_bank_group (sim_t    *sim,
   return true;
 }
 
+bank_t nut_get_max_rom_bank (sim_t *sim UNUSED)
+{
+  return MAX_BANK;
+}
+
+int nut_get_rom_page_size (sim_t *sim UNUSED)
+{
+  return PAGE_SIZE;
+}
+
+int nut_get_max_rom_addr (sim_t *sim UNUSED)
+{
+  return MAX_PAGE * PAGE_SIZE;
+}
+
+bool nut_page_exists (sim_t *sim,
+		      bank_t bank,
+		      uint8_t page)
+{
+  nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
+
+  return nut_reg->rom [page][bank] != NULL;
+}
+
 
 static bool nut_read_rom (sim_t      *sim,
 			  bank_t     bank,
@@ -2163,9 +2187,6 @@ static void nut_event_fn (sim_t  *sim,
 
 processor_dispatch_t nut_processor =
   {
-    .max_rom             = MAX_PAGE * PAGE_SIZE,
-    .max_bank            = MAX_BANK,
-
     .new_processor       = nut_new_processor,
     .free_processor      = nut_free_processor,
 
@@ -2180,6 +2201,11 @@ processor_dispatch_t nut_processor =
     .set_ext_flag        = nut_set_ext_flag,
 
     .set_bank_group      = nut_set_bank_group,
+    .get_max_rom_bank    = nut_get_max_rom_bank,
+    .get_rom_page_size   = nut_get_rom_page_size,
+    .get_max_rom_addr    = nut_get_max_rom_addr,
+    .page_exists         = nut_page_exists,
+
     .read_rom            = nut_read_rom,
     .write_rom           = nut_write_rom,
 

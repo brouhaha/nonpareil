@@ -96,6 +96,29 @@ static chip_detail_t classic_cpu_chip_detail =
 };
 
 
+bank_t classic_get_max_rom_bank (sim_t *sim UNUSED)
+{
+  return MAX_BANK;
+}
+
+int classic_get_rom_page_size (sim_t *sim UNUSED)
+{
+  return PAGE_SIZE;
+}
+
+int classic_get_max_rom_addr (sim_t *sim UNUSED)
+{
+  return MAX_PAGE * PAGE_SIZE;
+}
+
+bool classic_page_exists (sim_t *sim UNUSED,
+		      bank_t bank,
+		      uint8_t page)
+{
+  return (bank <= MAX_BANK) && (page <= MAX_PAGE);
+}
+
+
 static bool classic_read_rom (sim_t      *sim,
 			      bank_t     bank,
 			      addr_t     addr,
@@ -1252,9 +1275,6 @@ static void classic_event_fn (sim_t  *sim,
 
 processor_dispatch_t classic_processor =
   {
-    .max_rom             = 4096,
-    .max_bank            = MAX_BANK,
-
     .new_processor       = classic_new_processor,
     .free_processor      = classic_free_processor,
 
@@ -1270,6 +1290,11 @@ processor_dispatch_t classic_processor =
     .set_ext_flag        = classic_set_ext_flag,
 
     .set_bank_group      = NULL,
+    .get_max_rom_bank    = classic_get_max_rom_bank,
+    .get_rom_page_size   = classic_get_rom_page_size,
+    .get_max_rom_addr    = classic_get_max_rom_addr,
+    .page_exists         = classic_page_exists,
+
     .read_rom            = classic_read_rom,
     .write_rom           = classic_write_rom,
 

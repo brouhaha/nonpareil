@@ -1939,9 +1939,6 @@ static void woodstock_event_fn (sim_t  *sim,
 
 processor_dispatch_t woodstock_processor =
   {
-    .max_rom             = 4096,
-    .max_bank            = MAX_BANK,
-
     .new_processor       = woodstock_new_processor,
     .free_processor      = woodstock_free_processor,
 

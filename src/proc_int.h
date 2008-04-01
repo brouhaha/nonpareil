@@ -72,9 +72,6 @@ typedef struct chip_detail_t
 
 typedef struct
 {
-  int max_rom;
-  bank_t max_bank;
-
   void (* new_processor)       (sim_t *sim);
   void (* free_processor)      (sim_t *sim);
 
