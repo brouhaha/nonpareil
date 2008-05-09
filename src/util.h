@@ -1,6 +1,6 @@
 /*
 $Id$
-Copyright 1995, 2004, 2005, 2006 Eric L. Smith <eric@brouhaha.com>
+Copyright 1995, 2004, 2005, 2006, 2008 Eric Smith <eric@brouhaha.com>
 
 Nonpareil is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License version 2 as
@@ -27,10 +27,7 @@ MA 02111, USA.
 #define MAKESTR(x) QMAKESTR(x)
 
 
-// The OFFSET_OF macro is used to return the offset of a field within
-// a structure.
-#define OFFSET_OF(type, field) ((int)&( ((type *)0)->field) )
-#define SIZE_OF(type, field) sizeof(((type *)0)->field)
+#define FIELD_SIZE_OF(type, field) sizeof(((type *)0)->field)
 
 
 typedef struct

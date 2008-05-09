@@ -20,6 +20,7 @@ MA 02111, USA.
 */
 
 #include <stdbool.h>
+#include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -38,15 +39,15 @@ MA 02111, USA.
 
 #define CR(name, field, bits, radix, get, set, arg) \
     {{ name, bits, 1, radix },                      \
-     OFFSET_OF (classic_cpu_reg_t, field),          \
-     SIZE_OF (classic_cpu_reg_t, field),            \
+     offsetof (classic_cpu_reg_t, field),           \
+     FIELD_SIZE_OF (classic_cpu_reg_t, field),      \
      get, set, arg } 
 
 
-#define CRD(name, field, digits)           \
-    {{ name, digits * 4, 1, 16 }    ,      \
-     OFFSET_OF (classic_cpu_reg_t, field), \
-     SIZE_OF (classic_cpu_reg_t, field),   \
+#define CRD(name, field, digits)              \
+    {{ name, digits * 4, 1, 16 }    ,         \
+     offsetof (classic_cpu_reg_t, field),     \
+     FIELD_SIZE_OF (classic_cpu_reg_t, field),\
      get_digits, set_digits, digits } 
 
 

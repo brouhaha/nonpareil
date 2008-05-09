@@ -1,6 +1,6 @@
 /*
 $Id$
-Copyright 1995, 2005, 2006 Eric L. Smith <eric@brouhaha.com>
+Copyright 1995, 2005, 2006, 2008 Eric Smith <eric@brouhaha.com>
 
 Nonpareil is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License version 2 as
@@ -21,6 +21,7 @@ MA 02111, USA.
 
 
 #include <stdbool.h>
+#include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
@@ -127,15 +128,15 @@ typedef struct
 
 #define PR(name, field, bits, radix, get, set, arg)        \
     {{ name, bits, 1, radix },                             \
-     OFFSET_OF (helios_reg_t, field),                      \
-     SIZE_OF (helios_reg_t, field),                        \
+     offsetof (helios_reg_t, field),                       \
+     FIELD_SIZE_OF (helios_reg_t, field),                  \
      get, set, arg } 
 
 
 #define PRA(name, field, bits, radix, get, set, arg, array) \
     {{ name, bits, array, radix },                          \
-     OFFSET_OF (helios_reg_t, field[0]),                    \
-     SIZE_OF (helios_reg_t, field[0]),                      \
+     offsetof (helios_reg_t, field[0]),                     \
+     FIELD_SIZE_OF (helios_reg_t, field[0]),                \
      get, set, arg } 
 
 

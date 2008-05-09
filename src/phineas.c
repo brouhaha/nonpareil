@@ -1,6 +1,6 @@
 /*
 $Id$
-Copyright 1995, 2005, 2006 Eric L. Smith <eric@brouhaha.com>
+Copyright 1995, 2005, 2006, 2008 Eric Smith <eric@brouhaha.com>
 
 Nonpareil is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License version 2 as
@@ -21,6 +21,7 @@ MA 02111, USA.
 
 
 #include <stdbool.h>
+#include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
 
@@ -115,29 +116,29 @@ typedef struct
 
 #define PR(name, field, bits, radix, get, set, arg)        \
     {{ name, bits, 1, radix },                             \
-     OFFSET_OF (phineas_reg_t, field),                     \
-     SIZE_OF (phineas_reg_t, field),                       \
+     offsetof (phineas_reg_t, field),                      \
+     FIELD_SIZE_OF (phineas_reg_t, field),                 \
      get, set, arg } 
 
 
 #define PRA(name, field, bits, radix, get, set, arg, array) \
     {{ name, bits, array, radix },                          \
-     OFFSET_OF (phineas_reg_t, field[0]                     \
-     SIZE_OF (phineas_reg_t, field[0]),                     \
+     offsetof (phineas_reg_t, field[0]                      \
+     FIELD_SIZE_OF (phineas_reg_t, field[0]),               \
      get, set, arg } 
 
 
-#define PRD(name, field, digits) \
-    {{ name, digits * 4, 1, 16 },   \
-     OFFSET_OF (phineas_reg_t, field),  \
-     SIZE_OF (phineas_reg_t, field),    \
+#define PRD(name, field, digits)           \
+    {{ name, digits * 4, 1, 16 },          \
+     offsetof (phineas_reg_t, field),      \
+     FIELD_SIZE_OF (phineas_reg_t, field), \
      get_digits, set_digits, digits } 
 
 
-#define PRAD(name, field, digits, array) \
-    {{ name, digits * 4, array, 16 },   \
-     OFFSET_OF (phineas_reg_t, field[0]),  \
-     SIZE_OF (phineas_reg_t, field[0]),    \
+#define PRAD(name, field, digits, array)      \
+    {{ name, digits * 4, array, 16 },         \
+     offsetof (phineas_reg_t, field[0]),      \
+     FIELD_SIZE_OF (phineas_reg_t, field[0]), \
      get_digits, set_digits, digits } 
 
 

@@ -1,6 +1,6 @@
 /*
 $Id$
-Copyright 2005, 2006 Eric L. Smith <eric@brouhaha.com>
+Copyright 2005, 2006, 2008 Eric Smith <eric@brouhaha.com>
 Based on TI57E Pascal code by HrastProgrammer, used by permission.
 
 Nonpareil is free software; you can redistribute it and/or modify it
@@ -22,6 +22,7 @@ MA 02111, USA.
 
 #include <inttypes.h>
 #include <stdbool.h>
+#include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -46,22 +47,22 @@ MA 02111, USA.
 
 #define WR(name, field, bits, radix, get, set, arg) \
     {{ name, bits, 1, radix },                      \
-     OFFSET_OF (tmc_reg_t, field),                  \
-     SIZE_OF (tmc_reg_t, field),                    \
+     offsetof (tmc_reg_t, field),                   \
+     FIELD_SIZE_OF (tmc_reg_t, field),              \
      get, set, arg } 
 
 
 #define WRA(name, field, bits, radix, get, set, arg, array) \
     {{ name, bits, array, radix },                          \
-     OFFSET_OF (tmc_reg_t, field[0]),                       \
-     SIZE_OF (tmc_reg_t, field[0]),                         \
+     offsetof (tmc_reg_t, field[0]),                        \
+     FIELD_SIZE_OF (tmc_reg_t, field[0]),                   \
      get, set, arg } 
 
 
-#define WRD(name, field, digits)      \
-    {{ name, digits * 4, 1, 16 },     \
-     OFFSET_OF (tmc_reg_t, field),    \
-     SIZE_OF (tmc_reg_t, field),      \
+#define WRD(name, field, digits)       \
+    {{ name, digits * 4, 1, 16 },      \
+     offsetof (tmc_reg_t, field),      \
+     FIELD_SIZE_OF (tmc_reg_t, field), \
      get_digits, set_digits, digits } 
 
 

@@ -21,6 +21,7 @@ MA 02111, USA.
 
 #include <inttypes.h>
 #include <stdbool.h>
+#include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -53,22 +54,22 @@ MA 02111, USA.
 
 #define WR(name, field, bits, radix, get, set, arg) \
     {{ name, bits, 1, radix },                      \
-     OFFSET_OF (act_reg_t, field),                  \
-     SIZE_OF (act_reg_t, field),                    \
+     offsetof (act_reg_t, field),                   \
+     FIELD_SIZE_OF (act_reg_t, field),              \
      get, set, arg } 
 
 
 #define WRA(name, field, bits, radix, get, set, arg, array) \
     {{ name, bits, array, radix },                          \
-     OFFSET_OF (act_reg_t, field[0]),                       \
-     SIZE_OF (act_reg_t, field[0]),                         \
+     offsetof (act_reg_t, field[0]),                        \
+     FIELD_SIZE_OF (act_reg_t, field[0]),                   \
      get, set, arg } 
 
 
-#define WRD(name, field, digits)      \
-    {{ name, digits * 4, 1, 16 },     \
-     OFFSET_OF (act_reg_t, field),    \
-     SIZE_OF (act_reg_t, field),      \
+#define WRD(name, field, digits)       \
+    {{ name, digits * 4, 1, 16 },      \
+     offsetof (act_reg_t, field),      \
+     FIELD_SIZE_OF (act_reg_t, field), \
      get_digits, set_digits, digits } 
 
 
