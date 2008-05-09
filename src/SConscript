@@ -1,6 +1,6 @@
 # SConscript for Nonpareil
 # $Id$
-# Copyright 2004, 2005, 2006 Eric L. Smith <eric@brouhaha.com>
+# Copyright 2004, 2005, 2006, 2008 Eric Smith <eric@brouhaha.com>
 
 # Nonpareil is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License version 2 as
@@ -22,6 +22,8 @@ Import('build_env native_env')
 Import('source_release_dir snapshot_dir')
 
 import os
+
+EnsureSConsVersion(0, 98, 0)
 
 #-----------------------------------------------------------------------------
 # cross-platform
@@ -109,7 +111,7 @@ state_io_srcs = Split ("""state_write.c state_read.c""")
 state_io_objs = [build_env.Object(src) for src in state_io_srcs];
 state_io_packages = "gtk+-2.0 gdk-2.0 gdk-pixbuf-2.0 glib-2.0 libxml-2.0 libgsf-1"
 
-release_env = build_env.Copy (CPPDEFINES = [ ('NONPAREIL_RELEASE', build_env ['RELEASE'])])
+release_env = build_env.Clone (CPPDEFINES = [ ('NONPAREIL_RELEASE', build_env ['RELEASE'])])
 release_obj = release_env.Object ('release.c')
 common_objs.append (release_obj)
 
@@ -120,7 +122,7 @@ build_env.ParseConfig(pkg_config_cmd + state_io_packages)
 #-----------------------------------------------------------------------------
 
 if not build_target_only:
-    str2png_env = build_env.Copy ()
+    str2png_env = build_env.Clone ()
 
     str2png_env.Append (CPPDEFINES = [('DEFAULT_PATH', 'image')])
 
@@ -229,7 +231,7 @@ if not build_target_only:
 #-----------------------------------------------------------------------------
 
 if not build_target_only:
-    build_ncd_env = build_env.Copy ()
+    build_ncd_env = build_env.Clone ()
 #    build_ncd_packages = "gdome2"
 #    build_ncd_env.ParseConfig (pkg_config_cmd + build_ncd_packages)
     
@@ -246,7 +248,7 @@ if not build_target_only:
 #-----------------------------------------------------------------------------
 
 if not build_target_only:
-    title_env = native_env.Copy (STR2PNG_STRING = 'NONPAREIL',
+    title_env = native_env.Clone (STR2PNG_STRING = 'NONPAREIL',
                                  STR2PNG_OPTS = '-x 40 -y 44 -m 10')
 
     title_env.STR2PNG (target = 'nonpareil_title',
@@ -255,8 +257,8 @@ if not build_target_only:
     native_env.PNG2C (target = '#build/common/nonpareil_title_png.c',
                       source = 'nonpareil_title.png')
             
-    rgoose_env = native_env.Copy (STR2PNG_STRING = '.',
-                                  STR2PNG_OPTS = '-x 40 -y 44')
+    rgoose_env = native_env.Clone (STR2PNG_STRING = '.',
+                                   STR2PNG_OPTS = '-x 40 -y 44')
 
     rgoose_env.STR2PNG (target = 'rgoose',
                         source = build_env ['KML_41CV'])
@@ -264,8 +266,8 @@ if not build_target_only:
     native_env.PNG2C (target = '#build/common/rgoose_png.c',
                       source = 'rgoose.png')
             
-    lgoose_env = native_env.Copy (STR2PNG_STRING = ',',
-                                  STR2PNG_OPTS = '-x 40 -y 44')
+    lgoose_env = native_env.Clone (STR2PNG_STRING = ',',
+                                   STR2PNG_OPTS = '-x 40 -y 44')
 
     lgoose_env.STR2PNG (target = 'lgoose',
                         source = build_env ['KML_41CV'])
@@ -293,7 +295,7 @@ if not build_target_only:
 # nonpareil
 #-----------------------------------------------------------------------------
 
-nonpareil_env = build_env.Copy ()
+nonpareil_env = build_env.Clone ()
 
 nonpareil_srcs = Split ("""about.c goose.c
                            calc_chooser.c
@@ -334,7 +336,7 @@ nonpareil_env.ParseConfig (pkg_config_cmd + nonpareil_packages)
 if (not ming) or (cross and not build_target_only):
     nonpareil_env.ParseConfig (sdl_pkg_config_cmd)
 
-csim_env = nonpareil_env.Copy ()
+csim_env = nonpareil_env.Clone ()
 if not ming:
     csim_env.Append (CPPDEFINES = [('DEFAULT_PATH', build_env ['libdir'])])
 
@@ -342,7 +344,7 @@ if build_env ['target'] == 'win32':
     csim_env.Append (CPPDEFINES = [('SHAPE_DEFAULT', "false")])
 
 if build_env ['has_debugger_cli']:
-    debugger_cli_env = csim_env.Copy ()
+    debugger_cli_env = csim_env.Clone ()
     if build_env ['use_tcl']:
         debugger_cli_env.Append (CPPDEFINES = [('USE_TCL', 1)])
         nonpareil_env.Append (LIBS = 'tcl')
@@ -372,7 +374,7 @@ nonpareil = nonpareil_env.Program (target = 'nonpareil',
 # udis
 #-----------------------------------------------------------------------------
 
-udis_env = build_env.Copy ()
+udis_env = build_env.Clone ()
 
 udis_packages = "gthread-2.0"
 

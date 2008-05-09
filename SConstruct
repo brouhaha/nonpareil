@@ -1,6 +1,6 @@
 # SConstruct for Nonpareil
 # $Id$
-# Copyright 2004, 2005, 2006 Eric L. Smith <eric@brouhaha.com>
+# Copyright 2004, 2005, 2006, 2008 Eric Smith <eric@brouhaha.com>
 
 # Nonpareil is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License version 2 as
@@ -205,7 +205,7 @@ env.Append (GPLv2 = File ('LICENSES/GPL-2.txt'))
 
 env.Append (KML_41CV = File ('calc/nut/41cv/41cv.kml'))
 
-native_env = env.Copy ()
+native_env = env.Clone ()
 native_env ['build_target_only'] = 0
 SConscript ('src/SConscript',
             build_dir = host_build_dir,
@@ -257,7 +257,7 @@ env.Alias (target = 'install',
 #-----------------------------------------------------------------------------
 
 if (env ['PLATFORM'] != env ['target']):
-	cross_build_env = env.Copy ()
+	cross_build_env = env.Clone ()
 	cross_build_env ['build_target_only'] = 1
 	SConscript ('src/SConscript',
 		    build_dir = target_build_dir,
