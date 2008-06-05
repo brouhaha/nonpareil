@@ -29,6 +29,7 @@ MA 02111, USA.
 #include "util.h"
 #include "display.h"
 #include "keyboard.h"
+#include "chip.h"
 #include "proc.h"
 #include "calcdef.h"
 #include "digit_ops.h"

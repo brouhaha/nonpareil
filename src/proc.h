@@ -1,6 +1,6 @@
 /*
 $Id$
-Copyright 1995, 2004, 2005, 2006, 2007, 2008 Eric Smith <eric@brouhaha.com>
+Copyright 1995, 2004, 2005, 2006, 2007 Eric L. Smith <eric@brouhaha.com>
 
 Nonpareil is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License version 2 as
@@ -62,32 +62,6 @@ typedef uint16_t rom_word_t;
 
 /* simulator state, common to all architectures (opaque): */
 typedef struct sim_t sim_t;
-
-
-// opaque type representing a chip (or more generally, a hardware device)
-typedef struct chip_t chip_t;
-
-
-typedef enum
-{
-  // generic
-  CHIP_CPU,
-  CHIP_DISPLAY,
-
-  // woodstock
-  CHIP_PICK,		// Printer Interface Control and Keyboard in Topcat
-  CHIP_CRC,             // Card Reader Controller in 67/97
-
-  // coconut & peripherals
-  CHIP_PHINEAS,		// timer chip in 82184A Time Module, 41CX
-  CHIP_HELIOS,		// NPIC chip in 82143A Printer
-  CHIP_HYSTER,          // 82104A card reader
-  CHIP_CHESHIRE,        // 82153A bar code wand
-  CHIP_GRAPENUTS,       // 82160A HP-IL interface
-  CHIP_BLINKY,          // 82442A infrared printer interface (for 82440A/B)
-
-  MAX_CHIP_TYPE 	// must be last
-} chip_type_t;
 
 
 // chip_info_t is used to get information on chips

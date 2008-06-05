@@ -32,6 +32,7 @@ MA 02111, USA.
 #include "util.h"
 #include "display.h"
 #include "kml.h"
+#include "chip.h"
 #include "proc.h"
 #include "csim.h"
 #include "pixbuf_util.h"

@@ -30,6 +30,7 @@ MA 02111, USA.
 #include "util.h"
 #include "display.h"
 #include "keyboard.h"
+#include "chip.h"
 #include "proc.h"
 #include "calcdef.h"
 #include "proc_int.h"
@@ -87,8 +88,8 @@ static chip_event_fn_t classic_event_fn;
 static chip_detail_t classic_cpu_chip_detail =
 {
   {
-    "AC/CT",
-    CHIP_CPU,
+    "CTC/ARC",
+    CHIP_CLASSIC_CTC_ARC,
     false  // There can only be one processor in the calculator.
   },
   sizeof (classic_cpu_reg_detail) / sizeof (reg_detail_t),

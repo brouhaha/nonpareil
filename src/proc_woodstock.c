@@ -32,6 +32,7 @@ MA 02111, USA.
 #include "util.h"
 #include "display.h"
 #include "keyboard.h"
+#include "chip.h"
 #include "proc.h"
 #include "calcdef.h"
 #include "proc_int.h"
@@ -117,7 +118,7 @@ static chip_detail_t woodstock_cpu_chip_detail =
 {
   {
     "ACT",
-    CHIP_CPU,
+    CHIP_WOODSTOCK_ACT,
     false  // There can only be one ACT in the calculator.
   },
   sizeof (woodstock_cpu_reg_detail) / sizeof (reg_detail_t),

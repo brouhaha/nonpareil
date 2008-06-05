@@ -33,6 +33,7 @@ MA 02111, USA.
 #include "util.h"
 #include "display.h"
 #include "keyboard.h"
+#include "chip.h"
 #include "proc.h"
 #include "calcdef.h"
 #include "proc_int.h"
@@ -140,7 +141,7 @@ static chip_detail_t nut_cpu_chip_detail =
 {
   {
     "Nut",
-    CHIP_CPU,
+    CHIP_NUT_CPU,
     false  // There can only be one Nut processor in the calculator.
   },
   sizeof (nut_cpu_reg_detail) / sizeof (reg_detail_t),

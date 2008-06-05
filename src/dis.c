@@ -34,9 +34,9 @@ MA 02111, USA.
 #include "model.h"
 #include "display.h"  // proc.h needs segment_bitmap_t
 #include "keyboard.h"
+#include "chip.h"
 #include "proc.h"
 #include "calcdef.h"
-//#include "proc_int.h"
 
 #include "sound.h"  // ugh! needed for stub sound functions
 
