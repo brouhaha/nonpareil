@@ -1,6 +1,6 @@
 /*
 $Id$
-Copyright 1995, 2004, 2005, 2006, 2007, 2008 Eric L. Smith <eric@brouhaha.com>
+Copyright 1995, 2004, 2005, 2006, 2007, 2008 Eric Smith <eric@brouhaha.com>
 
 Nonpareil is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License version 2 as
@@ -149,6 +149,7 @@ pseudo_op	: ps_org
 		;
 
 pseudo_op_label	: ps_dw
+		| ps_legal
 		;
 
 pseudo_op_special_label	: ps_equ ;
