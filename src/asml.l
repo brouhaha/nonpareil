@@ -65,14 +65,15 @@ alphanum	[a-zA-Z0-9_]
                           return IDENT;
                         }
 
-\"[^\"\n]\"		{
-			  asm_lval.string = newstrn (yytext + 1, strlen (yytext) - 1);
+\"[^\"\n]*\"		{
+			  asm_lval.string = newstrn (yytext + 1, strlen (yytext) - 2);
 			  return STRING;
 			}
 
 \;.*		;
 [ \t]+		;
 \n		;
+
 .		{ return yytext [0]; }
 
 %%

@@ -104,6 +104,42 @@ char *newstrcat (char *orig1, char *orig2)
 }
 
 
+char *newstrcatn (int count, ...)
+{
+  va_list ap;
+  int len = 0;
+  char *p;
+  char *p2;
+  int i;
+
+  va_start (ap, count);
+  for (i = 0; i < count; i++)
+    {
+      char *a = va_arg (ap, char *);
+      if (a)
+	len += strlen (a);
+    }
+  va_end (ap);
+
+  p = alloc (len + 1);
+  p2 = p;
+
+  va_start (ap, count);
+  for (i = 0; i < count; i++)
+    {
+      char *a = va_arg (ap, char *);
+      if (a)
+	{
+	  strcpy (p2, a);
+	  p2 += strlen (p2);
+	}
+    }
+  va_end (ap);
+
+  return p;
+}
+
+
 char *newstrn (char *orig, int max_len)
 {
   int len;
@@ -329,6 +365,68 @@ size_t fwrite_bytes (FILE *stream,
 }
 
 
+char *path_prefix (char *name)
+{
+  char *p1;
+  p1 = strrchr (name, '/');  // $$$ non-portable, should use glib
+  if (! p1)
+    return NULL;
+  return newstrn (name, p1 - name);
+}
+
+
+char *path_cat_n (int count, ...)
+{
+  va_list ap;
+  static char *sep = "/";      // $$$ non-portable, should use glib
+  int sep_len = strlen (sep);
+  int len = 0;
+  char *p;
+  char *p2;
+  int i;
+  bool prev;
+
+  prev = false;
+  va_start (ap, count);
+  for (i = 0; i < count; i++)
+    {
+      char *a = va_arg (ap, char *);
+      if (a)
+	{
+	  if (prev)
+	    len += sep_len;
+	  len += strlen (a);
+	  prev = true;
+	}
+    }
+  va_end (ap);
+
+  p = alloc (len + 1);
+  p2 = p;
+
+  prev = false;
+  va_start (ap, count);
+  for (i = 0; i < count; i++)
+    {
+      char *a = va_arg (ap, char *);
+      if (a)
+	{
+	  if (prev)
+	    {
+	      strcpy (p2, sep);
+	      p2 += sep_len;
+	    }
+	  strcpy (p2, a);
+	  p2 += strlen (p2);
+	  prev = true;
+	}
+    }
+  va_end (ap);
+
+  return p;
+}
+
+
 bool filename_suffix_match (char *name, char *suffix)
 {
   int nl = strlen (name);
@@ -350,7 +448,7 @@ char *base_filename_with_suffix (char *name, char *suffix)
   else
     sn = 0;
 
-  p1 = strrchr (name, '/');  // $$$ not portable
+  p1 = strrchr (name, '/');  // $$$ non-portable, should use glib
   if (p1)
     p1++;
   else
@@ -434,8 +532,7 @@ char *find_file_with_suffix (char *name, char *suffix, char *default_path)
       return fn;
     }
 
-  // $$$ following is not portable!
-  p = strrchr (progname, '/');
+  p = strrchr (progname, '/');  // $$$ non-portable, should use glib
   if (p)
     p++;
   else

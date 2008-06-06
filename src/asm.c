@@ -62,7 +62,6 @@ typedef void (write_obj_t)(FILE *f, int opcode);
 static write_obj_t *write_obj [ARCH_MAX];
 
 int pass;
-int lineno;
 int errors;
 int warnings;
 
@@ -107,15 +106,15 @@ char listbuf [MAX_LINE];
 char *listptr;
 
 
-char *src_fn = NULL;
-
 #define MAX_INCLUDE_NEST 128
 
 static int include_nest;
 
-static FILE *srcfile [MAX_INCLUDE_NEST];
-static FILE *objfile  = NULL;
-static FILE *listfile = NULL;
+static char *src_fn   [MAX_INCLUDE_NEST];
+static int lineno     [MAX_INCLUDE_NEST];
+static FILE *src_file [MAX_INCLUDE_NEST];
+static FILE *obj_file  = NULL;
+static FILE *list_file = NULL;
 
 
 symtab_t *global_symtab;
@@ -126,20 +125,35 @@ static void open_source (char *fn)
 {
   if (++include_nest == MAX_INCLUDE_NEST)
     fatal (2, "include files nested too deep\n");
-  srcfile [include_nest] = fopen (src_fn, "r");
-  if (! srcfile [include_nest])
+  src_fn [include_nest] = strdup (fn);
+  lineno [include_nest] = 0;
+  src_file [include_nest] = fopen (fn, "r");
+  if (! src_file [include_nest])
     fatal (2, "can't open input file '%s'\n", fn);
 }
 
 static bool close_source (void)
 {
-  fclose (srcfile [include_nest--]);
+  if (include_nest < 0)
+    fatal (2, "mismatched source file close\n");
+  fclose (src_file [include_nest]);
+  free (src_fn [include_nest]);
+  include_nest--;
   return include_nest >= 0;
 }
 
 void pseudo_include (char *s)
 {
-  open_source (s);
+  char *p;
+  char *s2;
+
+  // prepend path prefix of current file
+  p = path_prefix (src_fn [include_nest]);
+  s2 = path_cat_n (2, p, s);
+  open_source (s2);
+
+  free (p);
+  free (s);
 }
 
 
@@ -158,6 +172,11 @@ static void cond_init (void)
 bool get_cond_state (void)
 {
   return cond_state & 1;
+}
+
+int  get_lineno (void)
+{
+  return lineno [include_nest];
 }
 
 void pseudo_if (int val)
@@ -190,7 +209,7 @@ void pseudo_ifdef (char *s)
   cond_nest_level++;
   cond_state <<= 1;
   cond_else <<= 1;
-  cond_state |= lookup_symbol (table, s, & val, lineno);
+  cond_state |= lookup_symbol (table, s, & val, lineno [include_nest]);
 }
 
 void pseudo_else (void)
@@ -246,7 +265,7 @@ static value_fmt_fn_t *value_fmt_fn [ARCH_MAX] =
 
 void format_listing_unknown (void)
 {
-  listptr += sprintf (listptr, "%4d   ", lineno);
+  listptr += sprintf (listptr, "%4d   ", lineno [include_nest]);
   listptr += sprintf (listptr, "             ");
   strcat (listptr, linebuf);
   listptr += strlen (listptr);
@@ -256,7 +275,7 @@ void format_listing_classic (void)
 {
   int i;
 
-  listptr += sprintf (listptr, "%4d   ", lineno);
+  listptr += sprintf (listptr, "%4d   ", lineno [include_nest]);
 
   if (obj_flag)
     {
@@ -288,7 +307,7 @@ void format_listing_classic (void)
 
 void format_listing_woodstock (void)
 {
-  listptr += sprintf (listptr, "%4d   ", lineno);
+  listptr += sprintf (listptr, "%4d   ", lineno [include_nest]);
 
   if (obj_flag)
     listptr += sprintf (listptr, "%06o  %04o ", objcode, pc);
@@ -348,7 +367,7 @@ static void process_line (char *inbuf)
 	       inbuf,
 	       8);
 
-  lineno++;
+  lineno [include_nest]++;
 
   listptr = & listbuf [0];
   listbuf [0] = '\0';
@@ -372,21 +391,21 @@ static void process_line (char *inbuf)
     {
       if (symtab_pseudoop_flag)
 	{
-	  if (listfile && local_label_flag)
+	  if (list_file && local_label_flag)
 	    print_symbol_table (symtab [local_label_current_rom],
-				listfile,
+				list_file,
 				value_fmt_fn [arch]);
 	}
       else
 	{
 	  format_listing [arch] ();
-	  if (listfile)
-	    fprintf (listfile, "%s\n", listbuf);
+	  if (list_file)
+	    fprintf (list_file, "%s\n", listbuf);
 	  if (errptr != & errbuf [0])
 	    {
 	      fprintf (stderr, "%s\n", listbuf);
-	      if (listfile)
-		fprintf (listfile, "%s", errbuf);
+	      if (list_file)
+		fprintf (list_file, "%s", errbuf);
 	      fprintf (stderr, "%s",   errbuf);
 	    }
 	}
@@ -404,7 +423,6 @@ static void do_pass (int p)
   arch = ARCH_UNKNOWN;
   
   pass = p;
-  lineno = 0;
   errors = 0;
   warnings = 0;
 
@@ -421,9 +439,9 @@ static void do_pass (int p)
 
   while (1)
     {
-      if (! fgets (inbuf, MAX_LINE, srcfile [include_nest]))
+      if (! fgets (inbuf, MAX_LINE, src_file [include_nest]))
 	{
-	  if (ferror (srcfile [include_nest]))
+	  if (ferror (src_file [include_nest]))
 	    fatal (2, "error reading source file\n");
 	  if (close_source ())
 	    continue;
@@ -437,13 +455,13 @@ static void do_pass (int p)
   if (cond_nest_level != 0)
     error ("unterminated conditional(s)");
 
-  if ((pass == 2) && listfile)
+  if ((pass == 2) && list_file)
     {
-      fprintf (listfile, "\nGlobal symbols:\n\n");
+      fprintf (list_file, "\nGlobal symbols:\n\n");
       print_symbol_table (global_symtab,
-			  listfile,
+			  list_file,
 			  value_fmt_fn [arch]);
-      fprintf (listfile, "\n");
+      fprintf (list_file, "\n");
     }
 
   printf ("\n");
@@ -488,6 +506,7 @@ static void parse_define_option (char *opt)
 
 int main (int argc, char *argv[])
 {
+  char *src_fn = NULL;
   char *obj_fn = NULL;
   char *list_fn = NULL;
   int rom;
@@ -544,15 +563,15 @@ int main (int argc, char *argv[])
 
   if (obj_fn)
     {
-      objfile = fopen (obj_fn, "w");
-      if (! objfile)
+      obj_file = fopen (obj_fn, "w");
+      if (! obj_file)
 	fatal (2, "can't open input file '%s'\n", obj_fn);
     }
 
   if (list_fn)
     {
-      listfile = fopen (list_fn, "w");
-      if (! listfile)
+      list_file = fopen (list_fn, "w");
+      if (! list_file)
 	fatal (2, "can't open listing file '%s'\n", list_fn);
     }
 
@@ -565,10 +584,10 @@ int main (int argc, char *argv[])
 
   err_printf ("%d errors detected, %d warnings\n", errors, warnings);
 
-  if (objfile)
-    fclose (objfile);
-  if (listfile)
-    fclose (listfile);
+  if (obj_file)
+    fclose (obj_file);
+  if (list_file)
+    fclose (list_file);
   exit (0);
 }
 
@@ -585,10 +604,10 @@ void define_symbol (char *s, int value)
 
   if (pass == 1)
     {
-      if (! create_symbol (table, s, value, lineno))
+      if (! create_symbol (table, s, value, lineno [include_nest]))
 	error ("multiply defined symbol '%s'\n", s);
     }
-  else if (! lookup_symbol (table, s, & prev_val, lineno))
+  else if (! lookup_symbol (table, s, & prev_val, lineno [include_nest]))
     error ("undefined symbol '%s'\n", s);
   else if (prev_val != value)
     error ("phase error for symbol '%s'\n", s);
@@ -640,7 +659,7 @@ static void emit_core (int op, int inst_type)
   last_instruction_type = inst_type;
 
   if (pass == 2)
-    write_obj [arch] (objfile, op);
+    write_obj [arch] (obj_file, op);
 }
 
 
@@ -729,12 +748,12 @@ int err_vprintf (char *format, va_list ap)
 {
   int res;
 
-  if (listfile && (pass == 2))
+  if (list_file && (pass == 2))
     {
       va_list ap_copy;
 
       va_copy (ap_copy, ap);
-      vfprintf (listfile, format, ap_copy);
+      vfprintf (list_file, format, ap_copy);
       va_end (ap_copy);
     }
   res = vfprintf (stderr, format, ap);
@@ -759,7 +778,7 @@ int error   (char *format, ...)
   int res;
   va_list ap;
 
-  err_printf ("error in file %s line %d: ", src_fn, lineno);
+  err_printf ("error in file %s line %d: ", src_fn [include_nest], lineno [include_nest]);
   va_start (ap, format);
   res = err_vprintf (format, ap);
   va_end (ap);
@@ -773,7 +792,7 @@ int asm_warning (char *format, ...)
   int res;
   va_list ap;
 
-  err_printf ("warning in file %s line %d: ", src_fn, lineno);
+  err_printf ("warning in file %s line %d: ", src_fn [include_nest], lineno [include_nest]);
   va_start (ap, format);
   res = err_vprintf (format, ap);
   va_end (ap);

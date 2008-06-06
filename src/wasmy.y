@@ -131,7 +131,7 @@ expr		: INTEGER { $$ = $1; }
 			    table = symtab [local_label_current_rom];
 			  else
 			    table = global_symtab;
-			  if (! lookup_symbol (table, $1, &$$, lineno))
+			  if (! lookup_symbol (table, $1, &$$, get_lineno ()))
 			    {
 			      if (pass == 2)
 				error ("undefined symbol '%s'\n", $1);

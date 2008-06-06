@@ -56,6 +56,8 @@ char *newstr (char *orig);
 
 char *newstrcat (char *orig1, char *orig2);
 
+char *newstrcatn (int count, ...);
+
 char *newstrn (char *orig, int max_len);
 
 void realloc_strcpy (char **dest, char *src);
@@ -125,6 +127,13 @@ size_t fwrite_bytes (FILE *stream,
 		     bool *eof,
 		     bool *error);
 
+
+// Returns the directory portion of the name, or NULL if none is present
+char *path_prefix (char *name);
+
+// Concatenates path elements, inserting separators
+// NULL elements OK, will not get double separators
+char *path_cat_n (int count, ...);
 
 bool filename_suffix_match (char *name, char *suffix);
 

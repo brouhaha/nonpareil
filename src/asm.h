@@ -25,7 +25,6 @@ extern int arch;
 typedef uint16_t addr_t;
 
 extern int pass;
-extern int lineno;
 extern int errors;
 
 extern bool parse_error;
@@ -60,6 +59,7 @@ extern char *lineptr;
 void pseudo_include (char *s);
 
 bool get_cond_state (void);
+int  get_lineno (void);
 
 void pseudo_if (int val);
 void pseudo_ifdef (char *s);
