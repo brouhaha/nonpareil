@@ -225,7 +225,16 @@ SConscript ('scons/ncd.py')
 #-----------------------------------------------------------------------------
 
 all_calcs = {'woodstock':  ['21', '22', '25', '27', '29c'],
+#             'sting':      ['19c'],
+#             'topcat':     ['97'],
 	     }
+
+ncd_dir_sub = {'19c': '19c-29c',
+               '25':  '25-25c',
+	       '25c': '25-25c',
+               '29c': '19c-29c',
+	       '67':  '67-97',
+	       '97':  '67-97'}
 
 #all_calcs = {'classic':    ['35', '45', '55', '80'],
 #	     'woodstock':  ['21', '22', '25', '27', '29c'],
@@ -237,14 +246,19 @@ nui_files = []
 ncd_files = []
 
 for family in all_calcs:
-	for model in all_calcs [family]:
-		ncd_files += env.NCD (target = 'build/calc/' + model + '.ncd',
-				      source = 'ncd/' + family + '/' + model + '/' + model + '.ncd.tmpl')
-		model_dir = Dir ('calc/' + family + '/' + model)
-		kml = FindFile (model + '.kml', model_dir)
-		# parse kml to find ROM, image files, etc.
-		nui_files += env.NUI (target = 'build/calc/' + model + '.nui',
-				      source = 'calc/' + family + '/' + model + '/' + model + '.kml')
+    for model in all_calcs [family]:
+        if model in ncd_dir_sub:
+            ncd_dir = ncd_dir_sub [model]
+        else:
+            ncd_dir = model
+	print "model: ", model, ", ncd_dir: ", ncd_dir
+        ncd_files += env.NCD (target = 'build/calc/' + model + '.ncd',
+                              source = 'ncd/' + ncd_dir + '/' + model + '.ncd.tmpl')
+        model_dir = Dir ('calc/' + family + '/' + model)
+        kml = FindFile (model + '.kml', model_dir)
+	# parse kml to find ROM, image files, etc.
+        nui_files += env.NUI (target = 'build/calc/' + model + '.nui',
+                              source = 'calc/' + family + '/' + model + '/' + model + '.kml')
 
 Default (ncd_files + nui_files)
 

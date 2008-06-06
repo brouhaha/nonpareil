@@ -50,10 +50,25 @@
     <key user_keycode="74" hw_keycode="0221"/>
   </keyboard>
 
-  <addr_space name="inst" banks="1" addr_width="12" data_width="10"/>
-  <addr_space name="data" banks="1" addr_width="8" data_width="56"/>
+  <chip name="ACT">
+    <part_info>
+      <vendor_name>HP</vendor_name>
+      <part_number>1820-1523</part_number>
+    </part_info>
+    <part_info>
+      <vendor_name>AMI</vendor_name>
+    </part_info>
+    <inst_clock osc_type="LC" freq="185000"/>
+  </chip>
 
-  <memory addr_space="inst" banks="0" base_addr="00000" size="02000">
+  <chip name="cathode driver 12">
+    <part_info>
+      <vendor_name>HP</vendor_name>
+      <part_number>1820-1382</part_number>
+    </part_info>
+  </chip>
+
+  <chip name="ROM/anode driver">
     <part_info>
       <vendor_name>HP</vendor_name>
       <part_number>1818-0129</part_number>
@@ -64,8 +79,33 @@
     <part_info>
       <vendor_name>Mostek</vendor_name>
     </part_info>
-  </memory>
+    <memory addr_space="inst" banks="0" base_addr="00000" size="02000">
+    </memory>
+    <chargen>
+      <char id="0x00" segments="abcdef  " />
+      <char id="0x01" segments=" bc     " />
+      <char id="0x02" segments="ab de g " />
+      <char id="0x03" segments="abcd  g " />
+      <char id="0x04" segments=" bc  fg " />
+      <char id="0x05" segments="a cd fg " />
+      <char id="0x06" segments="a cdefg " />
+      <char id="0x07" segments="abc     " />
+      <char id="0x08" segments="abcdefg " />
+      <char id="0x09" segments="abcd fg " />
+      <char id="0x0a" segments="    e g " />  <!-- r -->
+      <char id="0x0b" segments="a   efg " />  <!-- F -->
+      <char id="0x0c" segments="  cde g " />  <!-- o -->
+      <char id="0x0d" segments="ab  efg " />  <!-- P -->
+      <char id="0x0e" segments="a  defg " />  <!-- E -->
+      <char id="0x0f" segments="        " />  <!-- space -->
+      <char id="' '"    segments="        " />
+      <char id="'-'"    segments="      g " />
+      <char id="'.'"    segments="       h" />
+    </chargen>
+  </chip>
 
-  <obj_file addr_space="inst">21.obj</obj_file>
+  <obj_file addr_space="inst"
+            copyright="Copyright 2006, 2008 Eric Smith &lt;eric@brouhaha.com&gt;"
+            license="GPLv3">21.obj</obj_file>
 
 </calcdef>
