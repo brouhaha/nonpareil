@@ -1,5 +1,5 @@
 ; 27 ROM disassembly
-; Copyright 2006 Eric L. Smith <eric@brouhaha.com>
+; Copyright 2006, 2008 Eric Smith <eric@brouhaha.com>
 ; $Id$
 ;
 ; Verified to match 27 ROM part numbers:	
@@ -213,7 +213,7 @@ done_x1:
 
 L0231:	p <- 4
 	b exchange c[p]
-L0233:	load constant 2
+	load constant 2
 	p <- 4
 	b exchange c[p]
 	return
@@ -2031,7 +2031,7 @@ L3266:	a exchange b[s]
 	go to L3115
 
 L3273:	delayed rom 00
-	jsb L0233
+	jsb L0033
 	y -> a
 L3276:	1 -> s 6
 	1 -> s 10
