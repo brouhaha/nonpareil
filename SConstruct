@@ -224,7 +224,7 @@ SConscript ('scons/ncd.py')
 # the calculators
 #-----------------------------------------------------------------------------
 
-all_calcs = {'woodstock':  ['21'],
+all_calcs = {'woodstock':  ['21', '22', '25', '27', '29c'],
 	     }
 
 #all_calcs = {'classic':    ['35', '45', '55', '80'],
@@ -238,9 +238,9 @@ ncd_files = []
 
 for family in all_calcs:
 	for model in all_calcs [family]:
-		model_dir = Dir ('calc/' + family + '/' + model)
 		ncd_files += env.NCD (target = 'build/calc/' + model + '.ncd',
-				      source = 'calc/' + family + '/' + model + '/' + model + '.ncd.tmpl')
+				      source = 'ncd/' + family + '/' + model + '/' + model + '.ncd.tmpl')
+		model_dir = Dir ('calc/' + family + '/' + model)
 		kml = FindFile (model + '.kml', model_dir)
 		# parse kml to find ROM, image files, etc.
 		nui_files += env.NUI (target = 'build/calc/' + model + '.nui',

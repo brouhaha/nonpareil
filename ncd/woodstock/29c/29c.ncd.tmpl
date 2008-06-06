@@ -1,0 +1,204 @@
+<?xml version="1.0"?>
+<!--
+$Id$
+Copyright 2007 Eric Smith <eric@brouhaha.com>
+
+This work is licensed under the Creative Commons Attribution-ShareAlike 2.5
+License. To view a copy of this license, visit
+
+    http://creativecommons.org/licenses/by-sa/2.5/
+
+or send a letter to
+
+    Creative Commons
+    543 Howard Street, 5th Floor
+    San Francisco, California, 94105, USA.
+-->
+
+<!DOCTYPE calcdef SYSTEM "http://nonpareil.brouhaha.com/dtd/calcdef.dtd">
+
+<calcdef version="1.0"
+         arch="Woodstock"
+         platform="Woodstock"
+         model="29C"
+         copyright="Copyright 2007 Eric Smith &lt;eric@brouhaha.com&gt;"
+         license="CC-BY-SA-2.5">
+
+  <keyboard>
+
+    <switch number="0">
+      <switch_pos position="0" flag="power" value="0"/>
+      <switch_pos position="1" flag="power" value="1"/>
+    </switch>
+
+    <switch number="1">
+      <switch_pos position="0"/>
+      <switch_pos position="1" flag="3" value="1"/>
+    </switch>
+
+    <key user_keycode="11" hw_keycode="0263"/>  <!-- SST/FIX/BST -->
+    <key user_keycode="12" hw_keycode="0262"/>  <!-- GSB/SCI/RTN -->
+    <key user_keycode="13" hw_keycode="0261"/>  <!-- GTO/ENG/LBL -->
+    <key user_keycode="14" hw_keycode="0260"/>  <!-- f -->
+    <key user_keycode="15" hw_keycode="0264"/>  <!-- g -->
+
+    <key user_keycode="21" hw_keycode="0103"/>  <!-- x<>y/xbar/% -->
+    <key user_keycode="22" hw_keycode="0102"/>  <!-- RDN/s/i -->
+    <key user_keycode="23" hw_keycode="0101"/>  <!-- STO/unused/DSZ -->
+    <key user_keycode="24" hw_keycode="0100"/>  <!-- RCL/unused/ISZ -->
+    <key user_keycode="25" hw_keycode="0104"/>  <!-- Sigma+/Sigma-/DEL -->
+
+    <key user_keycode="31" hw_keycode="0323"/>  <!-- ENTER^/CLR PREFIX/unused -->
+    <key user_keycode="32" hw_keycode="0321"/>  <!-- CHS/CLR PRGM/GRD -->
+    <key user_keycode="33" hw_keycode="0320"/>  <!-- EEX/CLR REG/RAD -->
+    <key user_keycode="34" hw_keycode="0324"/>  <!-- CLx/CLR Sigma/DEG -->
+
+    <key user_keycode="41" hw_keycode="0143"/>  <!-- minus/x<=y/x<0 -->
+    <key user_keycode="42" hw_keycode="0142"/>  <!-- 7/ln/e^x -->
+    <key user_keycode="43" hw_keycode="0141"/>  <!-- 8/log/10^x -->
+    <key user_keycode="44" hw_keycode="0140"/>  <!-- 9/->R/->P -->
+
+    <key user_keycode="51" hw_keycode="0243"/>  <!-- plus/x>y/x>=0 -->
+    <key user_keycode="52" hw_keycode="0242"/>  <!-- 4/sin/arcsin -->
+    <key user_keycode="53" hw_keycode="0241"/>  <!-- 5/cos/arccos -->
+    <key user_keycode="54" hw_keycode="0240"/>  <!-- 6/tan/arctan -->
+
+    <key user_keycode="61" hw_keycode="0163"/>  <!-- times/x!=y/x!=0 -->
+    <key user_keycode="62" hw_keycode="0162"/>  <!-- 1/INT/FRAC -->
+    <key user_keycode="63" hw_keycode="0161"/>  <!-- 2/sqrt(x)/x^2 -->
+    <key user_keycode="64" hw_keycode="0160"/>  <!-- 3/y^x/ABS -->
+
+    <key user_keycode="71" hw_keycode="0223"/>  <!-- divide/x=y/x=0 -->
+    <key user_keycode="72" hw_keycode="0222"/>  <!-- 0/->H.MS/->H -->
+    <key user_keycode="73" hw_keycode="0221"/>  <!-- decimal/LASTx/pi -->
+    <key user_keycode="74" hw_keycode="0220"/>  <!-- R/S/PAUSE/1/x -->
+  </keyboard>
+
+  <chip name="ACT">
+    <part_info>
+      <vendor_name>HP</vendor_name>
+      <part_number>1820-1596</part_number>
+    </part_info>
+    <part_info>
+      <vendor_name>Mostek</vendor_name>
+      <part_number>MK6216N</part_number>
+    </part_info>
+    <inst_clock osc_type="LC" freq="185000"/>
+  </chip>
+
+  <chip name="cathode driver 12">
+    <part_info>
+      <vendor_name>HP</vendor_name>
+      <part_number>1820-1382</part_number>
+    </part_info>
+  </chip>
+
+  <chip name="ROM/anode driver">
+    <part_info>
+      <vendor_name>HP</vendor_name>
+      <part_number>1818-0431</part_number>
+    </part_info>
+    <part_info>
+      <vendor_name>AMI</vendor_name>
+    </part_info>
+    <memory addr_space="inst" banks="0" base_addr="00000" size="02000">
+    </memory>
+    <chargen>
+      <char id="0x00" segments="abcdef  " />
+      <char id="0x01" segments=" bc     " />
+      <char id="0x02" segments="ab de g " />
+      <char id="0x03" segments="abcd  g " />
+      <char id="0x04" segments=" bc  fg " />
+      <char id="0x05" segments="a cd fg " />
+      <char id="0x06" segments="a cdefg " />
+      <char id="0x07" segments="abc     " />
+      <char id="0x08" segments="abcdefg " />
+      <char id="0x09" segments="abcd fg " />
+      <char id="0x0a" segments="    e g " />  <!-- r -->
+      <char id="0x0b" segments="a   efg " />  <!-- F -->
+      <char id="0x0c" segments="  cde g " />  <!-- o -->
+      <char id="0x0d" segments="ab  efg " />  <!-- P -->
+      <char id="0x0e" segments="a  defg " />  <!-- E -->
+      <char id="0x0f" segments="        " />  <!-- space -->
+      <char id="' '"    segments="        " />
+      <char id="'-'"    segments="      g " />
+      <char id="'.'"    segments="       h" />
+    </chargen>
+  </chip>
+
+  <chip name="ROM/RAM">
+    <part_info>
+      <vendor_name>HP</vendor_name>
+      <part_number>1818-0379</part_number>
+    </part_info>
+    <part_info>
+      <vendor_name>AMI</vendor_name>
+    </part_info>
+    <part_info>
+      <vendor_name>Mostek</vendor_name>
+      <part_number>MK60142N</part_number>
+    </part_info>
+    <memory addr_space="inst" banks="0" base_addr="02000" size="02000">
+    </memory>
+    <memory addr_space="data" base_addr="0x00" size="0x10">
+    </memory>
+  </chip>
+
+  <chip name="ROM">
+    <part_info>
+      <vendor_name>HP</vendor_name>
+      <part_number>1818-0377</part_number>
+    </part_info>
+    <part_info>
+      <vendor_name>AMI</vendor_name>
+    </part_info>
+    <part_info>
+      <vendor_name>Mostek</vendor_name>
+    </part_info>
+    <memory addr_space="inst" banks="0" base_addr="04000" size="02000">
+    </memory>
+  </chip>
+
+  <chip name="ROM">
+    <part_info>
+      <vendor_name>HP</vendor_name>
+      <part_number>1818-0376</part_number>
+    </part_info>
+    <part_info>
+      <vendor_name>AMI</vendor_name>
+    </part_info>
+    <memory addr_space="inst" banks="0" base_addr="06000" size="02000">
+    </memory>
+  </chip>
+
+  <chip name="RAM">
+    <part_info>
+      <vendor_name>HP</vendor_name>
+      <part_number>5061-0469</part_number>
+    </part_info>
+    <memory addr_space="data" base_addr="0x10" size="0x10">
+    </memory>
+  </chip>
+
+  <chip name="RAM">
+    <part_info>
+      <vendor_name>HP</vendor_name>
+      <part_number>5061-0469</part_number>
+    </part_info>
+    <memory addr_space="data" base_addr="0x20" size="0x10">
+    </memory>
+  </chip>
+
+  <obj_file addr_space="inst"
+            copyright="Copyright 2007 Eric Smith &lt;eric@brouhaha.com&gt;"
+            license="GPLv3">29c.obj</obj_file>
+
+  <obj_file addr_space="inst"
+            copyright="Copyright 2007 Eric Smith &lt;eric@brouhaha.com&gt;"
+            license="GPLv3">19c29c.obj</obj_file>
+
+  <obj_file addr_space="inst"
+            copyright="Copyright 2007 Eric Smith &lt;eric@brouhaha.com&gt;"
+            license="GPLv3">19c29cq3.obj</obj_file>
+
+</calcdef>
