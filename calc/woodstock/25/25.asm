@@ -10,12 +10,17 @@
 ; Semicolons inserted before comments.
 ; Nops inserted on lines with no instruction.
 ;
-; ASCII at one time contained a left arrow character, but it was
-; replaced by an underscore.  The left arrow character as been replaced
+; The original X3.4-1963 ASCII standard contained a left arrow character, but
+; it was replaced by an underscore in X3.4-1967 (USASCII).  In common usage
+; (e.g., most Teletype model 33 terminals), the left arrow character lingered
+; for years.  In this source code, the left arrow character as been replaced
 ; by the digraph "<-".
 ;
 ; Some instances of "if n/c go to" have been replaced with "go to" in order
 ; to avoid assembler warnings.
+;
+; The label "ff?" has been replaced by "ff" in order to allow the lexical
+; analyzer of the assembler to not match "?" at the end of identifiers.
 
 	.arch woodstock
 
@@ -633,7 +638,7 @@ fsci:   c + 1 -> c[p ]
 ffix:   c + 1 -> c[p ]
         c + 1 -> c[p ]
         return
-fplain: jsb ff?
+fplain: jsb ff
         0 - c - 1 -> c[x ]        ; invert last digit
         c -> a[x ]
         shift left a[x ]          ; 0->1
@@ -643,7 +648,7 @@ fplain: jsb ff?
 fgo2:   a + 1 -> a[xs]            ; land in f2:*
 fgo1:   a + 1 -> a[xs]            ; land in f1:*
 fgo0:   a -> rom address          ; land in f0:*
-ff?:    if 0 = s g      10        ; load f or g
+ff:     if 0 = s g      10        ; load f or g
           then go to ff3
         if 1 = s f      9
           then go to ff1
@@ -660,7 +665,7 @@ f73:    c + 1 -> c[xs]            ; 73
         return
 	nop
 	nop
-frow:   jsb ff?
+frow:   jsb ff
         a exchange c[w ]
         shift left a[x ]
         0 -> a[xs]
