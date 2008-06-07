@@ -1,5 +1,5 @@
 # $Id$
-# Copyright 2004, 2005 Eric L. Smith <eric@brouhaha.com>
+# Copyright 2004, 2005, 2008 Eric Smith <eric@brouhaha.com>
 
 # Nonpareil is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License version 2 as
@@ -20,10 +20,7 @@
 global
 	title "55 Programmable Scientific Calculator"
 	author "Eric Smith <eric@brouhaha.com>"
-	hardware "Classic"
 	model "55"
-	rom "55.rom"
-	listing "55.lst"
 	image "55.png"
 	color 0 81 21 109	  # background color, used when transparency is off
 	transparency 128
@@ -46,20 +43,6 @@ display
 		size 14 30
 		offset 13 5
 	end
-
-	character '0' segment 'a' 'b' 'c' 'd' 'e' 'f'         end
-	character '1' segment     'b' 'c'                     end
-        character '2' segment 'a' 'b'     'd' 'e'     'g'     end
-	character '3' segment 'a' 'b' 'c' 'd'         'g'     end
-	character '4' segment     'b' 'c'         'f' 'g'     end
-	character '5' segment 'a'     'c' 'd'     'f' 'g'     end
-	character '6' segment 'a'     'c' 'd' 'e' 'f' 'g'     end
-	character '7' segment 'a' 'b' 'c'                     end
-	character '8' segment 'a' 'b' 'c' 'd' 'e' 'f' 'g'     end
-	character '9' segment 'a' 'b' 'c' 'd'     'f' 'g'     end
-	character '.' segment                             'h' end
-	character '-' segment                         'g'     end
-	character ' ' segment                                 end
 
 	segments
 		image "led_segments.png" offset 2 2 size 126 188

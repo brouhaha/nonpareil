@@ -224,7 +224,8 @@ SConscript ('scons/ncd.py')
 # the calculators
 #-----------------------------------------------------------------------------
 
-all_calcs = {'woodstock':  ['21', '22', '25', '27', '29c', '67'],
+all_calcs = {'classic':    ['35'],
+             'woodstock':  ['21', '22', '25', '27', '29c'],
 #             'sting':      ['19c'],
 #             'topcat':     ['97'],
 	     }
@@ -251,7 +252,6 @@ for family in all_calcs:
             ncd_dir = ncd_dir_sub [model]
         else:
             ncd_dir = model
-	print "model: ", model, ", ncd_dir: ", ncd_dir
         ncd_files += env.NCD (target = 'build/calc/' + model + '.ncd',
                               source = 'ncd/' + ncd_dir + '/' + model + '.ncd.tmpl')
         model_dir = Dir ('calc/' + family + '/' + model)
