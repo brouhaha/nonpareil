@@ -397,6 +397,8 @@ void handle_obj_file_element (xmlNode *element)
     fatal (2, "no content\n");
   //printf ("obj_file '%s', addr_space '%s'\n", obj_fn, addr_space_str);
 
+  strip_whitespace (obj_fn);
+
   // $$$ check that the address space exists!
   if (strcmp ((char *) addr_space_str, "inst") != 0)
     fatal (2, "only 'inst' address space is supported\n");

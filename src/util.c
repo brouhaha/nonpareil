@@ -214,11 +214,22 @@ void trim_trailing_whitespace (char *s)
   while (--i >= 0)
     {
       c = s [i];
-      if ((c == '\n') || (c == '\r') || (c == ' ') || (c == '\t'))
+      if (isspace (c))
 	s [i] = '\0';
       else
 	break;
     }
+}
+
+
+void strip_whitespace (char *s)
+{
+  char *s2 = s;
+  while (isspace (*s2))
+    s2++;
+  if (s2 != s)
+    memmove (s, s2, strlen (s2) + 1);
+  trim_trailing_whitespace (s);
 }
 
 
