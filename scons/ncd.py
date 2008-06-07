@@ -20,7 +20,7 @@ def ncd_tmpl_scanner_fn (node, env, path):
         print sys.exc_info () [0]
         return fl
     for obj_file_node in doc.getElementsByTagName ('obj_file'):
-        f = obj_file_node.firstChild.nodeValue
+        f = obj_file_node.firstChild.nodeValue.strip()
         kpath = os.path.dirname (str (node))
         while kpath:
             f1 = kpath + '/' + f
