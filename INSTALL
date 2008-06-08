@@ -1,5 +1,5 @@
 Nonpareil - a calculator microassembler and simulator
-Copyright 2005, 2006 Eric L. Smith <eric@brouhaha.com>
+Copyright 2005, 2006, 2008 Eric Smith <eric@brouhaha.com>
 $Id$
 
 -----------------------------------------------------------------------------
@@ -10,25 +10,28 @@ Nonpareil is written in C99 (ISO/IEC 9899:1999), Flex, and Bison, and
 is normally built using the GNU toolchain.  No effort has been made to
 build it with a non-GNU toolchain.
 
-			minimum		recommended
-			version		version
-			-------		-----------
-    Bison		1.22		2.1
-    Flex		2.4.2		2.5.4a
-    GCC					4.1.1
-    gdome                               0.8.1
-    NetPBM				10.34
-    Python		1.5.2		2.4.3
-    SCons		0.96.90		0.96.92
+The recommended tool versions are:
+
+    Bison	2.3
+    Flex	2.5.33
+    GCC		4.1.2
+    NetPBM	10.35.41
+    Python	2.5.1
+    PyXML	0.8.4
+    SCons	0.98.4
 
 In addition, the libraries and header files for the runtime dependencies
 must be available at build time.  A list of these is in the README file.
+
+It is possible that Nonpareil may build with earlier versions of tools,
+but the author will not offer any assistance doing so.
 
 If you do not wish to install SCons on your system, a standalone copy
 is provided in the directory scons-local.  For information on SCons,
 see the web site:
 
         http://www.scons.org/
+
 
 -----------------------------------------------------------------------------
 

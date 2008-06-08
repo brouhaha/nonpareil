@@ -1,5 +1,5 @@
 Nonpareil - a calculator simulator
-Copyright 1995, 2003-2006 Eric L. Smith <eric@brouhaha.com>
+Copyright 1995, 2003-2006, 2008 Eric Smith <eric@brouhaha.com>
 $Id$
 
 -----------------------------------------------------------------------------
@@ -198,18 +198,17 @@ window will appear.  If you execute "FS? 55" the display should show
 
 Runtime dependencies:
 
-				minimum
-				recommended
-				version
-				-----------
+Nonpareil depends on a number of libraries commonly available on Linux
+systems.   The minimum recommended versions of these libraries are:
 
-    gtk+, gdk, gdk-pixbuf	2.8.20
-    glib			2.10.3
-    libxml2			2.6.23
-    libSDL			1.2.9
+    gtk+, gdk, gdk-pixbuf	2.12.8
+    glib			2.14.6
+    libxml2			2.6.32
+    SDL				1.2.13
 
-Later versions of libraries will probably work.  Earlier versions may
-work, but have not been tested.
+Later versions of libraries will probably work.  Earlier versions
+might work, but have not been tested.  The author will not offer any
+assistance in using Nonpareil with earlier versions.
 
 -----------------------------------------------------------------------------
 
