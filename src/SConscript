@@ -36,7 +36,7 @@ cross = build_env ['PLATFORM'] != build_env ['target']
 ming = build_env ['target'] == 'win32'
 
 if cross and ming and build_target_only:
-    pkg_config_cmd = 'PKG_CONFIG_PATH=/usr/local/gtkwin/lib/pkgconfig pkg-config --define-variable=includedir=/usr/local/gtkwin/include --define-variable=libdir=/usr/local/gtkwin/lib'
+    pkg_config_cmd = 'PKG_CONFIG_PATH=/usr/local/i386-mingw32/lib/pkgconfig pkg-config --define-variable=includedir=/usr/local/i386-mingw32/include --define-variable=libdir=/usr/local/i386-mingw32/lib'
 else:
     pkg_config_cmd = 'pkg-config'
 pkg_config_cmd += ' --cflags --libs '
@@ -63,10 +63,13 @@ else:
 if cross and ming and build_target_only:
     build_env.Replace (CC = '/usr/local/bin/i386-mingw32-gcc')
     build_env.Append (CCFLAGS = ['-mms-bitfields'])
-    build_env.Append (CPPPATH = ['/usr/local/gtkwin/include'])  # libpng
-    build_env.Append (CPPPATH = ['/usr/local/gtkwin/SDL-1.2.8/include'])
-    build_env.Append (LIBPATH = ['/usr/local/gtkwin/SDL-1.2.8/lib'])
+    build_env.Append (CPPPATH = ['/usr/local/i386-mingw32/include/gtk-2.0'])  # libpng
+    build_env.Append (CPPPATH = ['/usr/local/i386-mingw32/SDL-1.2.12/include'])
+    build_env.Append (LIBPATH = ['/usr/local/i386-mingw32/SDL-1.2.12/lib'])
     build_env.Append (LIBS = ['libSDL'])
+    build_env.Append (LIBS = ['libxml2', 'libz', 'libiconv', 'libws2_32'])
+# We have to put libxml2 before libz, libiconv, libws2_32, or there are
+# unresolved dependencies.
     build_env.Replace (PROGSUFFIX = '.exe')
 
 if ming and (build_target_only or not cross):
@@ -116,6 +119,10 @@ release_obj = release_env.Object ('release.c')
 common_objs.append (release_obj)
 
 build_env.ParseConfig(pkg_config_cmd + state_io_packages)
+if cross and ming and build_target_only:
+    # Ugly hack for library order problem building for Windows: libgsf-1
+    # requires libz, but -lz winds up too early in linker command line.
+    build_env.Append (LIBS = ['libz'])
 
 #-----------------------------------------------------------------------------
 # str2png
@@ -402,8 +409,9 @@ modutil = build_env.Program (target = 'modutil',
 # default targets
 #-----------------------------------------------------------------------------
 
-default_targets = [nonpareil, uasm, udis, build_ncd, modutil]
-# omit udis for now
+default_targets = [nonpareil, uasm, udis, modutil]
+if (not cross):
+    default_targets += [build_ncd]
 
 if (not cross) or build_target_only:
     Default (default_targets)
