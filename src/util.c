@@ -1,6 +1,6 @@
 /*
 $Id$
-Copyright 1995, 2004, 2005, 2006 Eric L. Smith <eric@brouhaha.com>
+Copyright 1995, 2004, 2005, 2006, 2008 Eric Smith <eric@brouhaha.com>
 
 Nonpareil is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License version 2 as
@@ -19,6 +19,7 @@ Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
 MA 02111, USA.
 */
 
+#include <ctype.h>
 #include <stdarg.h>
 #include <stdbool.h>
 #include <stdint.h>
@@ -35,6 +36,15 @@ MA 02111, USA.
 
 
 char *progname;
+
+
+#ifdef MS_WINDOWS
+#define PATH_SEPARATOR_CHAR '\\'
+#else
+#define PATH_SEPARATOR_CHAR  '/'
+#endif
+
+static const char path_separator_string [] = { PATH_SEPARATOR_CHAR, '\0' };
 
 
 // generate warning message to stderr
@@ -379,7 +389,7 @@ size_t fwrite_bytes (FILE *stream,
 char *path_prefix (char *name)
 {
   char *p1;
-  p1 = strrchr (name, '/');  // $$$ non-portable, should use glib
+  p1 = strrchr (name, PATH_SEPARATOR_CHAR);
   if (! p1)
     return NULL;
   return newstrn (name, p1 - name);
@@ -389,8 +399,7 @@ char *path_prefix (char *name)
 char *path_cat_n (int count, ...)
 {
   va_list ap;
-  static char *sep = "/";      // $$$ non-portable, should use glib
-  int sep_len = strlen (sep);
+  int sep_len = strlen (path_separator_string);
   int len = 0;
   char *p;
   char *p2;
@@ -424,7 +433,7 @@ char *path_cat_n (int count, ...)
 	{
 	  if (prev)
 	    {
-	      strcpy (p2, sep);
+	      strcpy (p2, path_separator_string);
 	      p2 += sep_len;
 	    }
 	  strcpy (p2, a);
@@ -459,7 +468,7 @@ char *base_filename_with_suffix (char *name, char *suffix)
   else
     sn = 0;
 
-  p1 = strrchr (name, '/');  // $$$ non-portable, should use glib
+  p1 = strrchr (name, PATH_SEPARATOR_CHAR);
   if (p1)
     p1++;
   else
@@ -543,7 +552,7 @@ char *find_file_with_suffix (char *name, char *suffix, char *default_path)
       return fn;
     }
 
-  p = strrchr (progname, '/');  // $$$ non-portable, should use glib
+  p = strrchr (progname, PATH_SEPARATOR_CHAR);
   if (p)
     p++;
   else
