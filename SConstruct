@@ -203,7 +203,7 @@ env.Append (GPLv2 = File ('LICENSES/GPL-2.txt'))
 # host platform code
 #-----------------------------------------------------------------------------
 
-env.Append (KML_41CV = File ('calc/nut/41cv/41cv.kml'))
+env.Append (KML_41CV = File ('nui/nut/41cv/41cv.kml'))
 
 native_env = env.Clone ()
 native_env ['build_target_only'] = 0
@@ -254,11 +254,11 @@ for family in all_calcs:
             ncd_dir = model
         ncd_files += env.NCD (target = 'build/calc/' + model + '.ncd',
                               source = 'ncd/' + ncd_dir + '/' + model + '.ncd.tmpl')
-        model_dir = Dir ('calc/' + family + '/' + model)
+        model_dir = Dir ('nui/' + family + '/' + model)
         kml = FindFile (model + '.kml', model_dir)
 	# parse kml to find ROM, image files, etc.
         nui_files += env.NUI (target = 'build/calc/' + model + '.nui',
-                              source = 'calc/' + family + '/' + model + '/' + model + '.kml')
+                              source = 'nui/' + family + '/' + model + '/' + model + '.kml')
 
 Default (ncd_files + nui_files)
 
