@@ -228,20 +228,22 @@ all_calcs = {'classic':    ['35'],
              'woodstock':  ['21', '22', '25', '27', '29c'],
 #             'sting':      ['19c'],
 #             'topcat':     ['97'],
+	     'spice':      ['32e', '33c', '34c', '37e', '38c', '38e'],
+#	     'nut':        ['41c', '41cv', '41cx'],
+#	     'voyager':    ['11c', '12c', '15c', '16c'] }
 	     }
 
-ncd_dir_sub = {'19c': '19c-29c',
-               '25':  '25-25c',
-	       '25c': '25-25c',
-               '29c': '19c-29c',
-	       '67':  '67-97',
-	       '97':  '67-97'}
+ncd_dir_sub = {'19c':  '19c-29c',
+               '25':   '25-25c',
+	       '25c':  '25-25c',
+               '29c':  '19c-29c',
+	       '41cv': '41c',
+	       '41cx': '41c',
+	       '67':   '67-97',
+	       '97':   '67-97'}
 
-#all_calcs = {'classic':    ['35', '45', '55', '80'],
-#	     'woodstock':  ['21', '22', '25', '27', '29c'],
-#	     'spice':      ['32e', '33c', '34c', '37e', '38c', '38e'],
-#	     'nut':        ['41cv', '41cx'],
-#	     'voyager':    ['11c', '12c', '15c', '16c'] }
+nui_dir_sub = {'41cv': '41c',
+               '41cx': '41c'}
 
 nui_files = []
 ncd_files = []
@@ -254,11 +256,16 @@ for family in all_calcs:
             ncd_dir = model
         ncd_files += env.NCD (target = 'build/calc/' + model + '.ncd',
                               source = 'ncd/' + ncd_dir + '/' + model + '.ncd.tmpl')
-        model_dir = Dir ('nui/' + family + '/' + model)
-        kml = FindFile (model + '.kml', model_dir)
+#        nui_dir = Dir ('nui/' + family + '/')
+        nui_dir = 'nui/' + family + '/'
+        if model in nui_dir_sub:
+            nui_dir += nui_dir_sub [model]
+        else:
+            nui_dir += model;
+        kml = FindFile (model + '.kml', nui_dir)
 	# parse kml to find ROM, image files, etc.
         nui_files += env.NUI (target = 'build/calc/' + model + '.nui',
-                              source = 'nui/' + family + '/' + model + '/' + model + '.kml')
+                              source = nui_dir + '/' + model + '.kml')
 
 Default (ncd_files + nui_files)
 

@@ -20,52 +20,30 @@
 global
 	title "38E Programmable Financial Calculator"
 	author "Eric Smith <eric@brouhaha.com>"
-	hardware "Spice"
 	model "38e"
-	rom "38e.rom"
-	image "38c.png"   # don't have a 38E image, use 38C instead
+	image "spice-background.png"
+	image credit "Maciej Bartosiak"
+	overlay default image "38e-overlay.png"
 	color 0 87 127 152  # background color, used when transparency is off
 	transparency 128
 end
 
 background
-	offset 9 16
-	size 270 524
+	size 290 550
 end
 
 display
-	offset 32 104
-	size 222 40
+	offset 9 66
+	size 272 43
 
-	color 0 35 17 17   # background
-	color 1 35 17 17   # unlit segments
+	color 0 60 0 0   # background
+	color 1 60 0 0   # unlit segments
 	color 2 255 17 17  # lit segments
 
 	digits 12
 		size 17 30
-		offset 10 10
+		offset 35 10
 	end
-
-	character 0x00 segment 'a' 'b' 'c' 'd' 'e' 'f'             end
-	character 0x01 segment     'b' 'c'                         end
-        character 0x02 segment 'a' 'b'     'd' 'e'     'g'         end
-	character 0x03 segment 'a' 'b' 'c' 'd'         'g'         end
-	character 0x04 segment     'b' 'c'         'f' 'g'         end
-	character 0x05 segment 'a'     'c' 'd'     'f' 'g'         end
-	character 0x06 segment 'a'     'c' 'd' 'e' 'f' 'g'         end
-	character 0x07 segment 'a' 'b' 'c'                         end
-	character 0x08 segment 'a' 'b' 'c' 'd' 'e' 'f' 'g'         end
-	character 0x09 segment 'a' 'b' 'c' 'd'     'f' 'g'         end
-	character 0x0a segment                 'e'     'g'         end # r
-	character 0x0b segment     'b' 'c'     'e' 'f' 'g'         end # H
-	character 0x0c segment         'c' 'd' 'e'     'g'         end # o
-	character 0x0d segment 'a' 'b'         'e' 'f' 'g'         end # p
-	character 0x0e segment 'a'         'd' 'e' 'f' 'g'         end # e
-	character 0x0f segment                                     end # space
-	character ' '  segment                                     end
-	character '-'  segment                         'g'         end
-	character '.'  segment                             'h'     end
-	character ','  segment                             'h' 'i' end
 
 	segments
 		image "led_segments.png" offset 2 2 size 126 188
@@ -82,56 +60,49 @@ display
 	end # segments
 end # display
 
-switch 0
-  size 15 10
-  default 1
-  position 0  offset  79 161  end  # off
-  position 1  offset  94 161  end  # on
-end
-
 switch 1
-  size 15 10
+  offset  200  127
   default 1
-  position 0  offset 178 161          end  # program
-  position 1  offset 193 161  flag 3  end  # run
+  position 0  image "switch-off.png"          end  # begin
+  position 1  image "switch-on.png"   flag 3  end  # end
 end
 
-button 11  type 0  size 30 25  offset  43 192  down 2 8  keycode 0064  end
-button 12  type 0  size 30 25  offset  85 192  down 2 8  keycode 0063  end
-button 13  type 0  size 30 25  offset 127 192  down 2 8  keycode 0062  end
-button 14  type 0  size 30 25  offset 169 192  down 2 8  keycode 0061  end
-button 15  type 0  size 30 25  offset 211 192  down 2 8  keycode 0060  end
+button 11  image "key_11.png"  offset  18 156  end
+button 12  image "key_12.png"  offset  72 156  end
+button 13  image "key_13.png"  offset 126 156  end
+button 14  image "key_14.png"  offset 180 156  end
+button 15  image "key_15.png"  offset 234 156  end
 
-button 21  type 0  size 30 25  offset  43 239  down 2 8  keycode 0224  end
-button 22  type 0  size 30 25  offset  85 239  down 2 8  keycode 0223  end
-button 23  type 0  size 30 25  offset 127 239  down 2 8  keycode 0222  end
-button 24  type 0  size 30 25  offset 169 239  down 2 8  keycode 0221  end
-button 25  type 0  size 30 25  offset 211 239  down 2 8  keycode 0220  end
+button 21  image "key_21.png"  offset  18 212  end
+button 22  image "key_22.png"  offset  72 212  end
+button 23  image "key_23.png"  offset 126 212  end
+button 24  image "key_24.png"  offset 180 212  end
+button 25  image "key_25.png"  offset 234 212  end
 
-button 31  type 0  size 73 25  offset  43 285  down 2 8  keycode 0163  end
-button 32  type 0  size 30 25  offset 127 285  down 2 8  keycode 0162  end
-button 33  type 0  size 30 25  offset 169 285  down 2 8  keycode 0161  end
-button 34  type 0  size 30 25  offset 211 285  down 2 8  keycode 0160  end
+button 31  image "key_31.png"  offset  18 268  end
+button 32  image "key_32.png"  offset 126 268  end
+button 33  image "key_33.png"  offset 180 268  end
+button 34  image "key_34.png"  offset 234 268  end
 
-button 41  type 0  size 30 25  offset  43 331  down 2 8  keycode 0243  end
-button 42  type 0  size 37 25  offset  93 331  down 2 8  keycode 0242  end
-button 43  type 0  size 37 25  offset 149 331  down 2 8  keycode 0241  end
-button 44  type 0  size 37 25  offset 206 331  down 2 8  keycode 0240  end
+button 41  image "key_41.png"  offset  18 324  end
+button 42  image "key_42.png"  offset  82 324  end
+button 43  image "key_43.png"  offset 154 324  end
+button 44  image "key_44.png"  offset 226 324  end
 
-button 51  type 0  size 30 25  offset  43 378  down 2 8  keycode 0143  end
-button 52  type 0  size 37 25  offset  93 378  down 2 8  keycode 0142  end
-button 53  type 0  size 37 25  offset 149 378  down 2 8  keycode 0141  end
-button 54  type 0  size 37 25  offset 206 378  down 2 8  keycode 0140  end
+button 51  image "key_51.png"  offset  18 380  end
+button 52  image "key_52.png"  offset  82 380  end
+button 53  image "key_53.png"  offset 154 380  end
+button 54  image "key_54.png"  offset 226 380  end
 
-button 61  type 0  size 30 25  offset  43 425  down 2 8  keycode 0323  end
-button 62  type 0  size 37 25  offset  93 425  down 2 8  keycode 0322  end
-button 63  type 0  size 37 25  offset 149 425  down 2 8  keycode 0321  end
-button 64  type 0  size 37 25  offset 206 425  down 2 8  keycode 0320  end
+button 61  image "key_61.png"  offset  18 436  end
+button 62  image "key_62.png"  offset  82 436  end
+button 63  image "key_63.png"  offset 154 436  end
+button 64  image "key_64.png"  offset 226 436  end
 
-button 71  type 0  size 30 25  offset  43 472  down 2 8  keycode 0103  end
-button 72  type 0  size 37 25  offset  93 472  down 2 8  keycode 0102  end
-button 73  type 0  size 37 25  offset 149 472  down 2 8  keycode 0101  end
-button 74  type 0  size 37 25  offset 206 472  down 2 8  keycode 0100  end
+button 71  image "key_71.png"  offset  18 492  end
+button 72  image "key_72.png"  offset  82 492  end
+button 73  image "key_73.png"  offset 154 492  end
+button 74  image "key_74.png"  offset 226 492  end
 
 # main keyboard:
 scancode "0"            map 0 72 end  # 0
