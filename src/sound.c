@@ -1,6 +1,6 @@
 /*
 $Id$
-Copyright 2004, 2005 Eric L. Smith <eric@brouhaha.com>
+Copyright 2004, 2005, 2008 Eric Smith <eric@brouhaha.com>
 
 Nonpareil is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License version 2 as
@@ -379,6 +379,10 @@ bool prepare_samples_from_wav_data (const uint8_t *wav_buf,
   int format;
   uint8_t channels;
   int freq;
+
+  if (! (atomic_bool_get (& sound_v.open) &&
+	 atomic_bool_get (& sound_v.enable)))
+    return false;
 
   wav_buf += 44;  // skip wave, data chunk header
   wav_len -= 44;
