@@ -237,16 +237,12 @@ if not build_target_only:
 # build_ncd
 #-----------------------------------------------------------------------------
 
+build_ncd_srcs = Split ("""build_ncd.c""")
+
+build_ncd = build_env.Program (target = 'build_ncd',
+                               source = build_ncd_srcs + common_objs)
+
 if not build_target_only:
-    build_ncd_env = build_env.Clone ()
-#    build_ncd_packages = "gdome2"
-#    build_ncd_env.ParseConfig (pkg_config_cmd + build_ncd_packages)
-    
-    build_ncd_srcs = Split ("""build_ncd.c""")
-
-    build_ncd = build_ncd_env.Program (target = 'build_ncd',
-                                       source = build_ncd_srcs + common_objs)
-
     native_env ['BUILD_NCD'] = build_ncd [0]
     
 
@@ -409,13 +405,13 @@ modutil = build_env.Program (target = 'modutil',
 # default targets
 #-----------------------------------------------------------------------------
 
-default_targets = [nonpareil, uasm, udis, modutil]
-if (not cross):
-    default_targets += [build_ncd]
+default_targets = [build_ncd, uasm]
 
 if (not cross) or build_target_only:
-    Default (default_targets)
-    
+    default_targets += [nonpareil, udis, modutil]
+
+Default (default_targets)
+
 #-----------------------------------------------------------------------------
 # install
 #-----------------------------------------------------------------------------
@@ -456,6 +452,7 @@ if build_env ['build_target_only'] == 0:
                   nonpareil_srcs + nonpareil_csim_srcs +
                   nonpareil_debugger_gui_srcs +
                   nonpareil_debugger_cli_srcs +
+                  build_ncd_srcs +
                   modutil_srcs +
                   str2png_srcs +
                   bin2c_srcs)
