@@ -1,5 +1,5 @@
 # $Id$
-# Copyright 2004, 2005, 2006 Eric L. Smith <eric@brouhaha.com>
+# Copyright 2004, 2005, 2006, 2008 Eric Smith <eric@brouhaha.com>
 
 # Nonpareil is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License version 2 as
@@ -20,9 +20,7 @@
 global
 	title "12C Financial Calculator"
 	author "Eric Smith <eric@brouhaha.com> and John R. Hogerhuis"
-	hardware "Voyager"
 	model "12c"
-	rom "12c.rom"
 	image "voyager-background-gold.png"
 	image credit "Maciej Bartosiak"
 	overlay default image "12c-overlay.png"
@@ -43,16 +41,20 @@ display
 	color 1  165 175 145  # unlit segments
 	color 2    0   0   0  # lit segments
 
-	annunciator  1  size  5  7 offset  13 42  end  # * (battery low)
-	annunciator  2  size 23  7 offset  45 42  end  # USER
-	annunciator  3  size  5  7 offset  88 42  end  # f
-	annunciator  4  size  6  8 offset 105 44  end  # g
-	annunciator  5  size 27  7 offset 124 42  end  # BEGIN
-	annunciator  6  size  5  7 offset 181 42  end  # G
-	annunciator  7  size 17  7 offset 187 42  end  # RAD
-	annunciator  8  size 20  7 offset 211 42  end  # D.MY
-	annunciator  9  size  5  7 offset 244 42  end  # C
-	annunciator 10  size 23  7 offset 271 42  end  # PRGM
+	annunciators
+		image "voyager-annunciators.png"
+
+		annunciator  1  size  5  7 offset  13 42  end  # * (battery low)
+		annunciator  2  size 23  7 offset  45 42  end  # USER
+		annunciator  3  size  5  7 offset  88 42  end  # f
+		annunciator  4  size  6  8 offset 105 44  end  # g
+		annunciator  5  size 27  7 offset 124 42  end  # BEGIN
+		annunciator  6  size  5  7 offset 181 42  end  # G
+		annunciator  7  size 17  7 offset 187 42  end  # RAD
+		annunciator  8  size 20  7 offset 211 42  end  # D.MY
+		annunciator  9  size  5  7 offset 244 42  end  # C
+		annunciator 10  size 23  7 offset 271 42  end  # PRGM
+	end
 
 	digits 11
 		size 27 31
@@ -60,7 +62,7 @@ display
 	end
 
 	segments
-		image "voyager_segments.png" offset 2 2 size 157 182
+		image "voyager-segments.png" offset 2 2 size 157 182
 
 		segment 'a' color 255   0   0  end       # red
 		segment 'b' color   0 255   0  end       # green
@@ -75,48 +77,48 @@ display
 
 end # display
 
-button 11  image "key_11.png"  offset  16 130  keycode 0x13  end
-button 12  image "key_12.png"  offset  70 130  keycode 0x33  end
-button 13  image "key_13.png"  offset 124 130  keycode 0x73  end
-button 14  image "key_14.png"  offset 178 130  keycode 0xc3  end
-button 15  image "key_15.png"  offset 232 130  keycode 0x83  end
-button 16  image "key_16.png"  offset 286 130  keycode 0x82  end
-button 17  image "key_17.png"  offset 340 130  keycode 0xc2  end
-button 18  image "key_18.png"  offset 394 130  keycode 0x72  end
-button 19  image "key_19.png"  offset 448 130  keycode 0x32  end
-button 10  image "key_10.png"  offset 502 130  keycode 0x12  end
+button 11  image "key_11.png"  offset  16 130  end
+button 12  image "key_12.png"  offset  70 130  end
+button 13  image "key_13.png"  offset 124 130  end
+button 14  image "key_14.png"  offset 178 130  end
+button 15  image "key_15.png"  offset 232 130  end
+button 16  image "key_16.png"  offset 286 130  end
+button 17  image "key_17.png"  offset 340 130  end
+button 18  image "key_18.png"  offset 394 130  end
+button 19  image "key_19.png"  offset 448 130  end
+button 10  image "key_10.png"  offset 502 130  end
 
-button 21  image "key_21.png"  offset  16 186  keycode 0x10  end
-button 22  image "key_22.png"  offset  70 186  keycode 0x30  end
-button 23  image "key_23.png"  offset 124 186  keycode 0x70  end
-button 24  image "key_24.png"  offset 178 186  keycode 0xc0  end
-button 25  image "key_25.png"  offset 232 186  keycode 0x80  end
-button 26  image "key_26.png"  offset 286 186  keycode 0x87  end
-button 27  image "key_27.png"  offset 340 186  keycode 0xc7  end
-button 28  image "key_28.png"  offset 394 186  keycode 0x77  end
-button 29  image "key_29.png"  offset 448 186  keycode 0x37  end
-button 20  image "key_20.png"  offset 502 186  keycode 0x17  end
+button 21  image "key_21.png"  offset  16 186  end
+button 22  image "key_22.png"  offset  70 186  end
+button 23  image "key_23.png"  offset 124 186  end
+button 24  image "key_24.png"  offset 178 186  end
+button 25  image "key_25.png"  offset 232 186  end
+button 26  image "key_26.png"  offset 286 186  end
+button 27  image "key_27.png"  offset 340 186  end
+button 28  image "key_28.png"  offset 394 186  end
+button 29  image "key_29.png"  offset 448 186  end
+button 20  image "key_20.png"  offset 502 186  end
 
-button 31  image "key_31.png"  offset  16 242  keycode 0x11  end
-button 32  image "key_32.png"  offset  70 242  keycode 0x31  end
-button 33  image "key_33.png"  offset 124 242  keycode 0x71  end
-button 34  image "key_34.png"  offset 178 242  keycode 0xc1  end
-button 35  image "key_35.png"  offset 232 242  keycode 0x81  end
-button 36  image "key_36.png"  offset 286 242  keycode 0x84  end
-button 37  image "key_37.png"  offset 340 242  keycode 0xc4  end
-button 38  image "key_38.png"  offset 394 242  keycode 0x74  end
-button 39  image "key_39.png"  offset 448 242  keycode 0x34  end
-button 30  image "key_30.png"  offset 502 242  keycode 0x14  end
+button 31  image "key_31.png"  offset  16 242  end
+button 32  image "key_32.png"  offset  70 242  end
+button 33  image "key_33.png"  offset 124 242  end
+button 34  image "key_34.png"  offset 178 242  end
+button 35  image "key_35.png"  offset 232 242  end
+button 36  image "key_36.png"  offset 286 242  end
+button 37  image "key_37.png"  offset 340 242  end
+button 38  image "key_38.png"  offset 394 242  end
+button 39  image "key_39.png"  offset 448 242  end
+button 30  image "key_30.png"  offset 502 242  end
 
-button 41  image "key_41.png"  offset  16 298  keycode 0x18  end
-button 42  image "key_42.png"  offset  70 298  keycode 0x38  end
-button 43  image "key_43.png"  offset 124 298  keycode 0x78  end
-button 44  image "key_44.png"  offset 178 298  keycode 0xc8  end
-button 45  image "key_45.png"  offset 232 298  keycode 0x88  end
-button 47  image "key_47.png"  offset 340 298  keycode 0xc5  end
-button 48  image "key_48.png"  offset 394 298  keycode 0x75  end
-button 49  image "key_49.png"  offset 448 298  keycode 0x35  end
-button 40  image "key_40.png"  offset 502 298  keycode 0x15  end
+button 41  image "key_41.png"  offset  16 298  end
+button 42  image "key_42.png"  offset  70 298  end
+button 43  image "key_43.png"  offset 124 298  end
+button 44  image "key_44.png"  offset 178 298  end
+button 45  image "key_45.png"  offset 232 298  end
+button 47  image "key_47.png"  offset 340 298  end
+button 48  image "key_48.png"  offset 394 298  end
+button 49  image "key_49.png"  offset 448 298  end
+button 40  image "key_40.png"  offset 502 298  end
 
 # main keyboard:
 scancode "0"            map 0 47 end  # 0

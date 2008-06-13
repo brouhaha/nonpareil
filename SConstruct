@@ -230,7 +230,7 @@ all_calcs = {'classic':    ['35'],
 #             'topcat':     ['97'],
 	     'spice':      ['32e', '33c', '34c', '37e', '38c', '38e'],
 #	     'nut':        ['41c', '41cv', '41cx'],
-#	     'voyager':    ['11c', '12c', '15c', '16c'] }
+	     'voyager':    ['11c', '12c', '15c', '16c']
 	     }
 
 ncd_dir_sub = {'19c':  '19c-29c',
