@@ -1,5 +1,5 @@
 TODO-ports list for Nonpareil
-Copyright 2003, 2004, 2005, 2006, 2008 Eric L. Smith <eric@brouhaha.com>
+Copyright 2003, 2004, 2005, 2006, 2008 Eric Smith <eric@brouhaha.com>
 $Id$
 
 Build process:
@@ -17,15 +17,19 @@ Ports:
         http://www.mingw.org/MinGWiki/index.php/build%20a%20Win32%20x-compiler%20for%20Linux
         http://members.lycos.co.uk/alexv6/Cross_mingw_building_HOWTO.html
 
+      Cross-compiling GTK+ apps:
+        http://live.gnome.org/GTK%2B/Win32/Apps
+
     Libraries and Toolkits:
       GTK+ for Windows:  http://www.gtk.org/download-windows.html
                          ftp://ftp.gtk.org/pub/gtk/v2.8/win32/
 			 http://www.gimp.org/~tml/gimp/win32/
+			 http://live.gnome.org/GTK%2B/Win32
 
       GTK+ for Windows runtime installer:
 			 http://gimp-win.sourceforge.net/stable.html
 		(not compatible with Gimp installer when I last tried it):
-			  http://members.lycos.co.uk/alexv6/
+                          http://gtk-win.sourceforge.net/home/index.php/en/Home
 
       libxml2 for Windows:   http://www.zlatkovic.com/libxml.en.html
       SDL for Windows:       http://www.libsdl.org/
