@@ -1,6 +1,6 @@
 /*
 $Id$
-Copyright 2004, 2005, 2006 Eric L. Smith <eric@brouhaha.com>
+Copyright 2004, 2005, 2006, 2008 Eric Smith <eric@brouhaha.com>
 
 Nonpareil is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License version 2 as
@@ -557,15 +557,16 @@ int main (int argc, char *argv[])
   if (y_size)
     kml->digit_size.height = y_size;
 
-  if (! kml->image_fn)
+  if ((! kml->segment_image_fn) && (! kml->image_fn))
     fatal (2, "No image file spsecified in KML\n");
 
   image_path = newstr (kml_name);
   chop_tail (image_path);
 
-  chop_tail (image_path);  // HACK: 41c.png is in directory above 41cv.kml
-
-  image_fn = find_file_in_path_list (kml->image_fn, NULL, image_path);
+  if (kml->segment_image_fn)
+    image_fn = find_file_in_path_list (kml->segment_image_fn, NULL, image_path);
+  else
+    image_fn = find_file_in_path_list (kml->image_fn, NULL, image_path);
   if (! image_fn)
     fatal (2, "can't find image file '%s'\n", kml->image_fn);
 
