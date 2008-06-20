@@ -1,0 +1,302 @@
+<?xml version="1.0"?>
+<!--
+$Id$
+Copyright 2006, 2008 Eric Smith <eric@brouhaha.com>
+-->
+
+<!DOCTYPE calcdef SYSTEM "http://nonpareil.brouhaha.com/dtd/calcdef.dtd">
+
+<calcdef version="1.0"
+         arch="Nut"
+         platform="Coconut"
+         model="41cv"
+         copyright="Copyright 2006, 2008 Eric Smith &lt;eric@brouhaha.com&gt;"
+         license="CC-BY-SA-3.0">
+
+  <keyboard>
+    <key user_keycode="01" hw_keycode="0x18"/>
+    <key user_keycode="02" hw_keycode="0xc6"/>
+    <key user_keycode="03" hw_keycode="0xc5"/>
+    <key user_keycode="04" hw_keycode="0xc4"/>
+
+    <key user_keycode="11" hw_keycode="0x10"/>
+    <key user_keycode="12" hw_keycode="0x30"/>
+    <key user_keycode="13" hw_keycode="0x70"/>
+    <key user_keycode="14" hw_keycode="0x80"/>
+    <key user_keycode="15" hw_keycode="0xc0"/>
+
+    <key user_keycode="21" hw_keycode="0x11"/>
+    <key user_keycode="22" hw_keycode="0x31"/>
+    <key user_keycode="23" hw_keycode="0x71"/>
+    <key user_keycode="24" hw_keycode="0x81"/>
+    <key user_keycode="25" hw_keycode="0xc1"/>
+
+    <key user_keycode="31" hw_keycode="0x12"/>
+    <key user_keycode="32" hw_keycode="0x32"/>
+    <key user_keycode="33" hw_keycode="0x72"/>
+    <key user_keycode="34" hw_keycode="0x82"/>
+    <key user_keycode="35" hw_keycode="0xc2"/>
+
+    <key user_keycode="41" hw_keycode="0x13"/>
+    <key user_keycode="42" hw_keycode="0x73"/>
+    <key user_keycode="43" hw_keycode="0x83"/>
+    <key user_keycode="44" hw_keycode="0xc3"/>
+
+    <key user_keycode="51" hw_keycode="0x14"/>
+    <key user_keycode="52" hw_keycode="0x34"/>
+    <key user_keycode="53" hw_keycode="0x74"/>
+    <key user_keycode="54" hw_keycode="0x84"/>
+
+    <key user_keycode="61" hw_keycode="0x15"/>
+    <key user_keycode="62" hw_keycode="0x35"/>
+    <key user_keycode="63" hw_keycode="0x75"/>
+    <key user_keycode="64" hw_keycode="0x85"/>
+
+    <key user_keycode="71" hw_keycode="0x16"/>
+    <key user_keycode="72" hw_keycode="0x36"/>
+    <key user_keycode="73" hw_keycode="0x76"/>
+    <key user_keycode="74" hw_keycode="0x86"/>
+
+    <key user_keycode="81" hw_keycode="0x17"/>
+    <key user_keycode="82" hw_keycode="0x37"/>
+    <key user_keycode="83" hw_keycode="0x77"/>
+    <key user_keycode="84" hw_keycode="0x87"/>
+  </keyboard>
+
+  <chip name="Nut">
+    <part_info>
+      <vendor_name>HP</vendor_name>
+      <part_number>1LA5-0001</part_number>
+    </part_info>
+    <inst_clock osc_type="LC" freq="375200"/>
+  </chip>
+
+  <chip name="ROM">
+    <part_info>
+      <vendor_name>HP</vendor_name>
+      <part_number>1LA3</part_number>
+    </part_info>
+    <memory addr_space="inst" banks="0" base_addr="0x0000" size="0x1000">
+    </memory>
+  </chip>
+
+  <chip name="ROM">
+    <part_info>
+      <vendor_name>HP</vendor_name>
+      <part_number>1LA3</part_number>
+    </part_info>
+    <memory addr_space="inst" banks="0" base_addr="0x1000" size="0x1000">
+    </memory>
+  </chip>
+
+  <chip name="ROM">
+    <part_info>
+      <vendor_name>HP</vendor_name>
+      <part_number>1LA3</part_number>
+    </part_info>
+    <memory addr_space="inst" banks="0" base_addr="0x2000" size="0x1000">
+    </memory>
+  </chip>
+
+  <chip name="RAM">
+    <part_info>
+      <vendor_name>HP</vendor_name>
+      <part_number>1LA7-0001</part_number>
+    </part_info>
+    <memory addr_space="data" base_addr="0x000" size="0x10">
+    </memory>
+  </chip>
+
+  <chip name="RAM">
+    <part_info>
+      <vendor_name>HP</vendor_name>
+      <part_number>1LE7-0001</part_number>
+    </part_info>
+    <memory addr_space="data" base_addr="0x0c0" size="0x40">
+    </memory>
+  </chip>
+
+  <chip name="RAM">
+    <part_info>
+      <vendor_name>HP</vendor_name>
+      <part_number>1LE7-0002</part_number>
+    </part_info>
+    <memory addr_space="data" base_addr="0x100" size="0x40">
+    </memory>
+  </chip>
+
+  <chip name="RAM">
+    <part_info>
+      <vendor_name>HP</vendor_name>
+      <part_number>1LE7-0003</part_number>
+    </part_info>
+    <memory addr_space="data" base_addr="0x140" size="0x40">
+    </memory>
+  </chip>
+
+  <chip name="RAM">
+    <part_info>
+      <vendor_name>HP</vendor_name>
+      <part_number>1LE7-0004</part_number>
+    </part_info>
+    <memory addr_space="data" base_addr="0x180" size="0x40">
+    </memory>
+  </chip>
+
+  <chip name="RAM">
+    <part_info>
+      <vendor_name>HP</vendor_name>
+      <part_number>1LE7-0005</part_number>
+    </part_info>
+    <memory addr_space="data" base_addr="0x1c0" size="0x40">
+    </memory>
+  </chip>
+
+  <chip name="LCD driver">
+    <part_info>
+      <vendor_name>HP</vendor_name>
+      <part_number>1LA4</part_number>
+    </part_info>
+    <chargen>  
+      <char id="0x00" print="@"      segments="ab def hi     " />
+      <char id="0x01" print="A"      segments="abc efgh      " />
+      <char id="0x02" print="B"      segments="abcd   hij    " />
+      <char id="0x03" print="C"      segments="a  def        " />
+      <char id="0x04" print="D"      segments="abcd    ij    " />
+      <char id="0x05" print="E"      segments="a  defgh      " />
+      <char id="0x06" print="F"      segments="a   efgh      " />
+      <char id="0x07" print="G"      segments="a cdef h      " />
+      <char id="0x08" print="H"      segments=" bc efgh      " />
+      <char id="0x09" print="I"      segments="a  d    ij    " />
+      <char id="0x0a" print="J"      segments=" bcde         " />
+      <char id="0x0b" print="K"      segments="    efg   k m " />
+      <char id="0x0c" print="L"      segments="   def        " />
+      <char id="0x0d" print="M"      segments=" bc ef    kl  " />
+      <char id="0x0e" print="N"      segments=" bc ef     lm " />
+      <char id="0x0f" print="O"      segments="abcdef        " />
+      <char id="0x10" print="P"      segments="ab  efgh      " />
+      <char id="0x11" print="Q"      segments="abcdef      m " />
+      <char id="0x12" print="R"      segments="ab  efgh    m " />
+      <char id="0x13" print="S"      segments="a cd fgh      " />
+      <char id="0x14" print="T"      segments="a       ij    " />
+      <char id="0x15" print="U"      segments=" bcdef        " />
+      <char id="0x16" print="V"      segments="    ef    k  n" />
+      <char id="0x17" print="W"      segments=" bc ef      mn" />
+      <char id="0x18" print="X"      segments="          klmn" />
+      <char id="0x19" print="Y"      segments="         jkl  " />
+      <char id="0x1a" print="Z"      segments="a  d      k  n" />
+      <char id="0x1b" print="["      segments="a  def        " />
+      <char id="0x1c" print="\"      segments="           lm " />
+      <char id="0x1d" print="]"      segments="abcd          " />
+      <char id="0x1e" print="?"      segments="ab        k  n" />
+      <char id="0x1f" print="_"      segments="   d          " />
+      <char id="0x20" print=" "      segments="              " />
+      <char id="0x21" print="!"      segments="        ij    " />
+      <char id="0x22" print="&quot;" segments="     f  i     " />  ???
+      <char id="0x23" print="#"      segments=" bcd  ghij    " />
+      <char id="0x24" print="$"      segments="a cd fghij    " />
+      <char id="0x25" print="%"      segments="  c  fgh  klmn" />
+      <char id="0x26" print="&amp;"  segments="a cd      klmn" />
+      <char id="0x27" print="'"      segments="        i     " />
+      <char id="0x28" print="("      segments="          k m " />
+      <char id="0x29" print=")"      segments="           l n" />
+      <char id="0x2a" print="*"      segments="      ghijklmn" />
+      <char id="0x2b" print="+"      segments="      ghij    " />
+      <char id="0x2c" print="?"      segments="      gh  k m " />  <!-- left goose -->
+      <char id="0x2d" print="-"      segments="      gh      " />
+      <char id="0x2e" print="?"      segments="      gh   l n" />  <!-- right goose -->
+      <char id="0x2f" print="/"      segments="          k  n" />
+      <char id="0x30" print="0"      segments="abcdef    k  n" />  <!-- zero with slash to distinguish from letter O-->
+      <char id="0x31" print="1"      segments=" bc           " />
+      <char id="0x32" print="2"      segments="ab de gh      " />
+      <char id="0x33" print="3"      segments="abcd  gh      " />
+      <char id="0x34" print="4"      segments=" bc  fgh      " />
+      <char id="0x35" print="5"      segments="a cd   h   l  " />
+      <char id="0x36" print="6"      segments="a cdefgh      " />
+      <char id="0x37" print="7"      segments="abc           " />
+      <char id="0x38" print="8"      segments="abcdefgh      " />
+      <char id="0x39" print="9"      segments="abcd fgh      " />
+      <char id="0x3a" print="?"      segments="abcdefghijklmn" />  <!-- starburst, all segments on -->
+      <char id="0x3b" print=";"      segments="      g      n" />
+      <char id="0x3c" print="&lt;"   segments="   d      k  n" />
+      <char id="0x3d" print="="      segments="   d  gh      " />
+      <char id="0x3e" print="&gt;"   segments="   d       lm " />
+      <char id="0x3f" print="?"      segments="ab   f h j    " />
+      <char id="0x40" print="?"      segments="    efgh      " />  <!-- APP lazy T -->
+      <char id="0x41" print="a"      segments="  cde g     m " />
+      <char id="0x42" print="b"      segments="  cdefgh      " />
+      <char id="0x43" print="c"      segments="   de gh      " />
+      <char id="0x44" print="d"      segments=" bcde gh      " />
+      <char id="0x45" print="e"      segments="   de g       " />
+      <char id="0x46" print="?"      segments="a             " />  <!-- OVE overbar (hangman character - head only) -->
+      <char id="0x47" print="?"      segments="a       i     " />  <!-- SUP high-T (hangman head and neck/torso) -->
+      <char id="0x48" print="?"      segments="a       i    n" />  <!-- HAN hangman with left leg -->
+      <char id="0x49" print="?"      segments="a       i   mn" />  <!-- HAN hangman with left, right legs -->
+      <char id="0x4a" print="?"      segments="a     g i   mn" />  <!-- HAN hangman with both legs, left arm -->
+      <char id="0x4b" print="?"      segments="a     ghi   mn" />  <!-- HAN full hangman -->
+      <char id="0x4c" print="?"      segments=" b     hi    n" />  <!-- MIC Greek mu -->
+      <char id="0x4d" print="?"      segments="   d  gh  k  n" />  <!-- NOT not equal -->
+      <char id="0x4e" print="?"      segments="a  d       l n" />  <!-- SIG Greek Sigma -->
+      <char id="0x4f" print="?"      segments="   d     jk  n" />  <!-- ANG angle symbol -->
+
+-- Halfnut models have extra characters from 0x50 through 0x7f, which
+   display as spaces on fullnuts.  See CHHU Chronicle V2N4 for details. -->
+
+      <char id="0x50" print="?"      segments="      gh    mn" />  <!-- DC1 Greek pi -->
+      <char id="0x51" print="?"      segments="   d        mn" />  <!-- BEL Greek alpha -->
+      <char id="0x52" print="?"      segments="a  d  g   k mn" />  <!-- BAC Greek beta -->
+      <char id="0x53" print="?"      segments="      gh j    " />  <!-- HTA Greek gamma -->
+      <char id="0x54" print="?"      segments="     fgh j  m " />  <!-- UN unknown -->
+      <char id="0x55" print="?"      segments="    e gh     n" />  <!-- VTA Greek sigma -->
+      <char id="0x56" print="?"      segments="a             " />  <!-- OVE overbar (hangman character - head only) (duplicate of 0x46) -->
+      <char id="0x57" print="?"      segments="ab  ef        " />  <!-- ESC Greek gamma -->
+      <char id="0x58" print="?"      segments="a       i    n" />  <!-- HAN hangman with left leg (duplicate of 0x48) -->
+      <char id="0x59" print="?"      segments="a       i   mn" />  <!-- HAN hangman with left, right legs (duplicate of 0x49) -->
+      <char id="0x5a" print="?"      segments="a     g i   mn" />  <!-- HAN hangman with both legs, left arm (duplicate of 0x4a) -->
+      <char id="0x5b" print="?"      segments="a     ghi   mn" />  <!-- HAN full hangman (duplicate of 0x4b) -->
+      <char id="0x5c" print="?"      segments=" b     hi    n" />  <!-- MIC Greek mu (duplicate of 0x4c) -->
+      <char id="0x5d" print="?"      segments="   d  gh  k  n" />  <!-- NOT not equal (duplicate of 0x4d) -->
+      <char id="0x5e" print="?"      segments="           lmn" />  <!-- DC3 Greek lamda -->
+      <char id="0x5f" print="?"      segments="   d     jk  n" />  <!-- ANG angle symbol (duplicate of 0x4f) -->
+      <char id="0x60" print="?"      segments="a       i     " />  <!-- SUP high-T (hangman head and neck/torso) (duplicate of 0x47) -->
+      <char id="0x61" print="a"      segments="  cde g     m " />  <!-- duplicate of 0x41 -->
+      <char id="0x62" print="b"      segments="  cdefgh      " />  <!-- duplicate of 0x42 -->
+      <char id="0x63" print="c"      segments="   de gh      " />  <!-- duplicate of 0x43 -->
+      <char id="0x64" print="d"      segments=" bcde gh      " />  <!-- duplicate of 0x44 -->
+      <char id="0x65" print="e"      segments="   de g       " />  <!-- duplicate of 0x45 -->
+      <char id="0x66" print="f"      segments="       h jk   " />
+      <char id="0x67" print="g"      segments="  cd   h    m " />
+      <char id="0x68" print="h"      segments="  c efgh      " />
+      <char id="0x69" print="i"      segments="    e         " />
+      <char id="0x6a" print="j"      segments="  cd          " />
+      <char id="0x6b" print="k"      segments="    efgh    m " />
+      <char id="0x6c" print="l"      segments="    ef        " />
+      <char id="0x6d" print="m"      segments="  c   gh j    " />
+      <char id="0x6e" print="n"      segments="  c   gh      " />
+      <char id="0x6f" print="o"      segments="  cde gh      " />
+      <char id="0x70" print="p"      segments="    efg    l  " />
+      <char id="0x71" print="q"      segments="     fg    lm " />
+      <char id="0x72" print="r"      segments="    e gh      " />
+      <char id="0x73" print="s"      segments="   d   h    m " />
+      <char id="0x74" print="t"      segments="      ghi   m " />
+      <char id="0x75" print="u"      segments="  cde         " />
+      <char id="0x76" print="v"      segments="    e        n" />
+      <char id="0x77" print="w"      segments="    e        n" />
+      <char id="0x78" print="x"      segments="      gh j   n" />
+      <char id="0x79" print="y"      segments="  cd        m " />
+      <char id="0x7a" print="z"      segments="   d  g      n" />
+      <char id="0x7b" print="{"      segments="       h  k m " />  <!-- LEF left brace -->
+      <char id="0x7c" print="?"      segments="   d      k mn" />  <!-- DEL delta -->
+      <char id="0x7d" print=")"      segments="      g    l n" />  <!-- RIG right brace -->
+      <char id="0x7e" print="?"      segments="a  d       l n" />  <!-- duplicate of 0x4e -->
+      <char id="0x7f" print="?"      segments="    efgh      " />  <!-- duplicate of 0x40 -->
+    </chargen>
+  </chip>
+
+  <obj_file addr_space="inst"
+            copyright="Copyright 2006, 2008 Eric Smith &lt;eric@brouhaha.com&gt;"
+            license="CC-BY-SA-3.0">
+    41-gff.obj
+  </obj_file>
+</calcdef>
+

@@ -1,0 +1,212 @@
+# $Id$
+# Copyright 2004, 2005, 2006, 2008 Eric L. Smith <eric@brouhaha.com>
+
+# Nonpareil is free software; you can redistribute it and/or modify it
+# under the terms of the GNU General Public License version 2 as
+# published by the Free Software Foundation.  Note that I am not
+# granting permission to redistribute or modify Nonpareil under the
+# terms of any later version of the General Public License.
+
+# Nonpareil is distributed in the hope that they will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# General Public License for more details.
+
+# You should have received a copy of the GNU General Public License
+# along with this program (in the file "COPYING"); if not, write to
+# the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+# Boston, MA 02111, USA.
+
+global
+	title "41CV Programmable Scientific Calculator"
+	author "Eric Smith <eric@brouhaha.com>"
+	model "41cv"
+	image "41c.png"
+	overlay default image "41c-overlay.png"
+	color 0 137 0 6	  # background color, used when transparency is off
+end
+
+background
+	offset 0 0
+	size 270 496
+end
+
+display
+	offset 8 8
+	size 254 48
+
+	#color 0 142 125 109   # background
+	color 0 182 165 149   # background
+	color 1 182 165 149   # unlit segments
+	color 2   0   0   0   # lit segments
+
+	annunciators
+		annunciator  0  size 17 7  offset  20 37  end   # BAT
+		annunciator  1  size 23 7  offset  44 37  end   # USER
+		annunciator  2  size  5 7  offset  74 37  end   # G
+		annunciator  3  size 17 7  offset  80 37  end   # RAD
+		annunciator  4  size 29 7  offset 104 37  end   # SHIFT
+		annunciator  5  size  5 7  offset 140 37  end   # 0
+		annunciator  6  size  5 7  offset 146 37  end   # 1
+		annunciator  7  size  5 7  offset 152 37  end   # 2
+		annunciator  8  size  5 7  offset 158 37  end   # 3
+		annunciator  9  size  5 7  offset 164 37  end   # 4
+		annunciator 10  size 23 7  offset 176 37  end   # PRGM
+		annunciator 11  size 29 7  offset 206 37  end   # ALPHA
+	end
+
+	digits 12
+		size 20 22
+		offset 6 4
+	end
+
+	segments
+		image "lcd_segments.png" offset 2 2 size 119 129
+
+		segment 'a'  color 255   0   0  end       # red
+		segment 'b'  color   0 255   0  end       # green
+		segment 'c'  color   0   0 255  end       # blue
+		segment 'd'  color 255 255   0  end       # yellow
+		segment 'e'  color 255   0 255  end       # purple
+		segment 'f'  color   0 255 255  end       # bluegreen
+		segment 'g'  color 255 128   0  end       # orange
+		segment 'h'  color 255   0 128  end       # pink
+		segment 'i'  color 128   0   0  end       # dark red
+		segment 'j'  color   0 128   0  end       # dark green
+		segment 'k'  color   0   0 128  end       # dark blue
+		segment 'l'  color 127 255 212  end       # aquamarine
+		segment 'm'  color 233 150 122  end       # dark salmon
+		segment 'n'  color   0   0   0  end       # black
+		segment 'o'  color 128 128 128  end       # grey
+		segment 'p'  color  64  64  64  end       # dark grey
+		segment 'q'  color 192 192 192  end       # light grey
+	end
+
+end # display
+
+button 01  image "key_01.png"  offset  22  67  end
+button 02  image "key_02.png"  offset  70  67  end
+button 03  image "key_03.png"  offset 166  67  end
+button 04  image "key_04.png"  offset 214  67  end
+
+button 11  image "key_11.png"  offset  24 111  end
+button 12  image "key_12.png"  offset  72 111  end
+button 13  image "key_13.png"  offset 120 111  end
+button 14  image "key_14.png"  offset 168 111  end
+button 15  image "key_15.png"  offset 216 111  end
+
+button 21  image "key_21.png"  offset  24 159  end
+button 22  image "key_22.png"  offset  72 159  end
+button 23  image "key_23.png"  offset 120 159  end
+button 24  image "key_24.png"  offset 168 159  end
+button 25  image "key_25.png"  offset 216 159  end
+
+button 31  image "key_31.png"  offset  24 207  end
+button 32  image "key_32.png"  offset  72 207  end
+button 33  image "key_33.png"  offset 120 207  end
+button 34  image "key_34.png"  offset 168 207  end
+button 35  image "key_35.png"  offset 216 207  end
+
+button 41  image "key_41.png"  offset  24 255  end
+button 42  image "key_42.png"  offset 120 255  end
+button 43  image "key_43.png"  offset 168 255  end
+button 44  image "key_44.png"  offset 216 255  end
+
+button 51  image "key_51.png"  offset  24 303  end
+button 52  image "key_52.png"  offset  73 303  end
+button 53  image "key_53.png"  offset 141 303  end
+button 54  image "key_54.png"  offset 209 303  end
+
+button 61  image "key_61.png"  offset  24 351  end
+button 62  image "key_62.png"  offset  73 351  end
+button 63  image "key_63.png"  offset 141 351  end
+button 64  image "key_64.png"  offset 209 351  end
+
+button 71  image "key_71.png"  offset  24 399  end
+button 72  image "key_72.png"  offset  73 399  end
+button 73  image "key_73.png"  offset 141 399  end
+button 74  image "key_74.png"  offset 209 399  end
+
+button 81  image "key_81.png"  offset  24 447  end
+button 82  image "key_82.png"  offset  73 447  end
+button 83  image "key_83.png"  offset 141 447  end
+button 84  image "key_84.png"  offset 209 447  end
+
+# main keyboard:
+scancode "0"            map 0 82 end
+scancode "1"            map 0 72 end
+scancode "2"            map 0 73 end
+scancode "3"            map 0 74 end
+scancode "4"            map 0 62 end
+scancode "5"            map 0 63 end
+scancode "6"            map 0 64 end
+scancode "7"            map 0 52 end
+scancode "8"            map 0 53 end
+scancode "9"            map 0 54 end
+scancode "period"       map 0 83 end  # .
+scancode "plus"         map 0 61 end  # +
+scancode "minus"        map 0 51 end  # -
+scancode "asterisk"     map 0 71 end  # *
+scancode "slash"        map 0 81 end  # /
+
+#all letter access the key it is printed on
+scancode "a"            map 0 11 end
+scancode "b"            map 0 12 end
+scancode "c"            map 0 13 end
+scancode "d"            map 0 14 end
+scancode "e"            map 0 15 end
+scancode "f"            map 0 21 end
+scancode "g"            map 0 22 end
+scancode "h"            map 0 23 end
+scancode "i"            map 0 24 end
+scancode "j"            map 0 25 end
+scancode "k"            map 0 32 end
+scancode "l"            map 0 33 end
+scancode "m"            map 0 34 end
+scancode "n"            map 0 41 end
+scancode "o"            map 0 42 end
+scancode "p"            map 0 43 end
+scancode "q"            map 0 51 end
+scancode "r"            map 0 52 end
+scancode "s"            map 0 53 end
+scancode "t"            map 0 54 end
+scancode "u"            map 0 61 end
+scancode "v"            map 0 62 end
+scancode "w"            map 0 63 end
+scancode "x"            map 0 64 end
+scancode "y"            map 0 71 end
+scancode "z"            map 0 72 end
+scancode "equal"        map 0 73 end # =
+scancode "question"     map 0 74 end # ?
+
+scancode "BackSpace"    map 0 44 end # backspace
+scancode "Return"       map 0 41 end # ENTER
+
+scancode "Tab"          map 0 31 end # shift (gold)
+
+scancode "F2"           map 0 01 end # ON
+scancode "F3"           map 0 02 end # USER
+scancode "F4"           map 0 03 end # PRGM
+scancode "F5"           map 0 04 end # ALPHA
+
+scancode "F6"           map 0 35 end # SST
+scancode "F7"           map 0 84 end # R/S
+
+# keypad:
+scancode "KP_0"         map 0 82 end
+scancode "KP_1"         map 0 72 end
+scancode "KP_2"         map 0 73 end
+scancode "KP_3"         map 0 74 end
+scancode "KP_4"         map 0 62 end
+scancode "KP_5"         map 0 63 end
+scancode "KP_6"         map 0 64 end
+scancode "KP_7"         map 0 52 end
+scancode "KP_8"         map 0 53 end
+scancode "KP_9"         map 0 54 end
+scancode "KP_Decimal"   map 0 83 end  # .
+scancode "KP_Separator" map 0 83 end  # ,  radix mark
+scancode "KP_Add"       map 0 61 end  # +
+scancode "KP_Subtract"  map 0 51 end  # -
+scancode "KP_Multiply"  map 0 71 end  # *
+scancode "KP_Divide"    map 0 81 end  # /
+scancode "KP_Enter"     map 0 41 end
