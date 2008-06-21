@@ -566,15 +566,33 @@ static void op_load_constant (sim_t *sim, int opcode)
 }
 
 
+static void set_s_bit (sim_t *sim, int bit, bool state)
+{
+  act_reg_t *act_reg = get_chip_data (sim->first_chip);
+
+  bool orig_state = act_reg->s [bit];
+  act_reg->s [bit] = state;
+
+  if ((bit == 0) && (state != orig_state))
+    {
+      // handle flag out pin
+      chip_event (sim,
+		  event_flag_out_change,
+		  NULL,  // all chips
+		  state,
+		  NULL);
+    }
+}
+
+
 static void op_clear_s (sim_t *sim,
 			int opcode UNUSED)
 {
-  act_reg_t *act_reg = get_chip_data (sim->first_chip);
   int i;
 
   for (i = 0; i < SSIZE; i++)
     if ((i != 1) && (i != 2) && (i != 5) && (i != 15))
-      act_reg->s [i] = 0;
+      set_s_bit (sim, i, 0);
 }
 
 
@@ -681,7 +699,7 @@ static void rom_selftest_done (sim_t *sim)
   printf ("ROM CRC done, crc = %03x: %s\n", act_reg->crc,
 	  act_reg->crc == 0x078 ? "good" : "bad");
   if (act_reg->crc != 0x078)
-    act_reg->s [5] = 1;  // indicate error
+    set_s_bit (sim, 5, 1);  // indicate error
   act_reg->inst_state = inst_normal;
   op_return (sim, 0);
 }
@@ -927,7 +945,7 @@ static void op_set_s (sim_t *sim, int opcode)
   if ((opcode >> 6) >= SSIZE)
     printf ("stat >= SSIZE at %05o\n", act_reg->prev_pc);
   else
-    act_reg->s [opcode >> 6] = 1;
+    set_s_bit (sim, opcode >> 6, 1);
 }
 
 
@@ -938,7 +956,7 @@ static void op_clr_s (sim_t *sim, int opcode)
   if ((opcode >> 6) >= SSIZE)
     printf ("stat >= SSIZE at %05o\n", act_reg->prev_pc);
   else
-    act_reg->s [opcode >> 6] = 0;
+    set_s_bit (sim, opcode >> 6, 0);
 }
 
 
@@ -1151,7 +1169,7 @@ static void op_crc_test_f1 (sim_t *sim,
   act_reg_t *act_reg = get_chip_data (sim->first_chip);
 
   if (act_reg->ext_flag [1])
-    act_reg->s [3] = 1;
+    set_s_bit (sim, 3, 1);
 }
 
 
@@ -1185,7 +1203,7 @@ static void op_crc_unknown_1100 (sim_t *sim,
   act_reg_t *act_reg = get_chip_data (sim->first_chip);
 
   if (crc_flag)
-    act_reg->s [3] = 1;
+    set_s_bit (sim, 3, 1);
 
   printf ("unknown CRC opcode %04o at %05o\n", opcode, act_reg->prev_pc);
 }
@@ -1529,12 +1547,12 @@ static bool woodstock_execute_cycle (sim_t *sim)
   act_reg->carry = 0;
 
   if (act_reg->key_flag)
-    act_reg->s [15] = 1;
+    set_s_bit (sim, 15, 1);
 
   if (act_reg->ext_flag [3])
-    act_reg->s [3] = 1;
+    set_s_bit (sim, 3, 1);
   if (act_reg->ext_flag [5])
-    act_reg->s [5] = 1;
+    set_s_bit (sim, 5, 1);
 
   act_reg->pc = (act_reg->pc + 1) & 07777;
 

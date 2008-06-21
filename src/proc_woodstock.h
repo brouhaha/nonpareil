@@ -140,3 +140,8 @@ bool woodstock_disassemble (sim_t        *sim,
 			    addr_t       *target_addr,
 			    char         *buf,
 			    int          len);
+
+enum
+{
+  event_flag_out_change = first_arch_event,
+};
