@@ -146,14 +146,20 @@ Copyright 2007, 2008 Eric Smith <eric@brouhaha.com>
 
   <keyboard>
 
-    <switch number="0">
-      <switch_pos position="0"/>
-      <switch_pos position="1"/>
+    <switch number="0">  <!-- power switch -->
+      <switch_pos position="0">
+      </switch_pos>
+      <switch_pos position="1">
+      </switch_pos>
     </switch>
 
     <switch number="1">
-      <switch_pos position="0"/>
-      <switch_pos position="1" chip_id="crc" flag="1" value="1"/>
+      <switch_pos position="0">
+        <flag chip_id="crc" number="1" value="0"/>
+      </switch_pos>
+      <switch_pos position="1">
+        <flag chip_id="crc" number="1" value="1"/>
+      </switch_pos>
     </switch>
 
     <key user_keycode="11" hw_keycode="0244"/>

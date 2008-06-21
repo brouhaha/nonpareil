@@ -69,9 +69,9 @@ end
 switch 1
   size 17 12
   default 2
-  position 0  offset 198 140  flag 11  end   # timer
-  position 1  offset 215 140  flag 3   end   # program
-  position 2  offset 232 140           end   # run
+  position 0  offset 198 140  end   # timer
+  position 1  offset 215 140  end   # program
+  position 2  offset 232 140  end   # run
 end
 
 button 11  type 0  size 34 24  offset  52 178  down 2 8  keycode 006  end

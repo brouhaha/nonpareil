@@ -1,5 +1,5 @@
 # $Id$
-# Copyright 2004, 2005 Eric L. Smith <eric@brouhaha.com>
+# Copyright 2004, 2005, 2008 Eric Smith <eric@brouhaha.com>
 
 # Nonpareil is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License version 2 as
@@ -60,11 +60,13 @@ display
 	end # segments
 end # display
 
+# switch 0 would be power switch
+
 switch 1
   offset  200  127
   default 1
-  position 0  image "switch-off.png"          end  # begin
-  position 1  image "switch-on.png"   flag 3  end  # end
+  position 0  image "switch-off.png"  end  # begin
+  position 1  image "switch-on.png"   end  # end
 end
 
 button 11  image "key_11.png"  offset  18 156  end

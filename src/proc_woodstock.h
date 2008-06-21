@@ -29,7 +29,7 @@ typedef digit_t reg_t [WSIZE];
 #define SSIZE 16
 #define STACK_SIZE 2
 
-#define EXT_FLAG_SIZE 16
+#define EXT_FLAG_SIZE 2
 
 #define PAGE_SIZE 1024
 #define MAX_PAGE 4
@@ -48,6 +48,11 @@ typedef uint16_t rom_addr_t;
                             // unknown for NMOS ACT 5061-0428
                             // unknown for Spice series processors
                             //      1820-2105, 1820-2122, 1820-2162-A
+
+
+// External flag inputs
+#define EXT_FLAG_ACT_F1 0
+#define EXT_FLAG_ACT_F2 1
 
 
 typedef struct

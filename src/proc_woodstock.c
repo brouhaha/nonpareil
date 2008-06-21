@@ -1549,9 +1549,9 @@ static bool woodstock_execute_cycle (sim_t *sim)
   if (act_reg->key_flag)
     set_s_bit (sim, 15, 1);
 
-  if (act_reg->ext_flag [3])
+  if (act_reg->ext_flag [EXT_FLAG_ACT_F1])
     set_s_bit (sim, 3, 1);
-  if (act_reg->ext_flag [5])
+  if (act_reg->ext_flag [EXT_FLAG_ACT_F2])
     set_s_bit (sim, 5, 1);
 
   act_reg->pc = (act_reg->pc + 1) & 07777;
@@ -1724,7 +1724,7 @@ static void woodstock_set_ext_flag_input (sim_t *sim,
   act_reg->ext_flag [flag] = state;
 }
 
-// $$$ pulse currently owrks same as set, which is wrong
+// $$$ pulse currently works same as set, which is wrong
 static void woodstock_pulse_ext_flag_input (sim_t *sim,
 					    chip_t *chip UNUSED,
 					    int flag,
@@ -1844,7 +1844,7 @@ static void woodstock_reset (sim_t *sim)
   act_reg->key_flag = 0;
 
   if (sim->platform == PLATFORM_WOODSTOCK)  // but not PLATFORM_TOPCAT
-    act_reg->ext_flag [5] = 1;  // force battery ok
+    act_reg->ext_flag [EXT_FLAG_ACT_F2] = 1;  // force battery ok
 }
 
 

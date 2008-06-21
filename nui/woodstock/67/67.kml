@@ -64,8 +64,8 @@ end
 switch 1
   offset 207 104
   default 1
-  position 0  image "switch-off.png"  flag 1  end  # program -- card reader flag 1
-  position 1  image "switch-on.png"           end  # run
+  position 0  image "switch-off.png"  end  # program
+  position 1  image "switch-on.png"   end  # run
 end
 
 button 11  type 0  size 37 31  offset  19 172  end

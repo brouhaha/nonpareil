@@ -449,11 +449,8 @@ position_stmt_list	:	position_stmt
 			|	position_stmt position_stmt_list
 			;
 
-position_stmt		:	flag_stmt
-			|	image_stmt { yy_kml->kswitch [kml_cur_idx]->position [kml_cur_idx2]->image_fn = newstr ($1); }
+position_stmt		:	image_stmt { yy_kml->kswitch [kml_cur_idx]->position [kml_cur_idx2]->image_fn = newstr ($1); }
 			;
-
-flag_stmt		:	FLAG INTEGER { yy_kml->kswitch [kml_cur_idx]->position [kml_cur_idx2]->flag = $2; } ;
 
 
 /*----------------------------------------------------------------------------

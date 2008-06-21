@@ -1,6 +1,6 @@
 /*
 $Id$
-Copyright 1995, 2003, 2004, 2005 Eric L. Smith <eric@brouhaha.com>
+Copyright 1995, 2003, 2004, 2005, 2008 Eric Smith <eric@brouhaha.com>
 
 Nonpareil is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License version 2 as
@@ -27,7 +27,14 @@ typedef digit_t reg_t [WSIZE];
 
 
 #define SSIZE 12
-#define EXT_FLAG_SIZE 12
+
+
+#define EXT_FLAG_SIZE 2
+
+// External flag inputs
+#define EXT_FLAG_F1 0
+#define EXT_FLAG_F2 1
+
 
 #define MAX_GROUP 2
 #define MAX_ROM 8

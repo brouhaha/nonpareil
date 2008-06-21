@@ -1441,6 +1441,7 @@ void sim_release_key (sim_t *sim, int keycode)
 }
 
 
+#if 0
 // sets up an association between a switch position and an ext flag
 void sim_set_switch_flag (sim_t *sim,
 			  uint8_t sw,
@@ -1454,25 +1455,36 @@ void sim_set_switch_flag (sim_t *sim,
   sim->switch_position_chip [sw] [position] = chip;
   sim->switch_position_flag [sw] [position] = flag;
 }
+#endif
 
 
 bool sim_set_switch (sim_t *sim,
 		     uint8_t sw,
 		     uint8_t position)
 {
-  int p;
+  int i;
+  int flag;
+  int value;
 
   if ((sw >= MAX_SWITCH) ||
       (position >= MAX_SWITCH_POSITION))
     return false;
 
   sim->switch_position [sw] = position;
-  for (p = 0; p < MAX_SWITCH_POSITION; p++)
-    if (sim->switch_position_flag [sw] [p])
+  i = 0;
+  while (calcdef_get_switch_position_flag (sim->calcdef,
+					   sw,
+					   position,
+					   i++,
+					   & flag,
+					   & value))
+    {
       sim_set_ext_flag_input (sim,
-			      sim->switch_position_chip [sw] [p],
-			      sim->switch_position_flag [sw] [p],
-			      p == position);
+			      NULL,  // $$$ chip
+			      flag,
+			      value);
+    }
+
   return true;
 }
 

@@ -921,9 +921,10 @@ bool classic_execute_instruction (sim_t *sim)
 
   if (cpu_reg->key_flag)
     cpu_reg->s [0] = 1;
-  for (i = 0; i < SSIZE; i++)
-    if (cpu_reg->ext_flag [i])
-      cpu_reg->s [i] = 1;
+  if (cpu_reg->ext_flag [EXT_FLAG_F1])
+    cpu_reg->s [3] = 1;
+  if (cpu_reg->ext_flag [EXT_FLAG_F2])
+    cpu_reg->s [11] = 1;
 
   cpu_reg->pc++;
   (* cpu_reg->op_fcn [opcode]) (sim, opcode);

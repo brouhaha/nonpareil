@@ -58,6 +58,30 @@ typedef struct calcdef_chip_t
 } calcdef_chip_t;
 
 
+typedef struct calcdef_flag_t
+{
+  struct calcdef_flag_t *next;
+  int number;
+  int value;
+} calcdef_flag_t;
+
+
+typedef struct calcdef_switch_position_t
+{
+  struct calcdef_switch_position_t *next;
+  int position;
+  calcdef_flag_t *flag;
+} calcdef_switch_position_t;
+
+
+typedef struct calcdef_switch_t
+{
+  struct calcdef_switch_t *next;
+  int number;
+  calcdef_switch_position_t *position;
+} calcdef_switch_t;
+
+
 struct calcdef_t
 {
   sim_t *sim;
@@ -72,6 +96,7 @@ struct calcdef_t
   calcdef_chip_t *chip;
   segment_bitmap_t *char_gen;
   hw_keycode_t *keycode_map;
+  calcdef_switch_t *sw;
 };
 
 
@@ -284,15 +309,104 @@ static void parse_key (calcdef_t *calcdef UNUSED,
 }
 
 
-static void parse_switch (calcdef_t *calcdef UNUSED,
-			  const xmlChar **attrs UNUSED)
+static void parse_flag (calcdef_t *calcdef UNUSED,
+			const xmlChar **attrs UNUSED)
 {
+  int i;
+  calcdef_flag_t *flag;
+  bool got_number = false;
+  bool got_value = false;
+
+  flag = alloc (sizeof (calcdef_flag_t));
+  flag->next = calcdef->sw->position->flag;
+
+  for (i = 0; attrs && attrs [i]; i+= 2)
+    {
+      if (strcmp ((char *) attrs [i], "number") == 0)
+	{
+	  flag->number = atoi ((char *) attrs [i + 1]);
+	  got_number = true;
+	}
+      else if (strcmp ((char *) attrs [i], "value") == 0)
+	{
+	  flag->value = atoi ((char *) attrs [i + 1]);
+	  got_value = true;
+	}
+      else
+	warning ("unknown attribute '%s' in 'flag' element\n", attrs [i]);
+    }
+  if (! got_number)
+    {
+      warning ("flag element doesn't have number attribute\n");
+      return;
+    }
+  if (! got_value)
+    {
+      warning ("flag element doesn't have number attribute\n");
+      return;
+    }
+
+  calcdef->sw->position->flag = flag;
 }
 
 
 static void parse_switch_pos (calcdef_t *calcdef UNUSED,
 			      const xmlChar **attrs UNUSED)
 {
+  int i;
+  calcdef_switch_position_t *pos;
+  bool got_position = false;
+
+  pos = alloc (sizeof (calcdef_switch_position_t));
+  pos->next = calcdef->sw->position;
+
+  for (i = 0; attrs && attrs [i]; i+= 2)
+    {
+      if (strcmp ((char *) attrs [i], "position") == 0)
+	{
+	  pos->position = atoi ((char *) attrs [i + 1]);
+	  got_position = true;
+	}
+      else
+	warning ("unknown attribute '%s' in 'switch_pos' element\n", attrs [i]);
+    }
+  if (! got_position)
+    {
+      warning ("switch_pos element doesn't have position attribute\n");
+      return;
+    }
+
+  calcdef->sw->position = pos;
+}
+
+
+static void parse_switch (calcdef_t *calcdef UNUSED,
+			  const xmlChar **attrs UNUSED)
+{
+  int i;
+  calcdef_switch_t *sw;
+  bool got_number = false;
+
+  sw = alloc (sizeof (calcdef_switch_t));
+  sw->next = calcdef->sw;
+
+  for (i = 0; attrs && attrs [i]; i+= 2)
+    {
+      if (strcmp ((char *) attrs [i], "number") == 0)
+	{
+	  sw->number = atoi ((char *) attrs [i + 1]);
+	  got_number = true;
+	}
+      else
+	warning ("unknown attribute '%s' in 'switch' element\n", attrs [i]);
+    }
+  if (! got_number)
+    {
+      warning ("switch element doesn't have number attribute\n");
+      return;
+    }
+
+  calcdef->sw = sw;
 }
 
 
@@ -491,6 +605,7 @@ static element_handler_info_t element_handlers [] =
   { "key",         parse_key },
   { "switch",      parse_switch },
   { "switch_pos",  parse_switch_pos },
+  { "flag",        parse_flag },
   { "chip",        parse_chip },
   { "part_info",   parse_part_info },
   { "vendor_name", parse_vendor_name },
@@ -688,4 +803,57 @@ void calcdef_init_memory (calcdef_t *calcdef)
 	else
 	  warning ("unknown address space '%s'\n", mem->addr_space);
       }
+}
+
+
+static calcdef_switch_t *calcdef_get_switch (calcdef_t *calcdef,
+					     int sw)
+{
+  calcdef_switch_t *sw_p;
+  for (sw_p = calcdef->sw; sw_p; sw_p = sw_p->next)
+    if (sw_p->number == sw)
+      return sw_p;
+  return NULL;
+}
+
+static calcdef_switch_position_t *calcdef_get_switch_position (calcdef_t *calcdef,
+							       int sw,
+							       int pos)
+{
+  calcdef_switch_t *sw_p;
+  calcdef_switch_position_t *pos_p;
+
+  sw_p = calcdef_get_switch (calcdef, sw);
+  if (! sw_p)
+    return NULL;
+  for (pos_p = sw_p->position; pos_p; pos_p = pos_p->next)
+    if (pos_p->position == pos)
+      return pos_p;
+  return NULL;
+}
+
+
+bool calcdef_get_switch_position_flag  (calcdef_t *calcdef,
+					int sw,
+					int pos,
+					int index,
+					int *flag,
+					int *value)
+{
+  calcdef_switch_position_t *pos_p;
+  calcdef_flag_t *flag_p;
+
+  pos_p = calcdef_get_switch_position (calcdef, sw, pos);
+  if (! pos_p)
+    return false;
+  for (flag_p = pos_p->flag; flag_p; flag_p = flag_p->next)
+    {
+      if (index-- == 0)
+	{
+	  *flag = flag_p->number;
+	  *value = flag_p->value;
+	  return true;
+	}
+    }
+  return false;
 }

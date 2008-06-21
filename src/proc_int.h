@@ -201,8 +201,6 @@ struct sim_t
 
   // slide switches
   uint8_t    switch_position [MAX_SWITCH];
-  chip_t    *switch_position_chip [MAX_SWITCH] [MAX_SWITCH_POSITION];
-  uint8_t    switch_position_flag [MAX_SWITCH] [MAX_SWITCH_POSITION];
 
   // ROM:
   bool       *breakpoint;

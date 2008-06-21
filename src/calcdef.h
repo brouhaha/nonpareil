@@ -19,6 +19,7 @@ Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
 MA 02111, USA.
 */
 
+
 typedef struct calcdef_t calcdef_t;
 
 
@@ -50,3 +51,9 @@ const hw_keycode_t *calcdef_get_keycode_map (calcdef_t *calcdef);
 void calcdef_init_memory (calcdef_t *calcdef);
 
 
+bool calcdef_get_switch_position_flag  (calcdef_t *calcdef,
+					int sw,
+					int pos,
+					int index,
+					int *flag,
+					int *value);

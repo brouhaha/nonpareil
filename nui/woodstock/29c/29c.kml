@@ -56,11 +56,13 @@ display
 	end # segments
 end # display
 
-switch 0
+# switch 0 would be power switch
+
+switch 1
   offset  211  96
   default 1
-  position 0  image "switch-off.png"          end  # program
-  position 1  image "switch-on.png"   flag 3  end  # run
+  position 0  image "switch-off.png"  end  # program
+  position 1  image "switch-on.png"   end  # run
 end
 
 button 11  image "key_11.png"  offset  17 130  end

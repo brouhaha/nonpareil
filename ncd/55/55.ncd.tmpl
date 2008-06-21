@@ -10,9 +10,26 @@
 
   <keyboard>
 
-    <switch number="0">
-      <switch_pos position="0" flag="power" value="0"/>
-      <switch_pos position="1" flag="power" value="1"/>
+    <switch number="0">  <!-- power switch -->
+      <switch_pos position="0">
+      </switch_pos>
+      <switch_pos position="1">
+      </switch_pos>
+    </switch>
+
+    <switch number="1">
+      <switch_pos position="0">  <!-- "TIMER" -->
+        <flag number="0" value="0"/>
+        <flag number="1" value="1"/>
+      </switch_pos>
+      <switch_pos position="1">  <!-- "PRGM" -->
+        <flag number="0" value="1"/>
+        <flag number="1" value="0"/>
+      </switch_pos>
+      <switch_pos position="2">  <!-- "RUN" -->
+        <flag number="0" value="0"/>
+        <flag number="1" value="0"/>
+      </switch_pos>
     </switch>
 
     <key user_keycode="11" hw_keycode="006"/>

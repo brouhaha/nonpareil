@@ -89,7 +89,6 @@ typedef struct kml_command_list_t
 
 typedef struct
 {
-  int flag;
   char *image_fn;
   kml_command_list_t *onselect;
   kml_command_list_t *ondeselect;

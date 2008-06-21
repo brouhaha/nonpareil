@@ -93,13 +93,6 @@ static void add_slide_switch (gui_switches_t *switches, int i)
       {
 	si->max_position = pos;
 
-	if (ks->position [pos]->flag)
-	  sim_set_switch_flag (switches->csim->sim,
-			       i,
-			       pos,
-			       NULL,
-			       ks->position [pos]->flag);
-
 	// should handle case with no image_fn (use subpixbuf of base image)
 	si->pixbuf [pos] = load_pixbuf (switches->csim,
 				      ks->position [pos]->image_fn);
