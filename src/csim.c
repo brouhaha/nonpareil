@@ -376,7 +376,7 @@ static void configure_load_module (gpointer callback_data,
   fn = gtk_file_chooser_get_filename (GTK_FILE_CHOOSER (dialog));
   gtk_widget_destroy (dialog);
 
-  if (! sim_install_module (csim->sim, fn, port))
+  if (! sim_install_module (csim->sim, fn, port, false))
     {
       dialog = gtk_message_dialog_new (GTK_WINDOW (csim->main_window),
 				       GTK_DIALOG_DESTROY_WITH_PARENT,

@@ -134,7 +134,10 @@ bool sim_read_listing_file (struct sim_t *sim,
 
 typedef struct plugin_module_t plugin_module_t;
 
-plugin_module_t *sim_install_module (sim_t *sim, char *fn, int port);
+plugin_module_t *sim_install_module (sim_t *sim,
+				     char *fn,
+				     int port,
+				     bool mem_only);
 
 bool sim_remove_module (plugin_module_t *module);
 

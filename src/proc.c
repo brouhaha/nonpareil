@@ -272,7 +272,8 @@ static bool sim_read_mod1_page (sim_t *sim, FILE *f)
 
 static bool sim_read_mod1_file (sim_t *sim,
 				FILE *f,
-				int port UNUSED)   // -1 for not port-based
+				int port UNUSED,   // -1 for not port-based
+				bool mem_only)
 {
   mod1_file_header_t header;
   size_t file_size;
@@ -296,6 +297,13 @@ static bool sim_read_mod1_file (sim_t *sim,
       fprintf (stderr, "Unrecognized or inconsistent values in MOD1 file header\n");
       return false;
     }
+
+  for (i = 0; i < header.NumPages; i++)
+    if (! sim_read_mod1_page (sim, f))
+      return false;
+
+  if (mem_only)
+    return true;
 
   switch (header.Hardware)
     {
@@ -330,10 +338,6 @@ static bool sim_read_mod1_file (sim_t *sim,
 #endif
     }
 
-  for (i = 0; i < header.NumPages; i++)
-    if (! sim_read_mod1_page (sim, f))
-      return false;
-
   return true;
 }
 
@@ -364,7 +368,7 @@ bool sim_read_object_file (sim_t *sim, char *fn)
     }
 
   if (strncmp (magic, "MOD1", sizeof (magic)) == 0)
-    return sim_read_mod1_file (sim, f, -1);
+    return sim_read_mod1_file (sim, f, -1, false);
 
   // switch from binary to text mode, and rewind
 
@@ -460,7 +464,10 @@ bool sim_read_listing_file (sim_t *sim, char *fn)
 }
 
 
-plugin_module_t *sim_install_module (sim_t *sim, char *fn, int port)
+plugin_module_t *sim_install_module (sim_t *sim,
+				     char *fn,
+				     int port,
+				     bool mem_only)
 {
   FILE *f;
   plugin_module_t *module;
@@ -471,7 +478,7 @@ plugin_module_t *sim_install_module (sim_t *sim, char *fn, int port)
 
   module = alloc (sizeof (plugin_module_t));
 
-  if (! sim_read_mod1_file (sim, f, port))
+  if (! sim_read_mod1_file (sim, f, port, mem_only))
     {
       free (module);
       fclose (f);
