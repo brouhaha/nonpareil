@@ -20,12 +20,29 @@ MA 02111, USA.
 */
 
 
+struct chip_t;
+struct sim_t;
+
+typedef struct chip_t *chip_install_fn_t (struct sim_t *sim,
+					  int32_t index,
+					  int32_t flags);
+
+
+typedef struct
+{
+  char *name;
+  chip_install_fn_t *chip_install_fn;
+} chip_type_info_t;
+
+
 // opaque type representing a chip (or more generally, a hardware device)
 typedef struct chip_t chip_t;
 
 
 typedef enum
 {
+  CHIP_UNKNOWN,
+
   // classic
   CHIP_CLASSIC_CTC_ARC,             // two chip CPU, but we'll treat it as one
   CHIP_CLASSIC_CATHODE_DRIVER,
@@ -48,7 +65,7 @@ typedef enum
   CHIP_NUT_CPU,
   CHIP_NUT_ROM,
   CHIP_NUT_RAM,
-  CHIP_NUT_LCD,         // two chips, but we'll treat them as one
+  CHIP_COCONUT_LCD,     // two chips, but we'll treat them as one
   CHIP_PHINEAS,		// timer chip in 82184A Time Module, 41CX
   CHIP_HELIOS,		// NPIC chip in 82143A Printer
   CHIP_HYSTER,          // 82104A card reader
@@ -61,3 +78,8 @@ typedef enum
 
   MAX_CHIP_TYPE 	// must be last
 } chip_type_t;
+
+
+chip_type_t find_chip_type_by_name (char *s);
+
+chip_type_info_t *get_chip_type_info (chip_type_t type);

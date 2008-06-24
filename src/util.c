@@ -269,6 +269,11 @@ void expand_tabs (char *d,
 // But to do this right I either need to have a compile-time configuration
 // test, or code my own implmentation.
  
+int32_t  str_to_int32  (const char *nptr, char **endptr, int base)
+{
+  return strtol (nptr, endptr, base);
+}
+
 uint32_t str_to_uint32 (const char *nptr, char **endptr, int base)
 {
   return strtoul (nptr, endptr, base);

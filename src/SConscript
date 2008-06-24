@@ -93,6 +93,7 @@ common_srcs = Split ("""util.c arch.c model.c platform.c pixbuf_util.c""")
 common_objs = [build_env.Object(src) for src in common_srcs]
 
 sim_core_srcs = Split ("""calcdef.c
+	                  chip.c
                           proc.c
                           glib_async_queue_source.c
                           digit_ops.c

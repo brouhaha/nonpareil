@@ -38,8 +38,6 @@ MA 02111, USA.
 #include "calcdef.h"
 #include "proc_int.h"
 #include "digit_ops.h"
-#include "coconut_lcd.h"
-#include "voyager_lcd.h"
 #include "proc_nut.h"
 #include "sound.h"
 
@@ -760,9 +758,9 @@ static void op_c_exch_n (sim_t *sim,
  * RAM and peripheral operations
  */
 
-static void nut_ram_read_zero (nut_reg_t *nut_reg UNUSED,
-			       int addr           UNUSED,
-			       reg_t *reg)
+void nut_ram_read_zero (nut_reg_t *nut_reg UNUSED,
+			int addr           UNUSED,
+			reg_t *reg)
 {
   int i;
   for (i = 0; i < WSIZE; i++)
@@ -770,43 +768,13 @@ static void nut_ram_read_zero (nut_reg_t *nut_reg UNUSED,
 }
 
 
-static void nut_ram_write_ignore (nut_reg_t *nut_reg UNUSED,
-				  int addr           UNUSED,
-				  reg_t *reg         UNUSED)
+void nut_ram_write_ignore (nut_reg_t *nut_reg UNUSED,
+			   int addr           UNUSED,
+			   reg_t *reg         UNUSED)
 {
   ;
 }
 
-static void voyager_display_ram_19_read (nut_reg_t *nut_reg UNUSED,
-					 int addr           UNUSED,
-					 reg_t *reg)
-{
-  int i;
-  for (i = 0; i < WSIZE; i++)
-    (*reg) [i] = nut_reg->ram [addr] [i];
-
-  // The least significant 7 bits of the register (bits 6..0) don't really
-  // exist, and read back as the complement of bit 7.
-  if (! ((* reg) [1] & 0x8))
-    {
-      (*reg) [1] = 0x7;
-      (*reg) [0] = 0xf;
-    }
-}
-
-static void voyager_display_ram_19_write (nut_reg_t *nut_reg UNUSED,
-					  int addr           UNUSED,
-					  reg_t *reg)
-{
-  int i;
-  for (i = 0; i < WSIZE; i++)
-    nut_reg->ram [addr] [i] = (*reg) [i];
-
-  // The least significant 7 bits of the register (bits 6..0) don't really
-  // exist, and read back as the complement of bit 7.
-  nut_reg->ram [addr] [1] &= 0x8;
-  nut_reg->ram [addr] [0] =  0x0;
-}
 
 static void op_c_to_dadd (sim_t *sim,
 			  int opcode UNUSED)
@@ -2091,7 +2059,6 @@ static bool nut_create_ram (sim_t *sim, addr_t addr, addr_t size)
 static void nut_new_processor (sim_t *sim)
 {
   nut_reg_t *nut_reg;
-  int ram_size;
 
   nut_reg = alloc (sizeof (nut_reg_t));
 
@@ -2105,54 +2072,7 @@ static void nut_new_processor (sim_t *sim)
 
   nut_new_pf_addr_space (sim, 256);
 
-  switch (sim->platform)
-    {
-    case PLATFORM_COCONUT:
-      ram_size = 336;  // $$$ shouldn't be hard coded
-
-      nut_create_ram (sim, 0x000, 0x010);
-      ram_size -= 16;
-
-      if (ram_size > 320)
-	{
-	  // Base extended memory of 41CX
-	  nut_create_ram (sim, 0x40, 128);
-	  ram_size = 320;
-	}
-
-      nut_create_ram (sim, 0x0c0, ram_size);
-
-      coconut_display_init (sim);
-
-      break;
-
-    case PLATFORM_VOYAGER:
-      ram_size = 72;  // $$$ shouldn't be hard coded
-
-      nut_create_ram (sim, 0x000, 8);
-      ram_size -= 8;
-
-      nut_create_ram (sim, 0x008, 3);  // I/O registers
-      nut_reg->ram_read_fn  [0x08] = nut_ram_read_zero;
-      nut_reg->ram_write_fn [0x08] = nut_ram_write_ignore;
-
-      if (ram_size > 40)
-	{
-	  nut_create_ram (sim, 0x010, 8);
-	  ram_size -= 8;
-
-	  nut_create_ram (sim, 0x018, 3);  // I/O registers
-	  nut_reg->ram_read_fn  [0x18] = nut_ram_read_zero;
-	  nut_reg->ram_write_fn [0x18] = nut_ram_write_ignore;
-	  nut_reg->ram_read_fn  [0x19] = voyager_display_ram_19_read;
-	  nut_reg->ram_write_fn [0x19] = voyager_display_ram_19_write;
-	}
-
-      nut_create_ram (sim, 0x100 - ram_size, ram_size);
-
-      voyager_display_init (sim);
-      break;
-    }
+  // used to install init LCD here
 
   chip_event (sim, event_reset, NULL, 0, NULL);
 }

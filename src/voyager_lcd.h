@@ -28,4 +28,6 @@ MA 02111, USA.
 #define PFADDR_LCD_DISPLAY 0xfd
 
 
-void voyager_display_init (sim_t *sim);
+chip_t *voyager_r2d2_install (sim_t *sim,
+			      int32_t index,
+			      int32_t flags UNUSED);

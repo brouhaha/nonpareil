@@ -591,7 +591,9 @@ static void helios_init_ops (sim_t *sim)
 }
 
 
-chip_t *helios_init (sim_t *sim)
+chip_t *helios_install (sim_t *sim,
+			int32_t index UNUSED,
+			int32_t flags UNUSED)
 {
   nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
   helios_reg_t *helios;
@@ -605,5 +607,5 @@ chip_t *helios_init (sim_t *sim)
   helios_init_ops (sim);
   helios_reset (helios);
 
-  return (nut_reg->helios_chip);
+  return nut_reg->helios_chip;
 }

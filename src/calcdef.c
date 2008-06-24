@@ -54,6 +54,8 @@ typedef struct calcdef_chip_t
   chip_type_t type;
   char *id;
   char *name;
+  int32_t index;
+  int32_t flags;
   calcdef_mem_t *mem;
 } calcdef_chip_t;
 
@@ -174,7 +176,7 @@ static void parse_calcdef (calcdef_t *calcdef,
   bool got_platform = false;
   bool got_model = false;
 
-  for (i = 0; attrs && attrs [i]; i+= 2)
+  for (i = 0; attrs && attrs [i]; i += 2)
     {
       if (strcmp ((char *) attrs [i], "version") == 0)
 	{
@@ -235,7 +237,7 @@ static void parse_inst_clock (calcdef_t *calcdef,
   bool got_freq = false;
   char *endptr = NULL;
 
-  for (i = 0; attrs && attrs [i]; i+= 2)
+  for (i = 0; attrs && attrs [i]; i += 2)
     {
       if (strcmp ((char *) attrs [i], "freq") == 0)
 	{
@@ -278,7 +280,7 @@ static void parse_key (calcdef_t *calcdef UNUSED,
   bool got_hw_keycode = false;
   char *endptr = NULL;
 
-  for (i = 0; attrs && attrs [i]; i+= 2)
+  for (i = 0; attrs && attrs [i]; i += 2)
     {
       if (strcmp ((char *) attrs [i], "user_keycode") == 0)
 	{
@@ -320,7 +322,7 @@ static void parse_flag (calcdef_t *calcdef UNUSED,
   flag = alloc (sizeof (calcdef_flag_t));
   flag->next = calcdef->sw->position->flag;
 
-  for (i = 0; attrs && attrs [i]; i+= 2)
+  for (i = 0; attrs && attrs [i]; i += 2)
     {
       if (strcmp ((char *) attrs [i], "number") == 0)
 	{
@@ -360,7 +362,7 @@ static void parse_switch_pos (calcdef_t *calcdef UNUSED,
   pos = alloc (sizeof (calcdef_switch_position_t));
   pos->next = calcdef->sw->position;
 
-  for (i = 0; attrs && attrs [i]; i+= 2)
+  for (i = 0; attrs && attrs [i]; i += 2)
     {
       if (strcmp ((char *) attrs [i], "position") == 0)
 	{
@@ -390,7 +392,7 @@ static void parse_switch (calcdef_t *calcdef UNUSED,
   sw = alloc (sizeof (calcdef_switch_t));
   sw->next = calcdef->sw;
 
-  for (i = 0; attrs && attrs [i]; i+= 2)
+  for (i = 0; attrs && attrs [i]; i += 2)
     {
       if (strcmp ((char *) attrs [i], "number") == 0)
 	{
@@ -414,9 +416,29 @@ static void parse_chip (calcdef_t *calcdef UNUSED,
 			const xmlChar **attrs UNUSED)
 {
   calcdef_chip_t *chip;
+  int i;
 
   chip = alloc (sizeof (calcdef_chip_t));
   chip->next = calcdef->chip;
+
+  for (i = 0; attrs && attrs [i]; i += 2)
+    {
+      if (strcmp ((char *) attrs [i], "type") == 0)
+	{
+	  chip->type = find_chip_type_by_name ((char *) attrs [i + 1]);
+	}
+      else if (strcmp ((char *) attrs [i], "index") == 0)
+	{
+	  chip->index = str_to_int32 ((char *) attrs [i + 1], NULL, 0);
+	}
+      else if (strcmp ((char *) attrs [i], "flags") == 0)
+	{
+	  chip->flags = str_to_int32 ((char *) attrs [i + 1], NULL, 0);
+	}
+      else
+	warning ("unknown attribute '%s' in 'chip' element\n", attrs [i]);
+    }
+
   calcdef->chip = chip;
 }
 
@@ -459,7 +481,7 @@ static void parse_memory (calcdef_t *calcdef,
 
   mem->bank_mask = (1 << 0);
 
-  for (i = 0; attrs && attrs [i]; i+= 2)
+  for (i = 0; attrs && attrs [i]; i += 2)
     {
       if (strcmp ((char *) attrs [i], "addr_space") == 0)
 	{
@@ -500,7 +522,7 @@ static void parse_loc (calcdef_t *calcdef,
   rom_word_t data;
   int i;
     
-  for (i = 0; attrs && attrs [i]; i+= 2)
+  for (i = 0; attrs && attrs [i]; i += 2)
     {
       if (strcmp ((char *) attrs [i], "addr") == 0)
 	{
@@ -566,6 +588,10 @@ static void parse_char (calcdef_t *calcdef UNUSED,
 	{
 	  segment_bitmap = parse_segments ((char *) attrs [i + 1]);
 	  got_segments = true;
+	}
+      else if (strcmp ((char *) attrs [i], "print") == 0)
+	{
+	  // ignored for now
 	}
       else
 	warning ("unknown attribute '%s' in 'char' element\n", attrs [i]);
@@ -788,21 +814,32 @@ static void calcdef_init_ram (calcdef_t *calcdef, calcdef_mem_t *mem)
     fatal (4, "can't create RAM at addr %05o\n", mem->base_addr);
 }
 
-void calcdef_init_memory (calcdef_t *calcdef)
+
+void calcdef_init_chips (calcdef_t *calcdef)
 {
   calcdef_chip_t *chip;
   calcdef_mem_t *mem;
+  chip_type_info_t *chip_type_info;
 
   for (chip = calcdef->chip; chip; chip = chip->next)
-    for (mem = chip->mem; mem; mem = mem->next)
-      {
-	if (strcmp (mem->addr_space, "inst") == 0)
-	  calcdef_init_rom (calcdef, mem);
-	else if (strcmp (mem->addr_space, "data") == 0)
-	  calcdef_init_ram (calcdef, mem);
-	else
-	  warning ("unknown address space '%s'\n", mem->addr_space);
-      }
+    {
+      for (mem = chip->mem; mem; mem = mem->next)
+	{
+	  if (strcmp (mem->addr_space, "inst") == 0)
+	    calcdef_init_rom (calcdef, mem);
+	  else if (strcmp (mem->addr_space, "data") == 0)
+	    calcdef_init_ram (calcdef, mem);
+	  else
+	    warning ("unknown address space '%s'\n", mem->addr_space);
+	}
+      chip_type_info = get_chip_type_info (chip->type);
+      if (chip_type_info->chip_install_fn)
+	{
+	  chip_type_info->chip_install_fn (calcdef->sim,
+					   chip->index,
+					   chip->flags);
+	}
+    }
 }
 
 

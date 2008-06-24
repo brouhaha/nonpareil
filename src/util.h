@@ -96,6 +96,7 @@ void expand_tabs (char *d,
 
 // Replacements for strtoul and strtoull:
 
+int32_t  str_to_int32  (const char *nptr, char **endptr, int base);
 uint32_t str_to_uint32 (const char *nptr, char **endptr, int base);
 
 uint64_t str_to_uint64 (const char *nptr, char **endptr, int base);

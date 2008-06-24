@@ -48,7 +48,7 @@ const segment_bitmap_t *calcdef_get_char_gen (calcdef_t *calcdef);
 const hw_keycode_t *calcdef_get_keycode_map (calcdef_t *calcdef);
 
 
-void calcdef_init_memory (calcdef_t *calcdef);
+void calcdef_init_chips (calcdef_t *calcdef);
 
 
 bool calcdef_get_switch_position_flag  (calcdef_t *calcdef,

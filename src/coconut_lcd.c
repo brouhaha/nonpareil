@@ -331,7 +331,7 @@ static chip_detail_t coconut_display_chip_detail =
 {
   {
     "Coconut LCD",
-    CHIP_NUT_LCD,
+    CHIP_COCONUT_LCD,
     false  // There can only be one set of LCD drivers on the bus.
   },
   sizeof (coconut_display_reg_detail) / sizeof (reg_detail_t),
@@ -448,10 +448,17 @@ static void coconut_display_event_fn (sim_t  *sim,
 }
 
 
-void coconut_display_init (sim_t *sim)
+chip_t *coconut_lcd_install (sim_t *sim,
+			     int32_t index UNUSED,
+			     int32_t flags UNUSED)
 {
   nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
   coconut_display_reg_t *display;
+
+  // The second driver chip is modelled as part of first, so we
+  // won't install it.
+  if (index != 0)
+    return NULL;
 
   coconut_display_init_ops (sim);
 
@@ -473,4 +480,6 @@ void coconut_display_init (sim_t *sim)
   nut_reg->rd_n_fcn  [display->pfaddr_halfnut] = & halfnut_lcd_rd_n;
   nut_reg->wr_n_fcn  [display->pfaddr_halfnut] = & halfnut_lcd_wr_n;
   nut_reg->wr_fcn    [display->pfaddr_halfnut] = & halfnut_lcd_wr;
+
+  return nut_reg->display_chip;
 }

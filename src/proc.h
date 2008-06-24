@@ -229,6 +229,8 @@ typedef void chip_callback_fn_t (sim_t  *sim,
 
 chip_t *sim_add_chip (sim_t              *sim,
 		      chip_type_t        type,
+		      int32_t            index,
+		      int32_t            flags,
 		      chip_callback_fn_t *callback_fn,
 		      void               *callback_ref);
 

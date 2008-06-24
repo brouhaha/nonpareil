@@ -330,17 +330,58 @@ static void voyager_display_event_fn (sim_t  *sim,
 }
 
 
-void voyager_display_init (sim_t *sim)
+static void voyager_display_bitmap_read (nut_reg_t *nut_reg UNUSED,
+					 int addr           UNUSED,
+					 reg_t *reg)
+{
+  int i;
+  for (i = 0; i < WSIZE; i++)
+    (*reg) [i] = nut_reg->ram [addr] [i];
+
+  // The least significant 6 bits of the register (bits 5..0) don't really
+  // exist, and read back as the complement of bit 7.
+  (*reg) [1] &= 0xc;
+  (*reg) [0] =  0x0;
+  if (! ((* reg) [1] & 0x8))
+    {
+      (*reg) [1] |= 0x3;
+      (*reg) [0] =  0xf;
+    }
+}
+
+
+chip_t *voyager_r2d2_install (sim_t *sim,
+			      int32_t index,
+			      int32_t flags UNUSED)
 {
   nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
+  int io_base;
+  chip_t *chip = NULL;
 
   voyager_display_reg_t *display;
 
-  voyager_display_init_ops (sim);
+  // Extra R2D2 chips, e.g., second chip in 15C, only provide memory,
+  // so other than the memory, we don't "install" them.
+  if (index == 0)
+    {
+      voyager_display_init_ops (sim);
 
-  display = alloc (sizeof (voyager_display_reg_t));
+      display = alloc (sizeof (voyager_display_reg_t));
 
-  nut_reg->display_chip = install_chip (sim,
-					& voyager_display_chip_detail,
-					display);
+      chip = install_chip (sim,
+			   & voyager_display_chip_detail,
+			   display);
+
+      nut_reg->display_chip = chip;
+    }
+
+  io_base = index * 0x10 + 0x08;
+  
+  sim->proc->create_ram (sim, io_base, 3);
+  nut_reg->ram_read_fn  [io_base    ] = nut_ram_read_zero;
+  nut_reg->ram_write_fn [io_base    ] = nut_ram_write_ignore;
+  nut_reg->ram_read_fn  [io_base + 1] = voyager_display_bitmap_read;
+  nut_reg->ram_read_fn  [io_base + 2] = voyager_display_bitmap_read;
+
+  return chip;
 }

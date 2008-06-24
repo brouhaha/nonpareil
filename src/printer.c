@@ -767,6 +767,8 @@ chip_t *gui_printer_init (sim_t *sim)
 
   p->chip = sim_add_chip (sim,
 			  CHIP_HELIOS,         // chip_type
+			  0,                   // index
+			  0,                   // flags
 			  gui_printer_update,  // callback_fn
 			  p);                  // ref
   if (! p->chip)

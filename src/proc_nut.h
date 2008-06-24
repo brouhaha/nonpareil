@@ -189,3 +189,7 @@ bool nut_disassemble (sim_t        *sim,
 		      addr_t       *target_addr,
 		      char         *buf,
 		      int          len);
+
+
+ram_access_fn_t nut_ram_read_zero;
+ram_access_fn_t nut_ram_write_ignore;

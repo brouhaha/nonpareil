@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
 
 <!-- $Id$ -->
-<!-- Copyright 2006 Eric L. Smith <eric@brouhaha.com> -->
+<!-- Copyright 2006, 2008 Eric Smith <eric@brouhaha.com> -->
 
 <!ELEMENT calcdef (keyboard,
                    chip*,
@@ -38,9 +38,11 @@
           freq     CDATA #REQUIRED
           osc_type CDATA #IMPLIED>
 
-<!ELEMENT chip (part_info+, memory*, chargen*)>
+<!ELEMENT chip (part_info+, memory*, chargen*, inst_clock*)>
 <!ATTLIST chip
-          name CDATA #REQUIRED>
+          type  CDATA #REQUIRED
+          index CDATA #IMPLIED
+          id    CDATA #IMPLIED>
 
 <!ELEMENT part_info (vendor_name+, part_number*, date_code*)>
 

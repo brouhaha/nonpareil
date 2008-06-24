@@ -127,8 +127,8 @@ typedef struct
   addr_t        addr;
   chip_type_t   chip_type;
   chip_t        *chip;
-  int           arg1;   // reg_num, keycode, flag number, bank, bank group, etc.
-  int           arg2;   // index (in read/write register)
+  int32_t       arg1;   // reg_num, keycode, flag number, bank, bank group, etc.
+  int32_t       arg2;   // index (in read/write register)
   void          *data;  // register value, memory value, etc.
 } sim_msg_t;
 
@@ -303,7 +303,12 @@ static bool sim_read_mod1_file (sim_t *sim,
       break;
 
     case HARDWARE_TIMER:
-      (void) sim_add_chip (sim, CHIP_PHINEAS, NULL, NULL);
+      (void) sim_add_chip (sim,
+			   CHIP_PHINEAS,
+			   0,  // index
+			   0,  // flags
+			   NULL,
+			   NULL);
       break;
 
     case HARDWARE_PRINTER:
@@ -641,19 +646,22 @@ static void cmd_event (sim_t *sim, sim_msg_t *msg)
 
 static void cmd_add_chip (sim_t *sim, sim_msg_t *msg)
 {
+  chip_type_info_t *chip_type_info;
+
   msg->reply = ARG_RANGE_ERROR;
   msg->chip = NULL;
-  switch (msg->chip_type)
+
+  chip_type_info = get_chip_type_info (msg->chip_type);
+
+  if (chip_type_info->chip_install_fn)
     {
-    case CHIP_HELIOS:
-      msg->chip = helios_init (sim);
-      break;
-    case CHIP_PHINEAS:
-      msg->chip = phineas_init (sim);
-      break;
-    default:
-      fatal (3, "don't know how to add chip of type %d\n", msg->chip_type);
+      msg->chip = chip_type_info->chip_install_fn (sim,
+						   msg->arg1,  // index
+						   msg->arg2); // flags
     }
+  else
+    fatal (3, "don't know how to add chip of type %d\n", msg->chip_type);
+
   if (msg->chip)
     msg->reply = OK;
 }
@@ -976,7 +984,7 @@ sim_t *sim_init  (char *ncd_fn,
 
   sim->thread_vars->gthread = g_thread_create (sim_thread_func, sim, TRUE, NULL);
 
-  calcdef_init_memory (sim->calcdef);
+  calcdef_init_chips (sim->calcdef);
 
   return (sim);
 }
@@ -1125,6 +1133,8 @@ bool sim_get_io_pause_flag (sim_t *sim)
 
 chip_t *sim_add_chip (sim_t              *sim,
 		      chip_type_t        type,
+		      int                index,
+		      int                flags,
 		      chip_callback_fn_t *callback_fn,
 		      void               *callback_ref)
 {
@@ -1133,6 +1143,8 @@ chip_t *sim_add_chip (sim_t              *sim,
   memset (& msg, 0, sizeof (sim_msg_t));
   msg.cmd = CMD_ADD_CHIP;
   msg.chip_type = type;
+  msg.arg1 = index;
+  msg.arg2 = flags;
   send_cmd_to_sim_thread (sim, (gpointer) & msg);
   if ((msg.reply == OK) && msg.chip)
     {

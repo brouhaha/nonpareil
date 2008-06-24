@@ -63,7 +63,7 @@ Copyright 2006, 2008 Eric Smith <eric@brouhaha.com>
     <key user_keycode="84" hw_keycode="0x87"/>
   </keyboard>
 
-  <chip name="Nut">
+  <chip type="nut_cpu">
     <part_info>
       <vendor_name>HP</vendor_name>
       <part_number>1LA5-0001</part_number>
@@ -71,7 +71,7 @@ Copyright 2006, 2008 Eric Smith <eric@brouhaha.com>
     <inst_clock osc_type="LC" freq="375200"/>
   </chip>
 
-  <chip name="ROM">
+  <chip type="nut_rom">
     <part_info>
       <vendor_name>HP</vendor_name>
       <part_number>1LA3</part_number>
@@ -80,7 +80,7 @@ Copyright 2006, 2008 Eric Smith <eric@brouhaha.com>
     </memory>
   </chip>
 
-  <chip name="ROM">
+  <chip type="nut_rom">
     <part_info>
       <vendor_name>HP</vendor_name>
       <part_number>1LA3</part_number>
@@ -89,7 +89,7 @@ Copyright 2006, 2008 Eric Smith <eric@brouhaha.com>
     </memory>
   </chip>
 
-  <chip name="ROM">
+  <chip type="nut_rom">
     <part_info>
       <vendor_name>HP</vendor_name>
       <part_number>1LA3</part_number>
@@ -98,7 +98,7 @@ Copyright 2006, 2008 Eric Smith <eric@brouhaha.com>
     </memory>
   </chip>
 
-  <chip name="RAM">
+  <chip type="nut_ram">
     <part_info>
       <vendor_name>HP</vendor_name>
       <part_number>1LA7-0001</part_number>
@@ -107,7 +107,7 @@ Copyright 2006, 2008 Eric Smith <eric@brouhaha.com>
     </memory>
   </chip>
 
-  <chip name="RAM">
+  <chip type="nut_ram">
     <part_info>
       <vendor_name>HP</vendor_name>
       <part_number>1LE7-0001</part_number>
@@ -116,7 +116,7 @@ Copyright 2006, 2008 Eric Smith <eric@brouhaha.com>
     </memory>
   </chip>
 
-  <chip name="RAM">
+  <chip type="nut_ram">
     <part_info>
       <vendor_name>HP</vendor_name>
       <part_number>1LE7-0002</part_number>
@@ -125,7 +125,7 @@ Copyright 2006, 2008 Eric Smith <eric@brouhaha.com>
     </memory>
   </chip>
 
-  <chip name="RAM">
+  <chip type="nut_ram">
     <part_info>
       <vendor_name>HP</vendor_name>
       <part_number>1LE7-0003</part_number>
@@ -134,7 +134,7 @@ Copyright 2006, 2008 Eric Smith <eric@brouhaha.com>
     </memory>
   </chip>
 
-  <chip name="RAM">
+  <chip type="nut_ram">
     <part_info>
       <vendor_name>HP</vendor_name>
       <part_number>1LE7-0004</part_number>
@@ -143,7 +143,7 @@ Copyright 2006, 2008 Eric Smith <eric@brouhaha.com>
     </memory>
   </chip>
 
-  <chip name="RAM">
+  <chip type="nut_ram">
     <part_info>
       <vendor_name>HP</vendor_name>
       <part_number>1LE7-0005</part_number>
@@ -152,7 +152,7 @@ Copyright 2006, 2008 Eric Smith <eric@brouhaha.com>
     </memory>
   </chip>
 
-  <chip name="LCD driver">
+  <chip type="coconut_lcd" index="0">
     <part_info>
       <vendor_name>HP</vendor_name>
       <part_number>1LA4</part_number>
@@ -291,6 +291,15 @@ Copyright 2006, 2008 Eric Smith <eric@brouhaha.com>
       <char id="0x7e" print="?"      segments="a  d       l n" />  <!-- duplicate of 0x4e -->
       <char id="0x7f" print="?"      segments="    efgh      " />  <!-- duplicate of 0x40 -->
     </chargen>
+  </chip>
+
+  <chip type="coconut_lcd" index="1">
+    <part_info>
+      <vendor_name>HP</vendor_name>
+      <part_number>1LA4</part_number>
+    </part_info>
+    <!-- second LCD chip is actually modelled as part of first, so no
+         chargen element is needed here -->
   </chip>
 
   <obj_file addr_space="inst"

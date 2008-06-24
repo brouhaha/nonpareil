@@ -1,6 +1,6 @@
 /*
 $Id$
-Copyright 1995, 2005 Eric L. Smith <eric@brouhaha.com>
+Copyright 1995, 2005, 2008 Eric Smith <eric@brouhaha.com>
 
 Nonpareil is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License version 2 as
@@ -56,4 +56,6 @@ typedef struct
 
 extern uint8_t helios_chargen [128][5];
 
-chip_t *helios_init (sim_t *sim);
+chip_t *helios_install (sim_t *sim,
+			int32_t index,
+			int32_t flags);
