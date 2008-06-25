@@ -1482,6 +1482,7 @@ static void woodstock_print_state (sim_t *sim)
       char buf [80];
       log_printf (sim, "%" PRId64 ": ", sim->cycle_count);
       if (sim_disassemble_runtime (sim,
+				   0,                 // flags
 				   bank,
 				   act_reg->prev_pc,  // addr
 				   act_reg->inst_state,

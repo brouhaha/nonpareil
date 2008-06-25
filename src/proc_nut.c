@@ -1692,6 +1692,7 @@ static void nut_print_state (sim_t *sim)
     {
       char buf [80];
       if (sim_disassemble_runtime (sim,
+				   0,                 // flags
 				   0,                 // bank $$$ wrong
 				   nut_reg->prev_pc,  // addr
 				   nut_reg->inst_state,

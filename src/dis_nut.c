@@ -373,6 +373,7 @@ static bool nut_two_word_instruction (rom_word_t op1)
 
 
 bool nut_disassemble (sim_t        *sim,
+		      uint32_t     flags UNUSED,
 		      // input and output:
 		      bank_t       *bank,
 		      addr_t       *addr,
@@ -408,6 +409,20 @@ bool nut_disassemble (sim_t        *sim,
       if (! sim_read_rom (sim, *bank, *addr, & op2))
 	return false;
       (*addr) = ((*addr) + 1) & 0xffff;
+    }
+
+  if (flags & DIS_FLAG_LISTING)
+    {
+      buf_printf (& buf, & len, "%04x: %03x ", *addr, op1);
+      if (two_word)
+	buf_printf (& buf, & len, "%03x  ", op2);
+      else
+	buf_printf (& buf, & len, "     ");
+    }
+
+  if (flags & DIS_FLAG_LABEL)
+    {
+      buf_printf (& buf, & len, "<label>  ");
     }
 
   switch (op1 & 3)

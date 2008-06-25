@@ -64,7 +64,7 @@ void usage (FILE *f)
 }
 
 
-bool asm_mode;
+bool listing_mode = true;
 bool pass_two;
 
 bool hex_addr_mode;
@@ -100,7 +100,55 @@ void get_symbol (bank_t bank, addr_t addr, char *buf, int len)
 }
 
 
-static void disassemble_all (sim_t *sim)
+void postprocess (bank_t       *bank,
+		  addr_t       *addr,
+		  flow_type_t  flow_type,
+		  bank_t       target_bank,
+		  addr_t       target_addr,
+		  char         *buf,
+		  int          len UNUSED)
+{
+  if (! pass_two)
+    {
+      if (flow_type_info [flow_type].has_target)
+	{
+	  if (flow_type == flow_subroutine_call)
+	    set_symbol (target_bank, target_addr, SYM_CALL);
+	  else
+	    set_symbol (target_bank, target_addr, SYM_JUMP);
+	}
+    }
+  else
+    {
+      char *p;
+      char label [8];
+
+      get_symbol (bank, addr, label, sizeof (label));
+      // find label insertion point
+      p = strstr (buf, "<label>");
+      if (! p)
+	fatal (2, "missing label insertion marker\n");
+      memset (p, ' ', 7);
+      if (label [0] && (label [0] != ' '))
+	{
+	  memcpy (p, label, strlen (label));
+	  p [strlen (label)] = ':';
+	}
+      if (flow_type_info [flow_type].has_target)
+	{
+	  get_symbol (target_bank, target_addr, label, sizeof (label));
+	  printf (buf, label);
+	}
+      else
+	printf (buf);
+      printf ("\n");
+      if (flow_type_info [flow_type].ends_flow)
+	printf ("\n");
+    }
+}
+
+
+static void disassemble_all (sim_t *sim, uint32_t flags)
 {
   uint8_t page;
   bank_t bank, target_bank;
@@ -122,6 +170,7 @@ static void disassemble_all (sim_t *sim)
 	    {
 	      base_addr = addr;
 	      if (! sim_disassemble (sim,
+				     flags,
 				     & bank,
 				     & addr,
 				     & inst_state,
@@ -137,44 +186,23 @@ static void disassemble_all (sim_t *sim)
 		  warning ("disassembler error at bank %d addr %05o\n", bank, (addr + 1) % max_addr);
 		  break;
 		}
-	      if (! pass_two)
-		{
-		  if (flow_type_info [flow_type].has_target)
-		    {
-		      if (flow_type == flow_subroutine_call)
-			set_symbol (target_bank, target_addr, SYM_CALL);
-		      else
-			set_symbol (target_bank, target_addr, SYM_JUMP);
-		    }
-		}
-	      else
-		{
-		  char label [8];
-		  get_symbol (bank, base_addr, label, sizeof (label));
-		  if (label [0])
-		    printf ("%s:  ", label);
-		  else
-		    printf ("        ");
-		  if (flow_type_info [flow_type].has_target)
-		    {
-		      get_symbol (target_bank, target_addr, label, sizeof (label));
-		      printf (buf, label);
-		    }
-		  else
-		    printf (buf);
-		  printf ("\n");
-		  if (flow_type_info [flow_type].ends_flow)
-		    printf ("\n");
-		}
+	      postprocess (bank,
+			   base_addr,
+			   flow_type,
+			   target_bank,
+			   target_addr,
+			   buf,
+			   sizeof (buf));
 	    }
 	}
 }
 
 
-static void disassemble_range (sim_t *sim,
-			       bank_t bank,
-			       addr_t start_addr,
-			       addr_t end_addr)
+static void disassemble_range (sim_t    *sim,
+			       uint32_t flags,
+			       bank_t   bank,
+			       addr_t   start_addr,
+			       addr_t   end_addr)
 {
   bank_t target_bank;
   addr_t addr, target_addr, base_addr;
@@ -188,6 +216,7 @@ static void disassemble_range (sim_t *sim,
     {
       base_addr = addr;
       if (! sim_disassemble (sim,
+			     flags,
 			     & bank,
 			     & addr,
 			     & inst_state,
@@ -203,35 +232,13 @@ static void disassemble_range (sim_t *sim,
 	  warning ("disassembler error at bank %d addr %05o\n", bank, (addr + 1) % max_addr);
 	  break;
 	}
-      if (! pass_two)
-	{
-	  if (flow_type_info [flow_type].has_target)
-	    {
-	      if (flow_type == flow_subroutine_call)
-		set_symbol (target_bank, target_addr, SYM_CALL);
-	      else
-		set_symbol (target_bank, target_addr, SYM_JUMP);
-	    }
-	}
-      else
-	{
-	  char label [8];
-	  get_symbol (bank, base_addr, label, sizeof (label));
-	  if (label [0])
-	    printf ("%s:  ", label);
-	  else
-	    printf ("        ");
-	  if (flow_type_info [flow_type].has_target)
-	    {
-	      get_symbol (target_bank, target_addr, label, sizeof (label));
-	      printf (buf, label);
-	    }
-	  else
-	    printf (buf);
-	  printf ("\n");
-	  if (flow_type_info [flow_type].ends_flow)
-	    printf ("\n");
-	}
+      postprocess (bank,
+		   base_addr,
+		   flow_type,
+		   target_bank,
+		   target_addr,
+		   buf,
+		   sizeof (buf));
     }
 }
 
@@ -245,12 +252,13 @@ int main (int argc, char *argv[])
   sim_t *sim;
   int arch;
   arch_info_t *arch_info;
-  bool got_bank = true;
+  bool got_bank = false;
   bool got_start_addr = false;
   bool got_end_addr = false;
   uint32_t bank = 0;
   uint32_t start_addr;
   uint32_t end_addr;
+  uint32_t flags;
 
   progname = argv [0];
 
@@ -262,9 +270,9 @@ int main (int argc, char *argv[])
       if (*argv [0] == '-')
 	{
 	  if (strcmp (argv [0], "-a") == 0)
-	    asm_mode = true;
+	    listing_mode = false;
 	  else if (strcmp (argv [0], "-l") == 0)
-	    asm_mode = false;
+	    listing_mode = true;
 	  else if (strcmp (argv [0], "--start") == 0)
 	    {
 	      got_start_addr = true;
@@ -339,19 +347,22 @@ int main (int argc, char *argv[])
 	fatal (2, "can't load .mod file\n");
     }
 
-  asm_mode = false;
+  flags = DIS_FLAG_LABEL;
+  if (listing_mode)
+    flags |= DIS_FLAG_LISTING;
+
   pass_two = false;
   if (got_start_addr)
-    disassemble_range (sim, bank, start_addr, end_addr);
+    disassemble_range (sim, flags,bank, start_addr, end_addr);
   else
-    disassemble_all (sim);
+    disassemble_all (sim, flags);
 
   pass_two = true;
   printf ("\t.arch %s\n\n", arch_info->name);
   if (got_start_addr)
-    disassemble_range (sim, bank, start_addr, end_addr);
+    disassemble_range (sim, flags, bank, start_addr, end_addr);
   else
-    disassemble_all (sim);
+    disassemble_all (sim, flags);
 
   exit (0);
 }

@@ -1816,6 +1816,7 @@ void *get_chip_data (chip_t *chip)
 
 
 bool sim_disassemble (sim_t        *sim,
+		      uint32_t     flags,
 		      // input and output:
 		      bank_t       *bank,
 		      addr_t       *addr,
@@ -1831,6 +1832,7 @@ bool sim_disassemble (sim_t        *sim,
 		      int          len)
 {
   return sim->proc->disassemble (sim,
+				 flags,
 				 bank,
 				 addr,
 				 inst_state,
@@ -1858,6 +1860,7 @@ flow_type_info_t flow_type_info [MAX_FLOW_TYPE] =
 };
 
 bool sim_disassemble_runtime (sim_t        *sim,
+			      uint32_t     flags,
 			      bank_t       bank,
 			      addr_t       addr,
 			      inst_state_t inst_state,
@@ -1879,6 +1882,7 @@ bool sim_disassemble_runtime (sim_t        *sim,
   char buf1 [80];
 
   stat = sim_disassemble (sim,
+			  flags,
 			  & bank,
 			  & addr,
 			  & inst_state,

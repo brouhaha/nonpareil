@@ -385,7 +385,12 @@ typedef enum
   inst_nut_selprf         // "smart" peripheral selected (NPIC, PIL)
 } inst_state_t;
 
+
+#define DIS_FLAG_LISTING (1 << 0)
+#define DIS_FLAG_LABEL   (1 << 1)
+
 bool sim_disassemble (sim_t        *sim,
+		      uint32_t     flags,
 		      // input and output:
 		      bank_t       *bank,
 		      addr_t       *addr,
@@ -401,6 +406,7 @@ bool sim_disassemble (sim_t        *sim,
 		      int          len);
 
 bool sim_disassemble_runtime (sim_t        *sim,
+			      uint32_t     flags,
 			      bank_t       bank,
 			      addr_t       addr,
 			      inst_state_t inst_state,

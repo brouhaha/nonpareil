@@ -304,6 +304,7 @@ static void disassemble_nc_goto (rom_word_t op1,
 
 
 bool woodstock_disassemble (sim_t        *sim,
+			    uint32_t     flags UNUSED,
 			    // input and output:
 			    bank_t       *bank,
 			    addr_t       *addr,
@@ -326,8 +327,14 @@ bool woodstock_disassemble (sim_t        *sim,
 
   if (! sim_read_rom (sim, *bank, *addr, & op1))
     return false;
-  (*addr) = ((*addr) + 1) & 07777;
 
+  if (flags & DIS_FLAG_LISTING)
+    buf_printf (& buf, & len, "%04o: %04o  ", *addr, op1);
+
+  if (flags & DIS_FLAG_LABEL)
+    buf_printf (& buf, & len, "<label>  ");
+
+  (*addr) = ((*addr) + 1) & 07777;
   *flow_type = flow_no_branch;
 
   if (*inst_state == inst_woodstock_then_goto)

@@ -132,6 +132,7 @@ typedef struct
 
 // defined in dis_woodstock.c:
 bool woodstock_disassemble (sim_t        *sim,
+			    uint32_t     flags,
 			    // input and output:
 			    bank_t       *bank,
 			    addr_t       *addr,
