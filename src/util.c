@@ -587,7 +587,7 @@ void hex_dump (FILE *f, void *p, size_t count)
 }
 
 
-int buf_printf (char **buf, int *len, char *fmt, ...)
+int buf_printf (char **buf, int *len, const char *fmt, ...)
 {
   int l = 0;
   va_list ap;
