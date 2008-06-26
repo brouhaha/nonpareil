@@ -332,7 +332,7 @@ void output_fat (FILE *outfile,
   if (page->Page <= 0xf)
     page_start = page->Page * 0x1000;
   else
-    page_start = 0x8000;
+    page_start = 0x8000;  // assume port 1
 
   fprintf (outfile, "XROM  Addr Function    Type\n");
   addr = 2;
@@ -635,7 +635,8 @@ bool output_mod_info (FILE *outfile,    // output file or set to stdout
 
       if (page->Page <= 0x0f)
 	page_addr = page->Page * 0x1000;
-      page_addr = 0x8000;  // wild-ass guess
+      else
+	page_addr = 0x8000;  // assume port 1
 
       fprintf (outfile, "\n");
       if (verbose)
