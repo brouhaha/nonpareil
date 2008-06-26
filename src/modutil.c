@@ -1,6 +1,6 @@
 /*
 $Id$
-Copyright 2005 Eric L. Smith <eric@brouhaha.com>
+Copyright 2005, 2008 Eric Smith <eric@brouhaha.com>
 
 MOD File utility main program for Linux/Posix systems.
 Reads and checks a MOD file, then outputs its contents and info.
@@ -346,7 +346,25 @@ void output_fat (FILE *outfile,
       fprintf (outfile, "%02d,%02d %04X ", ROM [0], entry_num,
 	       jmp_addr + page_addr);
       if (ROM [addr] & 0x200)
-	fprintf (outfile, "            USER CODE");
+	{
+          int addr2 = jmp_addr + 4;
+	  int len = ROM [jmp_addr + 2] & 0x0f;
+
+	  fprintf (outfile, "\"");
+	  while (--len)
+	    {
+	      int ch = ROM [addr2++] & 0x7f;
+	      fprintf (outfile, "%c", ch);
+	    }
+	  fprintf (outfile, "\"");
+	  len = ROM [jmp_addr + 2] & 0x0f;
+          while (len < 10)  // pad it out
+            {
+	      fprintf (outfile, " ");
+	      len++;
+            }
+          fprintf (outfile, " 4K user code");
+	}
       else if (jmp_addr < 0x1000)  // 4K MCODE def
 	{
           int addr2 = jmp_addr;
@@ -384,7 +402,7 @@ void output_fat (FILE *outfile,
           if (prompt && ! (ROM [jmp_addr - 2] & 0x0080))
             prompt |= (ROM [jmp_addr - 2] & 0x300) >> 6;
 	  if (prompt)
-	    fprintf (outfile, " Prompt; %s\n", prompt_name [prompt]);
+	    fprintf (outfile, " Prompt; %s", prompt_name [prompt]);
 	}
       else
 	fprintf (outfile, "            8K MCODE (Not decoded)");
