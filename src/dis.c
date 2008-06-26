@@ -60,6 +60,7 @@ void usage (FILE *f)
   fprintf (f, "   -a  assembly source mode\n");
   fprintf (f, "   -l  listing mode (default)\n");
   fprintf (f, "   --bank <bank>   bank\n");
+  fprintf (f, "   --page <page>   page (41C)\n");
   fprintf (f, "   --start <addr>  start address\n");
   fprintf (f, "   --end <addr>    end address\n");
 }
@@ -101,8 +102,8 @@ void get_symbol (bank_t bank, addr_t addr, char *buf, int len)
 }
 
 
-void postprocess (bank_t       *bank,
-		  addr_t       *addr,
+void postprocess (bank_t       bank,
+		  addr_t       addr,
 		  flow_type_t  flow_type,
 		  bank_t       target_bank,
 		  addr_t       target_addr,
@@ -166,8 +167,8 @@ static void disassemble_all (sim_t *sim, uint32_t flags)
 	{
 	  fprintf (stderr, "disassembling bank %d page %d\n", bank, page);
 	  addr = page * page_size;
-	  while ((addr >= page * page_size) &&
-		 (addr < ((page + 1) * page_size)))
+	  while ((addr >= (addr_t) (page * page_size)) &&
+		 (addr < (addr_t) ((page + 1) * page_size)))
 	    {
 	      base_addr = addr;
 	      if (! sim_disassemble (sim,
@@ -255,9 +256,11 @@ int main (int argc, char *argv[])
   int arch;
   arch_info_t *arch_info;
   bool got_bank = false;
+  bool got_page = false;
   bool got_start_addr = false;
   bool got_end_addr = false;
   uint32_t bank = 0;
+  uint32_t page;
   uint32_t start_addr;
   uint32_t end_addr;
   uint32_t flags;
@@ -275,6 +278,22 @@ int main (int argc, char *argv[])
 	    listing_mode = false;
 	  else if (strcmp (argv [0], "-l") == 0)
 	    listing_mode = true;
+	  else if (strcmp (argv [0], "--bank") == 0)
+	    {
+	      got_bank = true;
+	      bank = str_to_uint32 (argv [1], NULL, 0);
+	      argc--;
+	      argv++;
+	    }
+	  else if (strcmp (argv [0], "--page") == 0)
+	    {
+	      got_page = true;
+	      page = str_to_uint32 (argv [1], NULL, 0);
+	      if (page >= 0x10)
+		fatal (1, "page range is 0x0 to 0xf\n");
+	      argc--;
+	      argv++;
+	    }
 	  else if (strcmp (argv [0], "--start") == 0)
 	    {
 	      got_start_addr = true;
@@ -286,13 +305,6 @@ int main (int argc, char *argv[])
 	    {
 	      got_end_addr = true;
 	      end_addr = str_to_uint32 (argv [1], NULL, 0);
-	      argc--;
-	      argv++;
-	    }
-	  else if (strcmp (argv [0], "--bank") == 0)
-	    {
-	      got_bank = true;
-	      bank = str_to_uint32 (argv [1], NULL, 0);
 	      argc--;
 	      argv++;
 	    }
@@ -309,11 +321,21 @@ int main (int argc, char *argv[])
 	}
     }
 
+  if (got_page)
+    {
+      if (got_start_addr || got_end_addr)
+	fatal (1, "page and start/end options are mutually exclusive\n");
+      start_addr = page << 12;
+      end_addr = start_addr + 0xfff;
+      got_start_addr = true;
+      got_end_addr = true;
+    }
+
   if (got_start_addr ^ got_end_addr)
     fatal (1, "start and end address must both be present\n");
 
-  if (got_bank && ! got_start_addr)
-    fatal (1, "bank requires start and end address\n");
+  if (got_bank && ! (got_page || got_start_addr))
+    fatal (1, "bank requires page or start and end address\n");
 
   ncd_fn = find_file_with_suffix (model_str, ".ncd", default_path);
   if (! ncd_fn)
