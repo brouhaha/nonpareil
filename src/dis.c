@@ -59,6 +59,7 @@ void usage (FILE *f)
   fprintf (f, "options:\n");
   fprintf (f, "   -a  assembly source mode\n");
   fprintf (f, "   -l  listing mode (default)\n");
+  fprintf (f, "   --bank <bank>   bank\n");
   fprintf (f, "   --start <addr>  start address\n");
   fprintf (f, "   --end <addr>    end address\n");
 }
