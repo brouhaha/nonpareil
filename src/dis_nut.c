@@ -393,6 +393,7 @@ bool nut_disassemble (sim_t        *sim,
   bool two_word;
   rom_word_t op1;
   rom_word_t op2 = 0;
+  addr_t base_addr = *addr;
 
   if ((*inst_state) != inst_normal)
     return false;
@@ -413,7 +414,7 @@ bool nut_disassemble (sim_t        *sim,
 
   if (flags & DIS_FLAG_LISTING)
     {
-      buf_printf (& buf, & len, "%04x: %03x ", *addr, op1);
+      buf_printf (& buf, & len, "%04x: %03x ", base_addr, op1);
       if (two_word)
 	buf_printf (& buf, & len, "%03x  ", op2);
       else

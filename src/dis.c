@@ -212,7 +212,8 @@ static void disassemble_range (sim_t    *sim,
   flow_type_t flow_type;
   char buf [100];
 
-  for (addr = start_addr; addr <= end_addr; addr++)
+  addr = start_addr;
+  while (addr <= end_addr)
     {
       base_addr = addr;
       if (! sim_disassemble (sim,
