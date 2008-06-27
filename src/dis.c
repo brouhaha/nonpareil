@@ -38,6 +38,7 @@ MA 02111, USA.
 #include "proc.h"
 #include "calcdef.h"
 #include "mod1_file.h"
+#include "dis_uc41.h"
 
 #include "sound.h"  // ugh! needed for stub sound functions
 
@@ -63,10 +64,13 @@ void usage (FILE *f)
   fprintf (f, "   --page <page>   page (41C)\n");
   fprintf (f, "   --start <addr>  start address\n");
   fprintf (f, "   --end <addr>    end address\n");
+  fprintf (f, "   --fat           decode FAT and user code (41C)\n");
 }
 
 
 bool listing_mode = true;
+bool decode_fat = false;
+
 bool pass_two;
 
 bool hex_addr_mode;
@@ -128,13 +132,18 @@ void postprocess (bank_t       bank,
       get_symbol (bank, addr, label, sizeof (label));
       // find label insertion point
       p = strstr (buf, "<label>");
-      if (! p)
-	fatal (2, "missing label insertion marker\n");
-      memset (p, ' ', 7);
-      if (label [0] && (label [0] != ' '))
+      if (p)
 	{
-	  memcpy (p, label, strlen (label));
-	  p [strlen (label)] = ':';
+	  memset (p, ' ', 7);
+	  if (label [0] && (label [0] != ' '))
+	    {
+	      memcpy (p, label, strlen (label));
+	      p [strlen (label)] = ':';
+	    }
+	}
+      else
+	{
+	  // fatal (2, "missing label insertion marker\n");
 	}
       if (flow_type_info [flow_type].has_target)
 	{
@@ -246,6 +255,329 @@ static void disassemble_range (sim_t    *sim,
 }
 
 
+typedef enum
+{
+  ucode = 0,
+  raw,          // used for two-word UC header, FAT trailer
+  fat_header,
+  ucode_name,
+  uc,
+  poll_entry,
+} rom_word_usage_t;
+
+#ifdef DEBUG_PARSE_FAT
+char rom_usage_char [6] =
+{
+  [ucode]      = 'u',
+  [raw]        = 'r',
+  [fat_header] = 'f',
+  [ucode_name] = 'n',
+  [uc]         = 'U',
+  [poll_entry] = 'p'
+};
+#endif // DEBUG_PARSE_FAT
+
+
+static bool disassemble_raw (sim_t    *sim UNUSED,
+			     uint32_t flags UNUSED,
+			     bank_t   *bank UNUSED,
+			     addr_t   *addr UNUSED,
+			     char     *buf UNUSED,
+			     int      len UNUSED)
+{
+  rom_word_t w1;
+
+  if (! sim_read_rom (sim, *bank, *addr, & w1))
+    return false;
+  (*addr) = ((*addr) + 1) & 0xffff;
+
+  buf_printf (& buf, & len, "        .word 0x%02x", w1);
+  return true;
+}
+
+
+static bool disassemble_fat_header (sim_t    *sim UNUSED,
+				    uint32_t flags UNUSED,
+				    bank_t   *bank UNUSED,
+				    addr_t   *addr UNUSED,
+				    char     *buf UNUSED,
+				    int      len UNUSED)
+{
+  rom_word_t w1, w2;
+  addr_t offset;
+
+  if (! sim_read_rom (sim, *bank, *addr, & w1))
+    return false;
+
+  if (((*addr) & 0x0fff) == 0)
+    {
+      (*addr) = ((*addr) + 1) & 0xffff;
+      buf_printf (& buf, & len, "        .word %d     ; XROM number", w1);
+      return true;
+    }
+
+  if (((*addr) & 0x0fff) == 1)
+    {
+      (*addr) = ((*addr) + 1) & 0xffff;
+      buf_printf (& buf, & len, "        .word %d     ; function count", w1);
+      return true;
+    }
+
+  (*addr) = ((*addr) + 1) & 0xffff;
+  if (! sim_read_rom (sim, *bank, *addr, & w2))
+    return false;
+  (*addr) = ((*addr) + 1) & 0xffff;
+
+  offset = ((w1 & 0xff) << 8) + (w2 & 0xff);
+  buf_printf (& buf, & len, "        %s %04x", (w1 & 0x200) ? ".uc_ent" : ".ucode_ent", offset);
+
+  return true;
+}
+
+static bool disassemble_ucode_name (sim_t    *sim UNUSED,
+			    uint32_t flags UNUSED,
+			    bank_t   *bank UNUSED,
+			    addr_t   *addr UNUSED,
+			    char     *buf UNUSED,
+			    int      len UNUSED)
+{
+  // $$$
+  return disassemble_raw (sim, flags, bank, addr, buf, len);
+}
+
+static bool disassemble_poll_entry (sim_t    *sim UNUSED,
+			    uint32_t flags UNUSED,
+			    bank_t   *bank UNUSED,
+			    addr_t   *addr UNUSED,
+			    char     *buf UNUSED,
+			    int      len UNUSED)
+{
+  // $$$
+  return disassemble_raw (sim, flags, bank, addr, buf, len);
+}
+
+
+rom_word_usage_t rom_word_usage [0x1000];
+
+
+static bool parse_fat_uc (sim_t *sim,
+			  bank_t bank,
+			  addr_t start_addr,
+			  addr_t entry_offset)
+{
+  addr_t offset;
+  rom_word_t word;
+
+  if (rom_word_usage [entry_offset] == uc)
+    return true;
+
+  // find lower bound
+  offset = entry_offset;
+  for (;;)
+    {
+      offset--;
+      if (! sim_read_rom (sim, bank, start_addr + offset, & word))
+	return false;
+      if (word & 0x200)
+	break;
+      rom_word_usage [offset] = uc;
+    }
+  rom_word_usage [offset - 1] = raw;  // uc header
+  rom_word_usage [offset]     = raw;  // uc header
+  
+  // find upper bound
+  offset = entry_offset;
+  for (;;)
+    {
+      if (! sim_read_rom (sim, bank, start_addr + offset, & word))
+	return false;
+      rom_word_usage [offset++] = uc;
+      if (word & 0x200)
+	break;
+    }
+
+  return true;
+}
+
+
+static bool parse_fat_ucode (sim_t *sim,
+			     bank_t bank,
+			     addr_t start_addr,
+			     addr_t entry_offset)
+{
+  addr_t offset = entry_offset;
+  rom_word_t word;
+
+  for (;;)
+    {
+      offset--;
+      if (! sim_read_rom (sim, bank, start_addr + offset, & word))
+	return false;
+      rom_word_usage [offset] = ucode_name;
+      if (word & 0x80)
+	break;
+    }
+  return true;
+}
+
+
+static bool parse_fat (sim_t *sim,
+		       bank_t bank,
+		       addr_t start_addr)
+{
+  rom_word_t fn_count;
+  rom_word_t w1, w2;
+  addr_t entry_offset;
+  int i;
+
+  memset (rom_word_usage, 0, sizeof (rom_word_usage));
+
+  rom_word_usage [0] = fat_header;
+  rom_word_usage [1] = fat_header;
+
+  if (! sim_read_rom (sim, bank, start_addr + 1, & fn_count))
+    return false;
+
+  for (i = 0; i < fn_count; i++)
+    {
+      if (! sim_read_rom (sim, bank, start_addr + 2 + 2 * i, & w1))
+	return false;
+      if (! sim_read_rom (sim, bank, start_addr + 2 + 2 * i + 1, & w2))
+	return false;
+      rom_word_usage [2 + 2 * i]     = fat_header;
+      rom_word_usage [2 + 2 * i + 1] = fat_header;
+      entry_offset = ((w1 & 0xff) << 8) | (w2 & 0xff);
+      if (entry_offset > 0xfff)
+	continue;
+      if (w1 & 0x200)
+	{
+	  if (! parse_fat_uc (sim, bank, start_addr, entry_offset))
+	    return false;
+	}
+      else
+	{
+	  if (! parse_fat_ucode (sim, bank, start_addr, entry_offset))
+	    return false;
+	}
+    }
+
+  // there should be two zero words after the end of the FAT
+  // (not sure about the case of a 64-function FAT)
+
+  for (i = 0xff4; i <= 0xffa; i++)
+    rom_word_usage [i] = poll_entry;
+  for (i = 0xffb; i <= 0xfff; i++)
+    rom_word_usage [i] = raw;  // ROM ID & checksum
+
+#ifdef DEBUG_PARSE_FAT
+  for (i = 0; i < 0x1000; i+= 64)
+    {
+      int j;
+      printf ("%04x: ", start_addr + i);
+      for (j = i; j < (i + 64); j++)
+	{
+	  printf ("%c", rom_usage_char [rom_word_usage [j]]);
+	}
+      printf ("\n");
+    }
+  fflush (stdout);
+#endif // DEBUG_PARSE_FAT
+
+  return true;
+}
+
+
+static void disassemble_fat (sim_t    *sim,
+			     uint32_t flags,
+			     bank_t   bank,
+			     addr_t   start_addr)
+{
+  bank_t target_bank;
+  addr_t addr, target_addr, base_addr;
+  inst_state_t inst_state = inst_normal;
+  bool carry_known_clear;
+  addr_t delayed_select_mask = 0, delayed_select_addr = 0;
+  flow_type_t flow_type;
+  bool status;
+  char buf [100];
+
+  if (! pass_two)
+    {
+      if (! parse_fat (sim, bank, start_addr))
+	fatal (2, "error parsing FAT\n");
+    }
+
+  addr = start_addr;
+  while (addr < (start_addr + 0x1000))
+    {
+      base_addr = addr;
+      switch (rom_word_usage [addr - start_addr])
+	{
+	case ucode:
+	  status = sim_disassemble (sim,
+				    flags,
+				    & bank,
+				    & addr,
+				    & inst_state,
+				    & carry_known_clear,
+				    & delayed_select_mask,
+				    & delayed_select_addr,
+				    & flow_type,
+				    & target_bank,
+				    & target_addr,
+				    buf,
+				    sizeof (buf));
+	  break;
+	case raw:
+	  status = disassemble_raw (sim, flags, & bank, & addr, buf, sizeof (buf));
+	  flow_type = flow_no_branch;
+	  break;
+	case fat_header:
+	  status = disassemble_fat_header (sim, flags, & bank, & addr, buf, sizeof (buf));
+	  flow_type = flow_no_branch;
+	  break;
+	case ucode_name:
+	  status = disassemble_ucode_name (sim, flags, & bank, & addr, buf, sizeof (buf));
+	  flow_type = flow_no_branch;
+	  break;
+	case uc:
+	  status = uc41_disassemble (sim,
+				     flags,
+				     & bank,
+				     & addr,
+				     & inst_state,
+				     & carry_known_clear,
+				     & delayed_select_mask,
+				     & delayed_select_addr,
+				     & flow_type,
+				     & target_bank,
+				     & target_addr,
+				     buf,
+				     sizeof (buf));
+	  break;
+	case poll_entry:
+	  status = disassemble_poll_entry (sim, flags, & bank, & addr, buf, sizeof (buf));
+	  flow_type = flow_no_branch;
+	  break;
+	default:
+	  fatal (2, "unknown rom word usage\n");
+	  if (! status)
+	    {
+	      warning ("disassembler error at bank %d addr %05o\n", bank, (addr + 1) % max_addr);
+	      break;
+	    }
+	}
+      postprocess (bank,
+		   base_addr,
+		   flow_type,
+		   target_bank,
+		   target_addr,
+		   buf,
+		   sizeof (buf));
+    }
+}
+
+
 int main (int argc, char *argv[])
 {
   char *model_str = NULL;
@@ -278,6 +610,8 @@ int main (int argc, char *argv[])
 	    listing_mode = false;
 	  else if (strcmp (argv [0], "-l") == 0)
 	    listing_mode = true;
+	  else if (strcmp (argv [0], "--fat") == 0)
+	    decode_fat = true;
 	  else if (strcmp (argv [0], "--bank") == 0)
 	    {
 	      got_bank = true;
@@ -289,8 +623,8 @@ int main (int argc, char *argv[])
 	    {
 	      got_page = true;
 	      page = str_to_uint32 (argv [1], NULL, 0);
-	      if (page >= 0x10)
-		fatal (1, "page range is 0x0 to 0xf\n");
+	      if ((page < 0x3) || (page > 0xf))
+		fatal (1, "page range is 0x3 to 0xf\n");
 	      argc--;
 	      argv++;
 	    }
@@ -358,6 +692,18 @@ int main (int argc, char *argv[])
   arch_info = get_arch_info (arch);
   hex_addr_mode = (arch == ARCH_NUT);
 
+  if (decode_fat)
+    {
+      if (arch != ARCH_NUT)
+	fatal (1, "--fat only works on the Nut architecture\n");
+      if (! got_start_addr)
+	fatal (1, "--fat requires --page (or --start and --end)\n");
+      if ((start_addr & 0x0fff) ||
+	  ((end_addr & 0x0fff) != 0x0fff) ||
+	  ((start_addr ^ end_addr) & 0xf000))
+	fatal (1, "--fat requires address range to be a single aligned page\n");
+    }
+
   if (module_str)
     {
       if (arch != ARCH_NUT)
@@ -376,14 +722,18 @@ int main (int argc, char *argv[])
     flags |= DIS_FLAG_LISTING;
 
   pass_two = false;
-  if (got_start_addr)
-    disassemble_range (sim, flags,bank, start_addr, end_addr);
+  if (decode_fat)
+    disassemble_fat (sim, flags, bank, start_addr);
+  else if (got_start_addr)
+    disassemble_range (sim, flags, bank, start_addr, end_addr);
   else
     disassemble_all (sim, flags);
 
   pass_two = true;
   printf ("\t.arch %s\n\n", arch_info->name);
-  if (got_start_addr)
+  if (decode_fat)
+    disassemble_fat (sim, flags, bank, start_addr);
+  else if (got_start_addr)
     disassemble_range (sim, flags, bank, start_addr, end_addr);
   else
     disassemble_all (sim, flags);

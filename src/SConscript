@@ -385,7 +385,7 @@ udis_packages = "gthread-2.0"
 udis_env.ParseConfig (pkg_config_cmd + udis_packages)
 udis_env.Append (CPPDEFINES = [('DEFAULT_PATH', build_env ['libdir'])])
 
-udis_srcs = Split ("""dis.c""")
+udis_srcs = Split ("""dis.c dis_uc41.c""")
 
 udis = udis_env.Program (target = 'udis',
                          source = (common_objs +
@@ -435,7 +435,7 @@ if build_env ['build_target_only'] == 0:
                         proc_classic.h proc_nut.h proc_woodstock.h
                         state_io.h
                         debugger_gui.h debugger_cli.h
-                        dis.h
+                        dis.h dis_uc41.h
                         display.h printer.h
                         keyboard.h cbutton.h
                         voyager_lcd.h
@@ -449,12 +449,14 @@ if build_env ['build_target_only'] == 0:
 
     dist_files = (misc + headers +
                   kml_srcs + common_srcs + common_dis_srcs +
-                  state_io_srcs + uasm_srcs +
+                  state_io_srcs +
                   nonpareil_srcs + nonpareil_csim_srcs +
                   nonpareil_debugger_gui_srcs +
                   nonpareil_debugger_cli_srcs +
                   build_ncd_srcs +
                   modutil_srcs +
+		  uasm_srcs +
+		  udis_srcs +
                   str2png_srcs +
                   bin2c_srcs)
 
