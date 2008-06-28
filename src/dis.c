@@ -258,24 +258,28 @@ static void disassemble_range (sim_t    *sim,
 typedef enum
 {
   ucode = 0,
+  poll_entry,
   raw,          // used for two-word UC header, FAT trailer
   fat_header,
   ucode_name,
-  uc,
-  poll_entry,
+  ucode_name_first_char,
+  uc
 } rom_word_usage_t;
 
 #ifdef DEBUG_PARSE_FAT
 char rom_usage_char [6] =
 {
-  [ucode]      = 'u',
-  [raw]        = 'r',
-  [fat_header] = 'f',
-  [ucode_name] = 'n',
-  [uc]         = 'U',
-  [poll_entry] = 'p'
+  [ucode]                 = 'u',
+  [poll_entry]            = 'p',
+  [raw]                   = 'r',
+  [fat_header]            = 'f',
+  [ucode_name]            = 'n',
+  [ucode_name_first_char] = 'n',
+  [uc]                    = 'U'
 };
 #endif // DEBUG_PARSE_FAT
+
+static rom_word_usage_t rom_word_usage [0x1000];
 
 
 static bool disassemble_raw (sim_t    *sim UNUSED,
@@ -334,6 +338,28 @@ static bool disassemble_fat_header (sim_t    *sim UNUSED,
   return true;
 }
 
+
+static const char LCDtoASCII []=
+{
+  '@', 'A', 'B', 'C', 'D', 'E', 'F', 'G',
+  'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O',
+  'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W',
+  'X', 'Y', 'Z', '[', '\\',']', '^', '_',
+  ' ', '!', '\"','#', '$', '%', '&', '\'',
+  '(', ')', '*', '+', '{', '-', '}', '/',
+  '0', '1', '2', '3', '4', '5', '6', '7',
+  '8', '9', '~', ';', '<', '=', '>', '?',
+  '~', 'a', 'b', 'c', 'd', 'e', '~', '~',
+  '~', '~', '~', '~', '~', '~', '~', '~',
+  '~', '~', '~', '~', '~', '~', '~', '~',
+  '~', '~', '~', '~', '~', '~', '~', '~',
+  '~', 'a', 'b', 'c', 'd', 'e', 'f', 'g',
+  'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o',
+  'p', 'q', 'r', 's', 't', 'u', 'v', 'w',
+  'x', 'y', 'z', '~', '~', '~', '~', '~'
+};
+
+
 static bool disassemble_ucode_name (sim_t    *sim UNUSED,
 			    uint32_t flags UNUSED,
 			    bank_t   *bank UNUSED,
@@ -341,24 +367,32 @@ static bool disassemble_ucode_name (sim_t    *sim UNUSED,
 			    char     *buf UNUSED,
 			    int      len UNUSED)
 {
-  // $$$
-  return disassemble_raw (sim, flags, bank, addr, buf, len);
+  addr_t p = *addr;
+  int name_len = 0;
+  rom_word_t char_byte;
+
+  while (rom_word_usage [p & 0xfff] == ucode_name)
+    {
+      p++;
+      name_len++;
+    }
+
+  // now we should be at a ucode_name_first_char
+  p++;
+  name_len++;
+
+  (*addr) += name_len;
+
+  buf_printf (& buf, & len, "        .rstring \"");
+  while (name_len--)
+    {
+      if (! sim_read_rom (sim, *bank, --p, & char_byte))
+	return false;
+      buf_printf (& buf, & len, "%c", LCDtoASCII [char_byte & 0x7f]);
+    }
+  buf_printf (& buf, & len, "\"");
+  return true;
 }
-
-static bool disassemble_poll_entry (sim_t    *sim UNUSED,
-			    uint32_t flags UNUSED,
-			    bank_t   *bank UNUSED,
-			    addr_t   *addr UNUSED,
-			    char     *buf UNUSED,
-			    int      len UNUSED)
-{
-  // $$$
-  return disassemble_raw (sim, flags, bank, addr, buf, len);
-}
-
-
-rom_word_usage_t rom_word_usage [0x1000];
-
 
 static bool parse_fat_uc (sim_t *sim,
 			  bank_t bank,
@@ -407,14 +441,20 @@ static bool parse_fat_ucode (sim_t *sim,
 {
   addr_t offset = entry_offset;
   rom_word_t word;
+  bool first = true;
 
+  // name is in LCD character set, in reverse order preceding
+  // the ucode function
   for (;;)
     {
       offset--;
       if (! sim_read_rom (sim, bank, start_addr + offset, & word))
 	return false;
-      rom_word_usage [offset] = ucode_name;
-      if (word & 0x80)
+      if (word & 0x300)  // MSBs shouldn't be set
+	break;
+      rom_word_usage [offset] = first ? ucode_name_first_char : ucode_name;
+      first = false;
+      if (word & 0x080)
 	break;
     }
   return true;
@@ -461,13 +501,31 @@ static bool parse_fat (sim_t *sim,
 	}
     }
 
+  if (! sim_read_rom (sim, bank, start_addr + 2 + 2 * i, & w1))
+    return false;
+  if (! sim_read_rom (sim, bank, start_addr + 2 + 2 * i + 1, & w2))
+    return false;
+
+  if ((w1 == 0) && (w2 == 0))
+    {
+      rom_word_usage [2 + 2 * i]     = raw;
+      rom_word_usage [2 + 2 * i + 1] = raw;
+    }
+
   // there should be two zero words after the end of the FAT
   // (not sure about the case of a 64-function FAT)
 
+  // poll table
   for (i = 0xff4; i <= 0xffa; i++)
     rom_word_usage [i] = poll_entry;
-  for (i = 0xffb; i <= 0xfff; i++)
-    rom_word_usage [i] = raw;  // ROM ID & checksum
+
+  // ROM ID
+  for (i = 0xffb; i <= 0xffd; i++)
+    rom_word_usage [i] = ucode_name;
+  rom_word_usage [0xfff] = ucode_name_first_char;
+
+  // ROM checksum
+  rom_word_usage [0xfff] = raw;
 
 #ifdef DEBUG_PARSE_FAT
   for (i = 0; i < 0x1000; i+= 64)
@@ -514,6 +572,7 @@ static void disassemble_fat (sim_t    *sim,
       switch (rom_word_usage [addr - start_addr])
 	{
 	case ucode:
+	case poll_entry:
 	  status = sim_disassemble (sim,
 				    flags,
 				    & bank,
@@ -554,10 +613,6 @@ static void disassemble_fat (sim_t    *sim,
 				     & target_addr,
 				     buf,
 				     sizeof (buf));
-	  break;
-	case poll_entry:
-	  status = disassemble_poll_entry (sim, flags, & bank, & addr, buf, sizeof (buf));
-	  flow_type = flow_no_branch;
 	  break;
 	default:
 	  fatal (2, "unknown rom word usage\n");
