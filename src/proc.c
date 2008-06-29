@@ -1463,6 +1463,7 @@ bool sim_set_switch (sim_t *sim,
 		     uint8_t position)
 {
   int i;
+  chip_t *chip;
   int flag;
   int value;
 
@@ -1476,11 +1477,12 @@ bool sim_set_switch (sim_t *sim,
 					   sw,
 					   position,
 					   i++,
+					   & chip,
 					   & flag,
 					   & value))
     {
       sim_event (sim,
-		 sim->first_chip,  // $$$ wrong, might be CRC or PICK
+		 chip ? chip : sim->first_chip,  // if NULL, first chip only
 		 event_set_flag,
 		 flag,
 		 value,

@@ -53,16 +53,17 @@ typedef struct calcdef_chip_t
   struct calcdef_chip_t *next;
   chip_type_t type;
   char *id;
-  char *name;
   int32_t index;
   int32_t flags;
   calcdef_mem_t *mem;
+  struct chip_t *chip;
 } calcdef_chip_t;
 
 
 typedef struct calcdef_flag_t
 {
   struct calcdef_flag_t *next;
+  char *chip_id;
   int number;
   int value;
 } calcdef_flag_t;
@@ -324,7 +325,11 @@ static void parse_flag (calcdef_t *calcdef UNUSED,
 
   for (i = 0; attrs && attrs [i]; i += 2)
     {
-      if (strcmp ((char *) attrs [i], "number") == 0)
+      if (strcmp ((char *) attrs [i], "chip_id") == 0)
+	{
+	  flag->chip_id = newstr ((char *) attrs [i + 1]);
+	}
+      else if (strcmp ((char *) attrs [i], "number") == 0)
 	{
 	  flag->number = atoi ((char *) attrs [i + 1]);
 	  got_number = true;
@@ -423,7 +428,11 @@ static void parse_chip (calcdef_t *calcdef UNUSED,
 
   for (i = 0; attrs && attrs [i]; i += 2)
     {
-      if (strcmp ((char *) attrs [i], "type") == 0)
+      if (strcmp ((char *) attrs [i], "id") == 0)
+	{
+	  chip->id = newstr ((char *) attrs [i + 1]);
+	}
+      else if (strcmp ((char *) attrs [i], "type") == 0)
 	{
 	  chip->type = find_chip_type_by_name ((char *) attrs [i + 1]);
 	}
@@ -835,9 +844,9 @@ void calcdef_init_chips (calcdef_t *calcdef)
       chip_type_info = get_chip_type_info (chip->type);
       if (chip_type_info->chip_install_fn)
 	{
-	  chip_type_info->chip_install_fn (calcdef->sim,
-					   chip->index,
-					   chip->flags);
+	  chip->chip = chip_type_info->chip_install_fn (calcdef->sim,
+							chip->index,
+							chip->flags);
 	}
     }
 }
@@ -870,10 +879,25 @@ static calcdef_switch_position_t *calcdef_get_switch_position (calcdef_t *calcde
 }
 
 
+static struct chip_t *find_chip_by_id (calcdef_t *calcdef,
+				       char *chip_id)
+{
+  calcdef_chip_t *chip;
+
+  for (chip = calcdef->chip; chip; chip = chip->next)
+    {
+      if (strcmp (chip->id, chip_id) == 0)
+	return chip->chip;
+    }
+  return NULL;
+}
+
+
 bool calcdef_get_switch_position_flag  (calcdef_t *calcdef,
 					int sw,
 					int pos,
 					int index,
+					struct chip_t **chip,
 					int *flag,
 					int *value)
 {
@@ -887,6 +911,10 @@ bool calcdef_get_switch_position_flag  (calcdef_t *calcdef,
     {
       if (index-- == 0)
 	{
+	  if (flag_p->chip_id)
+	    *chip = find_chip_by_id (calcdef, flag_p->chip_id);
+	  else
+	    *chip = NULL;
 	  *flag = flag_p->number;
 	  *value = flag_p->value;
 	  return true;

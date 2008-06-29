@@ -14,7 +14,7 @@ Copyright 2007, 2008 Eric Smith <eric@brouhaha.com>
          license="GPL-3.0">
 
   <!-- ACT -->
-  <chip chip_id="act" chip_type="woodstock_act">
+  <chip id="act" type="woodstock_act">
     <part_info>
       <vendor_name>HP</vendor_name>
       <part_number>1820-1596</part_number>
@@ -27,7 +27,7 @@ Copyright 2007, 2008 Eric Smith <eric@brouhaha.com>
   </chip>
 
   <!-- cathode driver, 12-digit -->
-  <chip chip_id="cathode_driver" chip_type="woodstock_cathode_driver_12">
+  <chip id="cathode_driver" type="woodstock_cathode_driver_12">
     <part_info>
       <vendor_name>HP</vendor_name>
       <part_number>1820-1382</part_number>
@@ -35,7 +35,7 @@ Copyright 2007, 2008 Eric Smith <eric@brouhaha.com>
   </chip>
 
   <!-- ROM/anode driver -->
-  <chip chip_id="rom_anode_driver" chip_type="woodstock_rom_anode_driver">
+  <chip id="rom_anode_driver" type="woodstock_rom_anode_driver">
     <part_info>
       <vendor_name>HP</vendor_name>
       <part_number>1818-0268</part_number>
@@ -69,7 +69,7 @@ Copyright 2007, 2008 Eric Smith <eric@brouhaha.com>
     </chargen>
   </chip>
 
-  <chip id="rom_ram_0" chip_type="woodstock_rom_arm">
+  <chip id="rom_ram_0" type="woodstock_rom_arm">
     <part_info>
       <vendor_name>HP</vendor_name>
       <part_number>1818-0550</part_number>
@@ -80,7 +80,7 @@ Copyright 2007, 2008 Eric Smith <eric@brouhaha.com>
     </memory>
   </chip>
 
-  <chip id="rom_ram_1" chip_type="woodstock_rom_ram">
+  <chip id="rom_ram_1" type="woodstock_rom_ram">
     <part_info>
       <vendor_name>HP</vendor_name>
       <part_number>1818-0551</part_number>
@@ -91,7 +91,7 @@ Copyright 2007, 2008 Eric Smith <eric@brouhaha.com>
     </memory>
   </chip>
 
-  <chip id="rom_ram_2" chip_type="woodstock_rom_ram">
+  <chip id="rom_ram_2" type="woodstock_rom_ram">
     <part_info>
       <vendor_name>HP</vendor_name>
       <part_number>1818-0232</part_number>
@@ -106,7 +106,7 @@ Copyright 2007, 2008 Eric Smith <eric@brouhaha.com>
     </memory>
   </chip>
 
-  <chip id="rom_ram_3" chip_type="woodstock_rom_ram">
+  <chip id="rom_ram_3" type="woodstock_rom_ram">
     <part_info>
       <vendor_name>HP</vendor_name>
       <part_number>1818-0231</part_number>
@@ -121,7 +121,7 @@ Copyright 2007, 2008 Eric Smith <eric@brouhaha.com>
     </memory>
   </chip>
 
-  <chip id="crc" chip_type="woodstock_crc">
+  <chip id="crc" type="woodstock_crc">
     <part_info>
       <vendor_name>HP</vendor_name>
       <part_number>1820-1751</part_number>
@@ -130,8 +130,6 @@ Copyright 2007, 2008 Eric Smith <eric@brouhaha.com>
       <vendor_name>Mostek</vendor_name>
       <part_number>MK6250N</part_number>
     </part_info>
-    <memory addr_space="data" base_addr="0x99" size="0x03">
-    </memory>
   </chip>
 
   <obj_file addr_space="inst"
@@ -154,11 +152,11 @@ Copyright 2007, 2008 Eric Smith <eric@brouhaha.com>
     </switch>
 
     <switch number="1">
-      <switch_pos position="0">
-        <flag chip_id="crc" number="1" value="0"/>
-      </switch_pos>
-      <switch_pos position="1">
+      <switch_pos position="0">  <!-- PRGM -->
         <flag chip_id="crc" number="1" value="1"/>
+      </switch_pos>
+      <switch_pos position="1">  <!-- RUN -->
+        <flag chip_id="crc" number="1" value="0"/>
       </switch_pos>
     </switch>
 

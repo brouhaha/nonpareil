@@ -27,11 +27,15 @@
 <!ATTLIST switch
           number CDATA #REQUIRED>
 
-<!ELEMENT switch_pos EMPTY>
+<!ELEMENT switch_pos (flag*)>
 <!ATTLIST switch_pos
-          position CDATA #REQUIRED
-          flag     CDATA #IMPLIED
-	  value    CDATA #IMPLIED>
+          position CDATA #REQUIRED>
+
+<!ELEMENT flag EMPTY>
+<!ATTLIST flag
+          chip_id  CDATA #IMPLIED
+          number   CDATA #REQUIRED
+	  value    CDATA #REQUIRED>
 
 <!ELEMENT inst_clock EMPTY>
 <!ATTLIST inst_clock

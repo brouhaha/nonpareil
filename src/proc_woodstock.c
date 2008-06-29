@@ -42,9 +42,6 @@ MA 02111, USA.
 
 #define MAX_RAM_ADDR 256
 
-#undef DEBUG_CRC
-#undef DEBUG_PIK
-
 #undef DEBUG_BANK_SWITCH
 #undef DEBUG_P_WRAP
 
@@ -733,8 +730,28 @@ static void op_c_to_addr (sim_t *sim,
   if (sim->debug_flags & (1 << SIM_DEBUG_RAM_TRACE))
     printf ("RAM select %02x\n", act_reg->ram_addr);
 #endif
-  if (act_reg->ram_addr >= act_reg->max_ram)
+  if (! act_reg->ram_exists [act_reg->ram_addr])
     printf ("c -> ram addr: address %d out of range\n", act_reg->ram_addr);
+}
+
+
+static bool woodstock_ram_rd_fcn (sim_t *sim)
+{
+  act_reg_t *act_reg = get_chip_data (sim->first_chip);
+  int i;
+  for (i = 0; i < WSIZE; i++)
+    act_reg->c [i] = act_reg->ram [act_reg->ram_addr] [i];
+  return true;
+}
+
+
+static bool woodstock_ram_wr_fcn (sim_t *sim)
+{
+  act_reg_t *act_reg = get_chip_data (sim->first_chip);
+  int i;
+  for (i = 0; i < WSIZE; i++)
+    act_reg->ram [act_reg->ram_addr] [i] = act_reg->c [i];
+  return true;
 }
 
 
@@ -744,7 +761,7 @@ static void op_c_to_data (sim_t *sim,
   act_reg_t *act_reg = get_chip_data (sim->first_chip);
   int i;
 
-  if (act_reg->ram_addr >= act_reg->max_ram)
+  if (! act_reg->ram_exists [act_reg->ram_addr])
     {
       printf ("c -> data: address %02x out of range\n", act_reg->ram_addr);
       return;
@@ -758,8 +775,7 @@ static void op_c_to_data (sim_t *sim,
       printf ("\n");
     }
 #endif
-  for (i = 0; i < WSIZE; i++)
-    act_reg->ram [act_reg->ram_addr] [i] = act_reg->c [i];
+  act_reg->ram_wr_fcn [act_reg->ram_addr] (sim);
 }
 
 
@@ -769,7 +785,7 @@ static void op_data_to_c (sim_t *sim,
   act_reg_t *act_reg = get_chip_data (sim->first_chip);
   int i;
 
-  if (act_reg->ram_addr >= act_reg->max_ram)
+  if (! act_reg->ram_exists [act_reg->ram_addr])
     {
       printf ("data -> c: address %d out of range, loading 0\n", act_reg->ram_addr);
       for (i = 0; i < WSIZE; i++)
@@ -785,8 +801,7 @@ static void op_data_to_c (sim_t *sim,
       printf ("\n");
     }
 #endif /* HAS_DEBUGGER */
-  for (i = 0; i < WSIZE; i++)
-    act_reg->c [i] = act_reg->ram [act_reg->ram_addr] [i];
+  act_reg->ram_rd_fcn [act_reg->ram_addr] (sim);
 }
 
 
@@ -798,7 +813,7 @@ static void op_c_to_register (sim_t *sim, int opcode)
   act_reg->ram_addr &= ~017;
   act_reg->ram_addr += (opcode >> 6);
 
-  if (act_reg->ram_addr >= act_reg->max_ram)
+  if (! act_reg->ram_exists [act_reg->ram_addr])
     {
       printf ("c -> register: address %d out of range\n", act_reg->ram_addr);
       return;
@@ -812,8 +827,7 @@ static void op_c_to_register (sim_t *sim, int opcode)
       printf ("\n");
     }
 #endif /* HAS_DEBUGGER */
-  for (i = 0; i < WSIZE; i++)
-    act_reg->ram [act_reg->ram_addr] [i] = act_reg->c [i];
+  act_reg->ram_wr_fcn [act_reg->ram_addr] (sim);
 }
 
 
@@ -825,7 +839,7 @@ static void op_register_to_c (sim_t *sim, int opcode)
   act_reg->ram_addr &= ~017;
   act_reg->ram_addr += (opcode >> 6);
 
-  if (act_reg->ram_addr >= act_reg->max_ram)
+  if (! act_reg->ram_exists [act_reg->ram_addr])
     {
       printf ("register -> c: address %d out of range, loading 0\n", act_reg->ram_addr);
       for (i = 0; i < WSIZE; i++)
@@ -841,8 +855,7 @@ static void op_register_to_c (sim_t *sim, int opcode)
       printf ("\n");
     }
 #endif /* HAS_DEBUGGER */
-  for (i = 0; i < WSIZE; i++)
-    act_reg->c [i] = act_reg->ram [act_reg->ram_addr] [i];
+  act_reg->ram_rd_fcn [act_reg->ram_addr] (sim);
 }
 
 
@@ -996,6 +1009,28 @@ static void op_set_p (sim_t *sim, int opcode)
 }
 
 
+static bool op_test_p_eq_0_after_double_inc (act_reg_t *act_reg)
+{
+  // Only do special test immediately after P has been incremented twice
+  if ((act_reg->p_change [1] != +1) ||
+      (act_reg->p_change [2] != +1))
+    return false;
+
+  // Only do special test if PC matches the knwon label search code
+  // locations.  (Ugly hack.)
+  if ((act_reg->prev_pc != 06102) &&   // 19c, 29c
+      (act_reg->prev_pc != 06132))     // 67, 97
+    {
+      printf ("addr %04o: unpexected test P equal 0 after double increment, P=%d\n", act_reg->prev_pc, act_reg->p);
+      return false;
+    }
+
+  // test p after double increment
+  act_reg->carry = (act_reg->p != 0) && (act_reg->p != 1);
+  return true;
+}
+
+
 static void op_test_p_eq (sim_t *sim, int opcode)
 {
   act_reg_t *act_reg = get_chip_data (sim->first_chip);
@@ -1003,57 +1038,10 @@ static void op_test_p_eq (sim_t *sim, int opcode)
 
   act_reg->inst_state = inst_woodstock_then_goto;
 
-  if ((sim->arch_flags & AV_P_WRAP_FUNNY) &&
-      (val == 0) &&
-      (act_reg->p_change [1] == +1) &&
-      (act_reg->p_change [2] == +1))
-    {
-      // test p after double increment
-#ifdef DEBUG_P_WRAP
-      printf ("addr %04o: test P equal 0 after double decrement, P=%d\n", act_reg->prev_pc, act_reg->p);
-#endif
-      if ((act_reg->p == 0) || (act_reg->p == 1))
-	{
-#ifdef DEBUG_P_WRAP
-	  printf ("match\n");
-#endif
-	  act_reg->carry = 0;
-	}
-      else
-	{
-#ifdef DEBUG_P_WRAP
-	  printf ("no match\n");
-#endif
-	  act_reg->carry = 1;
-	}
-    }
-  else if ((sim->arch_flags & AV_P_WRAP_FUNNY) &&
-	   (val == 0) &&
-	   (act_reg->p_change [1] == -1) &&
-	   (act_reg->p_change [2] == -1))
-    {
-#ifdef DEBUG_P_WRAP
-      printf ("addr %04o: test P not equal 0 after double decrement, P=%d\n", act_reg->prev_pc, act_reg->p);
-#endif
-      if ((act_reg->p == 0) || (act_reg->p == (WSIZE - 1)))
-	{
-#ifdef DEBUG_P_WRAP
-	  printf ("match\n");
-#endif
-	  act_reg->carry = 0;
-	}
-      else
-	{
-#ifdef DEBUG_P_WRAP
-	  printf ("no match\n");
-#endif
-	  act_reg->carry = 1;
-	}
-    }
-  else
-    {
-      act_reg->carry = ! (act_reg->p == val);
-    }
+  if ((val == 0) && op_test_p_eq_0_after_double_inc (act_reg))
+    return;
+
+  act_reg->carry = ! (act_reg->p == val);
 }
 
 
@@ -1155,77 +1143,6 @@ static void op_display_reset_twf (sim_t *sim,
 }
 
 
-static void op_crc_clear_f1 (sim_t *sim UNUSED,
-			     int opcode UNUSED)
-{
-  // don't do anything, as CRC F1 is controlled by hardware
-  // (in our case, ext_flag [1])
-  ;  
-}
-
-
-static void op_crc_test_f1 (sim_t *sim,
-			    int opcode UNUSED)
-{
-  act_reg_t *act_reg = get_chip_data (sim->first_chip);
-
-  if (act_reg->ext_flag [1])
-    set_s_bit (sim, 3, 1);
-}
-
-
-#ifdef DEBUG_CRC
-static void op_crc_unknown (sim_t *sim,
-			    int opcode)
-{
-  act_reg_t *act_reg = get_chip_data (sim->first_chip);
-
-  if (opcode != 00560)
-    {
-      printf ("unknown CRC opcode %04o at %05o\n", opcode, act_reg->prev_pc);
-      print_reg ("c:  ", & act_reg->c);
-    }
-}
-#else
-static void op_crc_unknown (sim_t *sim UNUSED,
-			    int opcode UNUSED)
-{
-}
-#endif
-
-
-// Unknown function, but apparently this normally sets S3.  If it doesn't,
-// the 67 won't execute the default functions for the top row of buttons.
-bool crc_flag;
-
-static void op_crc_unknown_1100 (sim_t *sim,
-				 int opcode UNUSED)
-{
-  act_reg_t *act_reg = get_chip_data (sim->first_chip);
-
-  if (crc_flag)
-    set_s_bit (sim, 3, 1);
-
-  printf ("unknown CRC opcode %04o at %05o\n", opcode, act_reg->prev_pc);
-}
-
-
-#ifdef DEBUG_PIK
-static void op_pik_unknown (sim_t *sim,
-			    int opcode)
-{
-  act_reg_t *act_reg = get_chip_data (sim->first_chip);
-
-  printf ("unknown PIK opcode %04o at %05o\n", opcode, act_reg->prev_pc);
-}
-#else
-static void op_pik_unknown (sim_t *sim UNUSED,
-			    int opcode UNUSED)
-{
-}
-#endif
-
-
 static void init_ops (act_reg_t *act_reg)
 {
   int i;
@@ -1298,49 +1215,6 @@ static void init_ops (act_reg_t *act_reg)
   act_reg->op_fcn [01460] = op_rom_selftest;  /* Only on Spice series */
   /* 1560..1660 unassigned/unknown */
   act_reg->op_fcn [01760] = op_nop;  /* "HI I'M WOODSTOCK" */
-
-
-  // CRC chip in 67/97
-  act_reg->op_fcn [00100] = op_crc_unknown;  // sometimes followed by test S3
-  act_reg->op_fcn [00300] = op_crc_test_f1;
-  act_reg->op_fcn [00400] = op_crc_unknown;  // no test
-  act_reg->op_fcn [00500] = op_crc_unknown;  // sometimes followed by test S3
-  act_reg->op_fcn [01000] = op_crc_unknown;  // no test
-  act_reg->op_fcn [01100] = op_crc_unknown_1100;  // sometimes followed by test S3
-  act_reg->op_fcn [01200] = op_crc_unknown;  // no test
-  act_reg->op_fcn [01300] = op_crc_unknown;  // sometimes followed by test S3
-  act_reg->op_fcn [01400] = op_crc_unknown;  // no test
-  act_reg->op_fcn [01500] = op_crc_clear_f1;  // sometimes followed by test S3
-  act_reg->op_fcn [01700] = op_crc_unknown;  // sometimes followed by test S3
-
-  act_reg->op_fcn [00060] = op_crc_unknown;  // no test
-  act_reg->op_fcn [00160] = op_crc_unknown;  // no test
-  act_reg->op_fcn [00260] = op_crc_unknown;  // no test
-  act_reg->op_fcn [00360] = op_crc_unknown;  // no test
-  act_reg->op_fcn [00560] = op_crc_unknown;  // followed by test S3
-  act_reg->op_fcn [00660] = op_crc_unknown;  // no test
-  act_reg->op_fcn [00760] = op_crc_unknown;  // no test
-
-
-  // PIK chip in 19C/91/92/95C/97, some instructions also found in 29C
-  // despite having no PIK, presumably due to the shared code base.
-  act_reg->op_fcn [01120] = op_pik_unknown;  // followed by test S3
-  act_reg->op_fcn [01220] = op_pik_unknown;  // followed by test S3
-  act_reg->op_fcn [01320] = op_pik_unknown;  // followed by test S3
-  act_reg->op_fcn [01720] = op_pik_unknown;  // not followed by test
-
-  act_reg->op_fcn [01660] = op_pik_unknown;  // not followed by test
-
-  /*
-   * Instruction codings unknown
-   *    PRINT 0
-   *    PRINT 1
-   *    PRINT 2
-   *    PRINT 3
-   *    PRINT 6
-   *    HOME?
-   *    CR?
-   */
 }
 
 
@@ -1734,6 +1608,8 @@ static bool woodstock_create_ram (sim_t *sim, addr_t addr, addr_t size)
   while (size--)
     {
       act_reg->ram_exists [addr] = true;
+      act_reg->ram_rd_fcn [addr] = & woodstock_ram_rd_fcn;
+      act_reg->ram_wr_fcn [addr] = & woodstock_ram_wr_fcn;
       addr++;
     }
 

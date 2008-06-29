@@ -99,6 +99,7 @@ sim_core_srcs = Split ("""calcdef.c
                           digit_ops.c
                           proc_classic.c
                           proc_woodstock.c
+			  crc.c
                           proc_nut.c
                           coconut_lcd.c phineas.c helios.c helios_chargen.c
                           voyager_lcd.c
@@ -438,8 +439,9 @@ if build_env ['build_target_only'] == 0:
                         dis.h dis_uc41.h
                         display.h printer.h
                         keyboard.h cbutton.h
-                        voyager_lcd.h
+			crc.h
                         coconut_lcd.h helios.h phineas.h
+                        voyager_lcd.h
                         csim.h about.h goose.h pixbuf_util.h sound.h scancode.h
                         asm.h symtab.h
                         mod1_file.h

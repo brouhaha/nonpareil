@@ -96,7 +96,7 @@ typedef struct
 
   int crc;
 
-  // keyboard
+  // ACT keyboard (not used for actual keyboard in Topcat series)
 
   bool key_flag;      /* true if a key is down */
   int key_buf;        /* most recently pressed key */
@@ -127,6 +127,13 @@ typedef struct
   addr_t ram_addr;  /* selected RAM address */
   bool *ram_exists;
   reg_t *ram;
+
+  bool (* ram_rd_fcn [256])(struct sim_t *sim);
+  bool (* ram_wr_fcn [256])(struct sim_t *sim);
+
+  // Other chips:
+  chip_t *crc_chip;
+  chip_t *pick_chip;
 } act_reg_t;
 
 

@@ -24,6 +24,7 @@ MA 02111, USA.
 
 #include "chip.h"
 
+chip_install_fn_t crc_install;
 
 chip_install_fn_t coconut_lcd_install;
 chip_install_fn_t helios_install;
@@ -51,7 +52,7 @@ static chip_type_info_t chip_type_info [] =
   [CHIP_WOODSTOCK_RAM]               = { "woodstock_ram", NULL },
   [CHIP_WOODSTOCK_ROM_RAM]           = { "woodstock_rom_ram", NULL },
   [CHIP_WOODSTOCK_PICK]              = { "woodstock_pick", NULL },
-  [CHIP_WOODSTOCK_CRC]               = { "woodstock_crc", NULL },
+  [CHIP_WOODSTOCK_CRC]               = { "woodstock_crc", crc_install },
 
   // coconut & peripherals
   [CHIP_NUT_CPU]                     = { "nut_cpu", NULL },

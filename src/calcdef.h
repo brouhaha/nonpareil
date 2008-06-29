@@ -55,5 +55,6 @@ bool calcdef_get_switch_position_flag  (calcdef_t *calcdef,
 					int sw,
 					int pos,
 					int index,
+					struct chip_t **chip,
 					int *flag,
 					int *value);
