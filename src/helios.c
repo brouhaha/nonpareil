@@ -258,11 +258,12 @@ static void helios_reset (helios_reg_t *helios)
 }
 
 
-static void helios_event_fn (sim_t  *sim,
-			     chip_t *chip UNUSED,
-			     int    event,
-			     int    arg,
-			     void   *data UNUSED)
+static void helios_event_fn (sim_t      *sim,
+			     chip_t     *chip UNUSED,
+			     event_id_t event,
+			     int        arg1,
+			     int        arg2 UNUSED,
+			     void       *data UNUSED)
 {
   nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
   helios_reg_t *helios = get_chip_data (nut_reg->helios_chip);
@@ -273,7 +274,7 @@ static void helios_event_fn (sim_t  *sim,
       helios_reset (helios);
       break;
     case event_printer_set_mode:
-      switch (arg)
+      switch (arg1)
 	{
 	case PRINTER_MODE_MAN:
 	  helios_set_status_bit (helios, HS_MODE_TRACE, false);
@@ -288,15 +289,15 @@ static void helios_event_fn (sim_t  *sim,
 	  helios_set_status_bit (helios, HS_MODE_NORM,  true);
 	  break;
 	default:
-	  warning ("helios: invalid mode %d\n", arg);
+	  warning ("helios: invalid mode %d\n", arg1);
 	}
       break;
     case event_printer_print_button:
-      helios_set_status_bit (helios, HS_PRT_KEY, arg != 0);
+      helios_set_status_bit (helios, HS_PRT_KEY, arg1 != 0);
       helios_update_ext_flags (nut_reg, helios);
       break;
     case event_printer_paper_advance_button:
-      helios_set_status_bit (helios, HS_ADV_KEY, arg != 0);
+      helios_set_status_bit (helios, HS_ADV_KEY, arg1 != 0);
       helios_update_ext_flags (nut_reg, helios);
       break;
     default:
@@ -595,8 +596,16 @@ chip_t *helios_install (sim_t *sim,
 			int32_t index UNUSED,
 			int32_t flags UNUSED)
 {
-  nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
+  nut_reg_t *nut_reg;
   helios_reg_t *helios;
+
+  if (sim->arch != ARCH_NUT)
+    {
+      fprintf (stderr, "Helios only supports Nut architecture\n");
+      return NULL;
+    }
+
+  nut_reg = get_chip_data (sim->first_chip);
 
   helios = alloc (sizeof (helios_reg_t));
 

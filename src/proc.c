@@ -127,6 +127,7 @@ typedef struct
   addr_t        addr;
   chip_type_t   chip_type;
   chip_t        *chip;
+  event_id_t    event;
   int32_t       arg1;   // reg_num, keycode, flag number, bank, bank group, etc.
   int32_t       arg2;   // index (in read/write register)
   void          *data;  // register value, memory value, etc.
@@ -647,7 +648,12 @@ static void cmd_write_ram (sim_t *sim, sim_msg_t *msg)
 
 static void cmd_event (sim_t *sim, sim_msg_t *msg)
 {
-  chip_event (sim, msg->arg1, msg->chip, msg->arg2, msg->data);
+  chip_event (sim,
+	      msg->chip,
+	      msg->event,
+	      msg->arg1,
+	      msg->arg2,
+	      msg->data);
 }
 
 
@@ -1022,19 +1028,21 @@ const char *sim_get_ncd_fn (sim_t *sim)
 }
 
 
-void sim_event (sim_t  *sim,
-		int    event,
-		chip_t *chip,
-		int    arg,
-		void   *data)
+void sim_event (sim_t      *sim,
+		chip_t     *chip,
+		event_id_t event,
+		int        arg1,
+		int        arg2,
+		void       *data)
 {
   sim_msg_t msg;
 
   memset (& msg, 0, sizeof (sim_msg_t));
   msg.cmd = CMD_EVENT;
   msg.chip = chip;
-  msg.arg1 = event;
-  msg.arg2 = arg;
+  msg.event = event;
+  msg.arg1 = arg1;
+  msg.arg2 = arg2;
   msg.data = data;
   send_cmd_to_sim_thread (sim, (gpointer) & msg);
 }
@@ -1060,13 +1068,13 @@ void sim_quit (sim_t *sim)
 
 void sim_reset (sim_t *sim)
 {
-  sim_event (sim, event_reset, NULL, 0, NULL);
+  sim_event (sim, NULL, event_reset, 0, 0, NULL);
 }
 
 
 void sim_clear_memory (sim_t *sim)
 {
-  sim_event (sim, event_clear_memory, NULL, 0, NULL);
+  sim_event (sim, NULL, event_clear_memory, 0, 0, NULL);
 }
 
 
@@ -1785,18 +1793,23 @@ void remove_chip (chip_t *chip)
 }
 
 
-void chip_event (sim_t *sim, int event, chip_t *chip, int arg, void *data)
+void chip_event (sim_t      *sim,
+		 chip_t     *chip,
+		 event_id_t event,
+		 int        arg1,
+		 int        arg2,
+		 void       *data)
 {
   if (chip)
     {
       if (chip->chip_detail->chip_event_fn)
-	chip->chip_detail->chip_event_fn (sim, chip, event, arg, data);
+	chip->chip_detail->chip_event_fn (sim, chip, event, arg1, arg2, data);
     }
   else
     {
       for (chip = sim->first_chip; chip; chip = chip->next)
 	if (chip->chip_detail->chip_event_fn)
-	  chip->chip_detail->chip_event_fn (sim, chip, event, arg, data);
+	  chip->chip_detail->chip_event_fn (sim, chip, event, arg1, arg2, data);
     }
   if (data)
     free (data);

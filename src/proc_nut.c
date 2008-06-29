@@ -785,7 +785,12 @@ static void op_c_to_dadd (sim_t *sim,
 			(nut_reg->c [1] << 4) |
 			(nut_reg->c [0])) & 0x3ff;
 
-  chip_event (sim, event_ram_select, NULL, 0, NULL);
+  chip_event (sim,
+	      NULL,
+	      event_ram_select,
+	      0,
+	      0,
+	      NULL);
 }
 
 static void op_c_to_pfad (sim_t *sim,
@@ -796,7 +801,12 @@ static void op_c_to_pfad (sim_t *sim,
   nut_reg->pf_addr = ((nut_reg->c [1] << 4) |
 		       (nut_reg->c [0]));
 
-  chip_event (sim, event_periph_select, NULL, 0, NULL);
+  chip_event (sim,
+	      NULL,
+	      event_periph_select,
+	      0,
+	      0,
+	      NULL);
 }
 
 static void op_read_reg_n (sim_t *sim, int opcode)
@@ -1536,7 +1546,12 @@ static void op_powoff (sim_t *sim,
 #endif
   nut_reg->awake = false;
   nut_reg->pc = 0;
-  chip_event (sim, event_sleep, NULL, 0, NULL);
+  chip_event (sim,
+	      NULL,
+	      event_sleep,
+	      0,
+	      0,
+	      NULL);
 }
 
 
@@ -1712,7 +1727,12 @@ static bool nut_execute_cycle (sim_t *sim)
   nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
   int opcode;
 
-  chip_event (sim, event_cycle, NULL, 0, NULL);
+  chip_event (sim,
+	      NULL,
+	      event_cycle,
+	      0,
+	      0,
+	      NULL);
 
   if (! nut_reg->awake)
     return (false);
@@ -1878,7 +1898,12 @@ static void nut_press_key (sim_t *sim, int keycode)
     printf ("waking up!\n");
 #endif
   nut_reg->awake = true;
-  chip_event (sim, event_wake, NULL, 0, NULL);
+  chip_event (sim,
+	      NULL,
+	      event_wake,
+	      0,
+	      0,
+	      NULL);
 }
 
 static void nut_release_key (sim_t *sim, int keycode UNUSED)
@@ -2073,9 +2098,12 @@ static void nut_new_processor (sim_t *sim)
 
   nut_new_pf_addr_space (sim, 256);
 
-  // used to install init LCD here
-
-  chip_event (sim, event_reset, NULL, 0, NULL);
+  chip_event (sim,
+	      NULL,
+	      event_reset,
+	      0,
+	      0,
+	      NULL);
 }
 
 
@@ -2085,11 +2113,12 @@ static void nut_free_processor (sim_t *sim)
 }
 
 
-static void nut_event_fn (sim_t  *sim,
-			  chip_t *chip UNUSED,
-			  int    event,
-			  int    arg,
-			  void   *data UNUSED)
+static void nut_event_fn (sim_t      *sim,
+			  chip_t     *chip UNUSED,
+			  event_id_t event,
+			  int        arg1,
+			  int        arg2 UNUSED,
+			  void       *data UNUSED)
 {
   nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
 
@@ -2108,7 +2137,7 @@ static void nut_event_fn (sim_t  *sim,
       nut_clear_memory (sim);
       break;
     case event_display_state_change:
-      nut_reg->display_enable = arg;
+      nut_reg->display_enable = arg1;
       break;
     default:
       // warning ("proc_nut: unknown event %d\n", event);

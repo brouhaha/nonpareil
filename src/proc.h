@@ -1,6 +1,6 @@
 /*
 $Id$
-Copyright 1995, 2004, 2005, 2006, 2007 Eric L. Smith <eric@brouhaha.com>
+Copyright 1995, 2004, 2005, 2006, 2008 Eric Smith <eric@brouhaha.com>
 
 Nonpareil is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License version 2 as
@@ -28,7 +28,7 @@ MA 02111, USA.
 #define MAX_SWITCH_POSITION 3  // max number of positions per switch
 
 // common events:
-enum
+typedef enum
 {
   event_reset,
   event_clear_memory,
@@ -42,10 +42,12 @@ enum
   event_restore_starting,
   event_restore_completed,
 
+  event_set_flag,
+
   first_arch_event = 0x100,  // CPU architecture specific events
 
   first_chip_event = 0x200   // chip specific events
-};
+} event_id_t;
 
 
 typedef uint8_t bank_t;         // bank number
@@ -149,11 +151,12 @@ bool sim_remove_module (plugin_module_t *module);
 
 // If data is passed, chip becomes responsible for freeing it, or returning
 // it to the GUI via an asynchronous notification.
-void sim_event        (sim_t  *sim,
-		       int    event,
-		       chip_t *chip,  // NULL for all chips
-		       int    arg,
-		       void   *data);
+void sim_event        (sim_t      *sim,
+		       chip_t     *chip,  // NULL for all chips
+		       event_id_t event,
+		       int        arg1,
+		       int        arg2,
+		       void       *data);
 
 void sim_quit         (sim_t *sim);  // kill the sim thread
 

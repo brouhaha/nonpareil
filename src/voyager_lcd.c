@@ -92,7 +92,12 @@ static void voyager_set_display_state (sim_t *sim,
   voyager_display_reg_t *display = get_chip_data (nut_reg->display_chip);
 
   display->enable = new_state;
-  chip_event (sim, event_display_state_change, NULL, new_state, NULL);
+  chip_event (sim,
+	      NULL,
+	      event_display_state_change,
+	      new_state,
+	      0,
+	      NULL);
 }
 
 
@@ -271,11 +276,12 @@ static void voyager_display_update (sim_t *sim, voyager_display_reg_t *display)
 }
 
 
-static void voyager_display_event_fn (sim_t  *sim,
-				      chip_t *chip UNUSED,
-				      int    event,
-				      int    arg UNUSED,
-				      void   *data UNUSED)
+static void voyager_display_event_fn (sim_t  *   sim,
+				      chip_t     *chip UNUSED,
+				      event_id_t event,
+				      int        arg1 UNUSED,
+				      int        arg2 UNUSED,
+				      void       *data UNUSED)
 {
   nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
   voyager_display_reg_t *display = get_chip_data (nut_reg->display_chip);

@@ -577,9 +577,10 @@ static void set_s_bit (sim_t *sim, int bit, bool state)
     {
       // handle flag out pin
       chip_event (sim,
-		  event_flag_out_change,
 		  NULL,  // all chips
+		  event_flag_out_change,
 		  state,
+		  0,
 		  NULL);
     }
 }
@@ -1935,7 +1936,12 @@ static void woodstock_new_processor (sim_t *sim)
 
   init_ops (act_reg);
 
-  chip_event (sim, event_reset, NULL, 0, NULL);
+  chip_event (sim,
+	      NULL,
+	      event_reset,
+	      0,
+	      0,
+	      NULL);
 }
 
 
@@ -1945,11 +1951,12 @@ static void woodstock_free_processor (sim_t *sim)
 }
 
 
-static void woodstock_event_fn (sim_t  *sim,
-				chip_t *chip UNUSED,
-				int    event,
-				int    arg   UNUSED,
-				void   *data UNUSED)
+static void woodstock_event_fn (sim_t      *sim,
+				chip_t     *chip UNUSED,
+				event_id_t event,
+				int        arg1 UNUSED,
+				int        arg2 UNUSED,
+				void       *data UNUSED)
 {
   // act_reg_t *act_reg = get_chip_data (sim->first_chip);
 

@@ -498,11 +498,12 @@ static void phineas_reset (phineas_reg_t *phineas)
 }
 
 
-static void phineas_event_fn (sim_t  *sim,
-			      chip_t *chip UNUSED,
-			      int    event,
-			      int    arg UNUSED,
-			      void   *data UNUSED)
+static void phineas_event_fn (sim_t      *sim,
+			      chip_t     *chip UNUSED,
+			      event_id_t event,
+			      int        arg1 UNUSED,
+			      int        arg2 UNUSED,
+			      void       *data UNUSED)
 {
   nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
   phineas_reg_t *phineas = get_chip_data (nut_reg->phineas_chip);
@@ -551,9 +552,16 @@ chip_t *phineas_install (sim_t *sim,
 			 int32_t index UNUSED,
 			 int32_t flags UNUSED)
 {
-  nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
+  nut_reg_t *nut_reg;
   phineas_reg_t *clock;
 
+  if (sim->arch != ARCH_NUT)
+    {
+      fprintf (stderr, "Helios only supports Nut architecture\n");
+      return NULL;
+    }
+
+  nut_reg = get_chip_data (sim->first_chip);
   clock = alloc (sizeof (phineas_reg_t));
 
   nut_reg->pf_exists [PFADDR_PHINEAS] = 1;

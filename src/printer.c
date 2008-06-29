@@ -337,9 +337,10 @@ static gboolean printer_window_destroy_callback (GtkWidget *widget  UNUSED,
 static void gui_printer_set_mode (gui_printer_t *p, int mode)
 {
   sim_event (p->sim,
-	     event_printer_set_mode,
 	     p->chip,
+	     event_printer_set_mode,
 	     mode,
+	     0,
 	     NULL);
 }
 
@@ -415,9 +416,10 @@ static void gui_printer_print_button_pressed (GtkWidget *widget UNUSED,
 {
   gui_printer_t *p = data;
   sim_event (p->sim,
-	     event_printer_print_button,
 	     p->chip,
+	     event_printer_print_button,
 	     1,
+	     0,
 	     NULL);
 }
 
@@ -427,8 +429,9 @@ static void gui_printer_print_button_released (GtkWidget *widget UNUSED,
 {
   gui_printer_t *p = data;
   sim_event (p->sim,
-	     event_printer_print_button,
 	     p->chip,
+	     event_printer_print_button,
+	     0,
 	     0,
 	     NULL);
 }
@@ -439,9 +442,10 @@ static void gui_printer_advance_button_pressed (GtkWidget *widget UNUSED,
 {
   gui_printer_t *p = data;
   sim_event (p->sim,
-	     event_printer_paper_advance_button,
 	     p->chip,
+	     event_printer_paper_advance_button,
 	     1,
+	     0,
 	     NULL);
 }
 
@@ -451,8 +455,9 @@ static void gui_printer_advance_button_released (GtkWidget *widget UNUSED,
 {
   gui_printer_t *p = data;
   sim_event (p->sim,
-	     event_printer_paper_advance_button,
 	     p->chip,
+	     event_printer_paper_advance_button,
+	     0,
 	     0,
 	     NULL);
 }
