@@ -95,8 +95,6 @@ typedef struct
   /* I/O */
   void (* press_key)            (sim_t *sim, int keycode);
   void (* release_key)          (sim_t *sim, int keycode);
-  void (* set_ext_flag_input)   (sim_t *sim, chip_t *chip, int flag, bool state);
-  void (* pulse_ext_flag_input) (sim_t *sim, chip_t *chip, int flag, bool state);
 
   /* memory access: */
   bool (* set_bank_group)      (sim_t      *sim,

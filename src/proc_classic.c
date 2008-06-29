@@ -896,7 +896,6 @@ bool classic_execute_instruction (sim_t *sim)
 {
   classic_cpu_reg_t *cpu_reg = get_chip_data (sim->first_chip);
   int addr;
-  int i;
   int opcode;
 
   addr = (cpu_reg->group << 11) | (cpu_reg->rom << 8) | cpu_reg->pc;
@@ -1062,27 +1061,6 @@ static void classic_release_key (sim_t *sim, int keycode UNUSED)
   classic_cpu_reg_t *cpu_reg = get_chip_data (sim->first_chip);
 
   cpu_reg->key_flag = false;
-}
-
-static void classic_set_ext_flag_input (sim_t *sim,
-					chip_t *chip UNUSED,
-					int flag,
-					bool state)
-{
-  classic_cpu_reg_t *cpu_reg = get_chip_data (sim->first_chip);
-
-  cpu_reg->ext_flag [flag] = state;
-}
-
-// $$$ pulse currently works same as set, which is wrong
-static void classic_pulse_ext_flag_input (sim_t *sim,
-					  chip_t *chip UNUSED,
-					  int flag,
-					  bool state)
-{
-  classic_cpu_reg_t *cpu_reg = get_chip_data (sim->first_chip);
-
-  cpu_reg->ext_flag [flag] = state;
 }
 
 
@@ -1275,11 +1253,11 @@ static void classic_free_processor (sim_t *sim)
 static void classic_event_fn (sim_t      *sim,
 			      chip_t     *chip UNUSED,
 			      event_id_t event,
-			      int        arg1 UNUSED,
-			      int        arg2 UNUSED,
+			      int        arg1,
+			      int        arg2,
 			      void       *data UNUSED)
 {
-  // classic_cpu_reg_t *cpu_reg = get_chip_data (sim->first_chip);
+  classic_cpu_reg_t *cpu_reg = get_chip_data (sim->first_chip);
 
   switch (event)
     {
@@ -1289,6 +1267,9 @@ static void classic_event_fn (sim_t      *sim,
     case event_clear_memory:
        classic_clear_memory (sim);
        break;
+    case event_set_flag:
+      cpu_reg->ext_flag [arg1] = arg2;
+      break;
     default:
       // warning ("proc_classic: unknown event %d\n", event);
       break;
@@ -1310,8 +1291,6 @@ processor_dispatch_t classic_processor =
 
     .press_key            = classic_press_key,
     .release_key          = classic_release_key,
-    .set_ext_flag_input   = classic_set_ext_flag_input,
-    .pulse_ext_flag_input = classic_pulse_ext_flag_input,
 
     .set_bank_group      = NULL,
     .get_max_rom_bank    = classic_get_max_rom_bank,

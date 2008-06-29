@@ -1716,29 +1716,6 @@ static void woodstock_release_key (sim_t *sim, int keycode UNUSED)
   act_reg->key_flag = false;
 }
 
-static void woodstock_set_ext_flag_input (sim_t *sim,
-					  chip_t *chip UNUSED,
-					  int flag,
-					  bool state)
-{
-  act_reg_t *act_reg = get_chip_data (sim->first_chip);
-
-  act_reg->ext_flag [flag] = state;
-}
-
-// $$$ pulse currently works same as set, which is wrong
-static void woodstock_pulse_ext_flag_input (sim_t *sim,
-					    chip_t *chip UNUSED,
-					    int flag,
-					    bool state)
-{
-  act_reg_t *act_reg = get_chip_data (sim->first_chip);
-
-  act_reg->ext_flag [flag] = state;
-}
-
-
-
 static int woodstock_get_max_ram_addr (sim_t *sim)
 {
   act_reg_t *act_reg = get_chip_data (sim->first_chip);
@@ -1954,11 +1931,11 @@ static void woodstock_free_processor (sim_t *sim)
 static void woodstock_event_fn (sim_t      *sim,
 				chip_t     *chip UNUSED,
 				event_id_t event,
-				int        arg1 UNUSED,
-				int        arg2 UNUSED,
+				int        arg1,
+				int        arg2,
 				void       *data UNUSED)
 {
-  // act_reg_t *act_reg = get_chip_data (sim->first_chip);
+  act_reg_t *act_reg = get_chip_data (sim->first_chip);
 
   switch (event)
     {
@@ -1971,6 +1948,9 @@ static void woodstock_event_fn (sim_t      *sim,
     case event_restore_completed:
       // handle twf flag and force display update
       display_setup (sim);
+      break;
+    case event_set_flag:
+      act_reg->ext_flag [arg1] = arg2;
       break;
     default:
       // warning ("proc_woodstock: unknown event %d\n", event);
@@ -1992,8 +1972,6 @@ processor_dispatch_t woodstock_processor =
 
     .press_key            = woodstock_press_key,
     .release_key          = woodstock_release_key,
-    .set_ext_flag_input   = woodstock_set_ext_flag_input,
-    .pulse_ext_flag_input = woodstock_pulse_ext_flag_input,
 
     .set_bank_group      = NULL,
     .get_max_rom_bank    = woodstock_get_max_rom_bank,

@@ -1920,23 +1920,6 @@ static void nut_release_key (sim_t *sim, int keycode UNUSED)
 }
 
 
-static void nut_set_ext_flag_input (sim_t *sim UNUSED,
-				    chip_t *chip UNUSED,
-				    int flag   UNUSED,
-				    bool state UNUSED)
-{
-  ;  // not yet implemented
-}
-
-static void nut_pulse_ext_flag_input (sim_t *sim UNUSED,
-				      chip_t *chip UNUSED,
-				      int flag   UNUSED,
-				      bool state UNUSED)
-{
-  ;  // not yet implemented
-}
-
-
 static void nut_reset (sim_t *sim)
 {
   nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
@@ -2117,7 +2100,7 @@ static void nut_event_fn (sim_t      *sim,
 			  chip_t     *chip UNUSED,
 			  event_id_t event,
 			  int        arg1,
-			  int        arg2 UNUSED,
+			  int        arg2,
 			  void       *data UNUSED)
 {
   nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
@@ -2139,6 +2122,9 @@ static void nut_event_fn (sim_t      *sim,
     case event_display_state_change:
       nut_reg->display_enable = arg1;
       break;
+    case event_set_flag:
+      nut_reg->ext_flag [arg1] = arg2;
+      break;
     default:
       // warning ("proc_nut: unknown event %d\n", event);
       break;
@@ -2159,8 +2145,6 @@ processor_dispatch_t nut_processor =
 
     .press_key            = nut_press_key,
     .release_key          = nut_release_key,
-    .set_ext_flag_input   = nut_set_ext_flag_input,
-    .pulse_ext_flag_input = nut_pulse_ext_flag_input,
 
     .set_bank_group      = nut_set_bank_group,
     .get_max_rom_bank    = nut_get_max_rom_bank,

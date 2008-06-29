@@ -42,7 +42,7 @@ typedef enum
   event_restore_starting,
   event_restore_completed,
 
-  event_set_flag,
+  event_set_flag,  // arg1 selects flag, arg2 is new value (0 or 1)
 
   first_arch_event = 0x100,  // CPU architecture specific events
 
@@ -304,16 +304,6 @@ bool sim_set_switch (sim_t *sim,
 bool sim_get_switch (sim_t *sim,
 		     uint8_t sw,
 		     uint8_t *position);
-
-void sim_set_ext_flag_input (sim_t *sim,
-			     chip_t *chip,
-			     int flag,
-			     bool state);
-
-void sim_pulse_ext_flag_input (sim_t *sim,
-			       chip_t *chip,
-			       int flag,
-			       bool state);
 
 void sim_get_display_update (sim_t *sim);
 

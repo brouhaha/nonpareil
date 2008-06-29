@@ -104,8 +104,6 @@ typedef enum
   CMD_SET_BREAKPOINT,
   CMD_PRESS_KEY,
   CMD_RELEASE_KEY,
-  CMD_SET_EXT_FLAG_INPUT,
-  CMD_PULSE_EXT_FLAG_INPUT,
   CMD_GET_DISPLAY_UPDATE
 } sim_cmd_t;
 
@@ -792,14 +790,6 @@ static void handle_sim_cmd (sim_t *sim, sim_msg_t *msg)
       sim->proc->release_key (sim, msg->arg1);
       msg->reply = OK;
       break;
-    case CMD_SET_EXT_FLAG_INPUT:
-      sim->proc->set_ext_flag_input (sim, msg->chip, msg->arg1, msg->b);
-      msg->reply = OK;
-      break;
-    case CMD_PULSE_EXT_FLAG_INPUT:
-      sim->proc->pulse_ext_flag_input (sim, msg->chip, msg->arg1, msg->b);
-      msg->reply = OK;
-      break;
     case CMD_GET_DISPLAY_UPDATE:
       sim_send_display_update_to_gui (sim);
       msg->reply = OK;
@@ -1468,23 +1458,6 @@ void sim_release_key (sim_t *sim, int keycode)
 }
 
 
-#if 0
-// sets up an association between a switch position and an ext flag
-void sim_set_switch_flag (sim_t *sim,
-			  uint8_t sw,
-			  uint8_t position,
-			  chip_t *chip,
-			  int flag)
-{
-  if ((sw >= MAX_SWITCH) ||
-      (position >= MAX_SWITCH_POSITION))
-    fatal (3, "can't assign ext flag %d to nonexistent switch %d position %d\n", flag, sw, position);
-  sim->switch_position_chip [sw] [position] = chip;
-  sim->switch_position_flag [sw] [position] = flag;
-}
-#endif
-
-
 bool sim_set_switch (sim_t *sim,
 		     uint8_t sw,
 		     uint8_t position)
@@ -1506,10 +1479,12 @@ bool sim_set_switch (sim_t *sim,
 					   & flag,
 					   & value))
     {
-      sim_set_ext_flag_input (sim,
-			      NULL,  // $$$ chip
-			      flag,
-			      value);
+      sim_event (sim,
+		 sim->first_chip,  // $$$ wrong, might be CRC or PICK
+		 event_set_flag,
+		 flag,
+		 value,
+		 NULL);
     }
 
   return true;
@@ -1525,36 +1500,6 @@ bool sim_get_switch (sim_t *sim,
 
   *position = sim->switch_position [sw];
   return true;
-}
-
-
-void sim_set_ext_flag_input (sim_t *sim,
-			     chip_t *chip,
-			     int flag,
-			     bool state)
-{
-  sim_msg_t msg;
-  memset (& msg, 0, sizeof (sim_msg_t));
-  msg.cmd = CMD_SET_EXT_FLAG_INPUT;
-  msg.chip = chip;
-  msg.arg1 = flag;
-  msg.b = state;
-  send_cmd_to_sim_thread (sim, (gpointer) & msg);
-}
-
-
-void sim_pulse_ext_flag_input (sim_t *sim,
-			       chip_t *chip,
-			       int flag,
-			       bool state)
-{
-  sim_msg_t msg;
-  memset (& msg, 0, sizeof (sim_msg_t));
-  msg.cmd = CMD_PULSE_EXT_FLAG_INPUT;
-  msg.chip = chip;
-  msg.arg1 = flag;
-  msg.b = state;
-  send_cmd_to_sim_thread (sim, (gpointer) & msg);
 }
 
 
