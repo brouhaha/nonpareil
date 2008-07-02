@@ -92,10 +92,6 @@ typedef struct
   /* returns false if asleep (can't execute instructions) */
   bool (* execute_instruction) (sim_t *sim);
 
-  /* I/O */
-  void (* press_key)            (sim_t *sim, int keycode);
-  void (* release_key)          (sim_t *sim, int keycode);
-
   /* memory access: */
   bool (* set_bank_group)      (sim_t      *sim,
 				int        bank_group,
@@ -189,7 +185,6 @@ struct sim_t
   uint64_t cycle_count;
 
   const segment_bitmap_t *char_gen;
-  const hw_keycode_t *keycode_map;
 
   int display_digits;
   bool display_changed;

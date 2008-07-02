@@ -2122,6 +2122,12 @@ static void nut_event_fn (sim_t      *sim,
     case event_display_state_change:
       nut_reg->display_enable = arg1;
       break;
+    case event_key:
+      if (arg2)
+	nut_press_key (sim, arg1);
+      else
+	nut_release_key (sim, arg1);
+      break;
     case event_set_flag:
       nut_reg->ext_flag [arg1] = arg2;
       break;
@@ -2142,9 +2148,6 @@ processor_dispatch_t nut_processor =
 
     .execute_cycle       = nut_execute_cycle,
     .execute_instruction = nut_execute_instruction,
-
-    .press_key            = nut_press_key,
-    .release_key          = nut_release_key,
 
     .set_bank_group      = nut_set_bank_group,
     .get_max_rom_bank    = nut_get_max_rom_bank,

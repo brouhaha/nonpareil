@@ -1048,22 +1048,6 @@ static bool classic_parse_listing_line (char        *buf,
 }
 
 
-static void classic_press_key (sim_t *sim, int keycode)
-{
-  classic_cpu_reg_t *cpu_reg = get_chip_data (sim->first_chip);
-
-  cpu_reg->key_buf = keycode;
-  cpu_reg->key_flag = true;
-}
-
-static void classic_release_key (sim_t *sim, int keycode UNUSED)
-{
-  classic_cpu_reg_t *cpu_reg = get_chip_data (sim->first_chip);
-
-  cpu_reg->key_flag = false;
-}
-
-
 static void classic_reset (sim_t *sim)
 {
   classic_cpu_reg_t *cpu_reg = get_chip_data (sim->first_chip);
@@ -1267,6 +1251,15 @@ static void classic_event_fn (sim_t      *sim,
     case event_clear_memory:
        classic_clear_memory (sim);
        break;
+    case event_key:
+      if (arg2)
+	{
+	  cpu_reg->key_buf = arg1;
+	  cpu_reg->key_flag = true;
+	}
+      else
+	cpu_reg->key_flag = false;
+      break;
     case event_set_flag:
       cpu_reg->ext_flag [arg1] = arg2;
       break;
@@ -1288,9 +1281,6 @@ processor_dispatch_t classic_processor =
     // cycle is same as instruction
     .execute_cycle       = classic_execute_instruction,
     .execute_instruction = classic_execute_instruction,
-
-    .press_key            = classic_press_key,
-    .release_key          = classic_release_key,
 
     .set_bank_group      = NULL,
     .get_max_rom_bank    = classic_get_max_rom_bank,

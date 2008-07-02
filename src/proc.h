@@ -42,7 +42,8 @@ typedef enum
   event_restore_starting,
   event_restore_completed,
 
-  event_set_flag,  // arg1 selects flag, arg2 is new value (0 or 1)
+  event_key,       // arg1 is keycode (user), arg2 is new value (bool)
+  event_set_flag,  // arg1 selects flag, arg2 is new value (bool)
 
   first_arch_event = 0x100,  // CPU architecture specific events
 
@@ -291,11 +292,10 @@ bool sim_write_register (sim_t   *sim,
 			 int     index,
 			 uint64_t *val);
 
-void sim_press_key (sim_t *sim,
-		    int keycode);
-
-void sim_release_key (sim_t *sim,
-		      int keycode);
+// press/release key, state=true for press
+void sim_key (sim_t *sim,
+	      int keycode,
+	      bool state);
 
 bool sim_set_switch (sim_t *sim,
 		     uint8_t sw,

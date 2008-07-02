@@ -44,12 +44,14 @@ double calcdef_get_clock_frequency (calcdef_t *calcdef);  // in Hz
 
 const segment_bitmap_t *calcdef_get_char_gen (calcdef_t *calcdef);
 
-// keycodes may be negative, so map is indexed by [keycode + MAX_KEYCODE]
-const hw_keycode_t *calcdef_get_keycode_map (calcdef_t *calcdef);
-
 
 void calcdef_init_chips (calcdef_t *calcdef);
 
+
+bool calcdef_get_key (calcdef_t *calcdef,
+		      int user_keycode,
+		      struct chip_t **chip,
+		      hw_keycode_t *hw_keycode);
 
 bool calcdef_get_switch_position_flag  (calcdef_t *calcdef,
 					int sw,

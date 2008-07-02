@@ -1575,21 +1575,6 @@ static bool woodstock_parse_listing_line (char        *buf,
 }
 
 
-static void woodstock_press_key (sim_t *sim, int keycode)
-{
-  act_reg_t *act_reg = get_chip_data (sim->first_chip);
-
-  act_reg->key_buf = keycode;
-  act_reg->key_flag = true;
-}
-
-static void woodstock_release_key (sim_t *sim, int keycode UNUSED)
-{
-  act_reg_t *act_reg = get_chip_data (sim->first_chip);
-
-  act_reg->key_flag = false;
-}
-
 static int woodstock_get_max_ram_addr (sim_t *sim)
 {
   act_reg_t *act_reg = get_chip_data (sim->first_chip);
@@ -1825,6 +1810,19 @@ static void woodstock_event_fn (sim_t      *sim,
       // handle twf flag and force display update
       display_setup (sim);
       break;
+    case event_key:
+      if (arg2)
+	{
+	  printf ("pressed key, keycode %03o\n", arg1);
+	  fflush (stdout);
+	  act_reg->key_buf = arg1;
+	  act_reg->key_flag = true;
+	}
+      else
+	  printf ("released key, keycode %03o\n", arg1);
+	  fflush (stdout);
+	  act_reg->key_flag = false;
+      break;
     case event_set_flag:
       act_reg->ext_flag [arg1] = arg2;
       break;
@@ -1845,9 +1843,6 @@ processor_dispatch_t woodstock_processor =
 
     .execute_cycle       = woodstock_execute_cycle,
     .execute_instruction = woodstock_execute_instruction,
-
-    .press_key            = woodstock_press_key,
-    .release_key          = woodstock_release_key,
 
     .set_bank_group      = NULL,
     .get_max_rom_bank    = woodstock_get_max_rom_bank,

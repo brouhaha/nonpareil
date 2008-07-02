@@ -102,8 +102,6 @@ typedef enum
   CMD_SINGLE_CYCLE,
   CMD_SINGLE_INST,
   CMD_SET_BREAKPOINT,
-  CMD_PRESS_KEY,
-  CMD_RELEASE_KEY,
   CMD_GET_DISPLAY_UPDATE
 } sim_cmd_t;
 
@@ -782,14 +780,6 @@ static void handle_sim_cmd (sim_t *sim, sim_msg_t *msg)
       break;
     case CMD_SET_BREAKPOINT:
       break;
-    case CMD_PRESS_KEY:
-      sim->proc->press_key (sim, msg->arg1);
-      msg->reply = OK;
-      break;
-    case CMD_RELEASE_KEY:
-      sim->proc->release_key (sim, msg->arg1);
-      msg->reply = OK;
-      break;
     case CMD_GET_DISPLAY_UPDATE:
       sim_send_display_update_to_gui (sim);
       msg->reply = OK;
@@ -983,7 +973,6 @@ sim_t *sim_init  (char *ncd_fn,
   // $$$ sim->source = alloc (sim->proc->max_bank * sim->proc->max_rom * sizeof (char *));
 
   sim->char_gen = calcdef_get_char_gen (sim->calcdef);
-  sim->keycode_map = calcdef_get_keycode_map (sim->calcdef);
 
   sim->thread_vars->gthread = g_thread_create (sim_thread_func, sim, TRUE, NULL);
 
@@ -1428,33 +1417,23 @@ bool sim_write_ram (sim_t   *sim,
 }
 
 
-void sim_press_key (sim_t *sim, int keycode)
+void sim_key (sim_t *sim, int keycode, bool state)
 {
   sim_msg_t msg;
   hw_keycode_t hw_keycode;
+  chip_t *chip;
 
-  // $$$ should range check keycode!
-  hw_keycode = sim->keycode_map [keycode + MAX_KEYCODE];
+  calcdef_get_key (sim->calcdef,
+		   keycode,
+		   & chip,
+		   & hw_keycode);
 
-  memset (& msg, 0, sizeof (sim_msg_t));
-  msg.cmd = CMD_PRESS_KEY;
-  msg.arg1 = hw_keycode;
-  send_cmd_to_sim_thread (sim, (gpointer) & msg);
-}
-
-
-void sim_release_key (sim_t *sim, int keycode)
-{
-  sim_msg_t msg;
-  hw_keycode_t hw_keycode;
-
-  // $$$ should range check keycode!
-  hw_keycode = sim->keycode_map [keycode + MAX_KEYCODE];
-
-  memset (& msg, 0, sizeof (sim_msg_t));
-  msg.cmd = CMD_RELEASE_KEY;
-  msg.arg1 = hw_keycode;
-  send_cmd_to_sim_thread (sim, (gpointer) & msg);
+  sim_event (sim,
+	     chip ? chip : sim->first_chip,  // if NULL, first chip only
+	     event_key,
+	     hw_keycode,
+	     state,
+	     NULL);
 }
 
 

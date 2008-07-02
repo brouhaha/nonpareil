@@ -85,6 +85,14 @@ typedef struct calcdef_switch_t
 } calcdef_switch_t;
 
 
+typedef struct calcdef_key_t
+{
+  char *chip_id;
+  struct chip_t *chip;
+  hw_keycode_t hw_keycode;
+} calcdef_key_t;
+
+
 struct calcdef_t
 {
   sim_t *sim;
@@ -98,7 +106,7 @@ struct calcdef_t
   double clock_frequency;  // in Hz
   calcdef_chip_t *chip;
   segment_bitmap_t *char_gen;
-  hw_keycode_t *keycode_map;
+  calcdef_key_t **keyboard_map;
   calcdef_switch_t *sw;
 };
 
@@ -262,12 +270,15 @@ static void parse_inst_clock (calcdef_t *calcdef,
 static void parse_keyboard (calcdef_t *calcdef UNUSED,
 			    const xmlChar **attrs UNUSED)
 {
-  if (calcdef->keycode_map)
-    {
-      fatal (3, "only one chargen element allowed per nui file\n");
-    }
-  else
-    calcdef->keycode_map = alloc (sizeof (hw_keycode_t) * 2 * MAX_KEYCODE);
+  if (calcdef->keyboard_map)
+    fatal (3, "only one keyboard element allowed per nui file\n");
+
+  calcdef->keyboard_map = alloc (sizeof (calcdef_key_t *) *
+				 (2 * MAX_KEYCODE + 1));
+
+  // Note that because user keycodes can be negative, we offset
+  // the base of the keyboard map.
+  calcdef->keyboard_map += MAX_KEYCODE;
 }
 
 
@@ -279,16 +290,24 @@ static void parse_key (calcdef_t *calcdef UNUSED,
   unsigned long hw_keycode;
   bool got_user_keycode = false;
   bool got_hw_keycode = false;
+  char *chip_id = NULL;
   char *endptr = NULL;
+  calcdef_key_t *key;
 
   for (i = 0; attrs && attrs [i]; i += 2)
     {
       if (strcmp ((char *) attrs [i], "user_keycode") == 0)
 	{
 	  user_keycode = strtol ((char *) attrs [i + 1], & endptr, 0);
+	  if ((user_keycode < -MAX_KEYCODE) || (user_keycode > MAX_KEYCODE))
+	    fatal (3, "user keycode %d out of range\n");
 	  if (endptr && (*endptr != '\0'))
 	    fatal (3, "invalid character '%c' in user_keycode\n", *endptr);
 	  got_user_keycode = true;
+	}
+      else if (strcmp ((char *) attrs [i], "chip_id") == 0)
+	{
+	  chip_id = newstr ((char *) attrs [i + 1]);
 	}
       else if (strcmp ((char *) attrs [i], "hw_keycode") == 0)
 	{
@@ -306,9 +325,15 @@ static void parse_key (calcdef_t *calcdef UNUSED,
   if (! got_hw_keycode)
     warning ("key element doesn't have hw_keycode attribute\n");
 
-  if ((user_keycode < -MAX_KEYCODE) || (user_keycode >= MAX_KEYCODE))
-    fatal (3, "user keycode %d out of range\n");
-  calcdef->keycode_map [user_keycode + MAX_KEYCODE] = (hw_keycode_t) hw_keycode;
+  if (calcdef->keyboard_map [user_keycode])
+    warning ("duplicate key element\n");
+
+  key = alloc (sizeof (calcdef_key_t));
+
+  key->hw_keycode = (hw_keycode_t) hw_keycode;
+  key->chip_id = chip_id;
+
+  calcdef->keyboard_map [user_keycode] = key;
 }
 
 
@@ -787,13 +812,6 @@ const segment_bitmap_t *calcdef_get_char_gen (calcdef_t *calcdef)
   return calcdef->char_gen;
 }
 
-// keycodes may be negative, so map is indexed by [keycode + MAX_KEYCODE]
-const hw_keycode_t *calcdef_get_keycode_map (calcdef_t *calcdef)
-{
-  return calcdef->keycode_map;
-}
-
-
 static void calcdef_init_rom (calcdef_t *calcdef, calcdef_mem_t *mem)
 {
   bank_t bank;
@@ -890,6 +908,28 @@ static struct chip_t *find_chip_by_id (calcdef_t *calcdef,
 	return chip->chip;
     }
   return NULL;
+}
+
+
+bool calcdef_get_key (calcdef_t *calcdef,
+		      int user_keycode,
+		      struct chip_t **chip,
+		      hw_keycode_t *hw_keycode)
+{
+  calcdef_key_t *key;
+
+  if ((user_keycode < -MAX_KEYCODE) || (user_keycode > MAX_KEYCODE))
+    return false;
+
+  key = calcdef->keyboard_map [user_keycode];
+  if (! key)
+    return false;
+
+  if ((key->chip_id) && (! key->chip))
+    key->chip = find_chip_by_id (calcdef, key->chip_id);
+
+  *chip = key->chip;
+  *hw_keycode = key->hw_keycode;
 }
 
 

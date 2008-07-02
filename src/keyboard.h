@@ -1,6 +1,6 @@
 /*
 $Id$
-Copyright 2006 Eric L. Smith <eric@brouhaha.com>
+Copyright 2006, 2008 Eric Smith <eric@brouhaha.com>
 
 Nonpareil is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License version 2 as
@@ -21,9 +21,9 @@ MA 02111, USA.
 
 
 // "user" keycodes may be positive or negative, so they range from
-// -MAX_KEYCODE to (MAX_KEYCODE-1)
+// -MAX_KEYCODE to MAX_KEYCODE
 
-#define MAX_KEYCODE 100
+#define MAX_KEYCODE 99
 
 typedef int8_t keycode_t;
 

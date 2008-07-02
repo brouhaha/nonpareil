@@ -80,7 +80,7 @@ static void button_widget_pressed (GtkWidget *widget UNUSED,
 	  printf ("first button press, keycode %d\n", button->kml_button->keycode);
 #endif
 	  csim->button_pressed_first = button->number;
-	  sim_press_key (csim->sim, button->number);
+	  sim_key (csim->sim, button->number, true);
 	}
 #ifdef KEYBOARD_DEBUG
       else
@@ -117,7 +117,7 @@ static void button_widget_released (GtkWidget *widget UNUSED,
       printf ("last key release, keycode=%d\n", button->kml_button->keycode);
 #endif
       i = csim->button_pressed_first;
-      sim_release_key (csim->sim, i);
+      sim_key (csim->sim, i, false);
       break;
     case 1:
       // There were multiple keys pressed, and all but one have been
@@ -134,9 +134,9 @@ static void button_widget_released (GtkWidget *widget UNUSED,
 	  printf ("rollover pressing keycode=%d\n", 
 		  csim->button_info [i]->kml_button->keycode);
 #endif
-	  sim_release_key (csim->sim, csim->button_pressed_first);  // release the first one
+	  sim_key (csim->sim, csim->button_pressed_first, false);  // release the first one
 	  csim->button_pressed_first = csim->button_info [i]->number;
-	  sim_press_key (csim->sim, i);
+	  sim_key (csim->sim, i, true);
 	}
       break;
     default:
