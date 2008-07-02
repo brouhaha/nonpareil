@@ -1813,14 +1813,10 @@ static void woodstock_event_fn (sim_t      *sim,
     case event_key:
       if (arg2)
 	{
-	  printf ("pressed key, keycode %03o\n", arg1);
-	  fflush (stdout);
 	  act_reg->key_buf = arg1;
 	  act_reg->key_flag = true;
 	}
       else
-	  printf ("released key, keycode %03o\n", arg1);
-	  fflush (stdout);
 	  act_reg->key_flag = false;
       break;
     case event_set_flag:
