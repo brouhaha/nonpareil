@@ -1,20 +1,19 @@
 TODO list for Nonpareil
-Copyright 1995, 2003, 2004, 2005, 2006 Eric L. Smith <eric@brouhaha.com>
+Copyright 1995, 2003, 2004, 2005, 2006, 2008 Eric Smith <eric@brouhaha.com>
 $Id$
 
 
 Needed for next release:
 
-  Put CC license notice in microcode source and object files and NCD files.
+  nui files for 45/55/80, 97
 
-  NCD files:
-    Make Nonpareil read the ncd file (back end).
-    Remove hardware keycode information, character generator, etc. from KML
+  67/97 card reader support
+  97 printer support
+
+  Put license notices in microcode source and object files and NCD files.
 
   Fix scons install, source tarball, Windows binary targets (broken with
   major build system overhaul)
-
-  Finish Voyager background/key image separation
 
   Improve support for -41C .mod files
 
@@ -26,7 +25,7 @@ Needed for next release:
 
 Build process:
 
-  As assembly object is depended on assembler, .ncd should be dependent
+  As assembly object is dependent on assembler, .ncd should be dependent
   on build-ncd.
 
 
