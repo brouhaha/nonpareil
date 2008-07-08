@@ -332,7 +332,7 @@ void state_write_xml (sim_t *sim, char *fn)
   if (xmlTextWriterWriteDTD (writer,
                              BAD_CAST "state",           // name
 			     NULL,                       // pubid
-			     BAD_CAST "nonpareil.dtd",   // sysid
+			     BAD_CAST "http://nonpareil.brouhaha.com/dtd/state-1.0.dtd",   // sysid
                              NULL) < 0)                  // subset
     fatal (2, "can't write DTD\n");
 
