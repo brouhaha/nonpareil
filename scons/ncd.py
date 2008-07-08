@@ -91,11 +91,12 @@ build_ncd_path = str (env ['BUILD_NCD'])
 def ncd_generator_fn (source, target, env, for_signature):
     #$$$ need to handle generating path from multiple object files
     obj_path = os.path.dirname (str (source [1]))
+    l = 'xmllint --noout --valid %s' % source [0]
     s = '%s %s --obj-path %s -o %s' % (build_ncd_path,
                                    source [0],
                                    obj_path,
                                    target[0])
-    return s
+    return [l, s]
 
 ncd_builder = env.Builder (generator = ncd_generator_fn,
 			   src_suffix = '.ncd.tmpl',

@@ -3,8 +3,8 @@
 <!-- $Id$ -->
 <!-- Copyright 2006, 2008 Eric Smith <eric@brouhaha.com> -->
 
-<!ELEMENT calcdef (keyboard,
-                   chip*,
+<!ELEMENT calcdef (chip*,
+                   keyboard,
                    obj_file*,
 		   lst_file*,
                    mod_file*)>
@@ -42,7 +42,7 @@
           freq     CDATA #REQUIRED
           osc_type CDATA #IMPLIED>
 
-<!ELEMENT chip (part_info+, memory*, chargen*, inst_clock*)>
+<!ELEMENT chip (part_info*, inst_clock*, memory*, chargen*)>
 <!ATTLIST chip
           type  CDATA #REQUIRED
           index CDATA #IMPLIED
@@ -57,7 +57,7 @@
 <!ELEMENT memory (loc*)>
 <!ATTLIST memory
           addr_space  CDATA #REQUIRED
-          banks       CDATA #REQUIRED
+          banks       CDATA #IMPLIED
           base_addr   CDATA #REQUIRED
           size        CDATA #REQUIRED>
 
@@ -67,11 +67,14 @@
           data  CDATA #REQUIRED>
 
 <!ELEMENT chargen (char*)>
+<!ATTLIST chargen
+          type  CDATA #REQUIRED
+          count CDATA #REQUIRED>
 
-<!ELEMENT char EMPTY>
+<!ELEMENT char (#PCDATA)>
 <!ATTLIST char
           id       CDATA #REQUIRED
-          segments CDATA #REQUIRED>
+          print    CDATA #IMPLIED>
 
 <!ELEMENT obj_file (#PCDATA)>
 <!ATTLIST obj_file

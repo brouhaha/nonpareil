@@ -26,6 +26,27 @@ To view the actual license, visit
          copyright="Copyright 2007, 2008 Eric Smith &lt;eric@brouhaha.com&gt;"
          license="CC-BY-NC-ND-3.0">
 
+  <chip type="nut_cpu">
+    <part_info>
+      <vendor_name>HP</vendor_name>
+      <part_number>1LF5-0301</part_number>
+    </part_info>
+    <inst_clock osc_type="LC" freq="215000"/>
+  </chip>
+
+  <chip type="voyager_r2d2" index="0">
+    <part_info>
+      <vendor_name>HP</vendor_name>
+      <part_number>1LH1-0305</part_number>
+    </part_info>
+    <memory addr_space="inst" banks="0" base_addr="0x0000" size="0x1800">
+    </memory>
+    <memory addr_space="data" base_addr="0x00" size="0x08">
+    </memory>
+    <memory addr_space="data" base_addr="0xe0" size="0x20">
+    </memory>
+  </chip>
+
   <keyboard>
 
     <key user_keycode="11" hw_keycode="0x13"/>
@@ -71,27 +92,6 @@ To view the actual license, visit
     <key user_keycode="49" hw_keycode="0x35"/>
     <key user_keycode="40" hw_keycode="0x15"/>
   </keyboard>
-
-  <chip type="nut_cpu">
-    <part_info>
-      <vendor_name>HP</vendor_name>
-      <part_number>1LF5-0301</part_number>
-    </part_info>
-    <inst_clock osc_type="LC" freq="215000"/>
-  </chip>
-
-  <chip type="voyager_r2d2" index="0">
-    <part_info>
-      <vendor_name>HP</vendor_name>
-      <part_number>1LH1-0305</part_number>
-    </part_info>
-    <memory addr_space="inst" banks="0" base_addr="0x0000" size="0x1800">
-    </memory>
-    <memory addr_space="data" base_addr="0x00" size="0x08">
-    </memory>
-    <memory addr_space="data" base_addr="0xe0" size="0x20">
-    </memory>
-  </chip>
 
   <obj_file addr_space="inst"
             copyright="Copyright 2004, 2005, 2008 Eric Smith &lt;eric@brouhaha.com&gt;"

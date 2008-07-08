@@ -13,56 +13,6 @@ Copyright 2006, 2008 Eric Smith <eric@brouhaha.com>
          copyright="Copyright 2006, 2008 Eric Smith &lt;eric@brouhaha.com&gt;"
          license="CC-BY-SA-3.0">
 
-  <keyboard>
-    <key user_keycode="01" hw_keycode="0x18"/>
-    <key user_keycode="02" hw_keycode="0xc6"/>
-    <key user_keycode="03" hw_keycode="0xc5"/>
-    <key user_keycode="04" hw_keycode="0xc4"/>
-
-    <key user_keycode="11" hw_keycode="0x10"/>
-    <key user_keycode="12" hw_keycode="0x30"/>
-    <key user_keycode="13" hw_keycode="0x70"/>
-    <key user_keycode="14" hw_keycode="0x80"/>
-    <key user_keycode="15" hw_keycode="0xc0"/>
-
-    <key user_keycode="21" hw_keycode="0x11"/>
-    <key user_keycode="22" hw_keycode="0x31"/>
-    <key user_keycode="23" hw_keycode="0x71"/>
-    <key user_keycode="24" hw_keycode="0x81"/>
-    <key user_keycode="25" hw_keycode="0xc1"/>
-
-    <key user_keycode="31" hw_keycode="0x12"/>
-    <key user_keycode="32" hw_keycode="0x32"/>
-    <key user_keycode="33" hw_keycode="0x72"/>
-    <key user_keycode="34" hw_keycode="0x82"/>
-    <key user_keycode="35" hw_keycode="0xc2"/>
-
-    <key user_keycode="41" hw_keycode="0x13"/>
-    <key user_keycode="42" hw_keycode="0x73"/>
-    <key user_keycode="43" hw_keycode="0x83"/>
-    <key user_keycode="44" hw_keycode="0xc3"/>
-
-    <key user_keycode="51" hw_keycode="0x14"/>
-    <key user_keycode="52" hw_keycode="0x34"/>
-    <key user_keycode="53" hw_keycode="0x74"/>
-    <key user_keycode="54" hw_keycode="0x84"/>
-
-    <key user_keycode="61" hw_keycode="0x15"/>
-    <key user_keycode="62" hw_keycode="0x35"/>
-    <key user_keycode="63" hw_keycode="0x75"/>
-    <key user_keycode="64" hw_keycode="0x85"/>
-
-    <key user_keycode="71" hw_keycode="0x16"/>
-    <key user_keycode="72" hw_keycode="0x36"/>
-    <key user_keycode="73" hw_keycode="0x76"/>
-    <key user_keycode="74" hw_keycode="0x86"/>
-
-    <key user_keycode="81" hw_keycode="0x17"/>
-    <key user_keycode="82" hw_keycode="0x37"/>
-    <key user_keycode="83" hw_keycode="0x77"/>
-    <key user_keycode="84" hw_keycode="0x87"/>
-  </keyboard>
-
   <chip type="nut_cpu">
     <part_info>
       <vendor_name>HP</vendor_name>
@@ -206,7 +156,7 @@ Copyright 2006, 2008 Eric Smith <eric@brouhaha.com>
       <char id="0x2d" print="-"      >......gh......</char>
       <char id="0x2e" print="?"      >......gh...l.n</char>  <!-- right goose -->
       <char id="0x2f" print="/"      >..........k..n</char>
-      <char id="0x30" print="0"      >abcdef....k..n</char>  <!-- zero with slash to distinguish from letter O-->
+      <char id="0x30" print="0"      >abcdef....k..n</char>  <!-- zero with slash to distinguish from letter O -->
       <char id="0x31" print="1"      >.bc...........</char>
       <char id="0x32" print="2"      >ab.de.gh......</char>
       <char id="0x33" print="3"      >abcd..gh......</char>
@@ -239,8 +189,8 @@ Copyright 2006, 2008 Eric Smith <eric@brouhaha.com>
       <char id="0x4e" print="?"      >a..d.......l.n</char>  <!-- SIG Greek Sigma -->
       <char id="0x4f" print="?"      >...d.....jk..n</char>  <!-- ANG angle symbol -->
 
--- Halfnut models have extra characters from 0x50 through 0x7f, which
-   display as spaces on fullnuts.  See CHHU Chronicle V2N4 for details. -->
+<!-- Halfnut models have extra characters from 0x50 through 0x7f, which
+     display as spaces on fullnuts.  See CHHU Chronicle V2N4 for details. -->
 
       <char id="0x50" print="?"      >......gh....mn</char>  <!-- DC1 Greek pi -->
       <char id="0x51" print="?"      >...d........mn</char>  <!-- BEL Greek alpha -->
@@ -301,6 +251,56 @@ Copyright 2006, 2008 Eric Smith <eric@brouhaha.com>
     <!-- second LCD chip is actually modelled as part of first, so no
          chargen element is needed here -->
   </chip>
+
+  <keyboard>
+    <key user_keycode="01" hw_keycode="0x18"/>
+    <key user_keycode="02" hw_keycode="0xc6"/>
+    <key user_keycode="03" hw_keycode="0xc5"/>
+    <key user_keycode="04" hw_keycode="0xc4"/>
+
+    <key user_keycode="11" hw_keycode="0x10"/>
+    <key user_keycode="12" hw_keycode="0x30"/>
+    <key user_keycode="13" hw_keycode="0x70"/>
+    <key user_keycode="14" hw_keycode="0x80"/>
+    <key user_keycode="15" hw_keycode="0xc0"/>
+
+    <key user_keycode="21" hw_keycode="0x11"/>
+    <key user_keycode="22" hw_keycode="0x31"/>
+    <key user_keycode="23" hw_keycode="0x71"/>
+    <key user_keycode="24" hw_keycode="0x81"/>
+    <key user_keycode="25" hw_keycode="0xc1"/>
+
+    <key user_keycode="31" hw_keycode="0x12"/>
+    <key user_keycode="32" hw_keycode="0x32"/>
+    <key user_keycode="33" hw_keycode="0x72"/>
+    <key user_keycode="34" hw_keycode="0x82"/>
+    <key user_keycode="35" hw_keycode="0xc2"/>
+
+    <key user_keycode="41" hw_keycode="0x13"/>
+    <key user_keycode="42" hw_keycode="0x73"/>
+    <key user_keycode="43" hw_keycode="0x83"/>
+    <key user_keycode="44" hw_keycode="0xc3"/>
+
+    <key user_keycode="51" hw_keycode="0x14"/>
+    <key user_keycode="52" hw_keycode="0x34"/>
+    <key user_keycode="53" hw_keycode="0x74"/>
+    <key user_keycode="54" hw_keycode="0x84"/>
+
+    <key user_keycode="61" hw_keycode="0x15"/>
+    <key user_keycode="62" hw_keycode="0x35"/>
+    <key user_keycode="63" hw_keycode="0x75"/>
+    <key user_keycode="64" hw_keycode="0x85"/>
+
+    <key user_keycode="71" hw_keycode="0x16"/>
+    <key user_keycode="72" hw_keycode="0x36"/>
+    <key user_keycode="73" hw_keycode="0x76"/>
+    <key user_keycode="74" hw_keycode="0x86"/>
+
+    <key user_keycode="81" hw_keycode="0x17"/>
+    <key user_keycode="82" hw_keycode="0x37"/>
+    <key user_keycode="83" hw_keycode="0x77"/>
+    <key user_keycode="84" hw_keycode="0x87"/>
+  </keyboard>
 
   <obj_file addr_space="inst"
             copyright="Copyright 2006, 2008 Eric Smith &lt;eric@brouhaha.com&gt;"
