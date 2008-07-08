@@ -60,7 +60,6 @@ struct gui_switches_t
 static void slide_switch_clicked (GtkWidget *widget, slide_switch_info_t *si)
 {
   int pos;
-  gboolean state;
 
   pos = cbutton_get_shift_state (CBUTTON (widget));
 

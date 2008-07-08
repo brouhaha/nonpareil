@@ -160,7 +160,7 @@ kml_t *read_kml_file_from_gsfinfile (GsfInfile *nui, char *fn)
   return (kml);
 }
 
-void kml_include (char *fn)
+void kml_include (char *fn UNUSED)
 {
   fatal (2, "KML include not currently supported.");
 }

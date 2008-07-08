@@ -232,7 +232,7 @@ GdkPixbuf *render_pixbuf;
 
 
 // We don't care about scancodes.
-int get_scancode_from_name (char *scancode_name)
+int get_scancode_from_name (char *scancode_name UNUSED)
 {
   return 0;
 }
