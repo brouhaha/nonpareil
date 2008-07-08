@@ -1417,7 +1417,6 @@ bool sim_write_ram (sim_t   *sim,
 
 void sim_key (sim_t *sim, int keycode, bool state)
 {
-  sim_msg_t msg;
   hw_keycode_t hw_keycode;
   chip_t *chip;
 

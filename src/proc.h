@@ -42,8 +42,9 @@ typedef enum
   event_restore_starting,
   event_restore_completed,
 
-  event_key,       // arg1 is keycode (user), arg2 is new value (bool)
-  event_set_flag,  // arg1 selects flag, arg2 is new value (bool)
+  event_key,        // arg1 is keycode (user), arg2 is new value (bool)
+  event_set_flag,   // arg1 selects flag, arg2 is new value (bool)
+  event_pulse_flag, // arg1 selects flag
 
   first_arch_event = 0x100,  // CPU architecture specific events
 

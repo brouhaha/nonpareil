@@ -226,7 +226,12 @@ static void crc_op_test_flag_and_clear (sim_t *sim,
 #endif
 
   if (crc_reg->flag [flag] || crc_reg->ext_flag [flag])
-    act_reg->s [3] = 1;
+    chip_event (sim,
+		sim->first_chip,  // ACT only
+		event_pulse_flag,
+		EXT_FLAG_ACT_F1,
+		0,                // arg2 unused
+		NULL);
   crc_reg->flag [flag] = false;
 }
 
@@ -351,8 +356,8 @@ static void crc_init_ops (sim_t *sim)
 }
 
 chip_t *crc_install (sim_t *sim,
-		     int32_t index,
-		     int32_t flags)
+		     int32_t index UNUSED,
+		     int32_t flags UNUSED)
 {
   act_reg_t *act_reg;
   crc_reg_t *crc_reg;

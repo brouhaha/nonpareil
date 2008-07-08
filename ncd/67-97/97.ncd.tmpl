@@ -131,6 +131,8 @@ Copyright 2007, 2008 Eric Smith <eric@brouhaha.com>
       <vendor_name>HP</vendor_name>
       <part_number>1820-1952</part_number>
     </part_info>
+<<<<<<< .mine
+=======
     <chargen type="bitmap" count="35">
       <char id="0x00">*...*
                       *...*
@@ -644,6 +646,7 @@ Copyright 2007, 2008 Eric Smith <eric@brouhaha.com>
                       .....
                       .....</char> <!-- CR -->
     </chargen>
+>>>>>>> .r1153
   </chip>
 
   <obj_file addr_space="inst"
@@ -658,6 +661,111 @@ Copyright 2007, 2008 Eric Smith <eric@brouhaha.com>
             copyright="Copyright 2007, 2008 Eric Smith &lt;eric@brouhaha.com&gt;"
             license="GPL-3.0">97b1.obj</obj_file>
 
+<<<<<<< .mine
+  <keyboard>
+
+    <!-- power switch -->
+    <!--
+    <switch number="0">
+      <switch_pos position="0" flag="power" value="0"/>
+      <switch_pos position="1" flag="power" value="1"/>
+    </switch>
+    -->
+
+    <switch number="1">
+      <switch_pos position="0">  <!-- PRGM -->
+        <flag chip_id="crc" number="1" value="1"/>
+      </switch_pos>
+      <switch_pos position="1">  <!-- RUN -->
+        <flag chip_id="crc" number="1" value="0"/>
+      </switch_pos>
+    </switch>
+
+    <switch number="2">  <!-- printer mode -->
+      <switch_pos position="0">  <!-- MAN -->
+        <flag chip_id="crc" number="2" value="1"/>
+        <flag chip_id="crc" number="3" value="0"/>
+      </switch_pos>
+      <switch_pos position="1">  <!-- TRACE -->
+        <flag chip_id="crc" number="2" value="0"/>
+        <flag chip_id="crc" number="3" value="0"/>
+      </switch_pos>
+      <switch_pos position="2">  <!-- NORM -->
+        <flag chip_id="crc" number="2" value="0"/>
+        <flag chip_id="crc" number="3" value="1"/>
+      </switch_pos>
+    </switch>
+
+    <key user_keycode="-11" chip_id="pick" hw_keycode="0263"/> <!-- A -->
+    <key user_keycode="-12" chip_id="pick" hw_keycode="0262"/> <!-- B -->
+    <key user_keycode="-13" chip_id="pick" hw_keycode="0261"/> <!-- C -->
+    <key user_keycode="-14" chip_id="pick" hw_keycode="0260"/> <!-- D -->
+    <key user_keycode="-15" chip_id="pick" hw_keycode="0264"/> <!-- E -->
+    <key user_keycode="-16" chip_id="pick" hw_keycode="0264"/> <!-- f -->
+
+    <key user_keycode="-21" chip_id="pick" hw_keycode="0263"/> <!-- LBL -->
+    <key user_keycode="-22" chip_id="pick" hw_keycode="0262"/> <!-- GTO -->
+    <key user_keycode="-23" chip_id="pick" hw_keycode="0261"/> <!-- GSB -->
+    <key user_keycode="-24" chip_id="pick" hw_keycode="0260"/> <!-- RTN -->
+    <key user_keycode="-25" chip_id="pick" hw_keycode="0264"/> <!-- BST -->
+    <key user_keycode="-26" chip_id="pick" hw_keycode="0264"/> <!-- SST -->
+
+    <key user_keycode="-31" chip_id="pick" hw_keycode="0263"/> <!-- y^x -->
+    <key user_keycode="-32" chip_id="pick" hw_keycode="0262"/> <!-- LN -->
+    <key user_keycode="-33" chip_id="pick" hw_keycode="0261"/> <!-- e^x -->
+    <key user_keycode="-34" chip_id="pick" hw_keycode="0260"/> <!-- ->P -->
+    <key user_keycode="-35" chip_id="pick" hw_keycode="0264"/> <!-- STO -->
+    <key user_keycode="-36" chip_id="pick" hw_keycode="0264"/> <!-- RCL -->
+
+    <key user_keycode="-41" chip_id="pick" hw_keycode="0263"/> <!-- SIN -->
+    <key user_keycode="-42" chip_id="pick" hw_keycode="0262"/> <!-- COS -->
+    <key user_keycode="-43" chip_id="pick" hw_keycode="0261"/> <!-- TAN -->
+    <key user_keycode="-44" chip_id="pick" hw_keycode="0260"/> <!-- ->R -->
+    <key user_keycode="-45" chip_id="pick" hw_keycode="0264"/> <!-- (i) -->
+    <key user_keycode="-46" chip_id="pick" hw_keycode="0264"/> <!-- I -->
+
+    <key user_keycode="-51" chip_id="pick" hw_keycode="0263"/> <!-- R/S -->
+    <key user_keycode="-52" chip_id="pick" hw_keycode="0262"/> <!-- 1/x -->
+    <key user_keycode="-53" chip_id="pick" hw_keycode="0261"/> <!-- x^2 -->
+    <key user_keycode="-54" chip_id="pick" hw_keycode="0260"/> <!-- sqrt(x) -->
+    <key user_keycode="-55" chip_id="pick" hw_keycode="0264"/> <!-- % -->
+    <key user_keycode="-56" chip_id="pick" hw_keycode="0264"/> <!-- Sigma+ -->
+
+    <key user_keycode="11"  chip_id="pick" hw_keycode="0263"/> <!-- FIX -->
+    <key user_keycode="12"  chip_id="pick" hw_keycode="0262"/> <!-- SCI -->
+    <key user_keycode="13"  chip_id="pick" hw_keycode="0261"/> <!-- ENG -->
+    <key user_keycode="14"  chip_id="pick" hw_keycode="0260"/> <!-- PRINT x -->
+
+    <key user_keycode="21"  chip_id="pick" hw_keycode="0263"/> <!-- ENTER^ -->
+    <key user_keycode="22"  chip_id="pick" hw_keycode="0262"/> <!-- CHS -->
+    <key user_keycode="23"  chip_id="pick" hw_keycode="0261"/> <!-- EEX -->
+    <key user_keycode="24"  chip_id="pick" hw_keycode="0260"/> <!-- divide -->
+
+    <key user_keycode="31"  chip_id="pick" hw_keycode="0263"/> <!-- Rdn -->
+    <key user_keycode="32"  chip_id="pick" hw_keycode="0262"/> <!-- 7 -->
+    <key user_keycode="33"  chip_id="pick" hw_keycode="0261"/> <!-- 8 -->
+    <key user_keycode="34"  chip_id="pick" hw_keycode="0260"/> <!-- 9 -->
+    <key user_keycode="35"  chip_id="pick" hw_keycode="0260"/> <!-- multiply -->
+
+    <key user_keycode="41"  chip_id="pick" hw_keycode="0263"/> <!-- x<>y -->
+    <key user_keycode="42"  chip_id="pick" hw_keycode="0262"/> <!-- 4 -->
+    <key user_keycode="43"  chip_id="pick" hw_keycode="0261"/> <!-- 5 -->
+    <key user_keycode="44"  chip_id="pick" hw_keycode="0260"/> <!-- 6 -->
+    <key user_keycode="45"  chip_id="pick" hw_keycode="0260"/> <!-- minus -->
+
+    <key user_keycode="51"  chip_id="pick" hw_keycode="0263"/> <!-- CLx -->
+    <key user_keycode="52"  chip_id="pick" hw_keycode="0262"/> <!-- 1 -->
+    <key user_keycode="53"  chip_id="pick" hw_keycode="0261"/> <!-- 2 -->
+    <key user_keycode="54"  chip_id="pick" hw_keycode="0260"/> <!-- 3 -->
+    <key user_keycode="55"  chip_id="pick" hw_keycode="0260"/> <!-- add -->
+
+    <key user_keycode="61"  chip_id="pick" hw_keycode="0263"/> <!-- 0 -->
+    <key user_keycode="62"  chip_id="pick" hw_keycode="0262"/> <!-- . -->
+    <key user_keycode="63"  chip_id="pick" hw_keycode="0261"/> <!-- DSP -->
+
+  </keyboard>
+
+=======
   <keyboard>
 
     <!-- power switch -->
@@ -761,4 +869,5 @@ Copyright 2007, 2008 Eric Smith <eric@brouhaha.com>
 
   </keyboard>
 
+>>>>>>> .r1153
 </calcdef>

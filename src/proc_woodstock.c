@@ -563,11 +563,32 @@ static void op_load_constant (sim_t *sim, int opcode)
 }
 
 
+static bool get_s_bit (sim_t *sim, int bit)
+{
+  act_reg_t *act_reg = get_chip_data (sim->first_chip);
+  bool state;
+
+  state = act_reg->s [bit];
+  switch (bit)
+    {
+    case 3:
+      state |= act_reg->ext_flag [EXT_FLAG_ACT_F1];
+      break;
+    case 5:
+      state |= act_reg->ext_flag [EXT_FLAG_ACT_F2];
+      break;
+    case 15:
+      state |= act_reg->key_flag;
+      break;
+    }
+  return state;
+}
+
 static void set_s_bit (sim_t *sim, int bit, bool state)
 {
   act_reg_t *act_reg = get_chip_data (sim->first_chip);
 
-  bool orig_state = act_reg->s [bit];
+  bool orig_state = get_s_bit (sim, bit);
   act_reg->s [bit] = state;
 
   if ((bit == 0) && (state != orig_state))
@@ -579,6 +600,29 @@ static void set_s_bit (sim_t *sim, int bit, bool state)
 		  state,
 		  0,
 		  NULL);
+    }
+}
+
+static void set_ext_flag (sim_t *sim, int ext_flag, bool value)
+{
+  act_reg_t *act_reg = get_chip_data (sim->first_chip);
+
+  if ((ext_flag >= 0) && (ext_flag < EXT_FLAG_SIZE))
+    act_reg->ext_flag [ext_flag] = value;
+}
+
+static void pulse_ext_flag (sim_t *sim, int ext_flag)
+{
+  switch (ext_flag)
+    {
+    case EXT_FLAG_ACT_F1:
+      set_s_bit (sim, 3, true);
+      break;
+    case EXT_FLAG_ACT_F2:
+      set_s_bit (sim, 5, true);
+      break;
+    default:
+      fatal (2, "ACT unknown ext flag %d\n", ext_flag);
     }
 }
 
@@ -979,7 +1023,7 @@ static void op_test_s_eq_0 (sim_t *sim, int opcode)
   act_reg_t *act_reg = get_chip_data (sim->first_chip);
 
   act_reg->inst_state = inst_woodstock_then_goto;
-  act_reg->carry = act_reg->s [opcode >> 6];
+  act_reg->carry = get_s_bit (sim, opcode >> 6);
 }
 
 
@@ -988,7 +1032,7 @@ static void op_test_s_eq_1 (sim_t *sim, int opcode)
   act_reg_t *act_reg = get_chip_data (sim->first_chip);
 
   act_reg->inst_state = inst_woodstock_then_goto;
-  act_reg->carry = ! act_reg->s [opcode >> 6];
+  act_reg->carry = ! get_s_bit (sim, opcode >> 6);
 }
 
 
@@ -1308,6 +1352,20 @@ static void spice_display_scan (sim_t *sim)
 }
 
 
+void act_key (sim_t *sim, int keycode, bool state)
+{
+  act_reg_t *act_reg = get_chip_data (sim->first_chip);
+
+  if (state)
+    {
+      act_reg->key_buf = keycode;
+      act_reg->key_flag = true;
+    }
+  else
+    act_reg->key_flag = false;
+}
+
+
 static void print_reg (char *label, reg_t reg)
 {
   int i;
@@ -1339,8 +1397,8 @@ static void woodstock_print_state (sim_t *sim)
 
   log_printf (sim, "pc=%05o  radix=%d  p=%d  f=%x  stat:",
 	  mapped_addr, arithmetic_base (act_reg), act_reg->p, act_reg->f);
-  for (i = 0; i < 16; i++)
-    if (act_reg->s [i])
+  for (i = 0; i < SSIZE; i++)
+    if (get_s_bit (sim, i))
       log_printf (sim, " %d", i);
   log_printf (sim, "\n");
   log_send (sim);
@@ -1421,14 +1479,6 @@ static bool woodstock_execute_cycle (sim_t *sim)
 
   act_reg->prev_carry = act_reg->carry;
   act_reg->carry = 0;
-
-  if (act_reg->key_flag)
-    set_s_bit (sim, 15, 1);
-
-  if (act_reg->ext_flag [EXT_FLAG_ACT_F1])
-    set_s_bit (sim, 3, 1);
-  if (act_reg->ext_flag [EXT_FLAG_ACT_F2])
-    set_s_bit (sim, 5, 1);
 
   act_reg->pc = (act_reg->pc + 1) & 07777;
 
@@ -1800,8 +1850,6 @@ static void woodstock_event_fn (sim_t      *sim,
 				int        arg2,
 				void       *data UNUSED)
 {
-  act_reg_t *act_reg = get_chip_data (sim->first_chip);
-
   switch (event)
     {
     case event_reset:
@@ -1815,16 +1863,13 @@ static void woodstock_event_fn (sim_t      *sim,
       display_setup (sim);
       break;
     case event_key:
-      if (arg2)
-	{
-	  act_reg->key_buf = arg1;
-	  act_reg->key_flag = true;
-	}
-      else
-	  act_reg->key_flag = false;
+      act_key (sim, arg1, arg2);
       break;
     case event_set_flag:
-      act_reg->ext_flag [arg1] = arg2;
+      set_ext_flag (sim, arg1, arg2);
+      break;
+    case event_pulse_flag:
+      pulse_ext_flag (sim, arg1);
       break;
     default:
       // warning ("proc_woodstock: unknown event %d\n", event);

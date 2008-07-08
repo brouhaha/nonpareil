@@ -24,14 +24,18 @@ MA 02111, USA.
 /* Digit positions are numbered left to right, starting with 0. */
 
 #define MAX_SEGMENT 35
-// 41C: 18 (14 segment char, 3 segments punctuation, 1 annunciator
+// Pre-41:    8 (7 segment, 1 punctuation)
+// 41C:      18 (14 segment char, 3 segments punctuation, 1 annunciator
+// Voyager:   9 (7 segment, 2 punctuation)
 // Dot-matrix printers: 35 (5 columns by 7 rows)
 
+typedef uint64_t segment_bitmap_t;
 // Segments are stored as a bitmap, with the LSB being segment A.
 // See comments at the end of this header file.
+
 // For dot-matrix characters, the pixel at (row, col) is stored in
-// bit (col * num_cols) + ((num_rows - 1) - row)
-typedef uint64_t segment_bitmap_t;
+// bit (row * num_cols) + col
+// (zero-based coordinates)
 
 
 /* 
