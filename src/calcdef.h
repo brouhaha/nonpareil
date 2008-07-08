@@ -42,8 +42,8 @@ int calcdef_get_ram_size (calcdef_t *calcdef);
 
 double calcdef_get_clock_frequency (calcdef_t *calcdef);  // in Hz
 
-const segment_bitmap_t *calcdef_get_char_gen (calcdef_t *calcdef);
-
+const segment_bitmap_t *calcdef_get_char_gen (calcdef_t *calcdef,
+					      char *chip_id);
 
 void calcdef_init_chips (calcdef_t *calcdef);
 

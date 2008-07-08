@@ -13,12 +13,91 @@ Copyright 2006, 2008 Eric Smith <eric@brouhaha.com>
          copyright="Copyright 2006, 2008 Eric Smith &lt;eric@brouhaha.com&gt;"
          license="GPL-3.0">
 
+  <chip id="ctc" type="classic_ctc">
+    <part_info>
+      <vendor_name>HP</vendor_name>
+      <part_number>1818-0078</part_number>
+    </part_info>
+    <part_info>
+      <vendor_name>Mostek</vendor_name>
+      <part_number>MK6021P</part_number>
+    </part_info>
+  </chip>
+
+  <chip id="arc" type="classic_arc">
+    <part_info>
+      <vendor_name>HP</vendor_name>
+      <part_number>1820-1169</part_number>
+    </part_info>
+    <part_info>
+      <vendor_name>Mostek</vendor_name>
+      <part_number>MK6020P</part_number>
+    </part_info>
+  </chip>
+
+  <chip type="classic_clock_driver">
+    <part_info>
+      <vendor_name>HP</vendor_name>
+      <part_number>1820-1128</part_number>
+    </part_info>
+    <inst_clock osc_type="LC" freq="196000"/>
+  </chip>
+
+  <chip type="classic_cathode_driver">
+    <part_info>
+      <vendor_name>HP</vendor_name>
+      <part_number>1820-1226</part_number>
+    </part_info>
+  </chip>
+
+  <chip id="anode_driver" type="classic_anode_driver">
+    <part_info>
+      <vendor_name>HP</vendor_name>
+      <part_number>1820-1029</part_number>
+    </part_info>
+    <chargen type="segment" count="8">
+      <char id="'0'">abcdef..</char>
+      <char id="'1'">.bc.....</char>
+      <char id="'2'">ab.de.g.</char>
+      <char id="'3'">abcd..g.</char>
+      <char id="'4'">.bc..fg.</char>
+      <char id="'5'">a.cd.fg.</char>
+      <char id="'6'">a.cdefg.</char>
+      <char id="'7'">abc.....</char>
+      <char id="'8'">abcdefg.</char>
+      <char id="'9'">abcd.fg.</char>
+      <char id="' '">........</char>
+      <char id="'-'">......g.</char>
+      <char id="'.'">.......h</char>
+    </chargen>
+  </chip>
+
+  <chip id="rom_0" type="classic_rom">
+    <memory addr_space="inst" banks="0" base_addr="00000" size="00400">
+    </memory>
+  </chip>
+
+  <chip id="rom_1" type="classic_rom">
+    <memory addr_space="inst" banks="0" base_addr="00400" size="00400">
+    </memory>
+  </chip>
+
+  <chip id="rom_2" type="classic_rom">
+    <memory addr_space="inst" banks="0" base_addr="01000" size="00400">
+    </memory>
+  </chip>
+
   <keyboard>
 
+    <!-- power switch -->
+    <!--
     <switch number="0">
-      <switch_pos position="0" flag="power" value="0"/>
-      <switch_pos position="1" flag="power" value="1"/>
+      <switch_pos position="0">
+      </switch_pos>
+      <switch_pos position="1">
+      </switch_pos>
     </switch>
+    -->
 
     <key user_keycode="11" hw_keycode="006"/>
     <key user_keycode="12" hw_keycode="004"/>
@@ -63,80 +142,6 @@ Copyright 2006, 2008 Eric Smith <eric@brouhaha.com>
     <key user_keycode="83" hw_keycode="043"/>
     <key user_keycode="84" hw_keycode="042"/>
   </keyboard>
-
-  <chip name="CTC">
-    <part_info>
-      <vendor_name>HP</vendor_name>
-      <part_number>1818-0078</part_number>
-    </part_info>
-    <part_info>
-      <vendor_name>Mostek</vendor_name>
-      <part_number>MK6021P</part_number>
-    </part_info>
-  </chip>
-
-  <chip name="ARC">
-    <part_info>
-      <vendor_name>HP</vendor_name>
-      <part_number>1820-1169</part_number>
-    </part_info>
-    <part_info>
-      <vendor_name>Mostek</vendor_name>
-      <part_number>MK6020P</part_number>
-    </part_info>
-  </chip>
-
-  <chip name="clock driver">
-    <part_info>
-      <vendor_name>HP</vendor_name>
-      <part_number>1820-1128</part_number>
-    </part_info>
-    <inst_clock osc_type="LC" freq="196000"/>
-  </chip>
-
-  <chip name="cathode driver">
-    <part_info>
-      <vendor_name>HP</vendor_name>
-      <part_number>1820-1226</part_number>
-    </part_info>
-  </chip>
-
-  <chip name="anode driver">
-    <part_info>
-      <vendor_name>HP</vendor_name>
-      <part_number>1820-1029</part_number>
-    </part_info>
-    <chargen>
-      <char id="'0'" segments="abcdef  " />
-      <char id="'1'" segments=" bc     " />
-      <char id="'2'" segments="ab de g " />
-      <char id="'3'" segments="abcd  g " />
-      <char id="'4'" segments=" bc  fg " />
-      <char id="'5'" segments="a cd fg " />
-      <char id="'6'" segments="a cdefg " />
-      <char id="'7'" segments="abc     " />
-      <char id="'8'" segments="abcdefg " />
-      <char id="'9'" segments="abcd fg " />
-      <char id="' '"    segments="        " />
-      <char id="'-'"    segments="      g " />
-      <char id="'.'"    segments="       h" />
-    </chargen>
-  </chip>
-
-  <chip name="rom">
-    <memory addr_space="inst" banks="0" base_addr="00000" size="00400">
-    </memory>
-  </chip>
-
-  <chip name="rom">
-    <memory addr_space="inst" banks="0" base_addr="00400" size="00400">
-    </memory>
-  </chip>
-
-  <chip name="rom">
-    <memory addr_space="inst" banks="0" base_addr="01000" size="00400">
-    </memory>
-  </chip>
 
   <obj_file addr_space="inst"
             copyright="Copyright 2006, 2008 Eric Smith &lt;eric@brouhaha.com&gt;"

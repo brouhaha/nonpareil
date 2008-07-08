@@ -1254,20 +1254,20 @@ static void woodstock_display_scan (sim_t *sim)
       if (b & 2)
 	{
 	  if ((a >= 2) && ((a & 7) != 7))
-	    segs = sim->char_gen ['-'];
+	    segs = sim->display_char_gen ['-'];
 	}
       else
-	segs = sim->char_gen [a];
+	segs = sim->display_char_gen [a];
       if (act_reg->display_14_digit && (act_reg->display_digit_position == 12))
 	{
 	  // mantissa sign comes from E segment of exponent sign digit
 	  if (segs & (1 << 4))
-	    sim->display_segments [0] = sim->char_gen ['-'];  
+	    sim->display_segments [0] = sim->display_char_gen ['-'];  
           // exponent sign digit only has G segment
-	  segs &= sim->char_gen ['-'];
+	  segs &= sim->display_char_gen ['-'];
 	}
       if (b & 1)
-	segs |= sim->char_gen ['.'];
+	segs |= sim->display_char_gen ['.'];
     }
 
   sim->display_segments [act_reg->display_digit_position++] = segs;
@@ -1290,16 +1290,16 @@ static void spice_display_scan (sim_t *sim)
   if (act_reg->display_enable)
     {
       if ((act_reg->display_scan_position == act_reg->left_scan) && (b & 4))
-	sim->display_segments [0] = sim->char_gen ['-'];
+	sim->display_segments [0] = sim->display_char_gen ['-'];
       if (b == 6)
 	{
 	  if (a == 9)
-	    segs = sim->char_gen ['-'];
+	    segs = sim->display_char_gen ['-'];
 	}
       else
-	segs = sim->char_gen [a];
+	segs = sim->display_char_gen [a];
       if (b & 1)
-	segs |= sim->char_gen [(b & 2) ? ',' : '.'];
+	segs |= sim->display_char_gen [(b & 2) ? ',' : '.'];
     }
 
   sim->display_segments [act_reg->display_digit_position++] = segs;
@@ -1731,6 +1731,8 @@ static void display_setup (sim_t *sim)
     {
     case PLATFORM_WOODSTOCK:
     case PLATFORM_TOPCAT:
+      sim->display_char_gen = calcdef_get_char_gen (sim->calcdef,
+						    "rom_0_anode_driver");
       // default to twelve digits, but RESET TWF instruction switches to
       // fourteen digits plus special case for sign
       sim->display_digits = MAX_DIGIT_POSITION;
@@ -1742,6 +1744,8 @@ static void display_setup (sim_t *sim)
 	act_reg->right_scan = 2;
       break;
     case PLATFORM_SPICE:
+      sim->display_char_gen = calcdef_get_char_gen (sim->calcdef,
+						    "act");
       // ten digits plus special-case for sign
       sim->display_digits = MAX_DIGIT_POSITION;
       act_reg->display_scan_fn = spice_display_scan;

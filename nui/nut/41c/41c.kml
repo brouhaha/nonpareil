@@ -1,5 +1,5 @@
 # $Id$
-# Copyright 2004, 2005, 2006, 2008 Eric L. Smith <eric@brouhaha.com>
+# Copyright 2004, 2005, 2006, 2008 Eric Smith <eric@brouhaha.com>
 
 # Nonpareil is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License version 2 as
@@ -18,9 +18,9 @@
 # Boston, MA 02111, USA.
 
 global
-	title "41CV Programmable Scientific Calculator"
+	title "41C Programmable Scientific Calculator"
 	author "Eric Smith <eric@brouhaha.com>"
-	model "41cv"
+	model "41c"
 	image "41c.png"
 	overlay default image "41c-overlay.png"
 	color 0 137 0 6	  # background color, used when transparency is off

@@ -37,14 +37,16 @@ static chip_type_info_t chip_type_info [] =
   [CHIP_UNKNOWN]                     = { "unknown", NULL },
 
   // classic
-  [CHIP_CLASSIC_CTC_ARC]             = { "classic_ctc_arc", NULL },
+  [CHIP_CLASSIC_CTC]                 = { "classic_ctc", NULL },
+  [CHIP_CLASSIC_ARC]                 = { "classic_arc", NULL },
+  [CHIP_CLASSIC_CLOCK_DRIVER]        = { "classic_clock_driver", NULL },
   [CHIP_CLASSIC_CATHODE_DRIVER]      = { "classic_cathode_driver", NULL },
   [CHIP_CLASSIC_ANODE_DRIVER]        = { "classic_anode_driver", NULL },
   [CHIP_CLASSIC_ROM]                 = { "classic_rom", NULL },
   [CHIP_CLASSIC_RAM]                 = { "classic_ram", NULL },
   [CHIP_CLASSIC_PROGRAM_MEMORY]      = { "classic_program_memory", NULL },
 
-  // woodstock (and topcat, spice)
+  // woodstock (and topcat, sting)
   [CHIP_WOODSTOCK_ACT]               = { "woodstock_act", NULL },
   [CHIP_WOODSTOCK_CATHODE_DRIVER_12] = { "woodstock_cathode_driver_12", NULL },
   [CHIP_WOODSTOCK_CATHODE_DRIVER_14] = { "woodstock_cathode_driver_14", NULL },
@@ -53,6 +55,9 @@ static chip_type_info_t chip_type_info [] =
   [CHIP_WOODSTOCK_ROM_RAM]           = { "woodstock_rom_ram", NULL },
   [CHIP_WOODSTOCK_PICK]              = { "woodstock_pick", NULL },
   [CHIP_WOODSTOCK_CRC]               = { "woodstock_crc", crc_install },
+
+  // spice
+  [CHIP_SPICE_ACT]                   = { "spice_act", NULL },
 
   // coconut & peripherals
   [CHIP_NUT_CPU]                     = { "nut_cpu", NULL },

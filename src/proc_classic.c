@@ -89,7 +89,7 @@ static chip_detail_t classic_cpu_chip_detail =
 {
   {
     "CTC/ARC",
-    CHIP_CLASSIC_CTC_ARC,
+    CHIP_CLASSIC_CTC,  // Actually two chips, but we have to choose one
     false  // There can only be one processor in the calculator.
   },
   sizeof (classic_cpu_reg_detail) / sizeof (reg_detail_t),
@@ -822,15 +822,15 @@ static void classic_display_scan (sim_t *sim)
 	      (cpu_reg->display_scan_position == 13))
 	    {
 	      if (a >= 8)
-		sim->display_segments [cpu_reg->display_digit_position] = sim->char_gen ['-'];
+		sim->display_segments [cpu_reg->display_digit_position] = sim->display_char_gen ['-'];
 	    }
 	  else
-	    sim->display_segments [cpu_reg->display_digit_position] = sim->char_gen ['0' + a];
+	    sim->display_segments [cpu_reg->display_digit_position] = sim->display_char_gen ['0' + a];
       
 	  if (b == 2)
 	    {
 	      if ((++cpu_reg->display_digit_position) < MAX_DIGIT_POSITION)
-		sim->display_segments [cpu_reg->display_digit_position] = sim->char_gen ['.'];
+		sim->display_segments [cpu_reg->display_digit_position] = sim->display_char_gen ['.'];
 	    }
 	}
     }
@@ -1048,6 +1048,20 @@ static bool classic_parse_listing_line (char        *buf,
 }
 
 
+static void display_setup (sim_t *sim)
+{
+  classic_cpu_reg_t *cpu_reg = get_chip_data (sim->first_chip);
+
+  sim->display_char_gen = calcdef_get_char_gen (sim->calcdef,
+						"anode_driver");
+
+  sim->display_digits = MAX_DIGIT_POSITION;
+  cpu_reg->display_scan_fn = classic_display_scan;
+  cpu_reg->left_scan = WSIZE - 1;
+  cpu_reg->right_scan = 0;
+}
+
+
 static void classic_reset (sim_t *sim)
 {
   classic_cpu_reg_t *cpu_reg = get_chip_data (sim->first_chip);
@@ -1212,10 +1226,7 @@ static void classic_new_processor (sim_t *sim)
   // RAM is contiguous starting from address 0.
   cpu_reg->ram = alloc (cpu_reg->max_ram * sizeof (reg_t));
 
-  sim->display_digits = MAX_DIGIT_POSITION;
-  cpu_reg->display_scan_fn = classic_display_scan;
-  cpu_reg->left_scan = WSIZE - 1;
-  cpu_reg->right_scan = 0;
+  display_setup (sim);
 
   init_ops (cpu_reg);
 

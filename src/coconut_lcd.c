@@ -379,7 +379,7 @@ static void coconut_display_update (sim_t *sim,
 	  int c = ((display->c [i] << 6) +
 		   ((b & 3) << 4) +
 		   display->a [i]);
-	  segments = sim->char_gen [c];
+	  segments = sim->display_char_gen [c];
 	  switch (b >> 2)
 	    {
 	    case 0:  break;  /* no punctuation */
@@ -465,6 +465,9 @@ chip_t *coconut_lcd_install (sim_t *sim,
   // won't install it.
   if (index != 0)
     return NULL;
+
+  sim->display_char_gen = calcdef_get_char_gen (sim->calcdef,
+						"coconut_lcd_0");
 
   coconut_display_init_ops (sim);
 

@@ -13,7 +13,6 @@ Copyright 2007, 2008 Eric Smith <eric@brouhaha.com>
          copyright="Copyright 2007, 2008 Eric Smith &lt;eric@brouhaha.com&gt;"
          license="GPL-3.0">
 
-  <!-- ACT -->
   <chip id="act" type="woodstock_act">
     <part_info>
       <vendor_name>HP</vendor_name>
@@ -26,16 +25,14 @@ Copyright 2007, 2008 Eric Smith <eric@brouhaha.com>
     <inst_clock osc_type="LC" freq="185000"/>
   </chip>
 
-  <!-- cathode driver, 12-digit -->
-  <chip id="cathode_driver" type="woodstock_cathode_driver_12">
+  <chip id="cathode_driver" type="woodstock_cathode_driver_14">
     <part_info>
       <vendor_name>HP</vendor_name>
-      <part_number>1820-1382</part_number>
+      <part_number>1820-1749</part_number>
     </part_info>
   </chip>
 
-  <!-- ROM/anode driver -->
-  <chip id="rom_anode_driver" type="woodstock_rom_anode_driver">
+  <chip id="rom_0_anode_driver" type="woodstock_rom_anode_driver">
     <part_info>
       <vendor_name>HP</vendor_name>
       <part_number>1818-0268</part_number>
@@ -46,30 +43,30 @@ Copyright 2007, 2008 Eric Smith <eric@brouhaha.com>
     </part_info>
     <memory addr_space="inst" banks="0" base_addr="00000" size="02000">
     </memory>
-    <chargen>
-      <char id="0x00" segments="abcdef  " />
-      <char id="0x01" segments=" bc     " />
-      <char id="0x02" segments="ab de g " />
-      <char id="0x03" segments="abcd  g " />
-      <char id="0x04" segments=" bc  fg " />
-      <char id="0x05" segments="a cd fg " />
-      <char id="0x06" segments="a cdefg " />
-      <char id="0x07" segments="abc     " />
-      <char id="0x08" segments="abcdefg " />
-      <char id="0x09" segments="abcd fg " />
-      <char id="0x0a" segments="    e g " />  <!-- r -->
-      <char id="0x0b" segments="a  def  " />  <!-- C -->
-      <char id="0x0c" segments="  cde g " />  <!-- o -->
-      <char id="0x0d" segments=" bcde g " />  <!-- d -->
-      <char id="0x0e" segments="a  defg " />  <!-- E -->
-      <char id="0x0f" segments="        " />  <!-- space -->
-      <char id="' '"    segments="        " />
-      <char id="'-'"    segments="      g " />
-      <char id="'.'"    segments="       h" />
+    <chargen type="segment" count="8">
+      <char id="0x00">abcdef..</char>
+      <char id="0x01">.bc.....</char>
+      <char id="0x02">ab.de.g.</char>
+      <char id="0x03">abcd..g.</char>
+      <char id="0x04">.bc..fg.</char>
+      <char id="0x05">a.cd.fg.</char>
+      <char id="0x06">a.cdefg.</char>
+      <char id="0x07">abc.....</char>
+      <char id="0x08">abcdefg.</char>
+      <char id="0x09">abcd.fg.</char>
+      <char id="0x0a">....e.g.</char>  <!-- r -->
+      <char id="0x0b">a..def..</char>  <!-- C -->
+      <char id="0x0c">..cde.g.</char>  <!-- o -->
+      <char id="0x0d">.bcde.g.</char>  <!-- d -->
+      <char id="0x0e">a..defg.</char>  <!-- E -->
+      <char id="0x0f">........</char>  <!-- space -->
+      <char id="' '" >........</char>
+      <char id="'-'" >......g.</char>
+      <char id="'.'" >.......h</char>
     </chargen>
   </chip>
 
-  <chip id="rom_ram_0" type="woodstock_rom_arm">
+  <chip id="rom_ram_1" type="woodstock_rom_ram">
     <part_info>
       <vendor_name>HP</vendor_name>
       <part_number>1818-0550</part_number>
@@ -80,7 +77,7 @@ Copyright 2007, 2008 Eric Smith <eric@brouhaha.com>
     </memory>
   </chip>
 
-  <chip id="rom_ram_1" type="woodstock_rom_ram">
+  <chip id="rom_ram_2" type="woodstock_rom_ram">
     <part_info>
       <vendor_name>HP</vendor_name>
       <part_number>1818-0551</part_number>
@@ -91,7 +88,7 @@ Copyright 2007, 2008 Eric Smith <eric@brouhaha.com>
     </memory>
   </chip>
 
-  <chip id="rom_ram_2" type="woodstock_rom_ram">
+  <chip id="rom_ram_3" type="woodstock_rom_ram">
     <part_info>
       <vendor_name>HP</vendor_name>
       <part_number>1818-0232</part_number>
@@ -106,7 +103,7 @@ Copyright 2007, 2008 Eric Smith <eric@brouhaha.com>
     </memory>
   </chip>
 
-  <chip id="rom_ram_3" type="woodstock_rom_ram">
+  <chip id="rom_ram_5" type="woodstock_rom_ram">
     <part_info>
       <vendor_name>HP</vendor_name>
       <part_number>1818-0231</part_number>
@@ -143,13 +140,15 @@ Copyright 2007, 2008 Eric Smith <eric@brouhaha.com>
             license="GPL-3.0">67b1.obj</obj_file>
 
   <keyboard>
-
-    <switch number="0">  <!-- power switch -->
+    <!-- power switch -->
+    <!--
+    <switch number="0">
       <switch_pos position="0">
       </switch_pos>
       <switch_pos position="1">
       </switch_pos>
     </switch>
+    -->
 
     <switch number="1">
       <switch_pos position="0">  <!-- PRGM -->

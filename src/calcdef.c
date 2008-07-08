@@ -19,6 +19,7 @@ Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
 MA 02111, USA.
 */
 
+#include <ctype.h>
 #include <inttypes.h>
 #include <stdbool.h>
 #include <stdint.h>
@@ -37,6 +38,9 @@ MA 02111, USA.
 #include "proc_int.h"
 
 
+static xmlSAXHandler sax_handler;
+
+
 typedef struct calcdef_mem_t
 {
   struct calcdef_mem_t *next;
@@ -48,6 +52,15 @@ typedef struct calcdef_mem_t
 } calcdef_mem_t;
 
 
+typedef struct
+{
+  bool bitmap;  // false for segments, true for bitmap
+  int count;    // count of segments
+  int id;       // temp during parsing
+  segment_bitmap_t *char_gen;
+} calcdef_char_gen_t;
+
+
 typedef struct calcdef_chip_t
 {
   struct calcdef_chip_t *next;
@@ -57,6 +70,7 @@ typedef struct calcdef_chip_t
   int32_t flags;
   calcdef_mem_t *mem;
   struct chip_t *chip;
+  calcdef_char_gen_t *char_gen;
 } calcdef_chip_t;
 
 
@@ -105,7 +119,6 @@ struct calcdef_t
   int ram_size;
   double clock_frequency;  // in Hz
   calcdef_chip_t *chip;
-  segment_bitmap_t *char_gen;
   calcdef_key_t **keyboard_map;
   calcdef_switch_t *sw;
 };
@@ -154,18 +167,66 @@ static uint8_t parse_id (const char *s)
   return (uint8_t) id;
 }
 
-static uint32_t parse_segments (const char *s)
+static void parse_segments (void *ref,
+			    const xmlChar *ch,
+			    int len)
 {
-  uint32_t segments = 0;
-  while (*s)
+  calcdef_t *calcdef = ref;
+  uint32_t segment_bitmap = 0;
+  int count = 0;
+
+  while (len--)
     {
-      char c = *(s++);
+      char c = (char) *(ch++);
+      if (isspace (c))
+	continue;
       if ((c >= 'a') && (c <= 'z'))
-	segments |= (1 << (c - 'a'));
-      else if (c != ' ')
+	{
+	  segment_bitmap |= (1 << (c - 'a'));
+	  count++;
+	}
+      else if (c == '.')
+	{
+	  count++;
+	}
+      else
 	fatal (3, "invalid character '%c' in segments\n", c);
     }
-  return segments;
+  if (count != calcdef->chip->char_gen->count)
+    fatal (3, "incorrect segment count\n");
+  calcdef->chip->char_gen->char_gen [calcdef->chip->char_gen->id] = segment_bitmap;
+}
+
+
+static void parse_bitmap (void *ref,
+			  const xmlChar *ch,
+			  int len)
+{
+  calcdef_t *calcdef = ref;
+  uint32_t bitmap = 0;
+  int count = 0;
+
+  while (len--)
+    {
+      char c = (char) *(ch++);
+      if (isspace (c))
+	continue;
+      if (c == '.')
+	{
+	  bitmap <<= 1;
+	  count++;
+	}
+      else if (c == '*')
+	{
+	  bitmap = (bitmap << 1) | 1;
+	  count++;
+	}
+      else
+	fatal (3, "invalid character '%c' in bitmap\n", c);
+    }
+  if (count != calcdef->chip->char_gen->count)
+    fatal (3, "incorrect bitmap pixel count\n");
+  calcdef->chip->char_gen->char_gen [calcdef->chip->char_gen->id] = bitmap;
 }
 
 
@@ -590,26 +651,60 @@ static void parse_loc (calcdef_t *calcdef,
 }
 
 
-static void parse_chargen (calcdef_t *calcdef UNUSED,
-			   const xmlChar **attrs UNUSED)
+static void parse_chargen (calcdef_t *calcdef,
+			   const xmlChar **attrs)
 {
-  if (calcdef->char_gen)
+  int i;
+  bool got_type = false;
+  bool got_count = false;
+
+  if (! calcdef->chip)
+    fatal (3, "chargen element must be nested in chip element\n");
+  if (calcdef->chip->char_gen)
+    fatal (3, "only one chargen element allowed per chip\n");
+
+  calcdef->chip->char_gen = alloc (sizeof (calcdef_char_gen_t));
+  calcdef->chip->char_gen->char_gen = alloc (sizeof (segment_bitmap_t) * 256);
+
+  for (i = 0; attrs && attrs [i]; i += 2)
     {
-      fatal (3, "only one chargen element allowed per nui file\n");
+      if (strcmp ((char *) attrs [i], "type") == 0)
+	{
+	  if (strcmp ((char *) attrs [i + 1], "segment") == 0)
+	    {
+	      got_type = true;
+	      calcdef->chip->char_gen->bitmap = false;
+	    }
+	  else if (strcmp ((char *) attrs [i + 1], "bitmap") == 0)
+	    {
+	      got_type = true;
+	      calcdef->chip->char_gen->bitmap = true;
+	    }
+	  else
+	    fatal (3, "unrecognized chargen type\n");
+	}
+      else if (strcmp ((char *) attrs [i], "count") == 0)
+	{
+	  got_count = true;
+	  calcdef->chip->char_gen->count = atoi ((char *) attrs [i + 1]);
+	}
+      else
+	warning ("unknown attribute '%s' in 'chargen' element\n", attrs [i]);
     }
-  else
-    calcdef->char_gen = alloc (sizeof (segment_bitmap_t) * 256);
+  if (! got_type)
+    fatal (3, "chargen element doesn't have type attribute\n");
 }
 
 
-static void parse_char (calcdef_t *calcdef UNUSED,
-			const xmlChar **attrs UNUSED)
+static void parse_char (calcdef_t *calcdef,
+			const xmlChar **attrs)
 {
   int i;
   uint8_t id;
-  segment_bitmap_t segment_bitmap;
   bool got_id = false;
-  bool got_segments = false;
+
+  if ((! calcdef->chip) || (! calcdef->chip->char_gen))
+    fatal (3, "char element must be nested in chargen element\n");
 
   for (i = 0; attrs && attrs [i]; i += 2)
     {
@@ -617,11 +712,6 @@ static void parse_char (calcdef_t *calcdef UNUSED,
 	{
 	  id = parse_id ((char *) attrs [i + 1]);
 	  got_id = true;
-	}
-      else if (strcmp ((char *) attrs [i], "segments") == 0)
-	{
-	  segment_bitmap = parse_segments ((char *) attrs [i + 1]);
-	  got_segments = true;
 	}
       else if (strcmp ((char *) attrs [i], "print") == 0)
 	{
@@ -631,10 +721,12 @@ static void parse_char (calcdef_t *calcdef UNUSED,
 	warning ("unknown attribute '%s' in 'char' element\n", attrs [i]);
     }
   if (! got_id)
-    warning ("char element doesn't have id attribute\n");
-  if (! got_segments)
-    warning ("char element doesn't have segments attribute\n");
-  calcdef->char_gen [id] = segment_bitmap;
+    fatal (3, "char element doesn't have id attribute\n");
+  calcdef->chip->char_gen->id = id;
+  if (calcdef->chip->char_gen->bitmap)
+    sax_handler.characters = parse_bitmap;
+  else
+    sax_handler.characters = parse_segments;
 }
 
 
@@ -699,6 +791,13 @@ static void sax_start_element (void *ref,
 }
 
 
+static void sax_end_element (void *ref UNUSED,
+			     const xmlChar *name UNUSED)
+{
+  sax_handler.characters = NULL;
+}
+
+
 static void sax_warning (void *ref,
 			 const char *msg,
 			 ...)
@@ -745,6 +844,8 @@ static xmlSAXHandler sax_handler =
 {
   .getEntity     = sax_get_entity,
   .startElement  = sax_start_element,
+  .characters    = NULL,               // will change dynamically
+  .endElement    = sax_end_element,
   .warning       = sax_warning,
   .error         = sax_error,
   .fatalError    = sax_fatal_error,
@@ -807,9 +908,30 @@ double calcdef_get_clock_frequency (calcdef_t *calcdef)  // in Hz
   return calcdef->clock_frequency;
 }
 
-const segment_bitmap_t *calcdef_get_char_gen (calcdef_t *calcdef)
+
+static struct calcdef_chip_t *find_chip_by_id (calcdef_t *calcdef,
+					       char *chip_id)
 {
-  return calcdef->char_gen;
+  calcdef_chip_t *chip;
+
+  for (chip = calcdef->chip; chip; chip = chip->next)
+    {
+      if (strcmp (chip->id, chip_id) == 0)
+	return chip;
+    }
+  return NULL;
+}
+
+
+const segment_bitmap_t *calcdef_get_char_gen (calcdef_t *calcdef,
+					      char *chip_id)
+{
+  calcdef_chip_t *chip;
+
+  chip = find_chip_by_id (calcdef, chip_id);
+  if ((! chip) || (! chip->char_gen))
+    return NULL;
+  return chip->char_gen->char_gen;
 }
 
 static void calcdef_init_rom (calcdef_t *calcdef, calcdef_mem_t *mem)
@@ -897,26 +1019,13 @@ static calcdef_switch_position_t *calcdef_get_switch_position (calcdef_t *calcde
 }
 
 
-static struct chip_t *find_chip_by_id (calcdef_t *calcdef,
-				       char *chip_id)
-{
-  calcdef_chip_t *chip;
-
-  for (chip = calcdef->chip; chip; chip = chip->next)
-    {
-      if (strcmp (chip->id, chip_id) == 0)
-	return chip->chip;
-    }
-  return NULL;
-}
-
-
 bool calcdef_get_key (calcdef_t *calcdef,
 		      int user_keycode,
 		      struct chip_t **chip,
 		      hw_keycode_t *hw_keycode)
 {
   calcdef_key_t *key;
+  calcdef_chip_t *calcdef_chip;
 
   if ((user_keycode < -MAX_KEYCODE) || (user_keycode > MAX_KEYCODE))
     return false;
@@ -926,10 +1035,15 @@ bool calcdef_get_key (calcdef_t *calcdef,
     return false;
 
   if ((key->chip_id) && (! key->chip))
-    key->chip = find_chip_by_id (calcdef, key->chip_id);
+    {
+      calcdef_chip = find_chip_by_id (calcdef, key->chip_id);
+      if (calcdef_chip)
+	key->chip = calcdef_chip->chip;
+    }
 
   *chip = key->chip;
   *hw_keycode = key->hw_keycode;
+  return true;
 }
 
 
@@ -952,7 +1066,14 @@ bool calcdef_get_switch_position_flag  (calcdef_t *calcdef,
       if (index-- == 0)
 	{
 	  if (flag_p->chip_id)
-	    *chip = find_chip_by_id (calcdef, flag_p->chip_id);
+	    {
+	      calcdef_chip_t *calcdef_chip;
+	      calcdef_chip = find_chip_by_id (calcdef, flag_p->chip_id);
+	      if (calcdef_chip)
+		*chip = calcdef_chip->chip;
+	      else
+		*chip = NULL;
+	    }
 	  else
 	    *chip = NULL;
 	  *flag = flag_p->number;

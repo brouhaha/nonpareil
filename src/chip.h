@@ -44,14 +44,16 @@ typedef enum
   CHIP_UNKNOWN,
 
   // classic
-  CHIP_CLASSIC_CTC_ARC,             // two chip CPU, but we'll treat it as one
+  CHIP_CLASSIC_CTC,
+  CHIP_CLASSIC_ARC,
+  CHIP_CLASSIC_CLOCK_DRIVER,
   CHIP_CLASSIC_CATHODE_DRIVER,
   CHIP_CLASSIC_ANODE_DRIVER,
   CHIP_CLASSIC_ROM,
   CHIP_CLASSIC_RAM,
   CHIP_CLASSIC_PROGRAM_MEMORY,
 
-  // woodstock (and topcat, spice)
+  // woodstock (and topcat, sting)
   CHIP_WOODSTOCK_ACT,
   CHIP_WOODSTOCK_CATHODE_DRIVER_12,  // Woodstock
   CHIP_WOODSTOCK_CATHODE_DRIVER_14,  // 67, 19C, Topcat
@@ -60,6 +62,9 @@ typedef enum
   CHIP_WOODSTOCK_ROM_RAM,
   CHIP_WOODSTOCK_PICK,  // Printer Interface Control and Keyboard in Topcat
   CHIP_WOODSTOCK_CRC,   // Card Reader Controller in 67/97
+
+  // spice
+  CHIP_SPICE_ACT,
 
   // coconut & peripherals
   CHIP_NUT_CPU,
@@ -73,7 +78,7 @@ typedef enum
   CHIP_GRAPENUTS,       // 82160A HP-IL interface
   CHIP_BLINKY,          // 82442A infrared printer interface (for 82440A/B)
 
-  // voyager (uses NUT CPU)
+  // voyager (uses Nut CPU)
   CHIP_VOYAGER_R2D2,    // RAM/ROM/Display Driver
 
   MAX_CHIP_TYPE 	// must be last

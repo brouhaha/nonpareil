@@ -972,8 +972,6 @@ sim_t *sim_init  (char *ncd_fn,
 
   // $$$ sim->source = alloc (sim->proc->max_bank * sim->proc->max_rom * sizeof (char *));
 
-  sim->char_gen = calcdef_get_char_gen (sim->calcdef);
-
   sim->thread_vars->gthread = g_thread_create (sim_thread_func, sim, TRUE, NULL);
 
   calcdef_init_chips (sim->calcdef);

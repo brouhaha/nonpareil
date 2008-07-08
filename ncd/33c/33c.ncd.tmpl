@@ -23,21 +23,58 @@ To view the actual license, visit
          copyright="Copyright 2006, 2008 Eric Smith &lt;eric@brouhaha.com&gt;"
          license="CC-BY-SA-3.0">
 
+  <chip id="act" type="spice_act">
+    <inst_clock osc_type="LC" freq="140000"/>
+    <memory addr_space="inst" banks="0" base_addr="00000" size="02000">
+    </memory>
+    <chargen type="segment" count="8">
+      <char id="0x00">abcdef..</char>
+      <char id="0x01">.bc.....</char>
+      <char id="0x02">ab.de.g.</char>
+      <char id="0x03">abcd..g.</char>
+      <char id="0x04">.bc..fg.</char>
+      <char id="0x05">a.cd.fg.</char>
+      <char id="0x06">a.cdefg.</char>
+      <char id="0x07">abc.....</char>
+      <char id="0x08">abcdefg.</char>
+      <char id="0x09">abcd.fg.</char>
+      <char id="0x0a">....e.g.</char>  <!-- r -->
+      <char id="0x0b">.bc.efg.</char>  <!-- H -->
+      <char id="0x0c">..cde.g.</char>  <!-- o -->
+      <char id="0x0d">ab..efg.</char>  <!-- P -->
+      <char id="0x0e">a..defg.</char>  <!-- E -->
+      <char id="0x0f">........</char>  <!-- space -->
+      <char id="' '" >........</char>
+      <char id="'-'" >......g.</char>
+      <char id="'.'" >.......h</char>
+    </chargen>
+  </chip>
+
+  <chip id="rom_ram_1" type="woodstock_rom_ram">
+    <memory addr_space="inst" banks="0" base_addr="02000" size="06000">
+    </memory>
+    <memory addr_space="data" base_addr="000" size="040">
+    </memory>
+  </chip>
+
   <keyboard>
 
-    <switch number="0">  <!-- power switch -->
+    <!-- power switch -->
+    <!--
+    <switch number="0">
       <switch_pos position="0">
       </switch_pos>
       <switch_pos position="1">
       </switch_pos>
     </switch>
+    -->
 
     <switch number="1">
       <switch_pos position="0">  <!-- "PRGM" -->
-        <flag number="0" value="0"/>  <!-- EXT_FLAG_ACT_F1 -->
+        <flag chip_id="act" number="0" value="0"/>
       </switch_pos>
       <switch_pos position="1">  <!-- "RUN" -->
-        <flag number="0" value="1"/>  <!-- EXT_FLAG_ACT_F1 -->
+        <flag chip_id="act" number="0" value="1"/>
       </switch_pos>
     </switch>
 
@@ -78,40 +115,6 @@ To view the actual license, visit
     <key user_keycode="73" hw_keycode="0101"/>
     <key user_keycode="74" hw_keycode="0100"/>
   </keyboard>
-
-  <chip name="cpu">
-    <inst_clock osc_type="LC" freq="140000"/>
-    <memory addr_space="inst" banks="0" base_addr="00000" size="02000">
-    </memory>
-    <chargen>
-      <char id="0x00" segments="abcdef  " />
-      <char id="0x01" segments=" bc     " />
-      <char id="0x02" segments="ab de g " />
-      <char id="0x03" segments="abcd  g " />
-      <char id="0x04" segments=" bc  fg " />
-      <char id="0x05" segments="a cd fg " />
-      <char id="0x06" segments="a cdefg " />
-      <char id="0x07" segments="abc     " />
-      <char id="0x08" segments="abcdefg " />
-      <char id="0x09" segments="abcd fg " />
-      <char id="0x0a" segments="    e g " />  <!-- r -->
-      <char id="0x0b" segments=" bc efg " />  <!-- H -->
-      <char id="0x0c" segments="  cde g " />  <!-- o -->
-      <char id="0x0d" segments="ab  efg " />  <!-- P -->
-      <char id="0x0e" segments="a  defg " />  <!-- E -->
-      <char id="0x0f" segments="        " />  <!-- space -->
-      <char id="' '"    segments="        " />
-      <char id="'-'"    segments="      g " />
-      <char id="'.'"    segments="       h" />
-    </chargen>
-  </chip>
-
-  <chip name="ROM/RAM">
-    <memory addr_space="inst" banks="0" base_addr="02000" size="06000">
-    </memory>
-    <memory addr_space="data" base_addr="000" size="040">
-    </memory>
-  </chip>
 
   <obj_file addr_space="inst"
             copyright="Copyright 2004, 2008 Eric Smith &lt;eric@brouhaha.com&gt;"

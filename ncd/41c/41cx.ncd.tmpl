@@ -9,7 +9,7 @@ Copyright 2006, 2008 Eric Smith <eric@brouhaha.com>
 <calcdef version="1.0"
          arch="Nut"
          platform="Coconut"
-         model="41cv"
+         model="41cx"
          copyright="Copyright 2006, 2008 Eric Smith &lt;eric@brouhaha.com&gt;"
          license="CC-BY-SA-3.0">
 
@@ -74,27 +74,22 @@ Copyright 2006, 2008 Eric Smith <eric@brouhaha.com>
   <chip type="nut_rom">
     <part_info>
       <vendor_name>HP</vendor_name>
-      <part_number>1LA3</part_number>
+      <part_number>1LG9</part_number>
     </part_info>
-    <memory addr_space="inst" banks="0" base_addr="0x0000" size="0x1000">
+    <memory addr_space="inst" banks="0" base_addr="0x0000" size="0x3000">
     </memory>
   </chip>
 
   <chip type="nut_rom">
     <part_info>
       <vendor_name>HP</vendor_name>
-      <part_number>1LA3</part_number>
+      <part_number>1LG9</part_number>
     </part_info>
-    <memory addr_space="inst" banks="0" base_addr="0x1000" size="0x1000">
+    <memory addr_space="inst" banks="0" base_addr="0x3000" size="0x1000">
     </memory>
-  </chip>
-
-  <chip type="nut_rom">
-    <part_info>
-      <vendor_name>HP</vendor_name>
-      <part_number>1LA3</part_number>
-    </part_info>
-    <memory addr_space="inst" banks="0" base_addr="0x2000" size="0x1000">
+    <memory addr_space="inst" banks="1" base_addr="0x3000" size="0x1000">
+    </memory>
+    <memory addr_space="inst" banks="0" base_addr="0x5000" size="0x1000">
     </memory>
   </chip>
 
@@ -152,12 +147,30 @@ Copyright 2006, 2008 Eric Smith <eric@brouhaha.com>
     </memory>
   </chip>
 
+  <chip type="nut_ram">
+    <part_info>
+      <vendor_name>HP</vendor_name>
+      <part_number>1LE7-0006</part_number>
+    </part_info>
+    <memory addr_space="data" base_addr="0x040" size="0x40">
+    </memory>
+  </chip>
+
+  <chip type="nut_ram">
+    <part_info>
+      <vendor_name>HP</vendor_name>
+      <part_number>1LE7-0007</part_number>
+    </part_info>
+    <memory addr_space="data" base_addr="0x080" size="0x40">
+    </memory>
+  </chip>
+
   <chip id="coconut_lcd_0" type="coconut_lcd" index="0">
     <part_info>
       <vendor_name>HP</vendor_name>
       <part_number>1LA4</part_number>
     </part_info>
-    <chargen type="segment" count="14">  
+    <chargen type="segment" count="14">
       <char id="0x00" print="@"      >ab.def.hi.....</char>
       <char id="0x01" print="A"      >abc.efgh......</char>
       <char id="0x02" print="B"      >abcd...hij....</char>
@@ -305,7 +318,7 @@ Copyright 2006, 2008 Eric Smith <eric@brouhaha.com>
   <obj_file addr_space="inst"
             copyright="Copyright 2006, 2008 Eric Smith &lt;eric@brouhaha.com&gt;"
             license="CC-BY-SA-3.0">
-    41-gff.obj
+    41-nfl.obj
   </obj_file>
 </calcdef>
 

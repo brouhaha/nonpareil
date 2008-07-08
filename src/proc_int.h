@@ -184,7 +184,7 @@ struct sim_t
 
   uint64_t cycle_count;
 
-  const segment_bitmap_t *char_gen;
+  const segment_bitmap_t *display_char_gen;
 
   int display_digits;
   bool display_changed;

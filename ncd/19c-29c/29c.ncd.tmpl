@@ -13,21 +13,139 @@ Copyright 2007, 2008 Eric Smith <eric@brouhaha.com>
          copyright="Copyright 2007, 2008 Eric Smith &lt;eric@brouhaha.com&gt;"
          license="GPL-3.0">
 
+  <chip id="act" type="woodstock_act">
+    <part_info>
+      <vendor_name>HP</vendor_name>
+      <part_number>1820-1596</part_number>
+    </part_info>
+    <part_info>
+      <vendor_name>Mostek</vendor_name>
+      <part_number>MK6216N</part_number>
+    </part_info>
+    <inst_clock osc_type="LC" freq="185000"/>
+  </chip>
+
+  <chip id="cathode_driver" type="woodstock_cathode_driver_12">
+    <part_info>
+      <vendor_name>HP</vendor_name>
+      <part_number>1820-1382</part_number>
+    </part_info>
+  </chip>
+
+  <chip id="rom_0_anode_driver" type="woodstock_rom_anode_driver">
+    <part_info>
+      <vendor_name>HP</vendor_name>
+      <part_number>1818-0431</part_number>
+    </part_info>
+    <part_info>
+      <vendor_name>AMI</vendor_name>
+    </part_info>
+    <memory addr_space="inst" banks="0" base_addr="00000" size="02000">
+    </memory>
+    <chargen type="segment" count="8">
+      <char id="0x00">abcdef..</char>
+      <char id="0x01">.bc.....</char>
+      <char id="0x02">ab.de.g.</char>
+      <char id="0x03">abcd..g.</char>
+      <char id="0x04">.bc..fg.</char>
+      <char id="0x05">a.cd.fg.</char>
+      <char id="0x06">a.cdefg.</char>
+      <char id="0x07">abc.....</char>
+      <char id="0x08">abcdefg.</char>
+      <char id="0x09">abcd.fg.</char>
+      <char id="0x0a">....e.g.</char>  <!-- r -->
+      <char id="0x0b">a...efg.</char>  <!-- F -->
+      <char id="0x0c">..cde.g.</char>  <!-- o -->
+      <char id="0x0d">ab..efg.</char>  <!-- P -->
+      <char id="0x0e">a..defg.</char>  <!-- E -->
+      <char id="0x0f">........</char>  <!-- space -->
+      <char id="' '" >........</char>
+      <char id="'-'" >......g.</char>
+      <char id="'.'" >.......h</char>
+    </chargen>
+  </chip>
+
+  <chip id="rom_ram_1" type="woodstock_rom_ram">
+    <part_info>
+      <vendor_name>HP</vendor_name>
+      <part_number>1818-0379</part_number>
+    </part_info>
+    <part_info>
+      <vendor_name>AMI</vendor_name>
+    </part_info>
+    <part_info>
+      <vendor_name>Mostek</vendor_name>
+      <part_number>MK60142N</part_number>
+    </part_info>
+    <memory addr_space="inst" banks="0" base_addr="02000" size="02000">
+    </memory>
+    <memory addr_space="data" base_addr="0x00" size="0x10">
+    </memory>
+  </chip>
+
+  <chip id="rom_2" type="woodstock_rom">
+    <part_info>
+      <vendor_name>HP</vendor_name>
+      <part_number>1818-0377</part_number>
+    </part_info>
+    <part_info>
+      <vendor_name>AMI</vendor_name>
+    </part_info>
+    <part_info>
+      <vendor_name>Mostek</vendor_name>
+    </part_info>
+    <memory addr_space="inst" banks="0" base_addr="04000" size="02000">
+    </memory>
+  </chip>
+
+  <chip id="rom_3" type="woodstock_rom">
+    <part_info>
+      <vendor_name>HP</vendor_name>
+      <part_number>1818-0376</part_number>
+    </part_info>
+    <part_info>
+      <vendor_name>AMI</vendor_name>
+    </part_info>
+    <memory addr_space="inst" banks="0" base_addr="06000" size="02000">
+    </memory>
+  </chip>
+
+  <chip id="ram_0" type="woodstock_ram">
+    <part_info>
+      <vendor_name>HP</vendor_name>
+      <part_number>5061-0469</part_number>
+    </part_info>
+    <memory addr_space="data" base_addr="0x10" size="0x10">
+    </memory>
+  </chip>
+
+  <chip id="ram_0" type="woodstock_ram">
+    <part_info>
+      <vendor_name>HP</vendor_name>
+      <part_number>5061-0469</part_number>
+    </part_info>
+    <memory addr_space="data" base_addr="0x20" size="0x10">
+    </memory>
+  </chip>
+
   <keyboard>
 
-    <switch number="0">  <!-- power switch -->
+    <!-- power switch -->
+    <!--
+    <switch number="0">
       <switch_pos position="0">
       </switch_pos>
       <switch_pos position="1">
       </switch_pos>
     </switch>
+    -->
 
     <switch number="1">
       <switch_pos position="0">  <!-- "PRGM" -->
-        <flag number="0" value="0"/>  <!-- EXT_FLAG_ACT_F1 -->
+        <flag chip_id="act" number="0" value="0"/>
       </switch_pos>
       <switch_pos position="1">  <!-- "RUN" -->
-        <flag number="0" value="1"/>  <!-- EXT_FLAG_ACT_F1 -->
+        <flag chip_id="act" number="0" value="1"/>
       </switch_pos>
     </switch>
 
@@ -68,121 +186,6 @@ Copyright 2007, 2008 Eric Smith <eric@brouhaha.com>
     <key user_keycode="73" hw_keycode="0221"/>  <!-- decimal/LASTx/pi -->
     <key user_keycode="74" hw_keycode="0220"/>  <!-- R/S/PAUSE/1/x -->
   </keyboard>
-
-  <chip name="ACT">
-    <part_info>
-      <vendor_name>HP</vendor_name>
-      <part_number>1820-1596</part_number>
-    </part_info>
-    <part_info>
-      <vendor_name>Mostek</vendor_name>
-      <part_number>MK6216N</part_number>
-    </part_info>
-    <inst_clock osc_type="LC" freq="185000"/>
-  </chip>
-
-  <chip name="cathode driver 12">
-    <part_info>
-      <vendor_name>HP</vendor_name>
-      <part_number>1820-1382</part_number>
-    </part_info>
-  </chip>
-
-  <chip name="ROM/anode driver">
-    <part_info>
-      <vendor_name>HP</vendor_name>
-      <part_number>1818-0431</part_number>
-    </part_info>
-    <part_info>
-      <vendor_name>AMI</vendor_name>
-    </part_info>
-    <memory addr_space="inst" banks="0" base_addr="00000" size="02000">
-    </memory>
-    <chargen>
-      <char id="0x00" segments="abcdef  " />
-      <char id="0x01" segments=" bc     " />
-      <char id="0x02" segments="ab de g " />
-      <char id="0x03" segments="abcd  g " />
-      <char id="0x04" segments=" bc  fg " />
-      <char id="0x05" segments="a cd fg " />
-      <char id="0x06" segments="a cdefg " />
-      <char id="0x07" segments="abc     " />
-      <char id="0x08" segments="abcdefg " />
-      <char id="0x09" segments="abcd fg " />
-      <char id="0x0a" segments="    e g " />  <!-- r -->
-      <char id="0x0b" segments="a   efg " />  <!-- F -->
-      <char id="0x0c" segments="  cde g " />  <!-- o -->
-      <char id="0x0d" segments="ab  efg " />  <!-- P -->
-      <char id="0x0e" segments="a  defg " />  <!-- E -->
-      <char id="0x0f" segments="        " />  <!-- space -->
-      <char id="' '"    segments="        " />
-      <char id="'-'"    segments="      g " />
-      <char id="'.'"    segments="       h" />
-    </chargen>
-  </chip>
-
-  <chip name="ROM/RAM">
-    <part_info>
-      <vendor_name>HP</vendor_name>
-      <part_number>1818-0379</part_number>
-    </part_info>
-    <part_info>
-      <vendor_name>AMI</vendor_name>
-    </part_info>
-    <part_info>
-      <vendor_name>Mostek</vendor_name>
-      <part_number>MK60142N</part_number>
-    </part_info>
-    <memory addr_space="inst" banks="0" base_addr="02000" size="02000">
-    </memory>
-    <memory addr_space="data" base_addr="0x00" size="0x10">
-    </memory>
-  </chip>
-
-  <chip name="ROM">
-    <part_info>
-      <vendor_name>HP</vendor_name>
-      <part_number>1818-0377</part_number>
-    </part_info>
-    <part_info>
-      <vendor_name>AMI</vendor_name>
-    </part_info>
-    <part_info>
-      <vendor_name>Mostek</vendor_name>
-    </part_info>
-    <memory addr_space="inst" banks="0" base_addr="04000" size="02000">
-    </memory>
-  </chip>
-
-  <chip name="ROM">
-    <part_info>
-      <vendor_name>HP</vendor_name>
-      <part_number>1818-0376</part_number>
-    </part_info>
-    <part_info>
-      <vendor_name>AMI</vendor_name>
-    </part_info>
-    <memory addr_space="inst" banks="0" base_addr="06000" size="02000">
-    </memory>
-  </chip>
-
-  <chip name="RAM">
-    <part_info>
-      <vendor_name>HP</vendor_name>
-      <part_number>5061-0469</part_number>
-    </part_info>
-    <memory addr_space="data" base_addr="0x10" size="0x10">
-    </memory>
-  </chip>
-
-  <chip name="RAM">
-    <part_info>
-      <vendor_name>HP</vendor_name>
-      <part_number>5061-0469</part_number>
-    </part_info>
-    <memory addr_space="data" base_addr="0x20" size="0x10">
-    </memory>
-  </chip>
 
   <obj_file addr_space="inst"
             copyright="Copyright 2007, 2008 Eric Smith &lt;eric@brouhaha.com&gt;"

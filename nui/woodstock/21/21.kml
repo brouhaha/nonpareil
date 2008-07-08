@@ -54,7 +54,9 @@ display
 	end # segments
 end # display
 
-switch 0
+# switch 0 would be power switch
+
+switch 1
   offset  211  96
   default 1
   position 0  image "switch-off.png"  end  # deg

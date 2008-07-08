@@ -229,7 +229,7 @@ all_calcs = {'classic':    ['35'],
 #             'sting':      ['19c'],
 #             'topcat':     ['97'],
 	     'spice':      ['32e', '33c', '34c', '37e', '38c', '38e'],
-	     'nut':        ['41cv'],
+	     'nut':        ['41c', '41cv'],
 	     'voyager':    ['11c', '12c', '15c', '16c']
 	     }
 

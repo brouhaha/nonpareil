@@ -1,6 +1,6 @@
 /*
 $Id$
-Copyright 2004, 2005 Eric L. Smith <eric@brouhaha.com>
+Copyright 2004, 2005, 2008 Eric Smith <eric@brouhaha.com>
 
 Nonpareil is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License version 2 as
@@ -23,13 +23,15 @@ MA 02111, USA.
 #define MAX_DIGIT_POSITION 15    /* Classic, Topcat, 67, maybe 19C */
 /* Digit positions are numbered left to right, starting with 0. */
 
-#define MAX_SEGMENT 18           /* 41C: 14 segment char,
-                                          3 segments punctuation,
-			                  1 annunciator */
+#define MAX_SEGMENT 35
+// 41C: 18 (14 segment char, 3 segments punctuation, 1 annunciator
+// Dot-matrix printers: 35 (5 columns by 7 rows)
 
-/* Segments are stored as a bitmap, with the LSB being segment A.
-   See comments at the end of this header file. */
-typedef uint32_t segment_bitmap_t;
+// Segments are stored as a bitmap, with the LSB being segment A.
+// See comments at the end of this header file.
+// For dot-matrix characters, the pixel at (row, col) is stored in
+// bit (col * num_cols) + ((num_rows - 1) - row)
+typedef uint64_t segment_bitmap_t;
 
 
 /* 
