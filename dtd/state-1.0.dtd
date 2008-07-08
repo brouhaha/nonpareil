@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
 
+<!-- $Id$ -->
+<!-- Copyright 2005, 2006, 2008 Eric Smith <eric@brouhaha.com> -->
+
 <!ELEMENT state (kmlpath*, modulepath*, ui*, chip*, memory*)>
 <!ATTLIST state 
           version  CDATA #REQUIRED
-          arch     CDATA #REQUIRED
-          platform CDATA #REQUIRED
-          model    CDATA #REQUIRED>
+          ncd      CDATA #REQUIRED>
 
 <!ELEMENT kmlpath EMPTY>
 <!ATTLIST kmlpath
@@ -19,13 +20,15 @@
 <!ELEMENT ui (switch*)>
 
 <!ELEMENT switch EMPTY>
+<!ATTLIST switch
           number CDATA #REQUIRED
           position CDATA #REQUIRED>
 
-<!ELEMENT chip (reg*)>
+<!ELEMENT chip (registers)>
 <!ATTLIST chip
-          name CDATA #REQUIRED
-          addr CDATA #REQUIRED>
+          name CDATA #REQUIRED>
+
+<!ELEMENT registers (reg*)>
 
 <!ELEMENT reg EMPTY>
 <!ATTLIST reg
