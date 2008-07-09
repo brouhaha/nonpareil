@@ -224,7 +224,7 @@ SConscript ('scons/ncd.py')
 # the calculators
 #-----------------------------------------------------------------------------
 
-all_calcs = {'classic':    ['35'],
+all_calcs = {'classic':    ['35', '45'],
              'woodstock':  ['21', '22', '25', '27', '29c', '67'],
 #             'sting':      ['19c'],
 #             'topcat':     ['97'],

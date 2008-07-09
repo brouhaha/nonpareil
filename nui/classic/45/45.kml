@@ -22,6 +22,7 @@ global
 	author "Eric Smith <eric@brouhaha.com>"
 	model "45"
 	image "classic-background.png"
+	overlay default image "45-overlay.png"
 	color 0 137 0 6	  # background color, used when transparency is off
 	transparency 128
 end
