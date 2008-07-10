@@ -46,7 +46,7 @@ int arch;
 char *obj_path = NULL;
 
 #define MAX_BANK 2
-#define MAX_ADDR 16384
+#define MAX_ADDR 65536
 
 typedef uint8_t bank_t;
 typedef uint32_t bank_mask_t;
@@ -446,8 +446,16 @@ void handle_memory_element (xmlNode *element)
 
       // $$$ check that values for all banks we care about match
 
-      sprintf (addr_str, "0%04o", addr);
-      sprintf (data_str, "0%04o", rom [bank] [addr]);
+      if (arch == ARCH_NUT)
+	{
+	  sprintf (addr_str, "0x%04x", addr);
+	  sprintf (data_str, "0x%03x", rom [bank] [addr]);
+	}
+      else
+	{
+	  sprintf (addr_str, "0%04o", addr);
+	  sprintf (data_str, "0%04o", rom [bank] [addr]);
+	}
       
       loc_node = xmlNewChild (element, NULL, (xmlChar *) "loc", NULL);
       addr_attr = xmlNewProp (loc_node, (xmlChar *) "addr", (xmlChar *) addr_str);
