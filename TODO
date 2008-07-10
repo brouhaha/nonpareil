@@ -25,6 +25,9 @@ Needed for next release:
 
 Build process:
 
+  build_ncd needs to preserve the copyright information supplied in
+  the obj_file elements of the ncd.tmpl.
+
   As assembly object is dependent on assembler, .ncd should be dependent
   on build-ncd.
 
