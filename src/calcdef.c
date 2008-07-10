@@ -141,6 +141,8 @@ static bank_mask_t parse_bank_mask (const char *s)
 	fatal (3, "invalid bank\n");
       bank_mask |= (1 << bank);
     }
+  if (! bank_mask)
+    fatal (3, "memory must be in at least one bank\n");
   return bank_mask;
 }
 
@@ -934,7 +936,9 @@ const segment_bitmap_t *calcdef_get_char_gen (calcdef_t *calcdef,
   return chip->char_gen->char_gen;
 }
 
-static void calcdef_init_rom (calcdef_t *calcdef, calcdef_mem_t *mem)
+static void calcdef_init_rom (calcdef_t *calcdef,
+			      calcdef_mem_t *mem,
+			      int bank_group)
 {
   bank_t bank;
   addr_t offset;
@@ -953,6 +957,15 @@ static void calcdef_init_rom (calcdef_t *calcdef, calcdef_mem_t *mem)
 	    {
 	      fatal (4, "can't init ROM bank %d addr %05o\n", bank, addr);
 	    }
+	  if (bank_group && (addr & 0xfff) == 0)  // $$$ ugly, should get page size form proc
+	    {
+	      if (! sim_set_bank_group (calcdef->sim,
+					bank_group,
+					addr))
+		{
+		  fatal (4, "can't set bank group at addr 0x%04x\n", addr);
+		}
+	    }
 	}
     }
 }
@@ -964,6 +977,25 @@ static void calcdef_init_ram (calcdef_t *calcdef, calcdef_mem_t *mem)
 }
 
 
+static bool is_banked_rom_chip (calcdef_chip_t *chip)
+{
+  calcdef_mem_t *mem;
+  bank_mask_t bank_mask = 0;
+
+  for (mem = chip->mem; mem; mem = mem->next)
+    {
+      if (strcmp (mem->addr_space, "inst") != 0)
+	continue;  // not ROM
+      if (! bank_mask)
+	bank_mask = mem->bank_mask;  // first ROM we've seen
+      else if (bank_mask != mem->bank_mask)
+	return true;  // ROM memory regions in the same ROM have different
+                      // bank masks
+    }
+  return false;
+}
+
+
 void calcdef_init_chips (calcdef_t *calcdef)
 {
   calcdef_chip_t *chip;
@@ -972,10 +1004,16 @@ void calcdef_init_chips (calcdef_t *calcdef)
 
   for (chip = calcdef->chip; chip; chip = chip->next)
     {
+      int bank_group = 0;
+      if (is_banked_rom_chip (chip))
+	{
+	  bank_group = sim_create_bank_group (calcdef->sim);
+	  printf ("created bank group %d\n", bank_group);
+	}
       for (mem = chip->mem; mem; mem = mem->next)
 	{
 	  if (strcmp (mem->addr_space, "inst") == 0)
-	    calcdef_init_rom (calcdef, mem);
+	    calcdef_init_rom (calcdef, mem, bank_group);
 	  else if (strcmp (mem->addr_space, "data") == 0)
 	    calcdef_init_ram (calcdef, mem);
 	  else

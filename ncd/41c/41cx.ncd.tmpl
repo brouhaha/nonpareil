@@ -37,9 +37,9 @@ Copyright 2006, 2008 Eric Smith <eric@brouhaha.com>
     </part_info>
     <memory addr_space="inst" banks="0" base_addr="0x3000" size="0x1000">
     </memory>
-    <memory addr_space="inst" banks="1" base_addr="0x3000" size="0x1000">
-    </memory>
     <memory addr_space="inst" banks="0" base_addr="0x5000" size="0x1000">
+    </memory>
+    <memory addr_space="inst" banks="1" base_addr="0x5000" size="0x1000">
     </memory>
   </chip>
 
@@ -265,6 +265,13 @@ Copyright 2006, 2008 Eric Smith <eric@brouhaha.com>
          chargen element is needed here -->
   </chip>
 
+  <chip type="nut_phineas">
+    <part_info>
+      <vendor_name>HP</vendor_name>
+      <part_number>1LF6-0001</part_number>  <!-- 20-pin plastic DIP -->
+    </part_info>
+  </chip>
+
   <keyboard>
     <key user_keycode="01" hw_keycode="0x18"/>
     <key user_keycode="02" hw_keycode="0xc6"/>
@@ -318,7 +325,7 @@ Copyright 2006, 2008 Eric Smith <eric@brouhaha.com>
   <obj_file addr_space="inst"
             copyright="Copyright 2006, 2008 Eric Smith &lt;eric@brouhaha.com&gt;"
             license="CC-BY-SA-3.0">
-    41-nfl.obj
+    41-nfldcc.obj
   </obj_file>
 </calcdef>
 
