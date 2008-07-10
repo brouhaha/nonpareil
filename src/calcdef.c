@@ -984,9 +984,12 @@ void calcdef_init_chips (calcdef_t *calcdef)
       chip_type_info = get_chip_type_info (chip->type);
       if (chip_type_info->chip_install_fn)
 	{
-	  chip->chip = chip_type_info->chip_install_fn (calcdef->sim,
-							chip->index,
-							chip->flags);
+	  chip->chip = sim_add_chip (calcdef->sim,
+				     chip->type,
+				     chip->index,
+				     chip->flags,
+				     NULL, // callback_fn
+				     NULL); // ref
 	}
     }
 }
