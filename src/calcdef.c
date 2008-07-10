@@ -916,7 +916,7 @@ static struct calcdef_chip_t *find_chip_by_id (calcdef_t *calcdef,
 
   for (chip = calcdef->chip; chip; chip = chip->next)
     {
-      if (strcmp (chip->id, chip_id) == 0)
+      if (chip->id && strcmp (chip->id, chip_id) == 0)
 	return chip;
     }
   return NULL;
