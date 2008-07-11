@@ -21,6 +21,7 @@
 <!ELEMENT key EMPTY>
 <!ATTLIST key
           user_keycode CDATA #REQUIRED
+          chip_id      CDATA #IMPLIED
           hw_keycode   CDATA #REQUIRED>
 
 <!ELEMENT switch (switch_pos*)>
