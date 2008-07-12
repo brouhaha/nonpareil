@@ -6,8 +6,7 @@
 	.arch woodstock
 
 ; External references
-incpc9	.equ	@0019
-L0021	.equ	@0021
+incpc9	.equ	@0021
 L0061	.equ	@0061
 L0062	.equ	@0062
 L0065	.equ	@0065
@@ -691,7 +690,7 @@ L3006:  m2 -> c
 incpc7: load constant 2
         load constant 13
 incpc8: delayed rom @00
-        go to L0021
+        go to incpc9
 
 ; Entry point: percent
 

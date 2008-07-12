@@ -1816,8 +1816,8 @@ L15772: go to L15776		; from L3770
 L15773: go to L15736		; from L3771
 
 L15774: delayed rom @12		; from L3772 - WDATA
-L15775: go to L15061
+L15775: go to wdata
 
-L15776: delayed rom @12		; from L3774
-        go to L15214
+L15776: delayed rom @12		; from L3774 - card inserted
+        go to card_inserted
 
