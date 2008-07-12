@@ -51,10 +51,11 @@ L6303	.equ	@6303
 ;	L1401
 ;	L1402
 
+	.bank 0
 	.org @0000
 
-        nop
-        nop
+        nop			; 19C: reset twf
+        nop			; 19C: 0 -> s 0
         delayed rom @14
         go to L6303
 

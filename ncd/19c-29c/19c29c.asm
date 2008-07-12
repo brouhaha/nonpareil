@@ -28,7 +28,7 @@ L6546	.equ	@6546
 ;	L2260	; x 	L2313
 ;	L2326
 ;	S2363
-;	S2415
+;	divax0
 ;	S2436
 ;	L2471	; Sigma-
 ;	L2472	; Sigma+
@@ -43,7 +43,7 @@ L6546	.equ	@6546
 ;	mulax	; multiply by A
 ;	S3115	; square
 ;	S3117	; divide
-;	S3172	; add Y (not used)
+;	addyx	; add Y (not used)
 ;	addax	; add A
 ;	S3237
 ;	sqrt	; square root
@@ -62,6 +62,7 @@ L6546	.equ	@6546
 ;	L5736	; set trig angle mode
 ;	L5750
 
+	.bank 0
 	.org @2000
 
 ; Entry point
@@ -275,7 +276,7 @@ L2260:  b exchange c[w]		; x bar
 L2270:  a exchange c[w]
         register -> c 10
         delayed rom @05
-        jsb S2415
+        jsb divax0
         if 1 = s 13
           then go to L3032
         1 -> s 13
@@ -370,8 +371,7 @@ L2411:  p <- 11
         return
 
 ; Entry point
-
-S2415:  if c[m] = 0
+divax0: if c[m] = 0
           then go to L3034
         delayed rom @06
         go to L3122
@@ -494,14 +494,14 @@ L2545:  m1 exchange c		; s
 L2565:  c -> a[w]
         jsb S2434
         register -> c 10
-        jsb S2415
+        jsb divax0
         register -> c 12
         if 1 = s 13
           then go to L2575
         register -> c 14
 L2575:  jsb S2426
         m1 -> c
-        jsb S2415
+        jsb divax0
         0 -> c[s]
         jsb S2421
         if 1 = s 13
@@ -628,9 +628,9 @@ S2734:  0 -> c[w]		; get keycode from PIK
 	
 S2741:  delayed rom @04		; get status register
         jsb S2235
-        0 -> s 0
+        0 -> s 0		; disable printer mode switch
         0 -> a[w]
-L2745:  0 -> s 15		; disable printer mode switch
+L2745:  0 -> s 15
         if 1 = s 15		; wait for keycode register to be empty
           then go to L2745	;   (not column 2 time)
         1 -> s 0		; enable printer mode switch

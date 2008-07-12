@@ -30,7 +30,7 @@ S2235	.equ	@2235
 L2260	.equ	@2260
 L2313	.equ	@2313
 S2363	.equ	@2363
-S2415	.equ	@2415
+divax0	.equ	@2415
 S2436	.equ	@2436
 L2471	.equ	@2471
 L2472	.equ	@2472
@@ -38,12 +38,12 @@ L2545	.equ	@2545
 L2612	.equ	@2612
 L2632	.equ	@2632
 S3000	.equ	@3000	; reciprocal
-L3026	.equ	@3026	; percent
+percent	.equ	@3026	; percent
 S3036	.equ	@3036	; multiply
-S3037	.equ	@3037
+mulax	.equ	@3037
 S3115	.equ	@3115
 S3117	.equ	@3117	; divide
-S3173	.equ	@3173	; add
+addax	.equ	@3173	; add
 S3237	.equ	@3237
 S3261	.equ	@3261
 L3335	.equ	@3335
@@ -74,25 +74,25 @@ L5750	.equ	@5750	; pause
 
 	.org @6000	; bank 0
 
-        go to L6034
-        go to L6030
-        go to L6034
-        go to L6034
+; addr 6000: dispatch table for 0x0x..0xfx
+        go to L6034	; 0x00..0x0f
+        go to L6030	; 0x10..0x1f
+        go to L6034	; 0x20..0x2f
+        go to L6034	; 0x30..0x3f
 
-        a + 1 -> a[xs]
-        a + 1 -> a[xs]
-        if n/c go to L6032
-        go to L6040
+        a + 1 -> a[xs]	; 0x40..0x4f
+        a + 1 -> a[xs]	; 0x50..0x5f
+        legal go to L6032	; 0x60..0x6f
+        go to op_gsb	; 0x70..0x7f GSB
+        go to op_gto	; 0x80..0x8f GTO
+        go to op_rcl	; 0x90..0x9f RCL
+        go to op_sto	; 0xa0..0axf STO
+        go to op_sto_minus	; 0xb0..0xbf STO minus
+        go to op_sto_plus	; 0xc0..0xcf STO plus
+        go to op_sto_times	; 0xd0..0xdf STO times
+        go to op_sto_divide	; 0xe0..0xef STO divide
 
-        go to L6041
-        go to L6247
-        go to L6243
-        go to L6224
-        go to L6235
-        go to L6237
-        go to L6220
-
-L6017:  delayed rom @00
+L6017:  delayed rom @00	; 0xf0..0xff LBL
         go to L0061
 
 L6021:  m1 -> c
@@ -114,8 +114,8 @@ L6034:  decimal
         delayed rom @15
         a -> rom address
 
-L6040:  1 -> s 8
-L6041:  p <- 1
+op_gsb: 1 -> s 8
+op_gto: p <- 1
         a exchange c[w]
         load constant 15
 L6044:  p <- 1
@@ -236,35 +236,39 @@ L6214:  a exchange c[x]		; GTO
         delayed rom @00
         go to L0055
 
-L6220:  jsb S6264
+op_sto_divide:
+        jsb S6264
         delayed rom @05
-        jsb S2415
+        jsb divax0
         go to L6230
 
-L6224:  jsb S6264
+op_sto_minus:
+        jsb S6264
         0 - c - 1 -> c[s]
 L6226:  delayed rom @06
-        jsb S3173
+        jsb addax
 L6230:  delayed rom @05
         jsb S2436
         if 1 = s 11
           then go to $error
         go to L6244
 
-L6235:  jsb S6264
+op_sto_plus:
+        jsb S6264
         go to L6226
 
-L6237:  jsb S6264
+op_sto_times:
+        jsb S6264
         delayed rom @06
-        jsb S3037
+        jsb mulax
         go to L6230
 
-L6243:  jsb S6264
+op_sto: jsb S6264
 L6244:  c -> data
         delayed rom @00
         go to L0061
 
-L6247:  jsb S6264
+op_rcl: jsb S6264
         if 0 = s 9
           then go to L6253
         c -> stack
@@ -501,7 +505,7 @@ L6560:  y -> a
         a exchange c[w]
 L6562:  0 - c - 1 -> c[s]
         delayed rom @06
-        jsb S3173
+        jsb addax
         go to L6567
 
 L6566:  0 - c - 1 -> c[s]
@@ -763,8 +767,9 @@ mult:   delayed rom @06
         jsb S3036
         go to don70b
 
-percnt: delayed rom @06
-        go to L3026
+percent_x:
+        delayed rom @06
+        go to percent
 
 divide: decimal
         b -> c[w]
@@ -788,11 +793,11 @@ L7142:  delayed rom @02
 sub:    0 - c - 1 -> c[s]
 add:    stack -> a
         delayed rom @06
-        jsb S3173
+        jsb addax
 don70b: delayed rom @00
         go to L0070
 
-        go to percnt		; 0x6a = percent
+        go to percent_x		; 0x6a = percent
         go to recip		; 0x6b = 1/x
         1 -> s 13		; 0x6c = DSZ
         go to isz		; 0x6d = ISZ

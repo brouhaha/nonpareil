@@ -226,8 +226,8 @@ SConscript ('scons/ncd.py')
 
 all_calcs = {'classic':    ['35', '45'],
              'woodstock':  ['21', '22', '25', '27', '29c', '67'],
-#             'sting':      ['19c'],
-#             'topcat':     ['97'],
+             'sting':      ['19c'],
+             'topcat':     ['97'],
 	     'spice':      ['32e', '33c', '34c', '37e', '38c', '38e'],
 	     'nut':        ['41c', '41cv', '41cx'],
 	     'voyager':    ['11c', '12c', '15c', '16c']
@@ -242,8 +242,10 @@ ncd_dir_sub = {'19c':  '19c-29c',
 	       '67':   '67-97',
 	       '97':   '67-97'}
 
-nui_dir_sub = {'41cv': '41c',
-               '41cx': '41c'}
+nui_dir_sub = {'19c':  None,
+               '41cv': '41c',
+               '41cx': '41c',
+	       '97':   None}
 
 nui_files = []
 ncd_files = []
@@ -256,9 +258,11 @@ for family in all_calcs:
             ncd_dir = model
         ncd_files += env.NCD (target = 'build/calc/' + model + '.ncd',
                               source = 'ncd/' + ncd_dir + '/' + model + '.ncd.tmpl')
-#        nui_dir = Dir ('nui/' + family + '/')
+
         nui_dir = 'nui/' + family + '/'
         if model in nui_dir_sub:
+	    if nui_dir_sub [model] == None:
+	        continue
             nui_dir += nui_dir_sub [model]
         else:
             nui_dir += model;

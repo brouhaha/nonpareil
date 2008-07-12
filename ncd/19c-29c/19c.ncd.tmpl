@@ -9,7 +9,7 @@ Copyright 2007, 2008 Eric Smith <eric@brouhaha.com>
 <calcdef version="1.0"
          arch="Woodstock"
          platform="Topcat"
-         model="97"
+         model="19C"
          copyright="Copyright 2007, 2008 Eric Smith &lt;eric@brouhaha.com&gt;"
          license="GPL-3.0">
 
@@ -35,7 +35,10 @@ Copyright 2007, 2008 Eric Smith <eric@brouhaha.com>
   <chip id="rom_0_anode_driver" type="woodstock_rom_anode_driver">
     <part_info>
       <vendor_name>HP</vendor_name>
-      <part_number>1818-0267</part_number>
+      <part_number>1818-0432</part_number>
+    </part_info>
+    <part_info>
+      <vendor_name>AMI</vendor_name>
     </part_info>
     <memory addr_space="inst" banks="0" base_addr="00000" size="02000">
     </memory>
@@ -65,7 +68,14 @@ Copyright 2007, 2008 Eric Smith <eric@brouhaha.com>
   <chip id="rom_ram_1" type="woodstock_rom_ram">
     <part_info>
       <vendor_name>HP</vendor_name>
-      <part_number>1818-0550</part_number>
+      <part_number>1818-0379</part_number>
+    </part_info>
+    <part_info>
+      <vendor_name>AMI</vendor_name>
+    </part_info>
+    <part_info>
+      <vendor_name>Mostek</vendor_name>
+      <part_number>MK60142N</part_number>
     </part_info>
     <memory addr_space="inst" banks="0" base_addr="02000" size="02000">
     </memory>
@@ -73,57 +83,71 @@ Copyright 2007, 2008 Eric Smith <eric@brouhaha.com>
     </memory>
   </chip>
 
-  <chip id="rom_ram_2" type="woodstock_rom_ram">
+  <chip id="rom_2" type="woodstock_rom">
     <part_info>
       <vendor_name>HP</vendor_name>
-      <part_number>1818-0551</part_number>
+      <part_number>1818-0377</part_number>
+    </part_info>
+    <part_info>
+      <vendor_name>AMI</vendor_name>
+    </part_info>
+    <part_info>
+      <vendor_name>Mostek</vendor_name>
     </part_info>
     <memory addr_space="inst" banks="0" base_addr="04000" size="02000">
-    </memory>
-    <memory addr_space="data" base_addr="0x10" size="0x10">
     </memory>
   </chip>
 
   <chip id="rom_3" type="woodstock_rom">
     <part_info>
       <vendor_name>HP</vendor_name>
-      <part_number>1818-0233</part_number>
+      <part_number>1818-0376</part_number>
+    </part_info>
+    <part_info>
+      <vendor_name>AMI</vendor_name>
     </part_info>
     <memory addr_space="inst" banks="0" base_addr="06000" size="02000">
     </memory>
   </chip>
 
-  <chip id="rom_ram_5" type="woodstock_rom_ram">
+  <chip id="rom_7" type="woodstock_rom">
     <part_info>
       <vendor_name>HP</vendor_name>
-      <part_number>1818-0229</part_number>
+      <part_number>1818-0387</part_number>
     </part_info>
-    <memory addr_space="inst" banks="1" base_addr="02000" size="02000">
+    <part_info>
+      <vendor_name>AMI</vendor_name>
+    </part_info>
+    <memory addr_space="inst" banks="1" base_addr="06000" size="02000">
     </memory>
+  </chip>
+
+  <chip type="woodstock_ram">
+    <part_info>
+      <vendor_name>HP</vendor_name>
+      <part_number>5061-0469</part_number>
+    </part_info>
+    <memory addr_space="data" base_addr="0x10" size="0x10">
+    </memory>
+  </chip>
+
+  <chip type="woodstock_ram">
+    <part_info>
+      <vendor_name>HP</vendor_name>
+      <part_number>5061-0469</part_number>
+    </part_info>
     <memory addr_space="data" base_addr="0x20" size="0x10">
     </memory>
   </chip>
 
-  <chip id="rom_ram_6" type="woodstock_rom_ram">
+  <!-- does the 19C really have RAM from 0x30 to 0x3c? -->
+  <chip type="woodstock_ram">
     <part_info>
       <vendor_name>HP</vendor_name>
-      <part_number>1818-0230</part_number>
+      <part_number>5061-0469</part_number>
     </part_info>
-    <memory addr_space="inst" banks="1" base_addr="04000" size="02000">
-    </memory>
     <memory addr_space="data" base_addr="0x30" size="0x10">
     </memory>
-  </chip>
-
-  <chip id="crc" type="woodstock_crc">
-    <part_info>
-      <vendor_name>HP</vendor_name>
-      <part_number>1820-1751</part_number>
-    </part_info>
-    <part_info>
-      <vendor_name>Mostek</vendor_name>
-      <part_number>MK6250N</part_number>
-    </part_info>
   </chip>
 
   <chip id="pick" type="woodstock_pick">
@@ -648,20 +672,16 @@ Copyright 2007, 2008 Eric Smith <eric@brouhaha.com>
 
   <keyboard>
 
-    <!-- power switch -->
-    <!--
     <switch number="0">
-      <switch_pos position="0" flag="power" value="0"/>
-      <switch_pos position="1" flag="power" value="1"/>
-    </switch>
-    -->
-
-    <switch number="1">
-      <switch_pos position="0">  <!-- PRGM -->
-        <flag chip_id="crc" number="1" value="1"/>
+      <!--
+      <switch_pos position="0">  - OFF -
       </switch_pos>
-      <switch_pos position="1">  <!-- RUN -->
-        <flag chip_id="crc" number="1" value="0"/>
+      -->
+      <switch_pos position="1">  <!-- PRGM -->
+        <flag chip_id="act" number="0" value="0"/>
+      </switch_pos>
+      <switch_pos position="2">  <!-- RUN -->
+        <flag chip_id="act" number="0" value="1"/>
       </switch_pos>
     </switch>
 
@@ -680,85 +700,66 @@ Copyright 2007, 2008 Eric Smith <eric@brouhaha.com>
       </switch_pos>
     </switch>
 
-    <key user_keycode="11"  chip_id="pick" hw_keycode="0xe4"/> <!-- A -->
-    <key user_keycode="12"  chip_id="pick" hw_keycode="0xd4"/> <!-- B -->
-    <key user_keycode="13"  chip_id="pick" hw_keycode="0xc4"/> <!-- C -->
-    <key user_keycode="14"  chip_id="pick" hw_keycode="0xb4"/> <!-- D -->
-    <key user_keycode="15"  chip_id="pick" hw_keycode="0xa4"/> <!-- E -->
-    <key user_keycode="16"  chip_id="pick" hw_keycode="0x94"/> <!-- f -->
-						           
-    <key user_keycode="21"  chip_id="pick" hw_keycode="0xb8"/> <!-- LBL -->
-    <key user_keycode="22"  chip_id="pick" hw_keycode="0xd8"/> <!-- GTO -->
-    <key user_keycode="23"  chip_id="pick" hw_keycode="0xc8"/> <!-- GSB -->
-    <key user_keycode="24"  chip_id="pick" hw_keycode="0xe8"/> <!-- RTN -->
-    <key user_keycode="25"  chip_id="pick" hw_keycode="0x60"/> <!-- BST -->
-    <key user_keycode="26"  chip_id="pick" hw_keycode="0x80"/> <!-- SST -->
-						           
-    <key user_keycode="31"  chip_id="pick" hw_keycode="0xe1"/> <!-- y^x -->
-    <key user_keycode="32"  chip_id="pick" hw_keycode="0xd1"/> <!-- LN -->
-    <key user_keycode="33"  chip_id="pick" hw_keycode="0xc1"/> <!-- e^x -->
-    <key user_keycode="34"  chip_id="pick" hw_keycode="0xb1"/> <!-- ->P -->
-    <key user_keycode="35"  chip_id="pick" hw_keycode="0x98"/> <!-- STO -->
-    <key user_keycode="36"  chip_id="pick" hw_keycode="0x74"/> <!-- RCL -->
-						           
-    <key user_keycode="41"  chip_id="pick" hw_keycode="0xa1"/> <!-- SIN -->
-    <key user_keycode="42"  chip_id="pick" hw_keycode="0x91"/> <!-- COS -->
-    <key user_keycode="43"  chip_id="pick" hw_keycode="0x81"/> <!-- TAN -->
-    <key user_keycode="44"  chip_id="pick" hw_keycode="0x71"/> <!-- ->R -->
-    <key user_keycode="45"  chip_id="pick" hw_keycode="0x88"/> <!-- (i) -->
-    <key user_keycode="46"  chip_id="pick" hw_keycode="0xa8"/> <!-- I -->
-						           
-    <key user_keycode="51"  chip_id="pick" hw_keycode="0xe0"/> <!-- R/S -->
-    <key user_keycode="52"  chip_id="pick" hw_keycode="0xd0"/> <!-- 1/x -->
-    <key user_keycode="53"  chip_id="pick" hw_keycode="0xc0"/> <!-- x^2 -->
-    <key user_keycode="54"  chip_id="pick" hw_keycode="0xb0"/> <!-- sqrt(x) -->
-    <key user_keycode="55"  chip_id="pick" hw_keycode="0xa0"/> <!-- % -->
-    <key user_keycode="56"  chip_id="pick" hw_keycode="0x90"/> <!-- Sigma+ -->
-						           
-    <key user_keycode="-11" chip_id="pick" hw_keycode="0x28"/> <!-- FIX -->
-    <key user_keycode="-12" chip_id="pick" hw_keycode="0x78"/> <!-- SCI -->
-    <key user_keycode="-13" chip_id="pick" hw_keycode="0x38"/> <!-- ENG -->
-    <key user_keycode="-14" chip_id="pick" hw_keycode="0x18"/> <!-- PRINT x -->
-						           
-    <key user_keycode="-21" chip_id="pick" hw_keycode="0x34"/> <!-- ENTER^ -->
-    <key user_keycode="-22" chip_id="pick" hw_keycode="0x24"/> <!-- CHS -->
-    <key user_keycode="-23" chip_id="pick" hw_keycode="0x14"/> <!-- EEX -->
-    <key user_keycode="-24" chip_id="pick" hw_keycode="0x20"/> <!-- divide -->
-						           
-    <key user_keycode="-31" chip_id="pick" hw_keycode="0x30"/> <!-- Rdn -->
-    <key user_keycode="-32" chip_id="pick" hw_keycode="0x68"/> <!-- 7 -->
-    <key user_keycode="-33" chip_id="pick" hw_keycode="0x58"/> <!-- 8 -->
-    <key user_keycode="-34" chip_id="pick" hw_keycode="0x48"/> <!-- 9 -->
-    <key user_keycode="-35" chip_id="pick" hw_keycode="0x11"/> <!-- multiply -->
-						           
-    <key user_keycode="-41" chip_id="pick" hw_keycode="0x40"/> <!-- x<>y -->
-    <key user_keycode="-42" chip_id="pick" hw_keycode="0x61"/> <!-- 4 -->
-    <key user_keycode="-43" chip_id="pick" hw_keycode="0x51"/> <!-- 5 -->
-    <key user_keycode="-44" chip_id="pick" hw_keycode="0x41"/> <!-- 6 -->
-    <key user_keycode="-45" chip_id="pick" hw_keycode="0x21"/> <!-- minus -->
-						           
-    <key user_keycode="-51" chip_id="pick" hw_keycode="0x10"/> <!-- CLx -->
-    <key user_keycode="-52" chip_id="pick" hw_keycode="0x64"/> <!-- 1 -->
-    <key user_keycode="-53" chip_id="pick" hw_keycode="0x54"/> <!-- 2 -->
-    <key user_keycode="-54" chip_id="pick" hw_keycode="0x44"/> <!-- 3 -->
-    <key user_keycode="-55" chip_id="pick" hw_keycode="0x31"/> <!-- add -->
-						           
-    <key user_keycode="-61" chip_id="pick" hw_keycode="0x70"/> <!-- 0 -->
-    <key user_keycode="-62" chip_id="pick" hw_keycode="0x50"/> <!-- . -->
-    <key user_keycode="-63" chip_id="pick" hw_keycode="0x84"/> <!-- DSP -->
+    <key user_keycode="11" hw_keycode="0x14"/>  <!-- x<>y -->
+    <key user_keycode="12" hw_keycode="0x24"/>  <!-- Rv -->
+    <key user_keycode="13" hw_keycode="0x44"/>  <!-- GSB -->
+    <key user_keycode="14" hw_keycode="0x11"/>  <!-- GTO -->
+    <key user_keycode="15" hw_keycode="0x21"/>  <!-- SST -->
+    <key user_keycode="16" hw_keycode="0x41"/>  <!-- f -->
 
+    <key user_keycode="21" hw_keycode="0x18"/>  <!-- ENTER^ -->
+    <key user_keycode="22" hw_keycode="0x48"/>  <!-- CHS -->
+    <key user_keycode="23" hw_keycode="0x10"/>  <!-- EEX -->
+    <key user_keycode="24" hw_keycode="0x20"/>  <!-- CLx -->
+    <key user_keycode="25" hw_keycode="0x40"/>  <!-- g -->
+
+    <key user_keycode="31" hw_keycode="0x30"/>  <!-- minus -->
+    <key user_keycode="32" hw_keycode="0x90"/>  <!-- 7 -->
+    <key user_keycode="33" hw_keycode="0xd0"/>  <!-- 8 -->
+    <key user_keycode="34" hw_keycode="0xc0"/>  <!-- 9 -->
+    <key user_keycode="35" hw_keycode="0x50"/>  <!-- Sigma+ -->
+
+    <key user_keycode="41" hw_keycode="0x38"/>  <!-- plus -->
+    <key user_keycode="42" hw_keycode="0x98"/>  <!-- 4 -->
+    <key user_keycode="43" hw_keycode="0xd8"/>  <!-- 5 -->
+    <key user_keycode="44" hw_keycode="0xc8"/>  <!-- 6 -->
+    <key user_keycode="45" hw_keycode="0x58"/>  <!-- STO -->
+
+    <key user_keycode="51" hw_keycode="0x34"/>  <!-- multiply -->
+    <key user_keycode="52" hw_keycode="0x94"/>  <!-- 1 -->
+    <key user_keycode="53" hw_keycode="0xd4"/>  <!-- 2 -->
+    <key user_keycode="54" hw_keycode="0xc4"/>  <!-- 3 -->
+    <key user_keycode="55" hw_keycode="0x54"/>  <!-- RCL -->
+
+    <key user_keycode="61" hw_keycode="0x28"/>  <!-- divide -->
+    <key user_keycode="62" hw_keycode="0x91"/>  <!-- 0 -->
+    <key user_keycode="63" hw_keycode="0xd1"/>  <!-- . -->
+    <key user_keycode="64" hw_keycode="0xc1"/>  <!-- R/S -->
+    <key user_keycode="65" hw_keycode="0x51"/>  <!-- PRx -->
   </keyboard>
 
   <obj_file addr_space="inst"
             copyright="Copyright 2007, 2008 Eric Smith &lt;eric@brouhaha.com&gt;"
-            license="GPL-3.0">97.obj</obj_file>
+            license="GPLv3">
+    19c.obj
+  </obj_file>
 
   <obj_file addr_space="inst"
             copyright="Copyright 2007, 2008 Eric Smith &lt;eric@brouhaha.com&gt;"
-            license="GPL-3.0">6797.obj</obj_file>
+            license="GPLv3">
+    19c29c.obj
+  </obj_file>
 
   <obj_file addr_space="inst"
             copyright="Copyright 2007, 2008 Eric Smith &lt;eric@brouhaha.com&gt;"
-            license="GPL-3.0">97b1.obj</obj_file>
+            license="GPLv3">
+    19c29cq3.obj
+  </obj_file>
+
+  <obj_file addr_space="inst"
+            copyright="Copyright 2007, 2008 Eric Smith &lt;eric@brouhaha.com&gt;"
+            license="GPL-3.0">
+    19cb1.obj
+  </obj_file>
 
 </calcdef>

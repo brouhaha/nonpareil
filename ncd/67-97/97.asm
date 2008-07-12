@@ -1210,7 +1210,7 @@ L1611:  delayed rom @14
 
 S1613:  jsb S1442
         0 -> s 3
-L1615:  pick home?
+L1615:  pick print home?
         if 0 = s 3
           then go to L1615
         pick print 6
