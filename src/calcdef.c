@@ -195,7 +195,7 @@ static void parse_segments (void *ref,
 	fatal (3, "invalid character '%c' in segments\n", c);
     }
   if (count != calcdef->chip->char_gen->count)
-    fatal (3, "incorrect segment count\n");
+    fatal (3, "char %02x incorrect segment count %d, should be %d\n", calcdef->chip->char_gen->id, count, calcdef->chip->char_gen->count);
   calcdef->chip->char_gen->char_gen [calcdef->chip->char_gen->id] = segment_bitmap;
 }
 
@@ -227,7 +227,7 @@ static void parse_bitmap (void *ref,
 	fatal (3, "invalid character '%c' in bitmap\n", c);
     }
   if (count != calcdef->chip->char_gen->count)
-    fatal (3, "incorrect bitmap pixel count\n");
+    fatal (3, "char %02x incorrect bitmap pixel count %d, should be %d\n", calcdef->chip->char_gen->id, count, calcdef->chip->char_gen->count);
   calcdef->chip->char_gen->char_gen [calcdef->chip->char_gen->id] = bitmap;
 }
 
@@ -576,7 +576,7 @@ static void parse_memory (calcdef_t *calcdef,
   mem->next = calcdef->chip->mem;
   calcdef->chip->mem = mem;
 
-  mem->bank_mask = (1 << 0);
+  mem->bank_mask = (1 << 0);   // default bank 0 only
 
   for (i = 0; attrs && attrs [i]; i += 2)
     {
