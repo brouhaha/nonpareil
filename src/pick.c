@@ -157,8 +157,8 @@ static bool pick_read (sim_t *sim)
     }
 
   reg_zero (act_reg->c, 0, WSIZE - 1);
-  act_reg->c [1] = (keycode >> 4) & 0xf;
-  act_reg->c [0] = keycode & 0xf;
+  act_reg->c [2] = (keycode >> 4) & 0xf;
+  act_reg->c [1] = keycode & 0xf;
 
   return true;
 }
