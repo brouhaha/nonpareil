@@ -423,7 +423,7 @@ L0327:  if 1 = s 11
 insert: 0 -> s 3		; increment pc
         jsb incpc
         if 1 = s 3		; pc wrapped?
-          then go to L1366	;   yes
+          then go to bst	;   yes
         crc fs?c default_fn	; clear default function flag
         nop
         0 -> s 3
@@ -537,8 +537,8 @@ L0460:  delayed rom @03
 L0462:  delayed rom @03
         go to L1717
 
-L0464:  delayed rom @02
-        go to L1366
+op_bst: delayed rom @02
+        go to bst
 
 del_x:  delayed rom @13
         go to del
@@ -625,7 +625,7 @@ L0552:  load constant 5
         delayed rom @03
         go to L1472
 
-        go to L0464		; h-shifted key 25: BST
+        go to op_bst		; h-shifted key 25: BST
         go to op_46		; h-shifted key 24: x<>I
         go to op_33		; h-shifted key 23: ENG
         go to op_0e		; h-shifted key 22: RTN
@@ -1118,7 +1118,7 @@ prstk:  1 -> s 6
         load constant 3
         m1 exchange c
         0 -> s 12
-L1341:  binary
+prtx:   binary
         display off
         delayed rom @17
         jsb S7706
@@ -1141,7 +1141,11 @@ L1353:  jsb S1162
         nop
         nop
 
-L1366:  1 -> s 3
+; ------------------------------------------------------------------
+; code almost matches 97 after this point
+; ------------------------------------------------------------------
+
+bst:    1 -> s 3
 L1367:  jsb S1214
         delayed rom @00
         go to L0044
@@ -1162,11 +1166,12 @@ op_space:
 	delayed rom @00
         go to L0124
 
-L1402:  delayed rom @02
-        go to L1341
+prtx_x:
+	delayed rom @02
+        go to prtx
 
 op_prtx:
-	go to L1402
+	go to prtx_x
 
 ; ------------------------------------------------------------------
 ; addresses 1405-1466: unshifted key table 

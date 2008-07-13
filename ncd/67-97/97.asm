@@ -27,7 +27,7 @@
 ;	prt_prgm (from b1)
 ;	clr_prgm (from b1)
 ;	del_x   (from b1)
-;	L1366   (from b1)
+;	bst   (from b1)
 ;	L1367	(from common)
 ;	err0	(from common, b1)
 ;	L1373	(from common)
@@ -401,7 +401,7 @@ L0311:  if 1 = s 11
 insert:  0 -> s 3		; increment pc
         jsb incpc
         if 1 = s 3		; pc wrapped?
-          then go to L1366	;   yes
+          then go to bst	;   yes
         delayed rom @13
         go to L5616
 
@@ -850,7 +850,7 @@ L1100:  c -> register 13
 ; preceding code matches 67 at different address
 ; ------------------------------------------------------------------
 
-L1102:  delayed rom @03
+prt_reg:  delayed rom @03
         jsb S1631
         1 -> s 8
         1 -> s 10
@@ -894,7 +894,7 @@ L1141:  c -> data address
         delayed rom @04
         go to L2261
 
-L1153:  delayed rom @03
+prstk:  delayed rom @03
         jsb S1631
         0 -> c[w]
         p <- 12
@@ -1062,7 +1062,11 @@ L1346:  p <- 13
         nop
         nop
 
-L1366:  1 -> s 3
+; ------------------------------------------------------------------
+; code almost matches 67 after this point
+; ------------------------------------------------------------------
+
+bst:    1 -> s 3
 L1367:  jsb S1051
         delayed rom @00
         go to L0044
@@ -1071,10 +1075,10 @@ err0:   b exchange c[w]
 L1373:  go to L1172
 
 op_prstk:
-	go to L1153
+	go to prstk
 
 op_preg:
-	go to L1102
+	go to prt_reg
 
         nop
         nop
@@ -1219,7 +1223,7 @@ L1543:  load constant 14
         if 1 = s 3
           then go to L1610	;   yes, don't print
 
-        delayed rom @07
+        delayed rom @07		; decode keycode?
         jsb S3764
         delayed rom @07
         jsb S3775

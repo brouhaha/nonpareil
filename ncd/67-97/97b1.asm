@@ -5,14 +5,14 @@
 	.arch woodstock
 
 ; External references:
-L0035	.equ	@0035
+sst	.equ	@0035
 L0073	.equ	@0073
 L0125	.equ	@0125
 L0142	.equ	@0142
 prt_prgm .equ	@0357
 clr_prgm .equ	@0464
 del_x	.equ	@0600
-L1366	.equ	@1366
+bst	.equ	@1366
 err0	.equ	@1372
 L1545	.equ	@1545
 L1554	.equ	@1554
@@ -1247,9 +1247,9 @@ L13755:  shift right c[wp]
 L14003: c + 1 -> c[x]		; hw 0x30 - roll down - 0x31
         legal go to op_30	; hw 0x40 - x<>y      - 0x30
         go to L14365		; hw 0x50 - decimal
-        go to L14262		; hw 0x60 - BST       - n/a
+        go to op_bst		; hw 0x60 - BST       - n/a
         go to L14354		; hw 0x70 - 0
-        go to L14260		; hw 0x80 - SST       - n/a
+        go to op_sst		; hw 0x80 - SST       - n/a
         go to L14160		; hw 0x90 - Sigma+
 L14012: c + 1 -> c[x]		; hw 0xa0 - %         - 0x04
         c + 1 -> c[x]		; hw 0xb0 - sqrt(x)   - 0x03
@@ -1453,11 +1453,11 @@ L14253: jsb S14272
         load constant 7
         go to L14274
 
-L14260: delayed rom @00
-        go to L0035
+op_sst: delayed rom @00
+        go to sst
 
-L14262: delayed rom @02
-        go to L1366
+op_bst: delayed rom @02
+        go to bst
 
 L14264: 1 -> s 3
 op_35:	c + 1 -> c[x]
