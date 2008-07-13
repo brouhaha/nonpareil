@@ -9,9 +9,9 @@ L0035	.equ	@0035
 L0073	.equ	@0073
 L0125	.equ	@0125
 L0142	.equ	@0142
-L0357	.equ	@0357
-L0464	.equ	@0464
-L0600	.equ	@0600
+prt_prgm .equ	@0357
+clr_prgm .equ	@0464
+del_x	.equ	@0600
 L1366	.equ	@1366
 err0	.equ	@1372
 L1545	.equ	@1545
@@ -22,7 +22,7 @@ buffer_ready  .equ 0
 prog_mode     .equ 1
 trace_mode    .equ 2    ; printer mode TRACE
 norm_mode     .equ 3	; printer mode NORM
-default_fn    .equ 4
+crc_f4        .equ 4
 merge         .equ 5
 pause         .equ 6
 crc_f7        .equ 7    ; purpose unknown
@@ -1223,7 +1223,7 @@ L13755:  shift right c[wp]
 
         select rom @13 (L15772)	; from L3770
 
-        select rom @13 (L15773)	; from L3771
+        select rom @13 (L15773)	; from L3771 - key decode
 
         select rom @13 (L15774)	; from L3772 - WDATA
 
@@ -1564,8 +1564,9 @@ op_25:	c + 1 -> c[x]		; shifted hw 0x90 - Sigma-  - 0x25
         c + 1 -> c[x]		; shifted hw 0xd0 - N!      - 0x21
         legal go to L14541	; shifted hw 0xe0 - PAUSE   - 0x20
 
-L14417: delayed rom @00
-        go to L0357
+op_prt_prgm:
+	delayed rom @00
+        go to prt_prgm
 
 ; addr 14421: unshifted keyboard table, MSD 0x11..0xe1
 
@@ -1622,7 +1623,7 @@ L14474: 0 -> s 6
 L14475: delayed rom @10
         go to L14274
 
-L14477: c + 1 -> c[x]
+op_4d: c + 1 -> c[x]
 
 op_4c:	c + 1 -> c[x]
 
@@ -1631,9 +1632,9 @@ op_4c:	c + 1 -> c[x]
         c + 1 -> c[x]		; shifted hw 0x14 - GRAD    - 0x4b
         c + 1 -> c[x]		; shifted hw 0x24 - RAD     - 0x4a
         legal go to op_49	; shifted hw 0x34 - DEG     - 0x49
-        go to L14564		; shifted hw 0x44 - CL PRGM
-        go to L14477		; shifted hw 0x54 - CL REG
-        go to L14574		; shifted hw 0x64 - DEL
+        go to op_clr_prgm	; shifted hw 0x44 - CL PRGM
+        go to op_4d		; shifted hw 0x54 - CL REG  - 0x4d
+        go to op_del		; shifted hw 0x64 - DEL
         go to op_3d		; shifted hw 0x74 - H.MS->H - 0x3d
         go to op_43		; shifted hw 0x84 - LASTx   - 0x43
         go to L14474		; shifted hw 0x94 - f
@@ -1689,18 +1690,20 @@ L14554: if 0 = s 4
         load constant 8
         go to L14470
 
-L14564: if 0 = s 11
-          then go to L14642
+op_clr_prgm:
+	if 0 = s 11		; program mode?
+          then go to L14642	;   no, don't clear
         delayed rom @01
-        go to L0464
+        go to clr_prgm
 
 op_50: load constant 5
         go to L14544
 
 L14572: c + 1 -> c[x]
-        if n/c go to L14477
-L14574: delayed rom @01
-        go to L0600
+        if n/c go to op_4d
+
+op_del: delayed rom @01
+        go to del_x
 
 op_45:	c + 1 -> c[x]
 op_44:	c + 1 -> c[x]
@@ -1714,7 +1717,7 @@ op_43:	c + 1 -> c[x]
 L14604: c + 1 -> c[x]		; shifted hw 0x48 - x>y      - 0x52
         c + 1 -> c[x]		; shifted hw 0x58 - x=y      - 0x51
         legal go to op_50	; shifted hw 0x68 - x!=y     - 0x50
-        go to L14417		; shifted hw 0x78 - PRT PRGM - n/a
+        go to op_prt_prgm	; shifted hw 0x78 - PRT PRGM - n/a
         go to op_3a		; shifted hw 0x88 - D->R     - 0x3a
         go to op_3c		; shifted hw 0x98 - H->H.MS  - 0x3c
         go to op_3b		; shifted hw 0xa8 - R->D     - 0x3b
@@ -1813,7 +1816,7 @@ L15764: delayed rom @10
 L15771: nop
 L15772: go to L15776		; from L3770
 
-L15773: go to L15736		; from L3771
+L15773: go to L15736		; from L3771 - key decode
 
 L15774: delayed rom @12		; from L3772 - WDATA
 L15775: go to wdata

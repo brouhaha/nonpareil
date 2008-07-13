@@ -17,7 +17,7 @@ buffer_ready  .equ 0
 prog_mode     .equ 1
 crc_f2        .equ 2    ; purpose unknown
 crc_f3        .equ 3    ; not used in 67
-default_fn    .equ 4
+default_fn    .equ 4	; used for entirely different purpose in 97
 merge         .equ 5
 pause         .equ 6
 crc_f7        .equ 7    ; purpose unknown

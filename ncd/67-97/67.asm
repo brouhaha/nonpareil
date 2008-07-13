@@ -42,7 +42,7 @@ S2362	.equ	@2362
 $over0	.equ	@2437
 incpc0	.equ	@2660
 L5616	.equ	@5616
-L5717	.equ	@5717
+del	.equ	@5717
 execute	.equ	@6021
 S7706	.equ	@7706
 
@@ -59,7 +59,7 @@ buffer_ready  .equ 0
 prog_mode     .equ 1
 crc_f2        .equ 2    ; purpose unknown
 crc_f3        .equ 3    ; not used in 67
-default_fn    .equ 4
+default_fn    .equ 4	; used for entirely different purpose in 97
 merge         .equ 5
 pause         .equ 6
 crc_f7        .equ 7    ; purpose unknown
@@ -72,7 +72,7 @@ write_mode    .equ 11
 	.org @0000	; From ROM/anode driver p/n 1818-0268
 
         nop
-        go to L0370
+        go to reset0
 
 clr_reg_x:
 	delayed rom @02
@@ -449,13 +449,22 @@ L0363:  if 0 = s 8
         0 -> s 2
         go to L0064
 
-L0370:  0 -> c[w]
+; ------------------------------------------------------------------
+; following code almost matches 97 at L0602
+; clear C, M1, M2, and proceed with initialization
+; ------------------------------------------------------------------
+
+reset0: 0 -> c[w]
         m1 exchange c
         0 -> c[w]
         m2 exchange c
         0 -> c[w]
         delayed rom @02
-        go to L1000
+        go to reset1
+
+; ------------------------------------------------------------------
+; preceding code almost matches 97 at different address
+; ------------------------------------------------------------------
 
         nop
 
@@ -531,8 +540,8 @@ L0462:  delayed rom @03
 L0464:  delayed rom @02
         go to L1366
 
-L0466:  delayed rom @13
-        go to L5717
+del_x:  delayed rom @13
+        go to del
 
 L0470:  delayed rom @03
         go to L1421
@@ -577,7 +586,7 @@ op_20:  load constant 2
 
         nop
 
-        go to L0466		; h-shifted key 44: DEL
+        go to del_x		; h-shifted key 44: DEL
 op_4b:  c + 1 -> c[x]		; h-shifted key 43: GRD (0x4b)
         c + 1 -> c[x]		; h-shifted key 42: RAD (0x4a)
         c + 1 -> c[x]		; h-shifted key 41: DEG (0x49)
@@ -665,8 +674,8 @@ op_27:  c + 1 -> c[x]
         legal go to op_26
 
         go to op_32		; g-shifted key 44: CLx
-        c + 1 -> c[x]		; g-shifted key 43: ?
-        legal go to L0470	; g-shifted key 42: ?
+        c + 1 -> c[x]		; g-shifted key 43: unused, treat as EEX
+        legal go to L0470	; g-shifted key 42: unused, treat as CHS
         go to op_45		; g-shifted key 41: MERGE
 
         nop
@@ -807,12 +816,12 @@ op_01:  c + 1 -> c[x]
         go to got_op
 
         nop
-L1000:  hi i'm woodstock
 
 ; ------------------------------------------------------------------
 ; following code almost matches 97 at address @0402
 ; ------------------------------------------------------------------
 
+reset1: hi i'm woodstock
         reset twf
         c -> data address
         clear data registers
@@ -908,13 +917,20 @@ L1077:  a exchange c[w]
         a exchange c[wp]
         a exchange c[w]
         0 -> c[w]
+
+; ------------------------------------------------------------------
+; following code matches 67 at @0512
+; ------------------------------------------------------------------
+
         b exchange c[w]
         display off
         display toggle
-        0 -> s 3
+
+        0 -> s 3		; wait for key release
 L1111:  0 -> s 15
         if 1 = s 15
           then go to L1111
+
         display off
 L1115:  delayed rom @00
         go to L0327
@@ -939,6 +955,14 @@ L1127:  m1 exchange c
         b exchange c[w]
         0 -> b[w]
         go to L1115
+
+; ------------------------------------------------------------------
+; preceding code matches 97 at different address
+; ------------------------------------------------------------------
+
+; ------------------------------------------------------------------
+; following code matches 67 at address S1000
+; ------------------------------------------------------------------
 
 S1143:  c -> a[x]
         if b[s] = 0
@@ -1013,6 +1037,10 @@ L1235:  c + 1 -> c[p]
           then go to L1235
 L1243:  c -> register 13
         return
+
+; ------------------------------------------------------------------
+; preceding code matches 97 at different address
+; ------------------------------------------------------------------
 
         delayed rom @04
         go to L2261

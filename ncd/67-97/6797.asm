@@ -37,7 +37,7 @@ op_prtx	.equ	@1404
 ;	$over0
 ;	incpc0
 ;	L5616
-;	L5715
+;       del
 ;	execute
 ;	get_reg_3f
 
@@ -55,7 +55,7 @@ buffer_ready  .equ 0
 prog_mode     .equ 1
 crc_f2        .equ 2    ; purpose unknown
 crc_f3        .equ 3    ; not used in 67
-default_fn    .equ 4
+crc_f4        .equ 4    ; default function in 67, purpose unknown in 97
 merge         .equ 5
 pause         .equ 6
 crc_f7        .equ 7    ; purpose unknown
@@ -1203,7 +1203,7 @@ S3764:  bank toggle
 L3766:  bank toggle
 L3767:  bank toggle
 L3770:  bank toggle
-L3771:	bank toggle		; used only in 97
+L3771:	bank toggle		; used only in 97 - key decode
 
 op_wdata_x:
 	bank toggle		; WDATA
@@ -2282,8 +2282,10 @@ S5710:  rotate left a			; rotate A left six digits
         rotate left a
         return
 
-L5717:  if 0 = s 11
-          then go to L5706
+; delete a program step
+
+del:    if 0 = s 11			; program mode?
+          then go to L5706		;   no, don't delete
         b exchange c[w]
         m1 exchange c
         delayed rom @00

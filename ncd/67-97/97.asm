@@ -24,9 +24,9 @@
 ;	L0124	(from common)
 ;	L0125	(from common, b1)
 ;	L0142   (from b1) - not referenced in 67
-;	L0357   (from b1)
-;	L0464   (from b1)
-;	L0600   (from b1)
+;	prt_prgm (from b1)
+;	clr_prgm (from b1)
+;	del_x   (from b1)
 ;	L1366   (from b1)
 ;	L1367	(from common)
 ;	err0	(from common, b1)
@@ -45,7 +45,7 @@ S2362	.equ	@2362
 $over0	.equ	@2437
 incpc0	.equ	@2660
 L5616	.equ	@5616
-L5717	.equ	@5717
+del	.equ	@5717
 execute	.equ	@6021
 S7706	.equ	@7706
 
@@ -60,9 +60,9 @@ S3775	.equ	@3775
 ; CRC flags:
 buffer_ready  .equ 0
 prog_mode     .equ 1
-trace_mode    .equ 2    ; printer mode TRACE
+man_mode      .equ 2    ; printer mode MAN
 norm_mode     .equ 3	; printer mode NORM
-default_fn    .equ 4
+crc_f4        .equ 4    ; tied to KE keyboard return line
 merge         .equ 5
 pause         .equ 6
 crc_f7        .equ 7    ; purpose unknown
@@ -75,7 +75,7 @@ write_mode    .equ 11
 	.org @0000	; From ROM/anode driver p/n 1818-0267
 
         delayed rom @01
-        go to L0401
+        go to reset0
 
 clr_reg_x:
 	delayed rom @01
@@ -184,7 +184,7 @@ L0114:  0 -> s 12
 ; ------------------------------------------------------------------
 
         0 -> s 3		; check mode switches, print x if
-        crc fs?c trace_mode	;   not in MAN mode?
+        crc fs?c man_mode	;   in TRACE mode
         if 1 = s 3
           then go to L0124
         crc fs?c norm_mode
@@ -257,8 +257,8 @@ L0164:  if 0 = s 5
 ; code matches 67 before this point - addresses different
 ; ------------------------------------------------------------------
 
-L0171:  crc fs?c trace_mode
-        crc fs?c norm_mode
+L0171:  crc fs?c man_mode	; reset MAN and NORM, hardware will
+        crc fs?c norm_mode	;   set them appropriately
         nop
 
 ; ------------------------------------------------------------------
@@ -420,18 +420,21 @@ L0340:  jsb get_inst		; get instruction at PC
         m1 exchange c
 
         0 -> s 3		; check printer mode
-        crc fs?c trace_mode
+        crc fs?c man_mode
         if 1 = s 3
           then go to L1610
         crc fs?c norm_mode
         if 1 = s 3
           then go to L1610
 	
+; OK, were in trace mode
+
         jsb getpc		; get PC
         jsb get_inst		; get instruction at PC
         delayed rom @03
         go to L1724
 
+prt_prgm:
         jsb getpc
         if c[x] # 0
           then go to L0367
@@ -462,16 +465,16 @@ L0377:  return
 ; ------------------------------------------------------------------
 
         nop
-L0401:  go to L0602
+reset0: go to reset1		; could have been a jsb
 
 ; ------------------------------------------------------------------
-; following code almost matches 97 at address @1001
+; following code almost matches 67 at address @1001
 ; ------------------------------------------------------------------
 
-L0402:  reset twf
+reset2: reset twf
         c -> data address
         clear data registers
-        crc sf default_fn
+        crc sf crc_f4
         p <- 1
         load constant 3
         c -> data address
@@ -527,6 +530,7 @@ L0455:  a exchange c[w]
 ; preceding code matches 67 at different address
 ; ------------------------------------------------------------------
 
+clr_prgm:
         0 -> c[w]
         p <- 1
         load constant 2
@@ -550,13 +554,18 @@ L0476:  0 -> a[w]
         p <- 2
         jsb S0560
         a exchange c[w]
+
+; ------------------------------------------------------------------
+; following code matches 67 at @1105
+; ------------------------------------------------------------------
+
         b exchange c[w]
         display off
         display toggle
 
-L0515:  0 -> s 3		; why check default_fn multiple times???
+L0515:  0 -> s 3		; wait for key release
 L0516:  p - 1 -> p
-        crc fs?c default_fn
+        crc fs?c crc_f4
         if p # 5
           then go to L0516
         if 1 = s 3
@@ -565,6 +574,10 @@ L0516:  p - 1 -> p
         display off
 L0525:  delayed rom @00
         go to L0311
+
+; ------------------------------------------------------------------
+; following code matches 67 at L1117
+; ------------------------------------------------------------------
 
 L0527:  delayed rom @04
         jsb S2362
@@ -587,6 +600,10 @@ L0540:  m1 exchange c
         b exchange c[w]
         0 -> b[w]
         go to L0525
+
+; ------------------------------------------------------------------
+; preceding code matches 67 at different address
+; ------------------------------------------------------------------
 
 S0554:  if a[p] # 0
           then go to S0560
@@ -611,16 +628,25 @@ L0573:  0 -> a[p]
         c -> a[p]
         return
 
-        delayed rom @13
-        go to L5717
+del_x:  delayed rom @13
+        go to del
 
-L0602:  hi i'm woodstock
+; ------------------------------------------------------------------
+; following code almost matches 67 at L0370
+; clear C, M1, M2, and proceed with initialization
+; ------------------------------------------------------------------
+
+reset1: hi i'm woodstock
         0 -> c[w]
         m2 exchange c
         0 -> c[w]
         m1 exchange c
         0 -> c[w]
-        go to L0402
+        go to reset2
+
+; ------------------------------------------------------------------
+; preceding code almost matches 67 at different address
+; ------------------------------------------------------------------
 
         nop
         nop
@@ -741,6 +767,10 @@ L0602:  hi i'm woodstock
         nop
         nop
         nop
+
+; ------------------------------------------------------------------
+; following code matches 67 at address S1143
+; ------------------------------------------------------------------
 
 S1000:  c -> a[x]
         if b[s] = 0
@@ -816,6 +846,10 @@ L1072:  c + 1 -> c[p]
 L1100:  c -> register 13
         return
 
+; ------------------------------------------------------------------
+; preceding code matches 67 at different address
+; ------------------------------------------------------------------
+
 L1102:  delayed rom @03
         jsb S1631
         1 -> s 8
@@ -877,7 +911,7 @@ L1153:  delayed rom @03
         go to L1704
 
 L1172:  0 -> s 3
-        crc fs?c trace_mode
+        crc fs?c man_mode
         if 1 = s 3
           then go to L1177
         jsb S1266
@@ -1181,7 +1215,7 @@ L1543:  load constant 14
         if 1 = s 3
           then go to L1611
 
-        crc fs?c trace_mode	; trace mode?
+        crc fs?c man_mode	; MAN mode?
         if 1 = s 3
           then go to L1610	;   yes, don't print
 
@@ -1290,13 +1324,15 @@ L1714:  0 -> a[xs]
         go to L1724
 
 L1723:  0 -> s 6
-L1724:  crc fs?c trace_mode
+L1724:  crc fs?c man_mode
         delayed rom @07
         jsb S3764
+
         0 -> s 3
-        crc fs?c trace_mode
+        crc fs?c man_mode
         if 1 = s 3
           then go to L1737
+	
         delayed rom @07
         jsb S3775
         jsb S1613
