@@ -244,8 +244,7 @@ ncd_dir_sub = {'19c':  '19c-29c',
 
 nui_dir_sub = {'19c':  None,
                '41cv': '41c',
-               '41cx': '41c',
-	       '97':   None}
+               '41cx': '41c'}
 
 nui_files = []
 ncd_files = []
