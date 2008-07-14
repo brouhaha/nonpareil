@@ -30,6 +30,7 @@ MA 02111, USA.
 #include "display.h"
 #include "kml.h"
 #include "scancode.h"
+#include "keyboard.h"
 
 /* parser temporaries */
 kml_t *yy_kml;
@@ -458,9 +459,11 @@ position_stmt		:	image_stmt { yy_kml->kswitch [kml_cur_idx]->position [kml_cur_i
 ----------------------------------------------------------------------------*/
 
 button_section		:	BUTTON INTEGER
-				{ range_check ($2, 0, KML_MAX_BUTTON - 1);
-				  kml_cur_idx = $2;
-				  yy_kml->button [$2] = alloc (sizeof (kml_button_t)); }
+				{ range_check ($2, -MAX_KEYCODE, MAX_KEYCODE);
+				  kml_cur_idx = yy_kml->button_count++;
+				  yy_kml->button [kml_cur_idx] = alloc (sizeof (kml_button_t)); 
+				  yy_kml->button [kml_cur_idx]->user_keycode = $2;
+                                }
 				button_stmt_list END ;
 
 button_stmt_list	:	button_stmt

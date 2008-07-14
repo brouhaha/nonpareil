@@ -77,14 +77,14 @@ static void button_widget_pressed (GtkWidget *widget UNUSED,
       if (++csim->button_pressed_count == 1)
 	{
 #ifdef KEYBOARD_DEBUG
-	  printf ("first button press, keycode %d\n", button->kml_button->keycode);
+	  printf ("first button press, keycode %d\n", button->kml_button->user_keycode);
 #endif
-	  csim->button_pressed_first = button->number;
-	  sim_key (csim->sim, button->number, true);
+	  csim->button_pressed_first = button->kml_button->user_keycode;
+	  sim_key (csim->sim, button->kml_button->user_keycode, true);
 	}
 #ifdef KEYBOARD_DEBUG
       else
-	printf ("additional button press, keycode=%d\n", button->kml_button->keycode);
+	printf ("additional button press, keycode=%d\n", button->kml_button->user_keycode);
 #endif
     }
 }
@@ -132,17 +132,17 @@ static void button_widget_released (GtkWidget *widget UNUSED,
 	{
 #ifdef KEYBOARD_DEBUG
 	  printf ("rollover pressing keycode=%d\n", 
-		  csim->button_info [i]->kml_button->keycode);
+		  csim->button_info [i]->kml_button->user_keycode);
 #endif
 	  sim_key (csim->sim, csim->button_pressed_first, false);  // release the first one
-	  csim->button_pressed_first = csim->button_info [i]->number;
-	  sim_key (csim->sim, i, true);
+	  csim->button_pressed_first = csim->button_info [i]->kml_button->user_keycode;
+	  sim_key (csim->sim, csim->button_info [i]->kml_button->user_keycode, true);
 	}
       break;
     default:
       // There are still at least two keys pressed.  Do nothing.
 #ifdef KEYBOARD_DEBUG
-      printf ("key release, keycode=%d\n", button->kml_button->keycode);
+      printf ("key release, keycode=%d\n", button->kml_button->user_keycode);
 #endif
       break;
     }
@@ -198,7 +198,7 @@ void add_keys (csim_t *csim)
 {
   int i;
 
-  for (i = 0; i < KML_MAX_BUTTON; i++)
+  for (i = 0; i < csim->kml->button_count; i++)
     if (csim->kml->button [i])
       {
 	csim->button_info [i] = alloc (sizeof (button_info_t));
@@ -210,16 +210,32 @@ void add_keys (csim_t *csim)
 }
 
 
+static int find_button_by_keycode (csim_t *csim, int keycode)
+{
+  int i;
+
+  for (i = 0; i < csim->kml->button_count; i++)
+    if (csim->kml->button [i]->user_keycode == keycode)
+      return i;
+  return -1;
+}
+
+
 // Presses the specified key.  Returns false if key doesn't exist.
 bool set_key_state (csim_t *csim, int keycode, bool pressed)
 {
-  if (! csim->button_info [keycode])
+  int button_index;
+
+  button_index = find_button_by_keycode (csim, keycode);
+  if (button_index < 0)
+    return false;
+  if (! csim->button_info [button_index])
     return false;
   if (pressed)
-    button_widget_pressed (csim->button_info [keycode]->widget,
-			   csim->button_info [keycode]);
+    button_widget_pressed (csim->button_info [button_index]->widget,
+			   csim->button_info [button_index]);
   else
-    button_widget_released (csim->button_info [keycode]->widget,
-			    csim->button_info [keycode]);
+    button_widget_released (csim->button_info [button_index]->widget,
+			    csim->button_info [button_index]);
   return true;
 }

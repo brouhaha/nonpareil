@@ -104,6 +104,7 @@ typedef struct
 
 typedef struct
 {
+  int user_keycode;
   int type;
   char *image_fn;
   kml_size_t size;
@@ -169,6 +170,8 @@ typedef struct
   kml_annunciator_t *annunciator [KML_MAX_ANNUNCIATOR];
 
   kml_switch_t *kswitch [KML_MAX_SWITCH];
+
+  int button_count;
   kml_button_t *button [KML_MAX_BUTTON];
 
   kml_scancode_t *first_scancode;
