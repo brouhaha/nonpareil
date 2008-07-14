@@ -229,7 +229,7 @@ static void crc_op_test_flag_and_clear (sim_t *sim,
     chip_event (sim,
 		sim->first_chip,  // ACT only
 		event_pulse_flag,
-		EXT_FLAG_ACT_F1,
+		EXT_FLAG_ACT_F2,
 		0,                // arg2 unused
 		NULL);
   crc_reg->flag [flag] = false;

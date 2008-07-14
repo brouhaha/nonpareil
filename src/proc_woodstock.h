@@ -29,7 +29,7 @@ typedef digit_t reg_t [WSIZE];
 #define SSIZE 16
 #define STACK_SIZE 2
 
-#define EXT_FLAG_SIZE 2
+#define EXT_FLAG_SIZE 3
 
 #define PAGE_SIZE 1024
 #define MAX_PAGE 4
@@ -51,8 +51,9 @@ typedef uint16_t rom_addr_t;
 
 
 // External flag inputs
-#define EXT_FLAG_ACT_F1 0
-#define EXT_FLAG_ACT_F2 1
+// There is no flag 0 input
+#define EXT_FLAG_ACT_F1 1  // ACT pin 3, affects flag s5
+#define EXT_FLAG_ACT_F2 2  // ACT pin 4, affects flag s3
 
 
 typedef struct

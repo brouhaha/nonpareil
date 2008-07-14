@@ -572,10 +572,10 @@ static bool get_s_bit (sim_t *sim, int bit)
   switch (bit)
     {
     case 3:
-      state |= act_reg->ext_flag [EXT_FLAG_ACT_F1];
+      state |= act_reg->ext_flag [EXT_FLAG_ACT_F2];
       break;
     case 5:
-      state |= act_reg->ext_flag [EXT_FLAG_ACT_F2];
+      state |= act_reg->ext_flag [EXT_FLAG_ACT_F1];
       break;
     case 15:
       state |= act_reg->key_flag;
@@ -616,10 +616,10 @@ static void pulse_ext_flag (sim_t *sim, int ext_flag)
   switch (ext_flag)
     {
     case EXT_FLAG_ACT_F1:
-      set_s_bit (sim, 3, true);
+      set_s_bit (sim, 5, true);
       break;
     case EXT_FLAG_ACT_F2:
-      set_s_bit (sim, 5, true);
+      set_s_bit (sim, 3, true);
       break;
     default:
       fatal (2, "ACT unknown ext flag %d\n", ext_flag);
@@ -1063,7 +1063,8 @@ static bool op_test_p_eq_0_after_double_inc (act_reg_t *act_reg)
   // Only do special test if PC matches the knwon label search code
   // locations.  (Ugly hack.)
   if ((act_reg->prev_pc != 06102) &&   // 19c, 29c
-      (act_reg->prev_pc != 06132))     // 67, 97
+      (act_reg->prev_pc != 06132) &&   // 67, 97
+      (act_reg->prev_pc != 05217))     // 34c, bank 1
     {
       printf ("addr %04o: unpexected test P equal 0 after double increment, P=%d\n", act_reg->prev_pc, act_reg->p);
       return false;

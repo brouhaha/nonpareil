@@ -678,10 +678,12 @@ Copyright 2007, 2008 Eric Smith <eric@brouhaha.com>
       </switch_pos>
       -->
       <switch_pos position="1">  <!-- PRGM -->
-        <flag chip_id="act" number="0" value="0"/>
+        <flag chip_id="act" number="2" value="1"/>
+        <!-- This isn't really correct, ACT F2 is asserted when
+             switch is in PRGM only when ACT flag out is driven -->
       </switch_pos>
       <switch_pos position="2">  <!-- RUN -->
-        <flag chip_id="act" number="0" value="1"/>
+        <flag chip_id="act" number="2" value="0"/>
       </switch_pos>
     </switch>
 

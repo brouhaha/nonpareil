@@ -168,12 +168,22 @@ static bool pick_write (sim_t *sim UNUSED)
   return false;
 }
 
-static void pick_pulse_act_f1 (sim_t *sim)
+static void pick_set_act_f1 (sim_t *sim)
+{
+  chip_event (sim,
+	      sim->first_chip,  // ACT only
+	      event_set_flag,
+	      EXT_FLAG_ACT_F1,
+	      1,
+	      NULL);
+}
+
+static void pick_pulse_act_f2 (sim_t *sim)
 {
   chip_event (sim,
 	      sim->first_chip,  // ACT only
 	      event_pulse_flag,
-	      EXT_FLAG_ACT_F1,
+	      EXT_FLAG_ACT_F2,
 	      0,                // arg2 unused
 	      NULL);
 }
@@ -189,7 +199,7 @@ static void pick_op_check_keycode_available (sim_t *sim,
 #endif
 
   if (pick_reg->key_buffer.count > 0)
-    pick_pulse_act_f1 (sim);
+    pick_pulse_act_f2 (sim);
 }
 
 static void pick_op_home (sim_t *sim,
@@ -198,8 +208,16 @@ static void pick_op_home (sim_t *sim,
   // act_reg_t *act_reg = get_chip_data (sim->first_chip);
   // pick_reg_t *pick_reg = get_chip_data (act_reg->pick_chip);
 
-  // HOME?  currently assume it always is
-  pick_pulse_act_f1 (sim);
+#if 1
+  static bool foo = false;
+
+  foo ^= 1;
+  if (foo)
+    pick_pulse_act_f2 (sim);
+#else
+  // assume it always is
+  pick_pulse_act_f2 (sim);
+#endif
 }
 
 static void pick_op_cr (sim_t *sim,
@@ -208,8 +226,16 @@ static void pick_op_cr (sim_t *sim,
   // act_reg_t *act_reg = get_chip_data (sim->first_chip);
   // pick_reg_t *pick_reg = get_chip_data (act_reg->pick_chip);
 
-  // CR seen?  currently assume yes
-  pick_pulse_act_f1 (sim);
+#if 1
+  static bool foo = false;
+
+  foo ^= 1;
+  if (foo)
+    pick_pulse_act_f2 (sim);
+#else
+ // assume yes
+  pick_pulse_act_f2 (sim);
+#endif
 }
 
 static void pick_op_print_0123 (sim_t *sim UNUSED,
@@ -262,6 +288,12 @@ static void pick_event_fn (sim_t      *sim,
 	pick_release_key (sim, arg1);
       break;
     case event_flag_out_change:
+      // ??? in 91
+      // ??? in 92
+      // ??? in 95C
+      // not used in 97
+      // ??? in 19C
+#if 0
       if (arg1)
 	chip_event (sim,
 		    sim->first_chip,  // ACT only
@@ -277,7 +309,7 @@ static void pick_event_fn (sim_t      *sim,
 		    0162,             // doesn't matter
 		    false,            // release
 		    NULL);
-
+#endif
       break;
     default:
       // warning ("pick: unknown event %d\n", event);
@@ -328,6 +360,8 @@ chip_t *pick_install (sim_t *sim,
 				     pick_reg);
 
   pick_init_ops (sim);
+
+  pick_set_act_f1 (sim);  // $$$ temporary - paper advance not pressed!
 
   return act_reg->pick_chip;
 }
