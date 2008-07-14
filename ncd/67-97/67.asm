@@ -257,16 +257,20 @@ L0164:  0 -> s 15		; wait for key release
 
 ; ------------------------------------------------------------------
 ; code matches 97 after this point - addresses different
+; this is the main wait-for-key loop
 ; ------------------------------------------------------------------
 
 L0167:  0 -> s 3		; test pause flag
         crc fs?c pause
         if 1 = s 3		; set?
           then go to L0263	;   yes
+
         0 -> s 1
+
         crc fs?c prog_mode	; in program mode?
         if 1 = s 3
           then go to L0204
+
         if 0 = s 11
           then go to L0206
         0 -> s 11

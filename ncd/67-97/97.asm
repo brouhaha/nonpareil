@@ -227,6 +227,7 @@ L0135:  b -> c[w]
         m1 exchange c
         if 1 = s 11
           then go to L0301
+
 L0152:  delayed rom @17
         jsb S7706
         a exchange b[w]
@@ -242,8 +243,8 @@ L0162:  delayed rom @02
 ; code matches 67 before this point - addresses different
 ; ------------------------------------------------------------------
 
-L0164:  if 0 = s 5
-          then go to L1642
+L0164:  if 0 = s 5		; paper advance button pressed?
+          then go to key_paper_adv	;   yes
 
 ; ------------------------------------------------------------------
 ; code matches 67 after this point - addresses different
@@ -255,6 +256,7 @@ L0164:  if 0 = s 5
 
 ; ------------------------------------------------------------------
 ; code matches 67 before this point - addresses different
+; this is the main wait-for-key loop
 ; ------------------------------------------------------------------
 
 L0171:  crc fs?c man_mode	; reset MAN and NORM, hardware will
@@ -262,17 +264,20 @@ L0171:  crc fs?c man_mode	; reset MAN and NORM, hardware will
         nop
 
 ; ------------------------------------------------------------------
-; code matches 67 after this point - addresses different
+; code matches 67 after this point - address @0167
 ; ------------------------------------------------------------------
 
         0 -> s 3		; test pause flag
         crc fs?c pause
         if 1 = s 3		; set?
           then go to L0244	;   yes
+
         0 -> s 1
+
         crc fs?c prog_mode	; in program mode?
         if 1 = s 3
           then go to L0211
+
         if 0 = s 11
           then go to L0213
         0 -> s 11
@@ -286,9 +291,10 @@ L0211:  if 0 = s 11
 ; code matches 67 before this point - addresses different
 ; ------------------------------------------------------------------
 
-L0213:  0 -> s 5
+L0213:  0 -> s 5		; paper advance button pressed?
         if 0 = s 5
-          then go to L1642
+          then go to key_paper_adv	;   yes
+	
         if 1 = s 2
           then go to L0266
 L0220:  0 -> s 3		; card inserted?
@@ -954,18 +960,22 @@ L1226:  delayed rom @00
 L1236:  crc fs?c prog_mode
         if 0 = s 3
           then go to L1250
-        0 -> s 5
+
+        0 -> s 5		; paper advance button pressed?
         if 0 = s 5
           then go to L1257
+
         0 -> s 3		; check for key pressed
         pick key?
         if 0 = s 3
           then go to L1236
 
 L1250:  crc fs?c prog_mode
-        0 -> s 5
+
+        0 -> s 5		; paper advance button pressed?
         if 0 = s 5
           then go to L1257
+	
         pick key?		; check for key pressed
         if 0 = s 3
           then go to L1250
@@ -1273,7 +1283,8 @@ L1635:  pick print home?
         pick print 3
         return
 
-L1642:  b exchange c[w]
+key_paper_adv:
+	b exchange c[w]
         jsb S1631
         jsb S1442
         delayed rom @00
