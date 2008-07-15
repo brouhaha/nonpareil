@@ -317,7 +317,12 @@ static bool sim_read_mod1_file (sim_t *sim,
       break;
 
     case HARDWARE_PRINTER:
-      sim->install_hardware_callback (sim->install_hardware_callback_ref, CHIP_HELIOS);
+      (void) gui_printer_install (sim,
+				  CHIP_HELIOS,
+				  0,   // index
+				  (HAS_PAPER_ADVANCE_BUTTON +
+				   HAS_PRINT_BUTTON +
+				   HAS_MODE_SWITCH));
       break;
 
     default:
@@ -665,6 +670,7 @@ static void cmd_add_chip (sim_t *sim, sim_msg_t *msg)
   if (chip_type_info->chip_install_fn)
     {
       msg->chip = chip_type_info->chip_install_fn (sim,
+						   msg->chip_type,
 						   msg->arg1,  // index
 						   msg->arg2); // flags
     }
@@ -922,8 +928,6 @@ static gboolean gui_cmd_callback (gpointer data)
 // the thread function.
 
 sim_t *sim_init  (char *ncd_fn,
-		  install_hardware_callback_fn_t *install_hardware_callback,
-		  void *install_hardware_callback_ref,
 		  display_update_callback_fn_t *display_update_callback,
 		  void *display_update_callback_ref)
 {
@@ -945,9 +949,6 @@ sim_t *sim_init  (char *ncd_fn,
 								 sim->thread_vars->gui_cmd_free_q,
 								 NULL,  // use main context
 								 gui_cmd_callback);
-
-  sim->install_hardware_callback = install_hardware_callback;
-  sim->install_hardware_callback_ref = install_hardware_callback_ref;
 
   // save display callback info
   sim->display_update_callback = display_update_callback;

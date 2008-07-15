@@ -24,6 +24,10 @@ MA 02111, USA.
 
 #include "chip.h"
 
+// chip GUI install functions:
+chip_install_fn_t gui_printer_install;
+
+// chip install functions:
 chip_install_fn_t crc_install;
 chip_install_fn_t pick_install;
 
@@ -35,45 +39,45 @@ chip_install_fn_t voyager_r2d2_install;
 
 static chip_type_info_t chip_type_info [] =
 {
-  [CHIP_UNKNOWN]                     = { "unknown", NULL },
+  [CHIP_UNKNOWN]                     = { "unknown", NULL, NULL },
 
   // classic
-  [CHIP_CLASSIC_CTC]                 = { "classic_ctc", NULL },
-  [CHIP_CLASSIC_ARC]                 = { "classic_arc", NULL },
-  [CHIP_CLASSIC_CLOCK_DRIVER]        = { "classic_clock_driver", NULL },
-  [CHIP_CLASSIC_CATHODE_DRIVER]      = { "classic_cathode_driver", NULL },
-  [CHIP_CLASSIC_ANODE_DRIVER]        = { "classic_anode_driver", NULL },
-  [CHIP_CLASSIC_ROM]                 = { "classic_rom", NULL },
-  [CHIP_CLASSIC_RAM]                 = { "classic_ram", NULL },
-  [CHIP_CLASSIC_PROGRAM_MEMORY]      = { "classic_program_memory", NULL },
+  [CHIP_CLASSIC_CTC]                 = { "classic_ctc", NULL, NULL },
+  [CHIP_CLASSIC_ARC]                 = { "classic_arc", NULL, NULL },
+  [CHIP_CLASSIC_CLOCK_DRIVER]        = { "classic_clock_driver", NULL, NULL },
+  [CHIP_CLASSIC_CATHODE_DRIVER]      = { "classic_cathode_driver", NULL, NULL },
+  [CHIP_CLASSIC_ANODE_DRIVER]        = { "classic_anode_driver", NULL, NULL },
+  [CHIP_CLASSIC_ROM]                 = { "classic_rom", NULL, NULL },
+  [CHIP_CLASSIC_RAM]                 = { "classic_ram", NULL, NULL },
+  [CHIP_CLASSIC_PROGRAM_MEMORY]      = { "classic_program_memory", NULL, NULL },
 
   // woodstock (and topcat, sting)
-  [CHIP_WOODSTOCK_ACT]               = { "woodstock_act", NULL },
-  [CHIP_WOODSTOCK_CATHODE_DRIVER_12] = { "woodstock_cathode_driver_12", NULL },
-  [CHIP_WOODSTOCK_CATHODE_DRIVER_14] = { "woodstock_cathode_driver_14", NULL },
-  [CHIP_WOODSTOCK_ROM_ANODE_DRIVER]  = { "woodstock_anode_driver", NULL },
-  [CHIP_WOODSTOCK_RAM]               = { "woodstock_ram", NULL },
-  [CHIP_WOODSTOCK_ROM_RAM]           = { "woodstock_rom_ram", NULL },
-  [CHIP_WOODSTOCK_PICK]              = { "woodstock_pick", pick_install },
-  [CHIP_WOODSTOCK_CRC]               = { "woodstock_crc", crc_install },
+  [CHIP_WOODSTOCK_ACT]               = { "woodstock_act", NULL, NULL },
+  [CHIP_WOODSTOCK_CATHODE_DRIVER_12] = { "woodstock_cathode_driver_12", NULL, NULL },
+  [CHIP_WOODSTOCK_CATHODE_DRIVER_14] = { "woodstock_cathode_driver_14", NULL, NULL },
+  [CHIP_WOODSTOCK_ROM_ANODE_DRIVER]  = { "woodstock_anode_driver", NULL, NULL },
+  [CHIP_WOODSTOCK_RAM]               = { "woodstock_ram", NULL, NULL },
+  [CHIP_WOODSTOCK_ROM_RAM]           = { "woodstock_rom_ram", NULL, NULL },
+  [CHIP_WOODSTOCK_PICK]              = { "woodstock_pick", gui_printer_install, pick_install },
+  [CHIP_WOODSTOCK_CRC]               = { "woodstock_crc", NULL, crc_install },
 
   // spice
-  [CHIP_SPICE_ACT]                   = { "spice_act", NULL },
+  [CHIP_SPICE_ACT]                   = { "spice_act", NULL, NULL },
 
   // coconut & peripherals
-  [CHIP_NUT_CPU]                     = { "nut_cpu", NULL },
-  [CHIP_NUT_ROM]                     = { "nut_rom", NULL },
-  [CHIP_NUT_RAM]                     = { "nut_ram", NULL },
-  [CHIP_COCONUT_LCD]                 = { "coconut_lcd", coconut_lcd_install },
-  [CHIP_PHINEAS]                     = { "nut_phineas", phineas_install },
-  [CHIP_HELIOS]                      = { "nut_helios", helios_install },
-  [CHIP_HYSTER]                      = { "nut_hyster", NULL },
-  [CHIP_CHESHIRE]                    = { "nut_cheshire", NULL },
-  [CHIP_GRAPENUTS]                   = { "nut_grapenuts", NULL },
-  [CHIP_BLINKY]                      = { "nut_blinky", NULL },
+  [CHIP_NUT_CPU]                     = { "nut_cpu", NULL, NULL },
+  [CHIP_NUT_ROM]                     = { "nut_rom", NULL, NULL },
+  [CHIP_NUT_RAM]                     = { "nut_ram", NULL, NULL },
+  [CHIP_COCONUT_LCD]                 = { "coconut_lcd", NULL, coconut_lcd_install },
+  [CHIP_PHINEAS]                     = { "nut_phineas", NULL, phineas_install },
+  [CHIP_HELIOS]                      = { "nut_helios", NULL, helios_install },
+  [CHIP_HYSTER]                      = { "nut_hyster", NULL, NULL },
+  [CHIP_CHESHIRE]                    = { "nut_cheshire", NULL, NULL },
+  [CHIP_GRAPENUTS]                   = { "nut_grapenuts", NULL, NULL },
+  [CHIP_BLINKY]                      = { "nut_blinky", NULL, NULL },
 
   // voyager (uses NUT CPU)
-  [CHIP_VOYAGER_R2D2]                = { "voyager_r2d2", voyager_r2d2_install },
+  [CHIP_VOYAGER_R2D2]                = { "voyager_r2d2", NULL, voyager_r2d2_install },
 };
 
 

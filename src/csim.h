@@ -53,10 +53,6 @@ typedef struct
                              // was pressed first if multiple are pressed
                              // simultaneusly, used for two-key rollover
   button_info_t *button_info [KML_MAX_BUTTON];
-
-  // peripherals
-  chip_t *peripheral_chip [MAX_CHIP_TYPE];
-  // void *peripheral_data [MAX_CHIP_TYPE];
 } csim_t;
 
 

@@ -357,6 +357,7 @@ static void voyager_display_bitmap_read (nut_reg_t *nut_reg UNUSED,
 
 
 chip_t *voyager_r2d2_install (sim_t *sim,
+			      chip_type_t chip_type,
 			      int32_t index,
 			      int32_t flags UNUSED)
 {

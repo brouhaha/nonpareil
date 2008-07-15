@@ -524,30 +524,6 @@ void set_default_state_path (csim_t *csim)
 }
 
 
-bool gui_install_hardware (void *ref,
-			   chip_type_t chip_type)
-{
-  csim_t *csim = ref;
-
-  switch (chip_type)
-    {
-    case CHIP_HELIOS:
-      if (csim->peripheral_chip [CHIP_HELIOS])
-	{
-	  warning ("Helios printer already installed\n");
-	  return false;
-	}
-      csim->peripheral_chip [CHIP_HELIOS] = gui_printer_init (csim->sim);
-      break;
-    default:
-      warning ("unknown chip type %d\n", chip_type);
-      return false;
-    }
-
-  return true;
-}
-
-
 bool gui_remove_hardware (void *ref             UNUSED,
 			  chip_type_t chip_type UNUSED)
 {
@@ -867,8 +843,6 @@ int main (int argc, char *argv[])
     fatal (2, "can't find .ncd file\n");
 
   csim->sim = sim_init (ncd_fn,
-			gui_install_hardware,
-			csim,  // install_hardware_callback_ref
 			(display_update_callback_fn_t *) gui_display_update,
 			csim->gui_display);  // display_update_callback_ref
 

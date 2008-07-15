@@ -37,6 +37,7 @@ MA 02111, USA.
 #include "proc_int.h"
 #include "proc_nut.h"
 #include "helios.h"
+#include "printer.h"
 
 
 // NPIC flags:
@@ -365,7 +366,9 @@ static void helios_eol (sim_t *sim, bool right_justify)
   printer_line_data_t *line;  // graphic line buffer
 
   // init graphic output buffer
-  line = alloc (sizeof (printer_line_data_t));
+  line = alloc (sizeof (printer_line_data_t) + 
+		PRINTER_WIDTH * sizeof (uint8_t));
+  line->col_count = PRINTER_WIDTH;
   col_idx = 0;
 
   // get saved mode from start of buffer

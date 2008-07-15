@@ -23,21 +23,6 @@ MA 02111, USA.
 struct chip_t;
 struct sim_t;
 
-typedef struct chip_t *chip_install_fn_t (struct sim_t *sim,
-					  int32_t index,
-					  int32_t flags);
-
-
-typedef struct
-{
-  char *name;
-  chip_install_fn_t *chip_install_fn;
-} chip_type_info_t;
-
-
-// opaque type representing a chip (or more generally, a hardware device)
-typedef struct chip_t chip_t;
-
 
 typedef enum
 {
@@ -83,6 +68,24 @@ typedef enum
 
   MAX_CHIP_TYPE 	// must be last
 } chip_type_t;
+
+
+typedef struct chip_t *chip_install_fn_t (struct sim_t *sim,
+					  chip_type_t type,
+					  int32_t index,
+					  int32_t flags);
+
+
+typedef struct
+{
+  char *name;
+  chip_install_fn_t *chip_gui_install_fn;
+  chip_install_fn_t *chip_install_fn;
+} chip_type_info_t;
+
+
+// opaque type representing a chip (or more generally, a hardware device)
+typedef struct chip_t chip_t;
 
 
 chip_type_t find_chip_type_by_name (char *s);

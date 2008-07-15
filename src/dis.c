@@ -731,8 +731,6 @@ int main (int argc, char *argv[])
     fatal (2, "can't find .ncd file\n");
 
   sim = sim_init (ncd_fn,
-		  NULL,  // install_hardware_callback
-		  NULL,  // install_hardware_callback_ref
 		  NULL,  // display_update_callback
 		  NULL); // display_udpate_callback_ref 
 
@@ -794,6 +792,15 @@ int main (int argc, char *argv[])
     disassemble_all (sim, flags);
 
   exit (0);
+}
+
+
+// GUI stubs
+chip_t *gui_printer_install (sim_t *sim,
+			     chip_type_t type,
+			     int32_t index,
+			     int32_t flags)
+{
 }
 
 

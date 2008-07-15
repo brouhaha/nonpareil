@@ -455,6 +455,7 @@ static void coconut_display_event_fn (sim_t      *sim,
 
 
 chip_t *coconut_lcd_install (sim_t *sim,
+			     chip_type_t chip_type,
 			     int32_t index UNUSED,
 			     int32_t flags UNUSED)
 {

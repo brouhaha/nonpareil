@@ -43,13 +43,6 @@ enum
 };
 
 
-typedef struct
-{
-  bool tear;
-  uint8_t columns [PRINTER_WIDTH];
-} printer_line_data_t;
-
-
 // Private definitions for sim thread only:
 
 #define HELIOS_NPIC_PERTCT_ADDR 9

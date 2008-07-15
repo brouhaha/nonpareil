@@ -205,9 +205,6 @@ struct sim_t
   display_update_callback_fn_t *display_update_callback;
   void *display_update_callback_ref;
 
-  install_hardware_callback_fn_t *install_hardware_callback;
-  void *install_hardware_callback_ref;
-
   // debug log
   debug_trace_callback_fn_t *debug_trace_callback;
   void *debug_trace_callback_ref;

@@ -34,6 +34,7 @@ MA 02111, USA.
 #include "proc_int.h"
 #include "proc_woodstock.h"
 #include "pick.h"
+#include "printer.h"
 
 
 #define PRINTER_COLUMNS 20
@@ -129,7 +130,7 @@ static void pick_press_key (sim_t *sim, int keycode)
       pick_reg->key_buffer.tail++;
       if (pick_reg->key_buffer.tail >= PICK_KEY_BUFFER_SIZE)
 	pick_reg->key_buffer.tail = 0;
-#ifdef PICK_DEBUG
+#ifdef PICK_KEYBOARD_DEBUG
       fprintf (stdout, "PICK: key %02x pressed, count=%d\n", keycode, pick_reg->key_buffer.count);
 #endif
     }
@@ -151,7 +152,7 @@ static bool pick_read (sim_t *sim)
   pick_reg_t *pick_reg = get_chip_data (act_reg->pick_chip);
 
   int keycode = pick_reg->key_buffer.keycode [pick_reg->key_buffer.head];
-#ifdef PICK_DEBUG
+#ifdef PICK_KEYBOARD_DEBUG
   fprintf (stdout, "PICK read, returning keycode 0x%02x, count was %d\n", keycode, pick_reg->key_buffer.count);
 #endif
   if (pick_reg->key_buffer.count)
@@ -204,7 +205,7 @@ static void pick_op_check_keycode_available (sim_t *sim,
   act_reg_t *act_reg = get_chip_data (sim->first_chip);
   pick_reg_t *pick_reg = get_chip_data (act_reg->pick_chip);
 
-#ifdef PICK_DEBUG
+#ifdef PICK_KEYBOARD_DEBUG
   fprintf (stdout, "PICK: key buffer check: count=%d\n", pick_reg->key_buffer.count);
 #endif
 
@@ -249,6 +250,7 @@ static void pick_op_cr (sim_t *sim,
 }
 
 
+#ifdef PICK_PRINTER_DEBUG
 char *printer_char_map [64] =
 {
   "N",     "L",  "G",   "O",  "P",   "R", "S",    "T",
@@ -260,21 +262,78 @@ char *printer_char_map [64] =
   "0",     "1",  "2",   "3",  "4",   "5", "6",    "7",
   "8",     "9",  ".",   "-",  "+",   "*", " ",    "<cr>"
 };
+#endif
 
 
-static void print_buffer (sim_t *sim)
+static void pick_line_add_char (printer_line_data_t *line,
+				int *col_idx,
+				segment_bitmap_t bitmap)
+{
+  int i;
+
+  for (i = 0; i < 5; i++)
+    {
+      line->columns [--(*col_idx)] = (((bitmap << 6)  & 0x40) +
+				      ((bitmap)       & 0x20) +
+				      ((bitmap >> 6)  & 0x10) +
+				      ((bitmap >> 12) & 0x08) +
+				      ((bitmap >> 18) & 0x04) +
+				      ((bitmap >> 24) & 0x02) +
+				      ((bitmap >> 30) & 0x01));
+      bitmap >>= 1;
+    }
+  (*col_idx) -= 2;
+}
+
+
+static void pick_printer_finish_line (sim_t *sim)
 {
   act_reg_t *act_reg = get_chip_data (sim->first_chip);
   pick_reg_t *pick_reg = get_chip_data (act_reg->pick_chip);
+  printer_line_data_t *line;  // graphic line buffer
+  int col_idx;
   int i;
 
+  // init graphic output buffer
+  col_idx = PRINTER_COLUMNS * 7;
+  line = alloc (sizeof (printer_line_data_t) + col_idx * sizeof (uint8_t));
+  line->col_count = col_idx;
+
+  for (i = PRINTER_COLUMNS - 1; i >= pick_reg->print_buffer.left_ptr; i--)
+    {
+      uint8_t ch = pick_reg->print_buffer.buffer [i];
+      pick_line_add_char (line,
+			  & col_idx,
+			  pick_reg->printer_char_gen [ch]);
+      
+    }
+
+  sim_send_chip_msg_to_gui (sim, act_reg->pick_chip, line);
+
+  pick_reg->print_buffer.left_ptr = PRINTER_COLUMNS;
+}
+
+
+static void pick_print_buffer (sim_t *sim)
+{
+  act_reg_t *act_reg = get_chip_data (sim->first_chip);
+  pick_reg_t *pick_reg = get_chip_data (act_reg->pick_chip);
+
+  // $$$ should start timer for CR seen, home
+
+#ifdef PICK_PRINTER_DEBUG
+  int i;
   for (i = pick_reg->print_buffer.left_ptr + 1; i < PRINTER_COLUMNS; i++)
     {
       printf ("%s", printer_char_map [pick_reg->print_buffer.buffer [i]]);
     }
   printf ("\n");
-  pick_reg->print_buffer.left_ptr = PRINTER_COLUMNS;
+#endif
+
+  // $$$ this shouldn't be done here!
+  pick_printer_finish_line (sim);
 }
+
 
 static void pick_print_char (sim_t *sim, uint8_t ch)
 {
@@ -301,8 +360,7 @@ static void pick_op_print_0123 (sim_t *sim,
     {
       pick_print_char (sim, (top_bits << 4) | (all_bits & 0xf));
     }
-  print_buffer (sim);
-  // $$$ should start timer for CR seen, home
+  pick_print_buffer (sim);
 }
 
 static void pick_op_print6 (sim_t *sim,
@@ -321,11 +379,11 @@ static void pick_op_print6 (sim_t *sim,
       ch = ((all_bits & 0x03) << 4) | ((all_bits >> 2) & 0x0f);
       pick_print_char (sim, ch);
     }
-  print_buffer (sim);
-  // $$$ should start timer for CR seen, home
+  pick_print_buffer (sim);
 }
 
-static void pick_reset (sim_t *sim)
+
+static void pick_keyboard_reset (sim_t *sim)
 {
   act_reg_t *act_reg = get_chip_data (sim->first_chip);
   pick_reg_t *pick_reg = get_chip_data (act_reg->pick_chip);
@@ -333,6 +391,22 @@ static void pick_reset (sim_t *sim)
   pick_reg->key_buffer.count = 0;
   pick_reg->key_buffer.head = 0;
   pick_reg->key_buffer.tail = 0;
+}
+
+
+static void pick_printer_reset (sim_t *sim)
+{
+  act_reg_t *act_reg = get_chip_data (sim->first_chip);
+  pick_reg_t *pick_reg = get_chip_data (act_reg->pick_chip);
+
+  pick_reg->print_buffer.left_ptr = PRINTER_COLUMNS;
+}
+
+
+static void pick_reset (sim_t *sim)
+{
+  pick_keyboard_reset (sim);
+  pick_printer_reset (sim);
 }
 
 
@@ -427,8 +501,7 @@ chip_t *pick_install (sim_t *sim,
   act_reg = get_chip_data (sim->first_chip);
   pick_reg = alloc (sizeof (pick_reg_t));
 
-  pick_reg->printer_char_gen = calcdef_get_char_gen (sim->calcdef,
-						     "woodstock_pick");
+  pick_reg->printer_char_gen = calcdef_get_char_gen (sim->calcdef, "pick");
 
   act_reg->pick_chip = install_chip (sim,
 				     & pick_chip_detail,

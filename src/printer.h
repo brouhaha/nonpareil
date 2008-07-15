@@ -1,6 +1,6 @@
 /*
 $Id$
-Copyright 2005 Eric L. Smith <eric@brouhaha.com>
+Copyright 2005, 2008 Eric Smith <eric@brouhaha.com>
 
 Nonpareil is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License version 2 as
@@ -20,26 +20,21 @@ MA 02111, USA.
 */
 
 
-#define PRINTER_LEFT_MARGIN_CHARS 1
-#define PRINTER_RIGHT_MARGIN_CHARS 1
-
-#define PRINTER_LINE_HEIGHT_PIXELS 12
-
-#define PRINTER_WINDOW_INITIAL_HEIGHT_LINES 10
-
-
-#define PRINTER_LEFT_MARGIN_PIXELS \
-    (PRINTER_LEFT_MARGIN_CHARS * PRINTER_CHARACTER_WIDTH_PIXELS)
-#define PRINTER_RIGHT_MARGIN_PIXELS \
-    (PRINTER_RIGHT_MARGIN_CHARS * PRINTER_CHARACTER_WIDTH_PIXELS)
-
-#define PRINTER_WIDTH_WITH_MARGINS \
-    (PRINTER_WIDTH + PRINTER_LEFT_MARGIN_PIXELS + PRINTER_RIGHT_MARGIN_PIXELS)
-
-#define PRINTER_MAX_BUFFER_LINES (80 * 12 * 6)  // 80 ft of 6 lines per inch
-
-#define PRINTER_WINDOW_INITIAL_HEIGHT_PIXELS \
-    (PRINTER_WINDOW_INITIAL_HEIGHT_LINES * PRINTER_LINE_HEIGHT_PIXELS)
+typedef struct
+{
+  bool tear;
+  int col_count;
+  uint8_t columns [0];
+} printer_line_data_t;
 
 
-chip_t *gui_printer_init (sim_t *sim);
+// config flags:
+#define HAS_PAPER_ADVANCE_BUTTON 0x01
+#define HAS_PRINT_BUTTON         0x02
+#define HAS_MODE_SWITCH          0x04
+
+
+chip_t *gui_printer_install (sim_t *sim,
+			     chip_type_t type,
+			     int32_t index,
+			     int32_t flags);

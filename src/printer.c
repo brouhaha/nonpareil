@@ -49,6 +49,28 @@ MA 02111, USA.
 #endif
 
 
+#define PRINTER_LEFT_MARGIN_CHARS 1
+#define PRINTER_RIGHT_MARGIN_CHARS 1
+
+#define PRINTER_LINE_HEIGHT_PIXELS 12
+
+#define PRINTER_WINDOW_INITIAL_HEIGHT_LINES 10
+
+
+#define PRINTER_LEFT_MARGIN_PIXELS \
+    (PRINTER_LEFT_MARGIN_CHARS * PRINTER_CHARACTER_WIDTH_PIXELS)
+#define PRINTER_RIGHT_MARGIN_PIXELS \
+    (PRINTER_RIGHT_MARGIN_CHARS * PRINTER_CHARACTER_WIDTH_PIXELS)
+
+#define PRINTER_WIDTH_WITH_MARGINS \
+    (PRINTER_WIDTH + PRINTER_LEFT_MARGIN_PIXELS + PRINTER_RIGHT_MARGIN_PIXELS)
+
+#define PRINTER_MAX_BUFFER_LINES (80 * 12 * 6)  // 80 ft of 6 lines per inch
+
+#define PRINTER_WINDOW_INITIAL_HEIGHT_PIXELS \
+    (PRINTER_WINDOW_INITIAL_HEIGHT_LINES * PRINTER_LINE_HEIGHT_PIXELS)
+
+
 typedef enum
 {
   PSFT_PNG,
@@ -61,6 +83,8 @@ typedef struct
 {
   sim_t *sim;
   chip_t *chip;
+
+  uint32_t config_flags;
 
   int scale;  // magnification of output, e.g., 2 for double size
 
@@ -191,6 +215,15 @@ static void gui_printer_draw_tear (gui_printer_t *p,
 }
 
 
+static uint8_t get_col_data (printer_line_data_t *line,
+			     int col)
+{
+  if (col > line->col_count)
+    return 0;
+  return line->columns [col];
+}
+
+
 static void gui_printer_copy_pixels_to_pixbuf (gui_printer_t *p,
 					       printer_line_data_t *line)
 {
@@ -208,7 +241,8 @@ static void gui_printer_copy_pixels_to_pixbuf (gui_printer_t *p,
 	  if (((y / p->scale) < PRINTER_CHARACTER_HEIGHT_PIXELS) &&
 	      (((x / p->scale) >= PRINTER_LEFT_MARGIN_PIXELS) &&
 	       ((x / p->scale) < PRINTER_WIDTH + PRINTER_LEFT_MARGIN_PIXELS)))
-	    col = line->columns [(x / p->scale) - PRINTER_LEFT_MARGIN_PIXELS];
+	    col = get_col_data (line,
+				(x / p->scale) - PRINTER_LEFT_MARGIN_PIXELS);
 	  else
 	    col = 0x00;  // white
 	  val = (col & (1 << (y / p->scale))) ? 0x00 : 0xff;
@@ -468,37 +502,46 @@ static GtkWidget *gui_printer_create_buttons (gui_printer_t *p)
   GtkWidget *box;
   GtkWidget *print, *advance;
 
-  print = gtk_button_new_with_label ("Print");
-  advance = gtk_button_new_with_label ("Paper Advance");
-
-  g_signal_connect (G_OBJECT (print),
-		    "pressed",
-		    G_CALLBACK (gui_printer_print_button_pressed),
-		    p);
-
-  g_signal_connect (G_OBJECT (print),
-		    "released",
-		    G_CALLBACK (gui_printer_print_button_released),
-		    p);
-
-  g_signal_connect (G_OBJECT (advance),
-		    "pressed",
-		    G_CALLBACK (gui_printer_advance_button_pressed),
-		    p);
-
-  g_signal_connect (G_OBJECT (advance),
-		    "released",
-		    G_CALLBACK (gui_printer_advance_button_released),
-		    p);
-
 #ifdef PRINTER_MODE_BUTTONS
   box = gtk_vbox_new (FALSE, 0);  // $$$ Should we use a Gtk[HV]ButtonBox?
 #else
   box = gtk_hbox_new (FALSE, 0);  // $$$ Should we use a Gtk[HV]ButtonBox?
 #endif
 
-  gtk_box_pack_start (GTK_BOX (box), print, FALSE, FALSE, 0);
-  gtk_box_pack_start (GTK_BOX (box), advance, FALSE, FALSE, 0);
+  if (p->config_flags & HAS_PRINT_BUTTON)
+    {
+      print = gtk_button_new_with_label ("Print");
+
+      g_signal_connect (G_OBJECT (print),
+			"pressed",
+			G_CALLBACK (gui_printer_print_button_pressed),
+			p);
+
+      g_signal_connect (G_OBJECT (print),
+			"released",
+			G_CALLBACK (gui_printer_print_button_released),
+			p);
+
+      gtk_box_pack_start (GTK_BOX (box), print, FALSE, FALSE, 0);
+    }
+
+  if (p->config_flags & HAS_PAPER_ADVANCE_BUTTON)
+    {
+      advance = gtk_button_new_with_label ("Paper Advance");
+
+      g_signal_connect (G_OBJECT (advance),
+			"pressed",
+			G_CALLBACK (gui_printer_advance_button_pressed),
+			p);
+
+      g_signal_connect (G_OBJECT (advance),
+			"released",
+			G_CALLBACK (gui_printer_advance_button_released),
+			p);
+
+      gtk_box_pack_start (GTK_BOX (box), advance, FALSE, FALSE, 0);
+    }
+
  
   return box;
 }
@@ -515,12 +558,18 @@ static GtkWidget *gui_printer_create_controls (gui_printer_t *p)
   box = gtk_hbox_new (FALSE, 1);
 
 #ifdef PRINTER_MODE_BUTTONS
-  mode_frame = gui_printer_create_mode_frame (p);
-  gtk_box_pack_start (GTK_BOX (box), mode_frame, FALSE, FALSE, 0);
+  if (p->config_flags & HAS_MODE_SWITCH)
+    {
+      mode_frame = gui_printer_create_mode_frame (p);
+      gtk_box_pack_start (GTK_BOX (box), mode_frame, FALSE, FALSE, 0);
+    }
 #endif // PRINTER_MODE_BUTTONS
 
-  buttons = gui_printer_create_buttons (p);
-  gtk_box_pack_start (GTK_BOX (box), buttons, FALSE, FALSE, 0);
+  if (p->config_flags & (HAS_PAPER_ADVANCE_BUTTON | HAS_PRINT_BUTTON))
+    {
+      buttons = gui_printer_create_buttons (p);
+      gtk_box_pack_start (GTK_BOX (box), buttons, FALSE, FALSE, 0);
+    }
 
   return box;
 }
@@ -559,7 +608,8 @@ static void gui_printer_write_png_line (gui_printer_t *p,
     {
       for (x = 0; x < PRINTER_WIDTH; x++)
 	{
-          uint8_t col = p->line [y_line]->columns [x];
+	  printer_line_data_t *line = p->line [y_line];
+          uint8_t col = get_col_data (line, x);
 	  row_data [x] = (col & (1 << y_pixel)) ? 0x01 : 0x00;
 	}
     }
@@ -758,7 +808,10 @@ GtkWidget *gui_printer_create_menubar (gui_printer_t *p)
 }
 
 
-chip_t *gui_printer_init (sim_t *sim)
+chip_t *gui_printer_install (sim_t *sim,
+			     chip_type_t type,
+			     int32_t index,
+			     int32_t flags)
 {
   gui_printer_t *p;
   GtkWidget *menubar;
@@ -769,11 +822,12 @@ chip_t *gui_printer_init (sim_t *sim)
   p = alloc (sizeof (gui_printer_t));
 
   p->sim = sim;
+  p->config_flags = flags;
 
   p->chip = sim_add_chip (sim,
-			  CHIP_HELIOS,         // chip_type
-			  0,                   // index
-			  0,                   // flags
+			  type,                // chip_type
+			  index,               // index
+			  flags,               // flags
 			  gui_printer_update,  // callback_fn
 			  p);                  // ref
   if (! p->chip)

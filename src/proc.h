@@ -110,8 +110,6 @@ typedef void debug_trace_callback_fn_t (void *ref,
  * Create the sim thread, initially in idle state
  */
 sim_t *sim_init  (char *ncd_fn,
-		  install_hardware_callback_fn_t *install_hardware_callback,
-		  void *install_hardware_callback_ref,
 		  display_update_callback_fn_t *display_update_callback,
 		  void *display_update_callback_ref);
 
