@@ -1742,7 +1742,7 @@ static void woodstock_reset (sim_t *sim)
   act_reg->key_flag = 0;
 
   if (sim->platform == PLATFORM_WOODSTOCK)  // but not PLATFORM_TOPCAT
-    act_reg->ext_flag [EXT_FLAG_ACT_F2] = 1;  // force battery ok
+    act_reg->ext_flag [EXT_FLAG_ACT_F1] = 1;  // force battery ok
 }
 
 
