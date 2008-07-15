@@ -8,7 +8,6 @@ Needed for next release:
   nui files for 45/55/80, 97
 
   67/97 card reader support
-  97 printer support
   97 SST/BST key support (CR flag 4 tied to keyboard KBE)
 
   Put license notices in microcode source and object files and NCD files.

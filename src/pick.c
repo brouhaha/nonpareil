@@ -181,16 +181,6 @@ static bool pick_write (sim_t *sim UNUSED)
   return false;
 }
 
-static void pick_set_act_f1 (sim_t *sim)
-{
-  chip_event (sim,
-	      sim->first_chip,  // ACT only
-	      event_set_flag,
-	      EXT_FLAG_ACT_F1,
-	      1,
-	      NULL);
-}
-
 static void pick_pulse_act_f2 (sim_t *sim)
 {
   chip_event (sim,
@@ -200,6 +190,7 @@ static void pick_pulse_act_f2 (sim_t *sim)
 	      0,                // arg2 unused
 	      NULL);
 }
+
 
 static void pick_op_check_keycode_available (sim_t *sim,
 					    int opcode UNUSED)
@@ -382,6 +373,17 @@ static void pick_op_print6 (sim_t *sim,
 }
 
 
+static void pick_paper_advance_button (sim_t *sim, int state)
+{
+  chip_event (sim,
+	      sim->first_chip,  // ACT only
+	      event_set_flag,
+	      EXT_FLAG_ACT_F1,
+	      ! state,
+	      NULL);
+}
+
+
 static void pick_keyboard_reset (sim_t *sim)
 {
   act_reg_t *act_reg = get_chip_data (sim->first_chip);
@@ -439,6 +441,9 @@ static void pick_event_fn (sim_t      *sim,
 	pick_press_key (sim, arg1);
       else
 	pick_release_key (sim, arg1);
+      break;
+    case event_printer_paper_advance_button:
+      pick_paper_advance_button (sim, arg1);
       break;
     case event_flag_out_change:
       // ??? in 91
@@ -513,7 +518,7 @@ chip_t *pick_install (sim_t *sim,
 
   pick_init_ops (sim);
 
-  pick_set_act_f1 (sim);  // $$$ temporary - paper advance not pressed!
+  pick_paper_advance_button (sim, false);  // paper advance not pressed!
 
   return act_reg->pick_chip;
 }

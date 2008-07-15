@@ -46,8 +46,9 @@
 <!ELEMENT chip (part_info*, inst_clock*, memory*, chargen*)>
 <!ATTLIST chip
           type  CDATA #REQUIRED
+          id    CDATA #IMPLIED
           index CDATA #IMPLIED
-          id    CDATA #IMPLIED>
+	  flags CDATA #IMPLIED>
 
 <!ELEMENT part_info (vendor_name+, part_number*, date_code*)>
 

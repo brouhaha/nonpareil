@@ -20,6 +20,14 @@ MA 02111, USA.
 */
 
 
+enum
+{
+  event_printer_set_mode = first_printer_event,
+  event_printer_print_button,
+  event_printer_paper_advance_button
+};
+
+
 typedef struct
 {
   bool tear;

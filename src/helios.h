@@ -35,14 +35,6 @@ MA 02111, USA.
 #define PRINTER_CHARACTER_HEIGHT_PIXELS 7
 
 
-enum
-{
-  event_printer_set_mode = first_chip_event,
-  event_printer_print_button,
-  event_printer_paper_advance_button
-};
-
-
 // Private definitions for sim thread only:
 
 #define HELIOS_NPIC_PERTCT_ADDR 9

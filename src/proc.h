@@ -46,9 +46,13 @@ typedef enum
   event_set_flag,   // arg1 selects flag, arg2 is new value (bool)
   event_pulse_flag, // arg1 selects flag
 
-  first_arch_event = 0x100,  // CPU architecture specific events
+  first_arch_event = 0x100,   // CPU architecture specific events
 
-  first_chip_event = 0x200   // chip specific events
+  first_chip_event = 0x200,   // chip specific events
+
+  // Printer events are applicable to several chips, so we'll define
+  // a base for them.
+  first_printer_event = 0x0300
 } event_id_t;
 
 
