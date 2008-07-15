@@ -205,7 +205,7 @@ static void parse_bitmap (void *ref,
 			  int len)
 {
   calcdef_t *calcdef = ref;
-  uint32_t bitmap = 0;
+  uint64_t bitmap = 0;
   int count = 0;
 
   while (len--)
