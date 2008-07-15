@@ -1438,6 +1438,13 @@ static bool woodstock_execute_cycle (sim_t *sim)
   rom_word_t opcode;
   inst_state_t prev_inst_state;
 
+  chip_event (sim,
+	      NULL,
+	      event_cycle,
+	      0,
+	      0,
+	      NULL);
+
   // $$$ could use memmove()
   act_reg->p_change [2] = act_reg->p_change [1];
   act_reg->p_change [1] = act_reg->p_change [0];

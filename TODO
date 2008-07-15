@@ -9,6 +9,7 @@ Needed for next release:
 
   67/97 card reader support
   97 printer support
+  97 SST/BST key support (CR flag 4 tied to keyboard KBE)
 
   Put license notices in microcode source and object files and NCD files.
 
@@ -105,6 +106,11 @@ User interface:
 
 
 Internals:
+
+  Move single-instruction code to proc.c.
+
+  Invoke processor single-cycle function by cycle event to chip rather than
+  dedicated function pointer.
 
   Display improvements:
      Change Classic and Woodstock to use a display "chip".

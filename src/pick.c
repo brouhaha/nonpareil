@@ -52,13 +52,15 @@ typedef struct
 {
   int left_ptr;  // buffer fills from right
   uint8_t buffer [PRINTER_COLUMNS];
-} print_buffer_t;
+  int cr_seen_timer;  // non-zero and counts down when CR not yet seen
+  int home_timer;     // non-zero and counts down when not in HOME position
+  const segment_bitmap_t *char_gen;
+} pick_printer_t;
 
 typedef struct
 {
   key_buffer_t key_buffer;
-  print_buffer_t print_buffer;
-  const segment_bitmap_t *printer_char_gen;
+  pick_printer_t printer;
 } pick_reg_t;
 
 
@@ -216,37 +218,23 @@ static void pick_op_check_keycode_available (sim_t *sim,
 static void pick_op_home (sim_t *sim,
 			  int opcode UNUSED)
 {
-  // act_reg_t *act_reg = get_chip_data (sim->first_chip);
-  // pick_reg_t *pick_reg = get_chip_data (act_reg->pick_chip);
+  act_reg_t *act_reg = get_chip_data (sim->first_chip);
+  pick_reg_t *pick_reg = get_chip_data (act_reg->pick_chip);
+  pick_printer_t *printer = & pick_reg->printer;
 
-#if 1
-  static bool foo = false;
-
-  foo ^= 1;
-  if (foo)
+  if (printer->home_timer == 0)
     pick_pulse_act_f2 (sim);
-#else
-  // assume it always is
-  pick_pulse_act_f2 (sim);
-#endif
 }
 
 static void pick_op_cr (sim_t *sim,
 			  int opcode UNUSED)
 {
-  // act_reg_t *act_reg = get_chip_data (sim->first_chip);
-  // pick_reg_t *pick_reg = get_chip_data (act_reg->pick_chip);
+  act_reg_t *act_reg = get_chip_data (sim->first_chip);
+  pick_reg_t *pick_reg = get_chip_data (act_reg->pick_chip);
+  pick_printer_t *printer = & pick_reg->printer;
 
-#if 1
-  static bool foo = false;
-
-  foo ^= 1;
-  if (foo)
+  if (printer->cr_seen_timer == 0)
     pick_pulse_act_f2 (sim);
-#else
- // assume yes
-  pick_pulse_act_f2 (sim);
-#endif
 }
 
 
@@ -286,10 +274,12 @@ static void pick_line_add_char (printer_line_data_t *line,
 }
 
 
-static void pick_printer_finish_line (sim_t *sim)
+static void pick_printer_print_line (sim_t *sim)
 {
   act_reg_t *act_reg = get_chip_data (sim->first_chip);
   pick_reg_t *pick_reg = get_chip_data (act_reg->pick_chip);
+  pick_printer_t *printer = & pick_reg->printer;
+
   printer_line_data_t *line;  // graphic line buffer
   int col_idx;
   int i;
@@ -299,39 +289,34 @@ static void pick_printer_finish_line (sim_t *sim)
   line = alloc (sizeof (printer_line_data_t) + col_idx * sizeof (uint8_t));
   line->col_count = col_idx;
 
-  for (i = PRINTER_COLUMNS - 1; i >= pick_reg->print_buffer.left_ptr; i--)
+  for (i = PRINTER_COLUMNS - 1; i >= printer->left_ptr; i--)
     {
-      uint8_t ch = pick_reg->print_buffer.buffer [i];
       pick_line_add_char (line,
 			  & col_idx,
-			  pick_reg->printer_char_gen [ch]);
+			  printer->char_gen [printer->buffer [i]]);
       
     }
 
   sim_send_chip_msg_to_gui (sim, act_reg->pick_chip, line);
 
-  pick_reg->print_buffer.left_ptr = PRINTER_COLUMNS;
+  pick_reg->printer.left_ptr = PRINTER_COLUMNS;
 }
 
 
-static void pick_print_buffer (sim_t *sim)
+static void pick_cycle (sim_t *sim)
 {
   act_reg_t *act_reg = get_chip_data (sim->first_chip);
   pick_reg_t *pick_reg = get_chip_data (act_reg->pick_chip);
+  pick_printer_t *printer = & pick_reg->printer;
 
-  // $$$ should start timer for CR seen, home
-
-#ifdef PICK_PRINTER_DEBUG
-  int i;
-  for (i = pick_reg->print_buffer.left_ptr + 1; i < PRINTER_COLUMNS; i++)
+  if (printer->cr_seen_timer != 0)
+    printer->cr_seen_timer--;
+  if (printer->home_timer != 0)
     {
-      printf ("%s", printer_char_map [pick_reg->print_buffer.buffer [i]]);
+      printer->home_timer--;
+      if (printer->home_timer == 0)
+	pick_printer_print_line (sim);
     }
-  printf ("\n");
-#endif
-
-  // $$$ this shouldn't be done here!
-  pick_printer_finish_line (sim);
 }
 
 
@@ -339,9 +324,17 @@ static void pick_print_char (sim_t *sim, uint8_t ch)
 {
   act_reg_t *act_reg = get_chip_data (sim->first_chip);
   pick_reg_t *pick_reg = get_chip_data (act_reg->pick_chip);
+  pick_printer_t *printer = & pick_reg->printer;
 
-  // $$$ should check for overflow
-  pick_reg->print_buffer.buffer [--pick_reg->print_buffer.left_ptr] = ch;
+  if (printer->left_ptr == 0)
+    {
+      warning ("PICK printer buffer overflow\n");
+      return;
+    }
+
+  printer->buffer [--printer->left_ptr] = ch;
+  printer->cr_seen_timer +=  100;
+  printer->home_timer    +=  200;
 }
 
 
@@ -350,17 +343,20 @@ static void pick_op_print_0123 (sim_t *sim,
 {
   act_reg_t *act_reg = get_chip_data (sim->first_chip);
   pick_reg_t *pick_reg = get_chip_data (act_reg->pick_chip);
+  pick_printer_t *printer = & pick_reg->printer;
+
   int top_bits = (opcode >> 6) & 3;
   uint64_t all_bits;
 
-  pick_reg->print_buffer.left_ptr = PRINTER_COLUMNS;
+  if (printer->cr_seen_timer != 0)
+    printf ("PICK: printing chars while CR not seen?\n");
+
   for (all_bits = reg_to_binary (act_reg->c, WSIZE);
        (all_bits & 0xf) != 0xf;
        all_bits >>= 4)
     {
       pick_print_char (sim, (top_bits << 4) | (all_bits & 0xf));
     }
-  pick_print_buffer (sim);
 }
 
 static void pick_op_print6 (sim_t *sim,
@@ -368,10 +364,14 @@ static void pick_op_print6 (sim_t *sim,
 {
   act_reg_t *act_reg = get_chip_data (sim->first_chip);
   pick_reg_t *pick_reg = get_chip_data (act_reg->pick_chip);
+  pick_printer_t *printer = & pick_reg->printer;
+
   uint64_t all_bits;
   uint8_t ch;
 
-  pick_reg->print_buffer.left_ptr = PRINTER_COLUMNS;
+  if (printer->cr_seen_timer != 0)
+    printf ("PICK: printing chars while CR not seen?\n");
+
   for (all_bits = reg_to_binary (act_reg->c, WSIZE);
        (all_bits & 0x3f) != 0x3f;
        all_bits >>= 6)
@@ -379,7 +379,6 @@ static void pick_op_print6 (sim_t *sim,
       ch = ((all_bits & 0x03) << 4) | ((all_bits >> 2) & 0x0f);
       pick_print_char (sim, ch);
     }
-  pick_print_buffer (sim);
 }
 
 
@@ -398,8 +397,11 @@ static void pick_printer_reset (sim_t *sim)
 {
   act_reg_t *act_reg = get_chip_data (sim->first_chip);
   pick_reg_t *pick_reg = get_chip_data (act_reg->pick_chip);
+  pick_printer_t *printer = & pick_reg->printer;
 
-  pick_reg->print_buffer.left_ptr = PRINTER_COLUMNS;
+  printer->cr_seen_timer = 0;
+  printer->home_timer = 0;
+  printer->left_ptr = PRINTER_COLUMNS;
 }
 
 
@@ -425,9 +427,11 @@ static void pick_event_fn (sim_t      *sim,
     case event_reset:
     case event_wake:
     case event_restore_completed:
-       pick_reset (sim);
-       break;
+      pick_reset (sim);
+      break;
     case event_cycle:
+      pick_cycle (sim);
+      break;
     case event_sleep:
       break;
     case event_key:
@@ -501,7 +505,7 @@ chip_t *pick_install (sim_t *sim,
   act_reg = get_chip_data (sim->first_chip);
   pick_reg = alloc (sizeof (pick_reg_t));
 
-  pick_reg->printer_char_gen = calcdef_get_char_gen (sim->calcdef, "pick");
+  pick_reg->printer.char_gen = calcdef_get_char_gen (sim->calcdef, "pick");
 
   act_reg->pick_chip = install_chip (sim,
 				     & pick_chip_detail,
