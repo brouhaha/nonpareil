@@ -1,6 +1,6 @@
 /*
 $Id$
-Copyright 1995, 2003, 2004, 2005 Eric L. Smith <eric@brouhaha.com>
+Copyright 1995, 2003, 2004, 2005, 2008 Eric Smith <eric@brouhaha.com>
 
 Nonpareil is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License version 2 as
@@ -173,6 +173,31 @@ void reg_shift_left (digit_t *reg, int first, int last)
 
   for (i = last; i >= first; i--)
     reg [i] = (i == first) ? 0 : reg [i-1];
+}
+
+
+// reg to native host binary and vice versa
+uint64_t reg_to_binary (digit_t *reg, int digits)
+{
+  uint64_t val = 0;
+
+  reg += digits;
+  while (digits--)
+    {
+      val <<= 4;
+      val += *(--reg);
+    }
+
+  return val;
+}
+
+void binary_to_reg (uint64_t val, digit_t *reg, int digits)
+{
+  while (digits--)
+    {
+      *(reg++) = val & 0xf;
+      val >>= 4;
+    }
 }
 
 

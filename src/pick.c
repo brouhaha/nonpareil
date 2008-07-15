@@ -36,6 +36,9 @@ MA 02111, USA.
 #include "pick.h"
 
 
+#define PRINTER_COLUMNS 20
+
+
 typedef struct
 {
   int count;
@@ -46,7 +49,14 @@ typedef struct
 
 typedef struct
 {
+  int left_ptr;  // buffer fills from right
+  uint8_t buffer [PRINTER_COLUMNS];
+} print_buffer_t;
+
+typedef struct
+{
   key_buffer_t key_buffer;
+  print_buffer_t print_buffer;
   const segment_bitmap_t *printer_char_gen;
 } pick_reg_t;
 
@@ -238,16 +248,81 @@ static void pick_op_cr (sim_t *sim,
 #endif
 }
 
-static void pick_op_print_0123 (sim_t *sim UNUSED,
-			  int opcode UNUSED)
+
+char *printer_char_map [64] =
 {
-  // PRINT 3
+  "N",     "L",  "G",   "O",  "P",   "R", "S",    "T",
+  "%",     "W",  "A",   "B",  "C",   "D", "E",    "I",
+  "Y",     "M",  "^-1", "H",  "sqrt","F", "?",    "->",
+  "^2",    "^x", "a",   "b",  "c",   "d", "e",    "i",
+  "=",     "!=", ">",   "<=", "X",   "Z", "xbar", "<->",
+  "Sigma", "<",  "!",   "/",  "div", "^", "v",    "x",
+  "0",     "1",  "2",   "3",  "4",   "5", "6",    "7",
+  "8",     "9",  ".",   "-",  "+",   "*", " ",    "<cr>"
+};
+
+
+static void print_buffer (sim_t *sim)
+{
+  act_reg_t *act_reg = get_chip_data (sim->first_chip);
+  pick_reg_t *pick_reg = get_chip_data (act_reg->pick_chip);
+  int i;
+
+  for (i = pick_reg->print_buffer.left_ptr + 1; i < PRINTER_COLUMNS; i++)
+    {
+      printf ("%s", printer_char_map [pick_reg->print_buffer.buffer [i]]);
+    }
+  printf ("\n");
+  pick_reg->print_buffer.left_ptr = PRINTER_COLUMNS;
 }
 
-static void pick_op_print6 (sim_t *sim UNUSED,
-			  int opcode UNUSED)
+static void pick_print_char (sim_t *sim, uint8_t ch)
 {
-  // PRINT 6
+  act_reg_t *act_reg = get_chip_data (sim->first_chip);
+  pick_reg_t *pick_reg = get_chip_data (act_reg->pick_chip);
+
+  // $$$ should check for overflow
+  pick_reg->print_buffer.buffer [--pick_reg->print_buffer.left_ptr] = ch;
+}
+
+
+static void pick_op_print_0123 (sim_t *sim,
+				int opcode)
+{
+  act_reg_t *act_reg = get_chip_data (sim->first_chip);
+  pick_reg_t *pick_reg = get_chip_data (act_reg->pick_chip);
+  int top_bits = (opcode >> 6) & 3;
+  uint64_t all_bits;
+
+  pick_reg->print_buffer.left_ptr = PRINTER_COLUMNS;
+  for (all_bits = reg_to_binary (act_reg->c, WSIZE);
+       (all_bits & 0xf) != 0xf;
+       all_bits >>= 4)
+    {
+      pick_print_char (sim, (top_bits << 4) | (all_bits & 0xf));
+    }
+  print_buffer (sim);
+  // $$$ should start timer for CR seen, home
+}
+
+static void pick_op_print6 (sim_t *sim,
+			    int opcode UNUSED)
+{
+  act_reg_t *act_reg = get_chip_data (sim->first_chip);
+  pick_reg_t *pick_reg = get_chip_data (act_reg->pick_chip);
+  uint64_t all_bits;
+  uint8_t ch;
+
+  pick_reg->print_buffer.left_ptr = PRINTER_COLUMNS;
+  for (all_bits = reg_to_binary (act_reg->c, WSIZE);
+       (all_bits & 0x3f) != 0x3f;
+       all_bits >>= 6)
+    {
+      ch = ((all_bits & 0x03) << 4) | ((all_bits >> 2) & 0x0f);
+      pick_print_char (sim, ch);
+    }
+  print_buffer (sim);
+  // $$$ should start timer for CR seen, home
 }
 
 static void pick_reset (sim_t *sim)
