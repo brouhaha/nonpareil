@@ -22,6 +22,7 @@ global
 	author "Eric Smith <eric@brouhaha.com>"
 	model "97"
 	image "topcat-background.png"
+	overlay default image "97-overlay.png"
 	image credit "Eric Smith"
 	color 0 81 21 109	  # background color, used when transparency is off
 #	transparency 128
@@ -63,14 +64,14 @@ end
 #end
 
 switch 1
-  offset 195 94
+  offset 170 94
   default 1
   position 0  image "switch-off.png"  end  # program
   position 1  image "switch-on.png"   end  # run
 end
 
 switch 2
-  offset 190 74
+  offset 165 74
   default 2
   position 0  image "switch-left.png"   end  # man
   position 1  image "switch-mid.png"    end  # trace
