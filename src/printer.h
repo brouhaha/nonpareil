@@ -20,6 +20,11 @@ MA 02111, USA.
 */
 
 
+#define PRINTER_MODE_MAN 0
+#define PRINTER_MODE_TRACE 1
+#define PRINTER_MODE_NORM 2
+
+
 enum
 {
   event_printer_set_mode = first_printer_event,
@@ -46,3 +51,8 @@ chip_t *gui_printer_install (sim_t *sim,
 			     chip_type_t type,
 			     int32_t index,
 			     int32_t flags);
+
+
+#define MAX_CHARACTER_WIDTH_PIXELS 7
+#define MAX_PRINTER_WIDTH_CHARS 24
+#define MAX_PRINTER_WIDTH_PIXELS (MAX_PRINTER_WIDTH_CHARS * MAX_CHARACTER_WIDTH_PIXELS)

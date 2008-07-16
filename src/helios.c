@@ -312,7 +312,7 @@ static bool helios_add_column (printer_line_data_t *line,
 			       int *col_idx,
 			       uint8_t col)
 {
-  if (((*col_idx) + 1) > PRINTER_WIDTH)
+  if (((*col_idx) + 1) > HELIOS_PRINTER_WIDTH_PIXELS)
     return false;
 
   line->columns [(*col_idx)++] = col;
@@ -329,7 +329,7 @@ static bool helios_add_char (printer_line_data_t *line,
   int col;
 
   if (((* col_idx) + ((mode & HM_DOUBLE_WIDE) ? 14 : 7)) >
-      PRINTER_WIDTH)
+      HELIOS_PRINTER_WIDTH_PIXELS)
     return false;
 
   if ((mode & HM_LOWER_CASE) &&
@@ -367,8 +367,8 @@ static void helios_eol (sim_t *sim, bool right_justify)
 
   // init graphic output buffer
   line = alloc (sizeof (printer_line_data_t) + 
-		PRINTER_WIDTH * sizeof (uint8_t));
-  line->col_count = PRINTER_WIDTH;
+		HELIOS_PRINTER_WIDTH_PIXELS * sizeof (uint8_t));
+  line->col_count = HELIOS_PRINTER_WIDTH_PIXELS;
   col_idx = 0;
 
   // get saved mode from start of buffer
@@ -421,13 +421,13 @@ static void helios_eol (sim_t *sim, bool right_justify)
 	}
     }
 
-  if (right_justify && (col_idx < PRINTER_WIDTH))
+  if (right_justify && (col_idx < HELIOS_PRINTER_WIDTH_PIXELS))
     {
       // shift output data to right justify
-      memmove (line->columns + (PRINTER_WIDTH - col_idx),
+      memmove (line->columns + (HELIOS_PRINTER_WIDTH_PIXELS - col_idx),
 	       line->columns,
 	       col_idx);
-      memset (line->columns, 0, PRINTER_WIDTH - col_idx);
+      memset (line->columns, 0, HELIOS_PRINTER_WIDTH_PIXELS - col_idx);
     }
 
   sim_send_chip_msg_to_gui (sim, nut_reg->helios_chip, line);

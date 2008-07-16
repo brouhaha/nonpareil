@@ -38,6 +38,7 @@ MA 02111, USA.
 #include "chip.h"
 #include "proc.h"
 #include "helios.h"
+#include "pick.h"
 #include "printer.h"
 
 
@@ -49,26 +50,10 @@ MA 02111, USA.
 #endif
 
 
-#define PRINTER_LEFT_MARGIN_CHARS 1
-#define PRINTER_RIGHT_MARGIN_CHARS 1
-
-#define PRINTER_LINE_HEIGHT_PIXELS 12
-
 #define PRINTER_WINDOW_INITIAL_HEIGHT_LINES 10
 
 
-#define PRINTER_LEFT_MARGIN_PIXELS \
-    (PRINTER_LEFT_MARGIN_CHARS * PRINTER_CHARACTER_WIDTH_PIXELS)
-#define PRINTER_RIGHT_MARGIN_PIXELS \
-    (PRINTER_RIGHT_MARGIN_CHARS * PRINTER_CHARACTER_WIDTH_PIXELS)
-
-#define PRINTER_WIDTH_WITH_MARGINS \
-    (PRINTER_WIDTH + PRINTER_LEFT_MARGIN_PIXELS + PRINTER_RIGHT_MARGIN_PIXELS)
-
 #define PRINTER_MAX_BUFFER_LINES (80 * 12 * 6)  // 80 ft of 6 lines per inch
-
-#define PRINTER_WINDOW_INITIAL_HEIGHT_PIXELS \
-    (PRINTER_WINDOW_INITIAL_HEIGHT_LINES * PRINTER_LINE_HEIGHT_PIXELS)
 
 
 typedef enum
@@ -83,6 +68,12 @@ typedef struct
 {
   sim_t *sim;
   chip_t *chip;
+
+  int active_pixels;
+  int margin_pixels;  // same count applies to left and right margins
+  int character_width_pixels;
+  int character_height_pixels;
+  int line_height_pixels;
 
   uint32_t config_flags;
 
@@ -125,16 +116,16 @@ void gui_printer_create_pixbuf (gui_printer_t *p)
   p->pixbuf = gdk_pixbuf_new (GDK_COLORSPACE_RGB,           // colorspace
 			      FALSE,                        // has_alpha
 			      8,                            // bits_per_sample
-			      p->scale * PRINTER_WIDTH_WITH_MARGINS,   // width,
-			      p->scale * PRINTER_LINE_HEIGHT_PIXELS);  // height
+			      p->scale * (p->active_pixels + 2 * p->margin_pixels),   // width,
+			      p->scale * p->line_height_pixels);  // height
   g_assert (gdk_pixbuf_get_n_channels (p->pixbuf) == 3);
   p->rowstride = gdk_pixbuf_get_rowstride (p->pixbuf);
   p->pixels = gdk_pixbuf_get_pixels (p->pixbuf);
 
   // Computing the total size of the raw data in the pixbuf is tricky because
   // the last row of pixels may not have the full rowstride allocated.
-  full_lines = p->scale * PRINTER_LINE_HEIGHT_PIXELS - 1;
-  pixels_per_line = p->scale * PRINTER_WIDTH_WITH_MARGINS;
+  full_lines = p->scale * p->line_height_pixels - 1;
+  pixels_per_line = p->scale * (p->active_pixels + 2 * p->margin_pixels);
   p->pixels_size = (full_lines * p->rowstride) + (pixels_per_line * 3);
 }
 
@@ -151,20 +142,20 @@ void gui_printer_set_scale (gui_printer_t *p, int scale)
 
   gui_printer_create_pixbuf (p);  // resize the pixbuf
 
-  height = p->line_count * PRINTER_LINE_HEIGHT_PIXELS;
-  if (height < PRINTER_WINDOW_INITIAL_HEIGHT_PIXELS)
-    height = PRINTER_WINDOW_INITIAL_HEIGHT_PIXELS;
+  height = p->line_count * p->line_height_pixels;
+  if (height < (PRINTER_WINDOW_INITIAL_HEIGHT_LINES * p->line_height_pixels))
+    height = (PRINTER_WINDOW_INITIAL_HEIGHT_LINES * p->line_height_pixels);
 
   gtk_layout_set_size (GTK_LAYOUT (p->layout),
-		       p->scale * PRINTER_WIDTH_WITH_MARGINS,
+		       p->scale * (p->active_pixels + 2 * p->margin_pixels),
 		       p->scale * height);
 
   gtk_widget_set_size_request (p->layout,
-			       p->scale * PRINTER_WIDTH_WITH_MARGINS,
-			       p->scale * PRINTER_WINDOW_INITIAL_HEIGHT_PIXELS);
+			       p->scale * (p->active_pixels + 2 * p->margin_pixels),
+			       p->scale * (PRINTER_WINDOW_INITIAL_HEIGHT_LINES * p->line_height_pixels));
   // During initialization, we don't yet have an adjustment.
   if (p->v_adjustment)
-    p->v_adjustment->step_increment = p->scale * PRINTER_LINE_HEIGHT_PIXELS;
+    p->v_adjustment->step_increment = p->scale * p->line_height_pixels;
 
   // During initialization, there isn't yet a window to invalidate.
   if (GTK_LAYOUT (p->layout)->bin_window)
@@ -172,14 +163,16 @@ void gui_printer_set_scale (gui_printer_t *p, int scale)
       // invalidate entire layout
       rect.x = 0;
       rect.y = 0;
-      rect.width = p->scale * PRINTER_WIDTH_WITH_MARGINS;
-      rect.height = p->line_count *  p->scale * PRINTER_LINE_HEIGHT_PIXELS;
+      rect.width = p->scale * (p->active_pixels + 2 * p->margin_pixels);
+      rect.height = p->line_count *  p->scale * p->line_height_pixels;
       gdk_window_invalidate_rect (GTK_LAYOUT (p->layout)->bin_window,
 				  & rect,
 				  FALSE);
     }
 }
 
+
+#define TEAR_BAR_TOOTH_PIXELS 7
 
 static void gui_printer_draw_tear (gui_printer_t *p,
 				   int y)
@@ -189,15 +182,15 @@ static void gui_printer_draw_tear (gui_printer_t *p,
 
   // draw a series of white triangles
   for (x = 0;
-       x < p->scale * PRINTER_WIDTH_WITH_MARGINS;
-       x += p->scale * PRINTER_CHARACTER_WIDTH_PIXELS)
+       x < p->scale * (p->active_pixels + 2 * p->margin_pixels);
+       x += p->scale * TEAR_BAR_TOOTH_PIXELS)
     {
       points [0].x = x;
-      points [0].y = y + p->scale * PRINTER_LINE_HEIGHT_PIXELS / 2;
-      points [1].x = x + p->scale * PRINTER_CHARACTER_WIDTH_PIXELS / 2;
+      points [0].y = y + p->scale * p->line_height_pixels / 2;
+      points [1].x = x + p->scale * TEAR_BAR_TOOTH_PIXELS / 2;
       points [1].y = y;
-      points [2].x = x + p->scale * PRINTER_CHARACTER_WIDTH_PIXELS - 1;
-      points [2].y = y + p->scale * PRINTER_LINE_HEIGHT_PIXELS / 2;
+      points [2].x = x + p->scale * TEAR_BAR_TOOTH_PIXELS - 1;
+      points [2].y = y + p->scale * p->line_height_pixels / 2;
       gdk_draw_polygon (GTK_LAYOUT (p->layout)->bin_window,
 			p->white,   // gc
 			TRUE,       // filled
@@ -209,9 +202,9 @@ static void gui_printer_draw_tear (gui_printer_t *p,
 		      p->white,    // gc
 		      TRUE,        // filled
 		      0,           // x
-		      y + p->scale * PRINTER_LINE_HEIGHT_PIXELS / 2,  // y
-		      p->scale * PRINTER_WIDTH_WITH_MARGINS,
-		      p->scale * (PRINTER_LINE_HEIGHT_PIXELS - (PRINTER_LINE_HEIGHT_PIXELS / 2)));
+		      y + p->scale * p->line_height_pixels / 2,  // y
+		      p->scale * (p->active_pixels + 2 * p->margin_pixels),
+		      p->scale * (p->line_height_pixels - (p->line_height_pixels / 2)));
 }
 
 
@@ -232,17 +225,17 @@ static void gui_printer_copy_pixels_to_pixbuf (gui_printer_t *p,
 
   memset (p->pixels, 0, p->pixels_size);
   line_ptr = p->pixels;
-  for (y = 0; y < p->scale * PRINTER_LINE_HEIGHT_PIXELS; y++)
+  for (y = 0; y < p->scale * p->line_height_pixels; y++)
     {
       guchar *pixel_ptr = line_ptr;
-      for (x = 0; x < p->scale * PRINTER_WIDTH_WITH_MARGINS; x++)
+      for (x = 0; x < p->scale * (p->active_pixels + 2 * p->margin_pixels); x++)
 	{
 	  uint8_t col, val;
-	  if (((y / p->scale) < PRINTER_CHARACTER_HEIGHT_PIXELS) &&
-	      (((x / p->scale) >= PRINTER_LEFT_MARGIN_PIXELS) &&
-	       ((x / p->scale) < PRINTER_WIDTH + PRINTER_LEFT_MARGIN_PIXELS)))
+	  if (((y / p->scale) < p->character_height_pixels) &&
+	      (((x / p->scale) >= p->margin_pixels) &&
+	       ((x / p->scale) < p->active_pixels + p->margin_pixels)))
 	    col = get_col_data (line,
-				(x / p->scale) - PRINTER_LEFT_MARGIN_PIXELS);
+				(x / p->scale) - p->margin_pixels);
 	  else
 	    col = 0x00;  // white
 	  val = (col & (1 << (y / p->scale))) ? 0x00 : 0xff;
@@ -259,7 +252,7 @@ static void gui_printer_update_line (gui_printer_t *p,
 				     int line_num)
 {
   printer_line_data_t *line;
-  int y = line_num * p->scale * PRINTER_LINE_HEIGHT_PIXELS;
+  int y = line_num * p->scale * p->line_height_pixels;
 
   line = p->line [line_num];
 
@@ -280,9 +273,9 @@ static void gui_printer_update_line (gui_printer_t *p,
 		   0,           // src_x
 		   0,           // src_y
 		   0,           // dest_x
-		   line_num * p->scale * PRINTER_LINE_HEIGHT_PIXELS, // dest_y
-		   p->scale * PRINTER_WIDTH_WITH_MARGINS,            // width
-		   p->scale * PRINTER_LINE_HEIGHT_PIXELS,            // height
+		   line_num * p->scale * p->line_height_pixels, // dest_y
+		   p->scale * (p->active_pixels + 2 * p->margin_pixels),            // width
+		   p->scale * p->line_height_pixels,            // height
 		   GDK_RGB_DITHER_NONE,                    // dither
 		   0,                                      // x_dither
 		   0);                                     // y_dither
@@ -300,8 +293,8 @@ static gboolean printer_window_expose_callback (GtkWidget *widget UNUSED,
 
   gdk_region_get_clipbox (event->region, & rect);
 
-  first_line = rect.y / (p->scale * PRINTER_LINE_HEIGHT_PIXELS);
-  last_line = (rect.y + rect.height - 1) / (p->scale * PRINTER_LINE_HEIGHT_PIXELS);
+  first_line = rect.y / (p->scale * p->line_height_pixels);
+  last_line = (rect.y + rect.height - 1) / (p->scale * p->line_height_pixels);
 
   for (line = first_line; line <= last_line; line++)
     gui_printer_update_line (p, line);
@@ -334,22 +327,22 @@ void gui_printer_update (sim_t  *sim  UNUSED,
   p->line [p->line_count] = line;
 
   rect.x = 0;
-  rect.y = p->line_count * p->scale * PRINTER_LINE_HEIGHT_PIXELS;
-  rect.width = p->scale * PRINTER_WIDTH_WITH_MARGINS;
-  rect.height = p->scale * PRINTER_LINE_HEIGHT_PIXELS;
+  rect.y = p->line_count * p->scale * p->line_height_pixels;
+  rect.width = p->scale * (p->active_pixels + 2 * p->margin_pixels);
+  rect.height = p->scale * p->line_height_pixels;
   gdk_window_invalidate_rect (GTK_LAYOUT (p->layout)->bin_window,
 			      & rect,
 			      FALSE);
 
   p->line_count++;
 
-  height = p->line_count * PRINTER_LINE_HEIGHT_PIXELS;
+  height = p->line_count * p->line_height_pixels;
 
-  if (height <= PRINTER_WINDOW_INITIAL_HEIGHT_PIXELS)
+  if (height <= (PRINTER_WINDOW_INITIAL_HEIGHT_LINES * p->line_height_pixels))
     return;
 
   gtk_layout_set_size (GTK_LAYOUT (p->layout),
-		       p->scale * PRINTER_WIDTH_WITH_MARGINS,
+		       p->scale * (p->active_pixels + 2 * p->margin_pixels),
 		       p->scale * height);
 
   if (was_at_end)
@@ -599,14 +592,14 @@ static void gui_printer_write_png_line (gui_printer_t *p,
 					png_structp png_ptr)
 {
   int x, y_line, y_pixel;
-  uint8_t row_data [PRINTER_WIDTH];
+  uint8_t row_data [MAX_PRINTER_WIDTH_PIXELS];
 
-  y_line = y / PRINTER_LINE_HEIGHT_PIXELS;
-  y_pixel = y % PRINTER_LINE_HEIGHT_PIXELS;
+  y_line = y / p->line_height_pixels;
+  y_pixel = y % p->line_height_pixels;
 
-  if (y_pixel < PRINTER_CHARACTER_HEIGHT_PIXELS)
+  if (y_pixel < p->character_height_pixels)
     {
-      for (x = 0; x < PRINTER_WIDTH; x++)
+      for (x = 0; x < p->active_pixels; x++)
 	{
 	  printer_line_data_t *line = p->line [y_line];
           uint8_t col = get_col_data (line, x);
@@ -627,7 +620,7 @@ static bool gui_printer_save_png (gui_printer_t *p)
   png_structp png_ptr;
   png_infop info_ptr;
 
-  height = p->line_count * PRINTER_LINE_HEIGHT_PIXELS;
+  height = p->line_count * p->line_height_pixels;
 
   f = fopen (p->printer_save_file_name, "wb");
   if (! f)
@@ -656,7 +649,7 @@ static bool gui_printer_save_png (gui_printer_t *p)
 
   png_set_IHDR (png_ptr,
 		info_ptr,
-		PRINTER_WIDTH,                 // width
+		p->active_pixels,              // width
 		height,
 		1,                             // bit_depth
 		PNG_COLOR_TYPE_GRAY,           // color_type
@@ -824,6 +817,26 @@ chip_t *gui_printer_install (sim_t *sim,
   p->sim = sim;
   p->config_flags = flags;
 
+  switch (type)
+    {
+    case CHIP_WOODSTOCK_PICK:
+      p->active_pixels = PICK_PRINTER_WIDTH_PIXELS;
+      p->margin_pixels = PICK_PRINTER_CHARACTER_WIDTH_PIXELS;
+      p->character_width_pixels = PICK_PRINTER_CHARACTER_WIDTH_PIXELS;
+      p->character_height_pixels = PICK_PRINTER_CHARACTER_HEIGHT_PIXELS;
+      p->line_height_pixels = PICK_PRINTER_LINE_HEIGHT_PIXELS;
+      break;
+    case CHIP_HELIOS:
+      p->active_pixels = HELIOS_PRINTER_WIDTH_PIXELS;
+      p->margin_pixels = HELIOS_PRINTER_CHARACTER_WIDTH_PIXELS;
+      p->character_width_pixels = HELIOS_PRINTER_CHARACTER_WIDTH_PIXELS;
+      p->character_height_pixels = HELIOS_PRINTER_CHARACTER_HEIGHT_PIXELS;
+      p->line_height_pixels = HELIOS_PRINTER_LINE_HEIGHT_PIXELS;
+      break;
+    default:
+      fatal (3, "printer chip type unknown\n");
+    }
+
   p->chip = sim_add_chip (sim,
 			  type,                // chip_type
 			  index,               // index
@@ -832,7 +845,7 @@ chip_t *gui_printer_install (sim_t *sim,
 			  p);                  // ref
   if (! p->chip)
     {
-      warning ("can't add Helios chip\n");
+      warning ("can't add %s chip\n", get_chip_type_info (type));
       return NULL;
     }
 
@@ -858,10 +871,10 @@ chip_t *gui_printer_install (sim_t *sim,
   gtk_container_add (GTK_CONTAINER (scrolled_window), p->layout);
 
   p->h_adjustment = gtk_layout_get_hadjustment (GTK_LAYOUT (p->layout));
-  p->h_adjustment->step_increment = p->scale * PRINTER_CHARACTER_WIDTH_PIXELS;
+  p->h_adjustment->step_increment = p->scale * p->character_width_pixels;
 
   p->v_adjustment = gtk_layout_get_vadjustment (GTK_LAYOUT (p->layout));
-  p->v_adjustment->step_increment = p->scale * PRINTER_LINE_HEIGHT_PIXELS;
+  p->v_adjustment->step_increment = p->scale * p->line_height_pixels;
   
   menubar = gui_printer_create_menubar (p);
 
