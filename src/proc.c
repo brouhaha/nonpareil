@@ -1735,8 +1735,6 @@ void chip_event (sim_t      *sim,
 	if (chip->chip_detail->chip_event_fn)
 	  chip->chip_detail->chip_event_fn (sim, chip, event, arg1, arg2, data);
     }
-  if (data)
-    free (data);
 }
 
 
