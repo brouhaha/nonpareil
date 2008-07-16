@@ -48,8 +48,8 @@ MA 02111, USA.
 #define CRC_FLAG_DEFAULT_FUNCTION_ENABLE 4
 #define CRC_FLAG_MERGE                   5
 #define CRC_FLAG_PAUSE                   6
+// flag 7 function unknown
 // flag 8 function unknown
-// flag 9 function unknown
 #define CRC_FLAG_MOTOR_ENABLE            9
 #define CRC_FLAG_CARD_INSERTED          10
 #define CRC_FLAG_WRITE_MODE             11
@@ -63,8 +63,8 @@ typedef struct
   // wired to a flag input.
 
   crc_card_side_t *card_side;  // card side image - storage owned by caller
-  int head_position;  // head position on card, from 0 to CRC_MAX_WORD + 2
-                      // (CRC_MAX_WORD + 2 means card is done)
+  int head_position;  // head position on card, from 0 to CRC_MAX_WORD
+                      // (CRC_MAX_WORD means card is done)
 } crc_reg_t;
 
 
@@ -96,13 +96,15 @@ static void crc_update_flags (sim_t *sim)
 
   crc_reg->flag [CRC_FLAG_BUFFER_READY] = 
     (crc_reg->card_side &&
-     crc_reg->flag [CRC_FLAG_MOTOR_ENABLE] &&
-     (crc_reg->head_position < CRC_MAX_WORD));
+     crc_reg->flag [CRC_FLAG_MOTOR_ENABLE]);
 
   if (crc_reg->card_side &&
       crc_reg->head_position >= CRC_MAX_WORD)
     {
-      // $$$ notify GUI of completion
+      crc_reg->flag [CRC_FLAG_CARD_INSERTED] = false;
+      // notify GUI of completion
+      sim_send_chip_msg_to_gui (sim, act_reg->crc_chip, crc_reg->card_side);
+
       crc_reg->card_side = NULL;
       crc_reg->head_position = 0;
     }
@@ -139,6 +141,9 @@ static bool crc_read (sim_t *sim)
   if (! crc_reg->card_side)
     fatal (3, "crc: read with no card\n");
 
+  if (crc_reg->flag [CRC_FLAG_WRITE_MODE])
+    fatal (3, "crc: read when in write mode\n");
+
   if (! crc_reg->flag [CRC_FLAG_MOTOR_ENABLE])
     fatal (3, "crc: read with motor off\n");
 
@@ -161,6 +166,7 @@ static bool crc_read (sim_t *sim)
   return true;
 }
 
+
 static bool crc_write (sim_t *sim)
 {
   act_reg_t *act_reg = get_chip_data (sim->first_chip);
@@ -171,6 +177,9 @@ static bool crc_write (sim_t *sim)
   if (! crc_reg->card_side)
     fatal (3, "crc: write with no card\n");
 
+  if (! crc_reg->flag [CRC_FLAG_WRITE_MODE])
+    fatal (3, "crc: write when in read mode\n");
+
   if (crc_reg->card_side->write_protect)
     fatal (3, "crc: write to write-protected card\n");
 
@@ -180,12 +189,13 @@ static bool crc_write (sim_t *sim)
   if (crc_reg->head_position >= CRC_MAX_WORD)
     fatal (3, "crc: write past end of card\n");
 
-  for (i = 6; i > 0; i--)
+  for (i = 6; i >= 0; i--)
     {
       w <<= 4;
       w |= act_reg->c [7 + i];
     }
   crc_reg->card_side->word [crc_reg->head_position++] = w;
+  crc_reg->card_side->dirty = true;
 
   crc_update_flags (sim);
 
@@ -206,11 +216,8 @@ static void crc_op_set_flag (sim_t *sim,
   crc_reg_t *crc_reg = get_chip_data (act_reg->crc_chip);
   int flag = crc_flag_num_from_opcode (opcode);
 
-#if 0
-  printf ("setting CRC flag %d\n", flag);
-#endif
-
   crc_reg->flag [flag] = true;
+  crc_update_flags (sim);
 }
 
 
@@ -221,10 +228,6 @@ static void crc_op_test_flag_and_clear (sim_t *sim,
   crc_reg_t *crc_reg = get_chip_data (act_reg->crc_chip);
   int flag = crc_flag_num_from_opcode (opcode);
 
-#if 0
-  printf ("testing CRC flag %d: %d, clearing\n", flag, crc_reg->flag [flag] | crc_reg->ext_flag [flag]);
-#endif
-
   if (crc_reg->flag [flag] || crc_reg->ext_flag [flag])
     chip_event (sim,
 		sim->first_chip,  // ACT only
@@ -233,6 +236,7 @@ static void crc_op_test_flag_and_clear (sim_t *sim,
 		0,                // arg2 unused
 		NULL);
   crc_reg->flag [flag] = false;
+  crc_update_flags (sim);
 }
 
 

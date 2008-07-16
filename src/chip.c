@@ -26,6 +26,7 @@ MA 02111, USA.
 
 // chip GUI install functions:
 chip_install_fn_t gui_printer_install;
+chip_install_fn_t gui_card_reader_install;
 
 // chip install functions:
 chip_install_fn_t crc_install;
@@ -59,7 +60,7 @@ static chip_type_info_t chip_type_info [] =
   [CHIP_WOODSTOCK_RAM]               = { "woodstock_ram", NULL, NULL },
   [CHIP_WOODSTOCK_ROM_RAM]           = { "woodstock_rom_ram", NULL, NULL },
   [CHIP_WOODSTOCK_PICK]              = { "woodstock_pick", gui_printer_install, pick_install },
-  [CHIP_WOODSTOCK_CRC]               = { "woodstock_crc", NULL, crc_install },
+  [CHIP_WOODSTOCK_CRC]               = { "woodstock_crc", gui_card_reader_install, crc_install },
 
   // spice
   [CHIP_SPICE_ACT]                   = { "spice_act", NULL, NULL },

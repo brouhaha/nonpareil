@@ -305,7 +305,7 @@ nonpareil_env = build_env.Clone ()
 nonpareil_srcs = Split ("""about.c goose.c
                            calc_chooser.c
                            sound.c
-                           display.c printer.c
+                           display.c printer.c card_reader.c
                            keyboard.c scancode.c slide_switch.c
                            cbutton.c""")
 
@@ -437,7 +437,7 @@ if build_env ['build_target_only'] == 0:
                         state_io.h
                         debugger_gui.h debugger_cli.h
                         dis.h dis_uc41.h
-                        display.h printer.h
+                        display.h printer.h card_reader.h
                         keyboard.h cbutton.h
 			crc.h pick.h
                         coconut_lcd.h helios.h phineas.h

@@ -22,16 +22,17 @@ MA 02111, USA.
 
 // Public definitions, for both sim and GUI threads:
 
-#define CRC_MAX_WORD 32  // number of 28-bit words on a side of a card
+#define CRC_MAX_WORD 34  // number of 28-bit words on a side of a card
+                         // includes 1 header word, 32 paylad, 1 checksum
 
 // image of a single side of a magnetic card
 typedef struct
 {
   bool write_protect;
-  bool dirty;                        // set by sim thread if card is written
-  uint32_t word [CRC_MAX_WORD + 2];  // data [0] is header,
-                                     // data [CRC_MAX_WORD + 1] is checksum
-                                     // 28 bits per word, 4 MSBs are zero
+  bool dirty;                    // set by sim thread if card is written
+  uint32_t word [CRC_MAX_WORD];  // data [0] is header,
+                                 // data [CRC_MAX_WORD - 1] is checksum
+                                 // 28 bits per word, 4 MSBs are zero
 } crc_card_side_t;
 
 

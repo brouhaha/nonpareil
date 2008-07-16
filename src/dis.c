@@ -803,6 +803,13 @@ chip_t *gui_printer_install (sim_t *sim,
 {
 }
 
+chip_t *gui_card_reader_install (sim_t *sim,
+				 chip_type_t type,
+				 int32_t index,
+				 int32_t flags)
+{
+}
+
 
 // sound function stubs
 bool stop_sound (int id UNUSED)
