@@ -285,7 +285,6 @@ static void pick_printer_print_line (sim_t *sim)
       pick_line_add_char (line,
 			  & col_idx,
 			  printer->char_gen [printer->buffer [i]]);
-      
     }
 
   sim_send_chip_msg_to_gui (sim, act_reg->pick_chip, line);
@@ -342,12 +341,22 @@ static void pick_op_print_0123 (sim_t *sim,
   if (printer->cr_seen_timer != 0)
     printf ("PICK: printing chars while CR not seen?\n");
 
+#ifdef PICK_PRINTER_DEBUG
+  printf ("PICK print %d: ", top_bits);
+#endif
   for (all_bits = reg_to_binary (act_reg->c, WSIZE);
        (all_bits & 0xf) != 0xf;
        all_bits >>= 4)
     {
-      pick_print_char (sim, (top_bits << 4) | (all_bits & 0xf));
+      uint8_t ch = (top_bits << 4) | (all_bits & 0xf);
+      pick_print_char (sim, ch);
+#ifdef PICK_PRINTER_DEBUG
+      printf ("%s", printer_char_map [ch]);
+#endif
     }
+#ifdef PICK_PRINTER_DEBUG
+  printf ("\n");
+#endif
 }
 
 static void pick_op_print6 (sim_t *sim,
@@ -358,18 +367,26 @@ static void pick_op_print6 (sim_t *sim,
   pick_printer_t *printer = & pick_reg->printer;
 
   uint64_t all_bits;
-  uint8_t ch;
 
   if (printer->cr_seen_timer != 0)
     printf ("PICK: printing chars while CR not seen?\n");
 
+#ifdef PICK_PRINTER_DEBUG
+  printf ("PICK print 6: ");
+#endif
   for (all_bits = reg_to_binary (act_reg->c, WSIZE);
        (all_bits & 0x3f) != 0x3f;
        all_bits >>= 6)
     {
-      ch = ((all_bits & 0x03) << 4) | ((all_bits >> 2) & 0x0f);
+      uint8_t ch = ((all_bits & 0x03) << 4) | ((all_bits >> 2) & 0x0f);
       pick_print_char (sim, ch);
+#ifdef PICK_PRINTER_DEBUG
+      printf ("%s", printer_char_map [ch]);
+#endif
     }
+#ifdef PICK_PRINTER_DEBUG
+  printf ("\n");
+#endif
 }
 
 
