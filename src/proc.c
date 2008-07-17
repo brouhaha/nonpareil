@@ -201,7 +201,10 @@ static int bank_group [MAX_BANK_GROUP + 1];  // index from 1 .. MAX_BANK_GROUP,
                                              // entry 0 not used
 
 
-static bool sim_read_mod1_page (sim_t *sim, FILE *f)
+static bool sim_read_mod1_page (sim_t *sim,
+				FILE *f,
+				int port,
+				int index)
 {
   mod1_file_page_t page;
   addr_t addr;
@@ -219,13 +222,28 @@ static bool sim_read_mod1_page (sim_t *sim, FILE *f)
       return false;
     }
 
-  if (page.Page > 0x0f)
+  if (page.Page <= 0x07)
+    addr = page.Page << 12;
+  else if (page.Page <= 0x0f)
+    {
+      if (((page.Page - 6) / 2) != port)
+	{
+	  fprintf (stderr, "Module not compatible with specified port\n");
+	  return false;
+	}
+      addr = page.Page << 12;
+    }
+  else if (page.Page == POSITION_ANY)
+    {
+      addr = (8 + port * 2) << 12;
+      if (index > 0)
+	addr += 0x1000;
+    }
+  else
     {
       fprintf (stderr, "Currently only MOD1 pages at fixed page numbers are supported\n");
       return false;
     }
-
-  addr = page.Page << 12;
 
   if (page.BankGroup)
     {
@@ -296,7 +314,7 @@ static bool sim_read_mod1_file (sim_t *sim,
     }
 
   for (i = 0; i < header.NumPages; i++)
-    if (! sim_read_mod1_page (sim, f))
+    if (! sim_read_mod1_page (sim, f, port, i))
       return false;
 
   if (mem_only)

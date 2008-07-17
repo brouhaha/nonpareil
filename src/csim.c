@@ -342,15 +342,34 @@ static void edit_reset (gpointer callback_data,
 }
 
 
+static void port_number_label_callback (GtkWidget *widget, gpointer data)
+{
+  int *port = data;
+  const gchar *text = gtk_label_get_text (GTK_LABEL (widget));
+  *port = atoi (text);
+}
+
+
+static void port_number_radio_button_callback (GtkWidget *widget, gpointer data)
+{
+  gtk_container_foreach (GTK_CONTAINER (widget),
+			 port_number_label_callback,
+			 data);
+}
+
+
 static void configure_load_module (gpointer callback_data,
 				   guint    callback_action UNUSED,
 				   GtkWidget *widget        UNUSED)
 {
   csim_t *csim = callback_data;
   GtkWidget *dialog;
+  GtkWidget *port_frame;
+  GtkWidget *port_box;
+  GtkWidget *port_1_radio_button;
   GtkFileFilter *mod_filter;
   char *fn;
-  int port = 1;  // $$$ should be user-selectable - extend the chooser dialog
+  int port;
 
   dialog = gtk_file_chooser_dialog_new ("Load Module",
 					GTK_WINDOW (csim->main_window),
@@ -360,6 +379,32 @@ static void configure_load_module (gpointer callback_data,
 					GTK_STOCK_OPEN,
 					GTK_RESPONSE_ACCEPT,
 					NULL);
+
+  port_frame = gtk_frame_new ("Port");
+  port_box = gtk_vbutton_box_new ();
+  for (port = 1; port <= 4; port++)
+    {
+      GtkWidget *button;
+      char label [2];
+      sprintf (label, "%d", port);
+      if (port == 1)
+	{
+	  button = gtk_radio_button_new_with_label (NULL, label);
+	  port_1_radio_button = button;
+	}
+      else
+	button = gtk_radio_button_new_with_label_from_widget (GTK_RADIO_BUTTON (port_1_radio_button), label);
+      g_signal_connect (G_OBJECT (button),
+			"clicked",
+			G_CALLBACK (port_number_radio_button_callback),
+			& port);
+      gtk_container_add (GTK_CONTAINER (port_box), button);
+    }
+  gtk_container_add (GTK_CONTAINER (port_frame), port_box);
+  gtk_widget_show_all (port_frame);
+  gtk_file_chooser_set_extra_widget (GTK_FILE_CHOOSER (dialog),
+				     port_frame);
+  port = 1;
 
   mod_filter = gtk_file_filter_new ();
 
