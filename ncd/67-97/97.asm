@@ -1371,7 +1371,7 @@ L1747:  delayed rom @00
         rotate left a
         a - 1 -> a[x]
         rotate left a
-        a exchange b[x]
+        a - 1 -> a[x]
         a exchange c[w]
         go to L1647
 
