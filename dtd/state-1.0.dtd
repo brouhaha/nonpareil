@@ -24,7 +24,7 @@
           number CDATA #REQUIRED
           position CDATA #REQUIRED>
 
-<!ELEMENT chip (registers)>
+<!ELEMENT chip (registers*)>
 <!ATTLIST chip
           name CDATA #REQUIRED>
 
