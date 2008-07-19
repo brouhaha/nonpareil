@@ -302,10 +302,3 @@ SConscript ('win32/dll/SConscript',
 #-----------------------------------------------------------------------------
 
 SConscript ('doc/SConscript')
-
-#-----------------------------------------------------------------------------
-# scons directory, which contains various scons builders we use, and the
-# scons-local tarball for those that don't want to install SCons
-#-----------------------------------------------------------------------------
-
-SConscript ('scons/SConscript')

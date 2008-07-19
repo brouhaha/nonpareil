@@ -10,9 +10,9 @@ Nonpareil is written in C99 (ISO/IEC 9899:1999), Flex, and Bison, and
 is normally built using the GNU toolchain.  No effort has been made to
 build it with a non-GNU toolchain.
 
-The recommended tool versions are:
+The recommended minimum tool versions are:
 
-    Bison	2.3
+    Bison	2.3.4
     Flex	2.5.33
     GCC		4.1.2
     NetPBM	10.35.41
@@ -23,33 +23,17 @@ The recommended tool versions are:
 In addition, the libraries and header files for the runtime dependencies
 must be available at build time.  A list of these is in the README file.
 
-It is possible that Nonpareil may build with earlier versions of tools,
-but the author will not offer any assistance doing so.
-
-If you do not wish to install SCons on your system, a standalone copy
-is provided in the directory scons-local.  For information on SCons,
-see the web site:
-
-        http://www.scons.org/
-
+Other versions of the tools (older or newer) may work but have not been
+tested.
 
 -----------------------------------------------------------------------------
 
 Building Nonpareil:
 
-If you have SCons installed on your system, and are satisfied with the
-default configuration options, building Nonpareil is as simple as
-giving the command
+Building Nonpareil without changing configuration options is as simple as
+giving the command:
 
 	% scons
-
-If you do not wish to install scons, unpack the supplied scons-local tarball
-with this command:
-
-	% (cd scons-local; tar -xzf scons-local-0.96.90.tar.gz)
-
-Using scons-local simply requires substituting "scons-local/scons.py"
-whereever these instructions call for the use of scons.
 
 -----------------------------------------------------------------------------
 
