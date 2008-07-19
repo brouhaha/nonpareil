@@ -22,8 +22,10 @@ MA 02111, USA.
 
 // Public definitions, for both sim and GUI threads:
 
-#define CRC_MAX_WORD 34  // number of 28-bit words on a side of a card
-                         // includes 1 header word, 32 paylad, 1 checksum
+#define CRC_WORD_SIZE 28  // size of a card word in bits
+
+#define CRC_MAX_WORD  34  // number of 28-bit words on a side of a card
+                          // includes 1 header word, 32 paylad, 1 checksum
 
 // image of a single side of a magnetic card
 typedef struct

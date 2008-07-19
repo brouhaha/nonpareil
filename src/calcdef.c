@@ -232,13 +232,6 @@ static void parse_bitmap (void *ref,
 }
 
 
-static int xml_strcmp (const xmlChar *s1, const char *s2)
-{
-  const char *s1c = (const char *) s1;
-  return strcmp (s1c, s2);
-}
-
-
 static void parse_calcdef (calcdef_t *calcdef,
 			   const xmlChar **attrs)
 {

@@ -285,6 +285,13 @@ uint64_t str_to_uint64 (const char *nptr, char **endptr, int base)
 }
 
 
+bool str_to_bool (const char *nptr, char **endptr)
+{
+  uint32_t v = str_to_uint32 (nptr, endptr, 0);
+  return v != 0;
+}
+
+
 #ifndef PATH_MAX
 #define PATH_MAX 256
 #endif

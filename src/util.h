@@ -101,6 +101,8 @@ uint32_t str_to_uint32 (const char *nptr, char **endptr, int base);
 
 uint64_t str_to_uint64 (const char *nptr, char **endptr, int base);
 
+bool str_to_bool (const char *nptr, char **endptr);
+
 
 // File and directory handling:
 

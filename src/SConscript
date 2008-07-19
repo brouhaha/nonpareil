@@ -89,7 +89,7 @@ if build_env ['has_debugger_cli']:
 # common components
 #-----------------------------------------------------------------------------
 
-common_srcs = Split ("""util.c arch.c model.c platform.c pixbuf_util.c""")
+common_srcs = Split ("""util.c xmlutil.c arch.c model.c platform.c pixbuf_util.c""")
 common_objs = [build_env.Object(src) for src in common_srcs]
 
 sim_core_srcs = Split ("""calcdef.c
@@ -428,7 +428,7 @@ if build_env ['build_target_only'] == 0:
 #-----------------------------------------------------------------------------
 
 if build_env ['build_target_only'] == 0:
-    headers = Split ("""util.h
+    headers = Split ("""util.h xmlutil.h
                         calc_chooser.h
                         calcdef.h arch.h model.h platform.h kml.h
                         proc.h proc_int.h glib_async_queue_source.h

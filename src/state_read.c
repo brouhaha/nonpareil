@@ -32,9 +32,11 @@ MA 02111, USA.
 
 #include <gsf/gsf-infile.h>
 
+#include <libxml/xmlwriter.h>
 #include <libxml/SAX.h>
 
 #include "util.h"
+#include "xmlutil.h"
 #include "display.h"
 #include "kml.h"
 #include "chip.h"
@@ -55,11 +57,11 @@ static void parse_state (sax_data_t *sdata, char **attrs)
   bool got_version = false;
   bool got_ncd = false;
 
-  for (i = 0; attrs && attrs [i]; i+= 2)
+  for (i = 0; attrs && attrs [i]; i += 2)
     {
       if (strcmp (attrs [i], "version") == 0)
 	{
-	  if (strcmp (attrs [i + 1], "1.00") != 0)
+	  if (strcmp (attrs [i + 1], "1.0") != 0)
 	    warning ("Unrecognized version '%s' of Nonpareil state format\n",
 		     attrs [i + 1]);
 	  got_version = true;
@@ -265,13 +267,6 @@ static void parse_loc (sax_data_t *sdata, char **attrs)
 }
 
 
-static int xml_strcmp (const xmlChar *s1, const char *s2)
-{
-  const char *s1c = (const char *) s1;
-  return strcmp (s1c, s2);
-}
-
-
 static void sax_start_element (void *ref,
 			       const xmlChar *name,
 			       const xmlChar **attrs)
@@ -296,55 +291,6 @@ static void sax_start_element (void *ref,
     parse_loc (sdata, (char **) attrs);
   else
     warning ("unknown element '%s'\n", name);
-}
-
-static xmlEntityPtr sax_get_entity (void *ref,
-				    const xmlChar *name)
-{
-  sax_data_t *sdata UNUSED = ref;
-  return xmlGetPredefinedEntity (name);
-}
-
-
-static void sax_warning (void *ref,
-			 const char *msg,
-			 ...)
-{
-  sax_data_t *sdata UNUSED = ref;
-  va_list ap;
-
-  va_start (ap, msg);
-  fprintf (stderr, "XML warning: ");
-  vfprintf (stderr, msg, ap);
-  va_end (ap);
-}
-
-
-static void sax_error (void *ref,
-		       const char *msg,
-		       ...)
-{
-  sax_data_t *sdata UNUSED = ref;
-  va_list ap;
-
-  va_start (ap, msg);
-  fprintf (stderr, "XML warning: ");
-  vfprintf (stderr, msg, ap);
-  va_end (ap);
-}
-
-
-static void sax_fatal_error (void *ref,
-			     const char *msg,
-			     ...)
-{
-  sax_data_t *sdata UNUSED = ref;
-  va_list ap;
-
-  va_start (ap, msg);
-  fprintf (stderr, "XML warning: ");
-  vfprintf (stderr, msg, ap);
-  va_end (ap);
 }
 
 

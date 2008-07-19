@@ -19,6 +19,8 @@ Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
 MA 02111, USA.
 */
 
+#include <ctype.h>
+#include <inttypes.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -30,7 +32,11 @@ MA 02111, USA.
 
 #include <gsf/gsf-infile.h>
 
+#include <libxml/xmlwriter.h>
+#include <libxml/SAX.h>
+
 #include "util.h"
+#include "xmlutil.h"
 #include "display.h"
 #include "kml.h"
 #include "chip.h"
@@ -46,12 +52,17 @@ typedef struct
   uint32_t config_flags;
 
   crc_card_side_t *side;  // active card side, NULL if none inserted
-  FILE *f;                // file card came from
+  char *fn;               // filename of card file
 
   GtkWidget *window;
   GtkWidget *insert_button;
   GtkWidget *insert_new_button;
+
+  uint32_t index;         // used by SAX parser when reading card file
 } gui_card_reader_t;
+
+
+static xmlSAXHandler cr_sax_handler;
 
 
 static void gui_card_reader_set_button_state (gui_card_reader_t *cr,
@@ -62,13 +73,45 @@ static void gui_card_reader_set_button_state (gui_card_reader_t *cr,
 }
 
 
+static void write_card (char *fn, crc_card_side_t *side)
+{
+  xmlTextWriterPtr writer;
+  int i;
+
+  writer = xml_write_document (fn,
+			       "magcard",
+			       "http://nonpareil.brouhaha.com/dtd/magcard-1.0.dtd",
+			       9);  // max compression
+
+  xml_start_element (writer, "magcard");
+  xml_write_attribute_string (writer, "version",    "1.0");
+  xml_write_attribute_format (writer, "word-size",  "%d", CRC_WORD_SIZE);
+  xml_write_attribute_format (writer, "word-count", "%d", CRC_MAX_WORD);
+  xml_write_attribute_format (writer, "write-protect", "%d", side->write_protect);
+
+  for (i = 0; i < CRC_MAX_WORD; i++)
+    {
+      xml_start_element (writer, "word");
+      xml_write_attribute_format (writer, "index", "%d", i);
+      xml_write_string_format (writer, "%" PRIx32, side->word [i]);
+      xml_end_element (writer);  // word
+    }
+
+  xml_end_element (writer);  // magcard
+
+  if (! xmlTextWriterEndDocument (writer) < 0)
+    fatal (2, "can't end document\n");
+
+  xmlFreeTextWriter (writer);
+}
+
+
 void gui_card_reader_update (sim_t  *sim  UNUSED,
 			     chip_t *chip UNUSED,
 			     void   *ref,
 			     void   *data)
 {
   gui_card_reader_t *cr = ref;
-  int i;
 
   if (data != cr->side)
     fatal (3, "card reader returned different card side!\n");
@@ -76,18 +119,146 @@ void gui_card_reader_update (sim_t  *sim  UNUSED,
   if (cr->side->dirty)
     {
       cr->side->dirty = false;  // shouldn't be set in file
-      rewind (cr->f);
-      if (fwrite (cr->side, sizeof (crc_card_side_t), 1, cr->f) != 1)
-	fatal (3, "error writing card file\n");
+      write_card (cr->fn, cr->side);
+      g_free (cr->fn);
     }
-  fclose (cr->f);
-  cr->f = NULL;
 
   free (cr->side);
   cr->side = NULL;
+  cr->fn = NULL;
 
   gui_card_reader_set_button_state (cr, true);
 }
+
+
+static void parse_word_data (void *ref,
+			     const xmlChar *ch,
+			     int len)
+{
+  gui_card_reader_t *cr = ref;
+  uint32_t v = 0;
+
+  while (len--)
+    {
+      if (isspace (*ch))
+	continue;
+      v <<= 4;
+      if ((*ch >= '0') && (*ch <= '9'))
+	v = v + (*ch - '0');
+      else if ((*ch >= 'A') && (*ch <= 'F'))
+	v = v + 10 + (*ch - 'A');
+      else if ((*ch >= 'a') && (*ch <= 'f'))
+	v = v + 10 + (*ch - 'a');
+      else
+	fatal (3, "invalid hex digit in magcard word\n");
+      ch++;
+    }
+  cr->side->word [cr->index] = v;
+}
+
+
+static void parse_word (gui_card_reader_t *cr,
+			char **attrs)
+{
+  int i;
+  bool got_index = false;
+
+  for (i = 0; attrs && attrs [i]; i += 2)
+    {
+      if (strcmp (attrs [i], "index") == 0)
+	{
+	  cr->index = str_to_uint32 (attrs [i + 1], NULL, 0);
+	  if (cr->index >= CRC_MAX_WORD)
+	    fatal (3, "card was too many words\n");
+	  got_index = true;
+	}
+      else
+	warning ("unknown attribute '%s' in 'magcard' element\n", attrs [i]);
+    }
+  if (! got_index)
+    fatal (3, "magcard word doesn't have index\n");
+  cr_sax_handler.characters = parse_word_data;
+}
+
+
+static void parse_magcard (gui_card_reader_t *cr,
+			   char **attrs)
+{
+  int i;
+  bool got_version = false;
+  bool got_word_size = false;
+  bool got_word_count = false;
+
+  for (i = 0; attrs && attrs [i]; i += 2)
+    {
+      if (strcmp (attrs [i], "version") == 0)
+	{
+	  if (strcmp (attrs [i + 1], "1.0") != 0)
+	    warning ("Unrecognized version '%s' of Nonpareil magcard format\n",
+		     attrs [i + 1]);
+	  got_version = true;
+	}
+      else if (strcmp (attrs [i], "word-size") == 0)
+	{
+	  uint32_t word_size = str_to_uint32 (attrs [i + 1], NULL, 0);
+	  if (word_size != CRC_WORD_SIZE)
+	    fatal (3, "incorrect magcard word size\n");
+	  got_word_size = true;
+	}
+      else if (strcmp (attrs [i], "word-count") == 0)
+	{
+	  uint32_t word_count = str_to_uint32 (attrs [i + 1], NULL, 0);
+	  if (word_count != CRC_MAX_WORD)
+	    fatal (3, "incorrect magcard word count\n");
+	  got_word_count = true;
+	}
+      else if (strcmp (attrs [i], "write-protect") == 0)
+	{
+	  cr->side->write_protect = str_to_bool (attrs [i + 1], NULL);
+	}
+      else
+	warning ("unknown attribute '%s' in 'magcard' element\n", attrs [i]);
+    }
+  if (! got_version)
+    warning ("magcard file doesn't have version\n");
+  if (! got_word_size)
+    fatal (3, "magcard file doesn't have word-size\n");
+  if (! got_word_count)
+    fatal (3, "magcard file doesn't have word-count\n");
+}
+
+
+static void cr_sax_start_element (void *ref,
+				  const xmlChar *name,
+				  const xmlChar **attrs)
+{
+  gui_card_reader_t *cr = ref;
+
+  if (xml_strcmp (name, "magcard") == 0)
+    parse_magcard (cr, (char **) attrs);
+  else if (xml_strcmp (name, "word") == 0)
+    parse_word (cr, (char **) attrs);
+  else
+    warning ("unknown element '%s'\n", name);
+}
+
+
+static void cr_sax_end_element (void *ref UNUSED,
+				const xmlChar *name UNUSED)
+{
+  cr_sax_handler.characters = NULL;
+}
+
+
+static xmlSAXHandler cr_sax_handler =
+{
+  .getEntity     = sax_get_entity,
+  .startElement  = cr_sax_start_element,
+  .endElement    = cr_sax_end_element,
+  .warning       = sax_warning,
+  .error         = sax_error,
+  .fatalError    = sax_fatal_error,
+};
 
 
 static void insert_card (gui_card_reader_t *cr,
@@ -97,17 +268,15 @@ static void insert_card (gui_card_reader_t *cr,
   if (cr->side)
     fatal (3, "card inserted while card reader busy\n");
 
-  cr->f = fopen (fn, new_card ? "w+b" : "r+b");
-  g_free (fn);
-  if (! cr->f)
-    fatal (3, "error opening card file\n");
+  cr->fn = fn;
 
   cr->side = alloc (sizeof (crc_card_side_t));
 
   if (! new_card)
     {
-      if (fread (cr->side, sizeof (crc_card_side_t), 1, cr->f) != 1)
-	fatal (3, "error reading card file\n");
+      xmlSAXUserParseFile (& cr_sax_handler,
+			   cr,
+			   fn);
       cr->side->dirty = false;  // shouldn't be set in file
     }
 

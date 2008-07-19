@@ -34,94 +34,12 @@ MA 02111, USA.
 #include <libxml/xmlwriter.h>
 
 #include "util.h"
+#include "xmlutil.h"
 #include "display.h"
 #include "kml.h"
 #include "chip.h"
 #include "proc.h"
 #include "state_io.h"
-
-
-static void xml_start_element (xmlTextWriterPtr writer, char *element_name)
-{
-  if (xmlTextWriterStartElement (writer, BAD_CAST element_name) < 0)
-    fatal (2, "can't start element\n");
-}
-
-
-static void xml_end_element (xmlTextWriterPtr writer)
-{
-  if (xmlTextWriterEndElement (writer) < 0)
-    fatal (2, "can't end element\n");
-}
-
-
-#if 0
-static void xml_write_element_string (xmlTextWriterPtr writer,
-				      char *element_name,
-				      char *value)
-{
-  if (xmlTextWriterWriteElement (writer,
-				 BAD_CAST element_name, 
-				 BAD_CAST value) < 0)
-    fatal (2, "can't write element\n");
-}
-
-
-static void xml_write_string_vformat (xmlTextWriterPtr writer,
-				      char *format,
-				      va_list ap)
-{
-  if (xmlTextWriterWriteVFormatString (writer, format, ap) < 0)
-    fatal (2, "can't write string\n");
-}
-
-
-static void xml_write_string_format (xmlTextWriterPtr writer,
-				     char *format,
-				     ...)
-{
-  va_list ap;
-  va_start (ap, format);
-  xml_write_string_vformat (writer, format, ap);
-  va_end (ap);
-}
-#endif
-
-
-static void xml_write_attribute_vformat (xmlTextWriterPtr writer,
-					 char *attribute_name,
-					 char *format,
-					 va_list ap)
-{
-  if (xmlTextWriterWriteVFormatAttribute (writer,
-					  BAD_CAST attribute_name,
-					  format,
-					  ap) < 0)
-    fatal (2, "can't write string\n");
-}
-
-
-static void xml_write_attribute_format (xmlTextWriterPtr writer,
-					char *attribute_name,
-					char *format,
-					...)
-{
-  va_list ap;
-  va_start (ap, format);
-  xml_write_attribute_vformat (writer, attribute_name, format, ap);
-  va_end (ap);
-}
-
-
-static void xml_write_attribute_string (xmlTextWriterPtr writer,
-					char *attribute_name,
-					char *value)
-{
-  if (xmlTextWriterWriteAttribute (writer, 
-				   BAD_CAST attribute_name, 
-				   BAD_CAST value) < 0)
-    fatal (2, "can't write element\n");
-}
 
 
 static void write_slide_switches (sim_t *sim,
@@ -301,7 +219,6 @@ static void write_memory (sim_t *sim, xmlTextWriterPtr writer)
 
 void state_write_xml (sim_t *sim, char *fn)
 {
-  xmlOutputBufferPtr out;
   xmlTextWriterPtr writer;
 
   // LIBXML_TEST_VERSION
@@ -314,30 +231,13 @@ void state_write_xml (sim_t *sim, char *fn)
 	     0,
 	     NULL);
 
-#if 1
-  out = xmlOutputBufferCreateFilename (fn, NULL, true);
-
-  writer = xmlNewTextWriter (out);
-  if (! writer)
-    fatal (2, "can't open output file\n");
-#else
-  writer = xmlNewTextWriterFilename ("foo.xml", 0);
-  if (! writer)
-    fatal (2, "can't open output file\n");
-#endif
-
-  if (xmlTextWriterStartDocument (writer, NULL, "ISO-8859-1", NULL) < 0)
-    fatal (2, "can't start document\n");
-
-  if (xmlTextWriterWriteDTD (writer,
-                             BAD_CAST "state",           // name
-			     NULL,                       // pubid
-			     BAD_CAST "http://nonpareil.brouhaha.com/dtd/state-1.0.dtd",   // sysid
-                             NULL) < 0)                  // subset
-    fatal (2, "can't write DTD\n");
+  writer = xml_write_document (fn,
+			       "state",
+			       "http://nonpareil.brouhaha.com/dtd/state-1.0.dtd",
+			       9);  // max compression
 
   xml_start_element (writer, "state");
-  xml_write_attribute_string (writer, "version", "1.00");
+  xml_write_attribute_string (writer, "version", "1.0");
 
   xml_write_attribute_string (writer, "ncd", sim_get_ncd_fn (sim));
 
