@@ -21,17 +21,17 @@
 Import('env')
 
 #-----------------------------------------------------------------------------
-# Install image files
+# SCons builders
 #-----------------------------------------------------------------------------
 
-diagrams = Split ("""hla.dia keyboard_fsm.dia""")
+builders = Split ("""ncd.py nui.py tarball.py uasm.py""")
 
 
 #-----------------------------------------------------------------------------
 # source tarball
 #-----------------------------------------------------------------------------
 
-dist_files = ['SConscript'] + diagrams
+dist_files = ['SConscript'] + builders
 
 env.Tarball (env ['source_release_tarball'], dist_files)
 env.Tarball (env ['source_snapshot_tarball'], dist_files)

@@ -118,15 +118,12 @@ bin_dist_files = Split ("""README COPYING CREDITS""")
 
 src_dist_files = Split ("""INSTALL DEBUGGING TODO SConstruct""")
 
-source_release_dir = env.Distribute ('nonpareil-' + release,
-				     bin_dist_files + src_dist_files)
-
 source_release_tarball = env.Tarball ('nonpareil-' + release + '.tar.gz',
-                                      source_release_dir)
+                                      bin_dist_files + src_dist_files)
+
+env ['source_release_tarball'] = source_release_tarball
 
 env.Alias ('srcdist', source_release_tarball)
-
-env.AddPostAction (source_release_tarball, Delete (source_release_dir))
 
 #-----------------------------------------------------------------------------
 # package a source snapshot tarball
@@ -136,14 +133,12 @@ import time
 
 snap_date = time.strftime ("%Y.%m.%d")
 
-snapshot_dir = env.Distribute ('nonpareil-' + snap_date, src_dist_files)
+source_snapshot_tarball = env.Tarball ('nonpareil-' + snap_date + '.tar.gz',
+                                       bin_dist_files + src_dist_files)
 
-snapshot_tarball = env.Tarball ('nonpareil-' + snap_date + '.tar.gz',
-                                snapshot_dir)
+env ['source_snapshot_tarball'] = source_snapshot_tarball
 
-env.Alias ('srcsnap', snapshot_tarball)
-
-env.AddPostAction (snapshot_tarball, Delete (snapshot_dir))
+env.Alias ('srcsnap', source_snapshot_tarball)
 
 #-----------------------------------------------------------------------------
 # package a Windows binary distribution ZIP file
@@ -181,6 +176,9 @@ if not env ['libdir']:
 #-----------------------------------------------------------------------------
 # Prepare for SConscription
 #-----------------------------------------------------------------------------
+
+source_release_dir = 'foo'  # $$$ get rid of this!
+snapshot_dir = 'foo'  # $$$ get rid of this!
 
 Export ('source_release_dir snapshot_dir')
 
@@ -290,7 +288,14 @@ if (env ['PLATFORM'] != env ['target']):
 			       'native_env' : env})
 
 #-----------------------------------------------------------------------------
-# documentation
+# SCons builders
+#-----------------------------------------------------------------------------
+
+SConscript ('scons/SConscript')
+
+#-----------------------------------------------------------------------------
+# documentation and licenses
 #-----------------------------------------------------------------------------
 
 SConscript ('doc/SConscript')
+SConscript ('LICENSES/SConscript')

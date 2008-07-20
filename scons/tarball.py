@@ -1,52 +1,55 @@
-#-----------------------------------------------------------------------------
-# Source tar file builder by Paul Davis
+# Source tarball builder for Nonpareil
 # $Id$
-# Posted to scons-users on 1-May-2005
+# Copyright 2008 Eric Smith <eric@brouhaha.com>
+
+#-----------------------------------------------------------------------------
+# The compressed target tarball (with a .tar.gz suffix) will contain all
+# of the sources, with their archive names prefixed by a directory named
+# after the base name of the tarball.  For example, if the target is
+# 'foomatron-3.6.tar.gz', the source 'src/bar/quux.c' would appear in
+# the archive as 'foomatron-3.6/src/bar/quux.c'.
 #
-# Changed to use "-z" option to tar rather than "-j", to get gzip output.
-# Removed the exclude of '*~' (emacs backup files), not needed since we
-# explicitly list exactly what files we want packaged.
+# Inspired by a source tarball builder Paul Davis posted to scons-users
+# on 1-May-2005.  However, this builder has several advantages:
+#
+# * only needs one builder (Tarball), rather than two (Distribute and
+#   Tarball)
+#
+# * doesn't need to copy the files into a temporary directory
+#
+# * uses the Python tarball library rather than invoking an extternal
+#   tar program
+#
+# * compresses the tarball as appropriate based on extension 
 #-----------------------------------------------------------------------------
 
 Import ('env')
 
-import os, errno, SCons
+import tarfile
 
-def distcopy (target, source, env):
-    treedir = str (target[0])
+tarball_extensions = { '.tar'    : '',
+                       '.tar.gz' : 'gz',
+                       '.tgz'    : 'gz',
+                       '.tar.bz' : 'bz',
+                       '.tbz'    : 'bz' }
 
-    try:
-        os.mkdir (treedir)
-    except OSError, (errnum, strerror):
-        if errnum != errno.EEXIST:
-            print 'mkdir ', treedir, ':', strerror
+# determine the base filename of a tarball and the suitable compression mode
+def tarball_split (path):
+    for extension in tarball_extensions:
+        if path.endswith (extension):
+            return (path [0:-len (extension)], tarball_extensions [extension])
+    # if no match, use full path with no compression
+    return (path, '')
 
-    cmd = 'tar cf - '
-    #
-    # we don't know what characters might be in the file names
-    # so quote them all before passing them to the shell
-    #
-    all_files = ([ str(s) for s in source ])
-    cmd += " ".join ([ "'%s'" % quoted for quoted in all_files])
-    cmd += ' | (cd ' + treedir + ' && tar xf -)'
-    p = os.popen (cmd)
-    return p.close ();
+def tarball_builder_fn (target, source, env):
+    (dir_prefix, compression_mode) = tarball_split (str (target [0]))
+    tf = tarfile.open (str (target [0]), 'w:' + compression_mode)
+    for s in source:
+        tf.add (str (s), dir_prefix + '/' + str (s))
+    tf.close ()
 
-def tarballer (target, source, env):            
-    cmd = 'tar -czf ' + str (target[0]) +  ' ' + str(source[0])
-    print 'running ', cmd, ' ... '
-    p = os.popen (cmd)
-    return p.close ()
+tarball_builder = env.Builder (action = tarball_builder_fn,
+                               suffix = '.tar.gz',
+                               multi = 1)
 
-dist_bld = Builder (action = distcopy,
-                    target_factory = SCons.Node.FS.default_fs.Entry,
-                    source_factory = SCons.Node.FS.default_fs.Entry,
-                    multi = 1)
-
-tarball_bld = Builder (action = tarballer,
-                       target_factory = SCons.Node.FS.default_fs.Entry,
-                       source_factory = SCons.Node.FS.default_fs.Entry)
-
-env.Append (BUILDERS = {'Distribute' : dist_bld})
-env.Append (BUILDERS = {'Tarball' : tarball_bld})
-
+env.Append (BUILDERS = {'Tarball' : tarball_builder})

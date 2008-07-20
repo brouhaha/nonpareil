@@ -19,7 +19,6 @@
 # Boston, MA 02111, USA.
 
 Import('build_env native_env')
-Import('source_release_dir snapshot_dir')
 
 import os
 
@@ -431,6 +430,7 @@ if build_env ['build_target_only'] == 0:
     headers = Split ("""util.h xmlutil.h
                         calc_chooser.h
                         calcdef.h arch.h model.h platform.h kml.h
+			chip.h
                         proc.h proc_int.h glib_async_queue_source.h
                         digit_ops.h
                         proc_classic.h proc_nut.h proc_woodstock.h
@@ -449,22 +449,23 @@ if build_env ['build_target_only'] == 0:
 
     misc = Split ("""SConscript ChangeLog release.c""")
 
-    dist_files = (misc + headers +
-                  kml_srcs + common_srcs + common_dis_srcs +
-                  state_io_srcs +
-                  nonpareil_srcs + nonpareil_csim_srcs +
-                  nonpareil_debugger_gui_srcs +
-                  nonpareil_debugger_cli_srcs +
-                  build_ncd_srcs +
-                  modutil_srcs +
-		  uasm_srcs +
-		  udis_srcs +
-                  str2png_srcs +
-                  bin2c_srcs)
+    dist_srcs = (kml_srcs + common_srcs + common_dis_srcs +
+                 sim_core_srcs + state_io_srcs +
+                 nonpareil_srcs + nonpareil_csim_srcs +
+                 nonpareil_debugger_gui_srcs +
+                 nonpareil_debugger_cli_srcs +
+                 build_ncd_srcs +
+                 modutil_srcs +
+                 uasm_srcs +
+                 udis_srcs +
+                 str2png_srcs +
+                 bin2c_srcs)
 
-    native_env.Distribute (source_release_dir, dist_files)
+    dist_files = (misc + headers + dist_srcs)
+                  
 
-    native_env.Distribute (snapshot_dir, dist_files)
+    native_env.Tarball (native_env ['source_release_tarball'], dist_files)
+    native_env.Tarball (native_env ['source_snapshot_tarball'], dist_files)
 
 #-----------------------------------------------------------------------------
 # Windows distribution ZIP file

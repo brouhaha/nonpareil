@@ -21,17 +21,17 @@
 Import('env')
 
 #-----------------------------------------------------------------------------
-# Install image files
+# SCons builders
 #-----------------------------------------------------------------------------
 
-diagrams = Split ("""hla.dia keyboard_fsm.dia""")
+licenses = Split ("""GPL-2.txt GPL-3.0.txt CC-BY-NC-ND-3.0.txt CC-BY-SA-3.0.txt""")
 
 
 #-----------------------------------------------------------------------------
 # source tarball
 #-----------------------------------------------------------------------------
 
-dist_files = ['SConscript'] + diagrams
+dist_files = ['SConscript'] + licenses
 
 env.Tarball (env ['source_release_tarball'], dist_files)
 env.Tarball (env ['source_snapshot_tarball'], dist_files)
