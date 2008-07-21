@@ -274,29 +274,24 @@ env.Alias (target = 'install',
            source = env.Install (dir = env ['destdir'] + env ['libdir'],
                                  source = ncd_files + nui_files))
 
-# The following code recursively enumerates the dependencies of a node and
-# adds the non-derived ones that are within the construction directory tree
-# to the source tarballs.
 
-def path_is_inside_dir (path, dir):
-    path = os.path.abspath (path)
-    dir = os.path.abspath (dir)
-    return path.startswith (dir)
+def leaf_dependencies (nodes, abs_launch_dir):
+    ld = []
+    for node in nodes:
+    	if not os.path.abspath (str (node)).startswith (abs_launch_dir):
+            continue
+        if not node.is_derived ():
+            ld += [node]
+        ld += leaf_dependencies (node.all_children (), abs_launch_dir)
+    return ld
 
-def src_dist_node (node):
-    if not path_is_inside_dir (str (node), env.GetLaunchDir ()):
-        return
-    if not node.is_derived ():
-        env.Tarball (source_release_tarball, node)
-        env.Tarball (source_snapshot_tarball, node)
-    for src in node.all_children ():
-        src_dist_node (src)
+# The source tarballs need to contain the dependencies of the NCD and NUI
+# targets.
+ncd_ld = leaf_dependencies (ncd_files, os.path.abspath (env.GetLaunchDir ()))
+nui_ld = leaf_dependencies (nui_files, os.path.abspath (env.GetLaunchDir ()))
+env.Tarball (source_release_tarball,  ncd_ld + nui_ld)
+env.Tarball (source_snapshot_tarball, ncd_ld + nui_ld)
 
-for ncd in ncd_files:
-    src_dist_node (ncd)
-
-for nui in nui_files:
-    src_dist_node (nui)
 
 #-----------------------------------------------------------------------------
 # target platform code if cross-compiling
