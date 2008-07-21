@@ -472,6 +472,14 @@ void handle_chip_element (xmlNode *element)
 }
 
 
+void handle_hybrid_element (xmlNode *element)
+{
+  iterate_named_elements (element,
+			  "chip",
+			  & handle_chip_element);
+}
+
+
 int main (int argc, char *argv[])
 {
   char *tmpl_fn = NULL;
@@ -553,6 +561,10 @@ int main (int argc, char *argv[])
   iterate_named_elements (root_element,
 			  "chip",
 			  & handle_chip_element);
+
+  iterate_named_elements (root_element,
+			  "hybrid",
+			  & handle_hybrid_element);
 
   handle_deferred_unlink_elements ();
 

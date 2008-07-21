@@ -498,7 +498,13 @@ static void parse_switch (calcdef_t *calcdef UNUSED,
 }
 
 
-static void parse_chip (calcdef_t *calcdef UNUSED,
+static void parse_hybrid (calcdef_t *calcdef UNUSED,
+			  const xmlChar **attrs UNUSED)
+{
+}
+
+
+static void parse_chip (calcdef_t *calcdef,
 			const xmlChar **attrs UNUSED)
 {
   calcdef_chip_t *chip;
@@ -753,6 +759,7 @@ static element_handler_info_t element_handlers [] =
   { "switch",      parse_switch },
   { "switch_pos",  parse_switch_pos },
   { "flag",        parse_flag },
+  { "hybrid",      parse_hybrid },
   { "chip",        parse_chip },
   { "part_info",   parse_part_info },
   { "vendor_name", parse_vendor_name },

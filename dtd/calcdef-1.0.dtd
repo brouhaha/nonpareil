@@ -3,8 +3,8 @@
 <!-- $Id$ -->
 <!-- Copyright 2006, 2008 Eric Smith <eric@brouhaha.com> -->
 
-<!ELEMENT calcdef (chip*,
-                   keyboard,
+<!ELEMENT calcdef ((chip|hybrid)*,
+                   keyboard*,
                    obj_file*,
 		   lst_file*,
                    mod_file*)>
@@ -42,6 +42,8 @@
 <!ATTLIST inst_clock
           freq     CDATA #REQUIRED
           osc_type CDATA #IMPLIED>
+
+<!ELEMENT hybrid (part_info*, chip*)>
 
 <!ELEMENT chip (part_info*, inst_clock*, memory*, chargen*)>
 <!ATTLIST chip

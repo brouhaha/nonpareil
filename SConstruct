@@ -222,7 +222,7 @@ SConscript ('scons/ncd.py')
 # the calculators
 #-----------------------------------------------------------------------------
 
-all_calcs = {'classic':    ['35', '45'],
+all_calcs = {'classic':    ['35', '45', '55', '80'],
              'woodstock':  ['21', '22', '25', '27', '29c', '67'],
              'sting':      ['19c'],
              'topcat':     ['97'],
@@ -242,7 +242,9 @@ ncd_dir_sub = {'19c':  '19c-29c',
 
 nui_dir_sub = {'19c':  None,
                '41cv': '41c',
-               '41cx': '41c'}
+               '41cx': '41c',
+	       '55':   None,
+	       '80':   None}
 
 nui_files = []
 ncd_files = []
