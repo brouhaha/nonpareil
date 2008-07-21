@@ -10,10 +10,8 @@ import re
 asm_image_re = re.compile (r'\.include\s+"(\S+)"', re.M)
 
 def asm_scanner_fn (node, env, path):
-    print "scanning ", str (node)
     contents = node.get_contents ()
     includes = asm_image_re.findall (contents)
-    print "  includes ", includes
     inc_dir = os.path.dirname (str (node))
     return [env.File (inc_dir + '/' + inc) for inc in includes]
 
