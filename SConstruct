@@ -275,22 +275,21 @@ env.Alias (target = 'install',
                                  source = ncd_files + nui_files))
 
 # The following code recursively enumerates the dependencies of a node and
-# adds the non-derived ones to the source tarballs.
+# adds the non-derived ones that are within the construction directory tree
+# to the source tarballs.
 
-# $$$ should omit any that have paths outside of the base directory,
-# e.g., system include files.
-
-# Unfortunately it fails to find all of them, since SCons doesn't compute
-# all of the dependencies of the node if the node isn't actually a target
-# of the current SCons invocation.
+def path_is_inside_dir (path, dir):
+    path = os.path.abspath (path)
+    dir = os.path.abspath (dir)
+    return path.startswith (dir)
 
 def src_dist_node (node):
+    if not path_is_inside_dir (str (node), env.GetLaunchDir ()):
+        return
     if not node.is_derived ():
-        print "node ", str (node), " is not derived"
         env.Tarball (source_release_tarball, node)
         env.Tarball (source_snapshot_tarball, node)
-    for src in node.sources:
-        print "node ", str (node), " depends on ", str(src)
+    for src in node.all_children ():
         src_dist_node (src)
 
 for ncd in ncd_files:
