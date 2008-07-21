@@ -310,6 +310,9 @@ static void pick_cycle (sim_t *sim)
 }
 
 
+#define PICK_DELAY_CR_SEEN 50
+#define PICK_DELAY_HOME    100
+
 static void pick_print_char (sim_t *sim, uint8_t ch)
 {
   act_reg_t *act_reg = get_chip_data (sim->first_chip);
@@ -323,8 +326,8 @@ static void pick_print_char (sim_t *sim, uint8_t ch)
     }
 
   printer->buffer [--printer->left_ptr] = ch;
-  printer->cr_seen_timer +=  100;
-  printer->home_timer    +=  200;
+  printer->cr_seen_timer += PICK_DELAY_CR_SEEN;
+  printer->home_timer = printer->home_timer + PICK_DELAY_HOME;
 }
 
 
