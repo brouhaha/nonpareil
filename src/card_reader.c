@@ -374,6 +374,9 @@ chip_t *gui_card_reader_install (sim_t *sim,
     }
 
   cr->window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
+  gtk_window_set_deletable (GTK_WINDOW (cr->window), FALSE);
+  gtk_window_set_resizable (GTK_WINDOW (cr->window), FALSE);
+
   box = gtk_hbox_new (FALSE, 0);
 
   cr->insert_button = gtk_button_new_with_label ("Insert card...");
