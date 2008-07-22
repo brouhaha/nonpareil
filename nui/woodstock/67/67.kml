@@ -48,8 +48,8 @@ display
 		segment 'e' color 255   0 255  end       # purple
 		segment 'f' color   0 255 255  end       # bluegreen
 		segment 'g' color 255 128   0  end       # orange
-		#segment 'h' color 255   0 128  end       # pink (inside dp)
-		segment 'h' color 128   0   0  end       # dark red (outside dp)
+		segment 'h' color 255   0 128  end       # pink (inside dp)
+		#segment 'h' color 128   0   0  end       # dark red (outside dp)
 		segment 'i'  color  64  64  64  end       # dark grey
 	end # segments
 end
