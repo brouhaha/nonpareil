@@ -5,31 +5,46 @@ $Id$
 
 Needed for next release:
 
-  nui files for 45/55/80, 97
-
-  67/97 card reader support
   97 SST/BST key support (CR flag 4 tied to keyboard KBE)
+  19C/Topcat switch wiring to ACT key scanner
+
+  add switch legends to 97 overlay
+  nui files for 19C, 55, 80
+
+  remove 34C from release pending fixes
+  package Voyager NCD/NUI files separately
+
+  card reader
+    file chooser should filter for .crd files
+    use menu rather than separate window
 
   Put license notices in microcode source and object files and NCD files.
 
-  Fix scons install, source tarball, Windows binary targets (broken with
-  major build system overhaul)
+  Check scons install, Windows binary targets, haven't been tested in
+  a while
 
   Improve support for -41C .mod files
+	Make GUI track mod files in ports 1-4
 
   Windows installer using NSIS, using .nsi file from Christoph Giesselink,
   latest in email on 14-Dec-2005.
 
   Add 15X with patched ROM.
 
+  Better handling of three-position slide switches
+
+
+Longer term:
+
+  Improve support for -41C .mod files
+	Port 5-7 (or T, P, H) for 0x5000, 0x6000, 0x7000?
+	HP-IL module (w/ printer ROM enabled) would occupy ports P and H!
+
 
 Build process:
 
   build_ncd needs to preserve the copyright information supplied in
   the obj_file elements of the ncd.tmpl.
-
-  As assembly object is dependent on assembler, .ncd should be dependent
-  on build-ncd.
 
 
 Packaging:
@@ -42,9 +57,6 @@ Packaging:
     "scons dist" should create the nonpareil.spec
     file from a template, so that "rpmbuild -tb" will work with the release
     tarball.
-
-  Change builders for tarballs and zip files to construct directly using
-  Python zip/tar libraries rather than invoking external programs.
 
   Write a builder to create SRPM from .spec and source tarball.
 
@@ -193,9 +205,6 @@ Disassembler:
 
   Add disassembler for Classic processors.
 
-  Make disassembler talk to sim thread rather than passing in two
-  words as parameters.
-
 
 Debugger:
 
@@ -216,7 +225,6 @@ Debugger:
 
   Display source code:
      GtkSourceView      http://gtksourceview.sourceforge.net/
-     GtkEditor          http://gtkeditor.sourceforge.net/
      Scintilla          http://scintilla.sourceforge.net/
 
 
@@ -259,11 +267,6 @@ Better model support:
 
   Compare actual HP-55, and HP-80 ROMs to CASM output.
 
-  Add Woodstock microinstructions for card reader (HP-67, HP-97)
-
-  Add Woodstock microinstructions for printer (HP-19C, HP-91, HP-92, HP-95C, HP-97)
-
-  Specify ACT flag wiring in NCD
   For Topcat, 19C, specify ACT key scanner wiring in NCD
 
   Add HP-65 microinstructions for program memory access.
