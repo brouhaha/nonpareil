@@ -306,7 +306,10 @@ static void gui_card_reader_insert_card (GtkWidget *widget UNUSED,
 					NULL);
 
   if (gtk_dialog_run (GTK_DIALOG (dialog)) != GTK_RESPONSE_ACCEPT)
-    return;
+    {
+      gtk_widget_destroy (dialog);
+      return;
+    }
 
   fn = gtk_file_chooser_get_filename (GTK_FILE_CHOOSER (dialog));
   gtk_widget_destroy (dialog);
@@ -332,7 +335,10 @@ static void gui_card_reader_insert_new_card (GtkWidget *widget UNUSED,
 					NULL);
 
   if (gtk_dialog_run (GTK_DIALOG (dialog)) != GTK_RESPONSE_ACCEPT)
-    return;
+    {
+      gtk_widget_destroy (dialog);
+      return;
+    }
 
   fn = gtk_file_chooser_get_filename (GTK_FILE_CHOOSER (dialog));
   gtk_widget_destroy (dialog);
