@@ -65,15 +65,13 @@ def try_to_build (target_fn, env):
                 if os.path.exists (src_fn):
                     builder.__call__ (target = target_fn,
                                       source = src_fn,
-                                      env = env,
-                                      for_signature = False)
+                                      env = env)
                     return True
                 src_fn = target_path + '/' + target_base + src_suffix
                 if try_to_build (src_fn, env):
                     builder.__call__ (target = target_fn,
                                       source = src_fn,
-                                      env = env,
-                                      for_signature = False)
+                                      env = env)
     return False
                 
 
