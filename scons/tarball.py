@@ -21,32 +21,32 @@
 #
 # * doesn't need to copy the files into a temporary directory
 #
-# * uses the Python tarball library rather than invoking an extternal
+# * uses the Python tarball library rather than invoking an external
 #   tar program
 #
 # * compresses the tarball as appropriate based on extension 
 #
 # Example usage in an Sconstruct file:
 #
-# pkg_name = 'frobulator'
-# release_ver = '1.62'
+#     pkg_name = 'frobulator'
+#     release_ver = '1.62'
 #
-# env = Environment ()
+#     env = Environment ()
 #
-# Export ('env')
-# SConscript ('tarball.py')
+#     Export ('env')
+#     SConscript ('tarball.py')
 #
-# source_tarball = env.Tarball (pkg_name + '-' + release_ver,
-#                               ['SConstruct', 'tarball.py'])
+#     source_tarball = env.Tarball (pkg_name + '-' + release_ver,
+#                                   ['SConstruct', 'tarball.py'])
 #
-# sources = ['frobulator.c']
-# headers = ['frobulator.h']
+#     sources = ['frobulator.c']
+#     headers = ['frobulator.h']
 #
-# frobulator = env.Program (sources)
+#     frobulator = env.Program (sources)
 #
-# # add more files to the tarball
-# env.Tarball (source_tarball, sources)
-# env.Tarball (source_tarball, headers)
+#     # add more files to the tarball
+#     env.Tarball (source_tarball, sources)
+#     env.Tarball (source_tarball, headers)
 #
 #-----------------------------------------------------------------------------
 
