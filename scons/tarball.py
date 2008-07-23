@@ -10,7 +10,11 @@
 # the archive as 'foomatron-3.6/src/bar/quux.c'.
 #
 # Inspired by a source tarball builder Paul Davis posted to scons-users
-# on 1-May-2005.  However, this builder has several advantages:
+# on 1-May-2005:
+#
+#     http://osdir.com/ml/programming.tools.scons.user/2005-03/msg00014.html
+#
+#  However, this builder has several advantages:
 #
 # * only needs one builder (Tarball), rather than two (Distribute and
 #   Tarball)
@@ -21,17 +25,40 @@
 #   tar program
 #
 # * compresses the tarball as appropriate based on extension 
+#
+# Example usage in an Sconstruct file:
+#
+# pkg_name = 'frobulator'
+# release_ver = '1.62'
+#
+# env = Environment ()
+#
+# Export ('env')
+# SConscript ('tarball.py')
+#
+# source_tarball = env.Tarball (pkg_name + '-' + release_ver,
+#                               ['SConstruct', 'tarball.py'])
+#
+# sources = ['frobulator.c']
+# headers = ['frobulator.h']
+#
+# frobulator = env.Program (sources)
+#
+# # add more files to the tarball
+# env.Tarball (source_tarball, sources)
+# env.Tarball (source_tarball, headers)
+#
 #-----------------------------------------------------------------------------
 
 Import ('env')
 
 import tarfile
 
-tarball_extensions = { '.tar'    : '',
-                       '.tar.gz' : 'gz',
-                       '.tgz'    : 'gz',
-                       '.tar.bz' : 'bz',
-                       '.tbz'    : 'bz' }
+tarball_extensions = { '.tar'     : '',
+                       '.tar.gz'  : 'gz',
+                       '.tgz'     : 'gz',
+                       '.tar.bz2' : 'bz2',
+                       '.tbz'     : 'bz2' }
 
 # determine the base filename of a tarball and the suitable compression mode
 def tarball_split (path):
