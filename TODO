@@ -8,15 +8,16 @@ Needed for next release:
   97 SST/BST key support (CR flag 4 tied to keyboard KBE)
   19C/Topcat switch wiring to ACT key scanner
 
-  add switch legends to 97 overlay
-  nui files for 19C, 55, 80
+  nui files for 55, 80
 
   remove 34C from release pending fixes
   package Voyager NCD/NUI files separately
 
   card reader
+    handle write protection
     file chooser should filter for .crd files
     use menu rather than separate window
+    menu item to toggle write protection of a card
 
   Put license notices in microcode source and object files and NCD files.
 
@@ -266,8 +267,6 @@ Better model support:
 		HP-01 (optical)
 
   Compare actual HP-55, and HP-80 ROMs to CASM output.
-
-  For Topcat, 19C, specify ACT key scanner wiring in NCD
 
   Add HP-65 microinstructions for program memory access.
 
