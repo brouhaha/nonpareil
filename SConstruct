@@ -315,8 +315,9 @@ if (env ['PLATFORM'] != env ['target']):
 SConscript ('scons/SConscript')
 
 #-----------------------------------------------------------------------------
-# documentation and licenses
+# Licenses, DTDs, and documentation
 #-----------------------------------------------------------------------------
 
-SConscript ('doc/SConscript')
 SConscript ('LICENSES/SConscript')
+SConscript ('dtd/SConscript')
+SConscript ('doc/SConscript')
