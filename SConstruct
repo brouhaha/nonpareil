@@ -240,8 +240,7 @@ ncd_dir_sub = {'19c':  '19c-29c',
 	       '67':   '67-97',
 	       '97':   '67-97'}
 
-nui_dir_sub = {'19c':  None,
-               '41cv': '41c',
+nui_dir_sub = {'41cv': '41c',
                '41cx': '41c',
 	       '55':   None,
 	       '80':   None}

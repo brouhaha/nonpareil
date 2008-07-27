@@ -1,0 +1,141 @@
+# $Id$
+# Copyright 2008 Eric Smith <eric@brouhaha.com>
+
+# Nonpareil is free software; you can redistribute it and/or modify it
+# under the terms of the GNU General Public License version 2 as
+# published by the Free Software Foundation.  Note that I am not
+# granting permission to redistribute or modify Nonpareil under the
+# terms of any later version of the General Public License.
+
+# Nonpareil is distributed in the hope that they will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# General Public License for more details.
+
+# You should have received a copy of the GNU General Public License
+# along with this program (in the file "COPYING"); if not, write to
+# the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+# Boston, MA 02111, USA.
+
+global
+	title "19C Programmable Printing Scientific Calculator"
+	author "Eric Smith <eric@brouhaha.com>"
+	model "19c"
+	image "sting-background.png"
+	image credit "Eric Smith"
+	overlay default image "19c-overlay.png"
+	color 0 87 127 152  # background color, used when transparency is off
+	transparency 128
+end
+
+display
+	offset  22 29
+	size   247 44
+
+	color 0  70  0  0  # background
+	color 1  80  0  0  # unlit segments
+	color 2 255 17 17  # lit segments
+
+	digits 12
+		size   17 30
+		offset 21  7
+	end
+
+	segments
+		image "led_segments.png" offset 2 2 size 126 188
+		segment 'a' color 255   0   0  end       # red
+		segment 'b' color   0 255   0  end       # green
+		segment 'c' color   0   0 255  end       # blue
+		segment 'd' color 255 255   0  end       # yellow
+		segment 'e' color 255   0 255  end       # purple
+		segment 'f' color   0 255 255  end       # bluegreen
+		segment 'g' color 255 128   0  end       # orange
+		#segment 'h' color 255   0 128  end       # pink (inside dp)
+		segment 'h' color 128   0   0  end       # dark red (outside dp)
+		segment 'i'  color  64  64  64  end       # dark grey
+	end # segments
+end # display
+
+switch 0
+  offset  211  96
+  default 2
+# position 0 should be OFF
+  position 1  image "switch-off.png"  end  # program
+  position 2  image "switch-on.png"   end  # run
+end
+
+button 11  image "key_11.png"  offset  17 130  end
+button 12  image "key_12.png"  offset  71 130  end
+button 13  image "key_13.png"  offset 125 130  end
+button 14  image "key_14.png"  offset 179 130  end
+button 15  image "key_15.png"  offset 233 130  end
+button 16  image "key_16.png"  offset 287 130  end
+
+button 21  image "key_21.png"  offset  17 186  end
+button 22  image "key_22.png"  offset 125 186  end
+button 23  image "key_23.png"  offset 179 186  end
+button 24  image "key_24.png"  offset 233 186  end
+button 25  image "key_25.png"  offset 287 186  end
+
+button 31  image "key_31.png"  offset  17 242  end
+button 32  image "key_32.png"  offset  82 242  end
+button 33  image "key_33.png"  offset 153 242  end
+button 34  image "key_34.png"  offset 225 242  end
+button 35  image "key_35.png"  offset 287 242  end
+
+button 41  image "key_41.png"  offset  17 298  end
+button 42  image "key_42.png"  offset  82 298  end
+button 43  image "key_43.png"  offset 153 298  end
+button 44  image "key_44.png"  offset 225 298  end
+button 45  image "key_45.png"  offset 287 298  end
+
+button 51  image "key_51.png"  offset  17 354  end
+button 52  image "key_52.png"  offset  82 354  end
+button 53  image "key_53.png"  offset 153 354  end
+button 54  image "key_54.png"  offset 225 354  end
+button 55  image "key_55.png"  offset 287 354  end
+
+button 61  image "key_61.png"  offset  17 411  end
+button 62  image "key_62.png"  offset  82 411  end
+button 63  image "key_63.png"  offset 153 411  end
+button 64  image "key_64.png"  offset 225 411  end
+button 65  image "key_65.png"  offset 287 411  end
+
+# main keyboard:
+scancode 48 map 0 62 end  # 0
+scancode 49 map 0 52 end  # 1
+scancode 50 map 0 53 end  # 2
+scancode 51 map 0 54 end  # 3
+scancode 52 map 0 42 end  # 4
+scancode 53 map 0 43 end  # 5
+scancode 54 map 0 44 end  # 6
+scancode 55 map 0 32 end  # 7
+scancode 56 map 0 33 end  # 8
+scancode 57 map 0 34 end  # 9
+scancode 46 map 0 63 end  # .
+scancode 43 map 0 41 end  # +
+scancode 45 map 0 31 end  # -
+scancode 42 map 0 51 end  # *
+scancode 47 map 0 61 end  # /
+scancode 65293 map 0 21 end  # ENTER
+scancode 99 map 0 22 end  # c - CHS
+scancode 101 map 0 23 end  # e - EEX
+
+# keypad:
+scancode 65456 map 0 62 end  # 0
+scancode 65457 map 0 52 end  # 1
+scancode 65458 map 0 53 end  # 2
+scancode 65459 map 0 54 end  # 3
+scancode 65460 map 0 42 end  # 4
+scancode 65461 map 0 43 end  # 5
+scancode 65462 map 0 44 end  # 6
+scancode 65463 map 0 32 end  # 7
+scancode 65464 map 0 33 end  # 8
+scancode 65465 map 0 34 end  # 9
+scancode 65454 map 0 63 end  # .
+scancode 65452 map 0 63 end  # ,
+scancode 65451 map 0 41 end  # +
+scancode 65453 map 0 31 end  # -
+scancode 65450 map 0 51 end  # *
+scancode 65455 map 0 61 end  # /
+scancode 65421 map 0 21 end  # ENTER
