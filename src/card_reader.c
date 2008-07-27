@@ -58,7 +58,9 @@ typedef struct
   GtkWidget *insert_button;
   GtkWidget *insert_new_button;
 
-  uint32_t index;         // used by SAX parser when reading card file
+  // used by SAX parser when reading card file:
+  uint32_t word_count;
+  uint32_t index;
 } gui_card_reader_t;
 
 
@@ -92,7 +94,6 @@ static void write_card (char *fn, crc_card_side_t *side)
   for (i = 0; i < CRC_MAX_WORD; i++)
     {
       xml_start_element (writer, "word");
-      xml_write_attribute_format (writer, "index", "%d", i);
       xml_write_string_format (writer, "%" PRIx32, side->word [i]);
       xml_end_element (writer);  // word
     }
@@ -153,30 +154,21 @@ static void parse_word_data (void *ref,
 	fatal (3, "invalid hex digit in magcard word\n");
       ch++;
     }
-  cr->side->word [cr->index] = v;
+  if (cr->index >= cr->word_count)
+    fatal (3, "too much data on card\n");
+  cr->side->word [cr->index++] = v;
 }
 
 
-static void parse_word (gui_card_reader_t *cr,
+static void parse_word (gui_card_reader_t *cr UNUSED,
 			char **attrs)
 {
   int i;
-  bool got_index = false;
 
   for (i = 0; attrs && attrs [i]; i += 2)
     {
-      if (strcmp (attrs [i], "index") == 0)
-	{
-	  cr->index = str_to_uint32 (attrs [i + 1], NULL, 0);
-	  if (cr->index >= CRC_MAX_WORD)
-	    fatal (3, "card was too many words\n");
-	  got_index = true;
-	}
-      else
-	warning ("unknown attribute '%s' in 'magcard' element\n", attrs [i]);
+      warning ("unknown attribute '%s' in 'magcard' element\n", attrs [i]);
     }
-  if (! got_index)
-    fatal (3, "magcard word doesn't have index\n");
   cr_sax_handler.characters = parse_word_data;
 }
 
@@ -207,8 +199,8 @@ static void parse_magcard (gui_card_reader_t *cr,
 	}
       else if (strcmp (attrs [i], "word-count") == 0)
 	{
-	  uint32_t word_count = str_to_uint32 (attrs [i + 1], NULL, 0);
-	  if (word_count != CRC_MAX_WORD)
+	  cr-> word_count = str_to_uint32 (attrs [i + 1], NULL, 0);
+	  if (cr->word_count != CRC_MAX_WORD)
 	    fatal (3, "incorrect magcard word count\n");
 	  got_word_count = true;
 	}
@@ -225,6 +217,7 @@ static void parse_magcard (gui_card_reader_t *cr,
     fatal (3, "magcard file doesn't have word-size\n");
   if (! got_word_count)
     fatal (3, "magcard file doesn't have word-count\n");
+  cr->index = 0;
 }
 
 

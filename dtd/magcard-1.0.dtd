@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!-- $Id$ -->
+<!-- Copyright 2008 Eric Smith <eric@brouhaha.com> -->
+
+<!ELEMENT magcard (word*)>
+<!ATTLIST magcard
+          version       CDATA #REQUIRED
+          word-size     CDATA #REQUIRED
+          word-count    CDATA #REQUIRED
+          write-protect CDATA #REQUIRED
+          copyright     CDATA #IMPLIED
+          license       CDATA #IMPLIED>
+
+<!ELEMENT word (#PCDATA)>
