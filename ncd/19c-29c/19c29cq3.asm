@@ -950,6 +950,7 @@ L7346:  p <- 13
         load constant 15
         return
 
+; 19C keyboard dispatch - PICK keycode in C[2:1]
 L7352:	decimal
         p <- 1
         0 - c - 1 -> c[xs]

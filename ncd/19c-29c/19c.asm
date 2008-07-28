@@ -182,9 +182,9 @@ L0173:  0 -> s 3
           then go to L0151
         display off
         b exchange c[w]
-        jsb S0227
+        jsb get_pick_keycode
         delayed rom @16
-        go to L7352
+        go to L7352		; keyboard dispatch
 
 L0204:  0 -> s 3
         if 1 = s 12
@@ -203,11 +203,12 @@ L0215:  a exchange c[w]
         go to L1647
 
 L0223:  jsb S0252
-L0224:  jsb S0227
+L0224:  jsb get_pick_keycode
         0 -> s 2
         go to L0056
 
-S0227:  0 -> c[x]
+get_pick_keycode:
+	0 -> c[x]
         binary
         c - 1 -> c[x]
         c -> data address
@@ -324,75 +325,57 @@ S0375:  delayed rom @16
 
         nop
 
-; keycode decode table
-        c + 1 -> c[x]
-        c + 1 -> c[x]
-        if n/c go to L0462
-        go to L0577
+; @0400: keycode decode table
+        c + 1 -> c[x]		; 0x80 - key 34 - 9/->R/->P
+        c + 1 -> c[x]		; 0x70 - key 33 - 8/log/10^x
+        legal go to L0462	; 0x60 - key 32 - 7/ln/e^x
+        go to L0577		; 0x50 - key 35 - Sigma+/Sigma-/DEL
+        go to L0554		; 0x40 - key 25 - g
+        go to L0723		; 0x30 - key 31 - minus/x<=y/x<0
+        go to L0656		; 0x20 - key 24 - CLx/CLR Sigma/DEG
+        go to L0670		; 0x10 - key 23 - EEX/CLR REG/RAD
 
-        go to L0554
+        go to L0505		; 0x81 - key 64 - R/S/PAUSE/1/x
+        go to L0731		; 0x71 - key 63 - decimal/LASTx/pi
+        go to L0734		; 0x61 - key 62 - 0/->H.MS/->
+        go to L0712		; 0x51 - key 65 - PRx/PRT STK/SPC
+        go to L0550		; 0x41 - key 16 - f
+        nop			; 0x31 - no key
+        go to L0542		; 0x21 - key 15 - SST/ENG/BST
+        go to L0452		; 0x11 - key 14 - GTO/SCI/LBL
 
-        go to L0723
+L0420:  c + 1 -> c[x]		; 0x84 - key 54 - 3/y^x/ABS
+        c + 1 -> c[x]		; 0x74 - key 53 - 2/sqrt(x)/x^2
+        legal go to L0733	; 0x64 - key 52 - 1/INT/FRAC
+        go to L0623		; 0x54 - key 55 - RCL/PRT REG/ISZ
+        go to L0514		; 0x44 - key 13 - GSB/FIX/RTN
+        go to L0725		; 0x34 - key 51 - times/x!=y/x>=0
+        go to L0640		; 0x24 - key 12 - RDN/s/i
+        go to L0445		; 0x14 - key 11 - x<>y/xbar/%
+	
+        go to L0463		; 0x88 - key 44 - 6/tan/arctan
+L0431:  c + 1 -> c[x]		; 0x78 - key 43 - 5/cos/arccos
+        legal go to L0466	; 0x68 - key 42 - 4/sin/arcsin
+        go to L0610		; 0x58 - key 45 - STO/PRT Sigma/DSZ
+        go to L0700		; 0x48 - key 22 - CHS/CLR PRGM/GRD
+        go to L0450		; 0x38 - key 41 - plus/x>y/x>=0
+        go to L0727		; 0x28 - key 61 - divide/x=y/x=0
 
-        go to L0656
-
-        go to L0670
-
-        go to L0505
-
-        go to L0731
-
-        go to L0734
-
-        go to L0712
-
-        go to L0550		; key 16 - f
-
-        nop
-        go to L0542
-
-        go to L0452
-
-L0420:  c + 1 -> c[x]
-        c + 1 -> c[x]
-        if n/c go to L0733
-        go to L0623
-
-        go to L0514
-
-        go to L0725
-
-        go to L0640
-
-        go to L0445
-
-        go to L0463
-
-L0431:  c + 1 -> c[x]
-        if n/c go to L0466
-        go to L0610
-
-        go to L0700
-
-        go to L0450
-
-        go to L0727
-
-        if 0 = s 4
+        if 0 = s 4		; 0x18 - key 21 - ENTER^/CLR Prefix/PRT PRGM
           then go to L0503
         if 1 = s 6
           then go to L0114
         delayed rom @02
         go to L1313
 
-L0445:  load constant 4
+L0445:  load constant 4		; key 11 - x<>y/xbar/%
         load constant 10
         go to L0766
 
-L0450:  delayed rom @02
+L0450:  delayed rom @02		; key 41 - plus/x>y/x>=0
         go to L1006
 
-L0452:  if 1 = s 4
+L0452:  if 1 = s 4		; key 14 - GTO/SCI/LBL
           then go to L0532
         load constant 8
         jsb S0566
@@ -402,7 +385,7 @@ L0452:  if 1 = s 4
 L0460:  load constant 5
         go to L0573
 
-L0462:  c + 1 -> c[x]
+L0462:  c + 1 -> c[x]		; key 32, 33, 34 - 7, 8, 9
 L0463:  c + 1 -> c[x]
         1 -> s 13
         go to L0431
@@ -423,7 +406,8 @@ L0501:  c + 1 -> c[x]
 L0502:  c + 1 -> c[x]
 L0503:  c + 1 -> c[x]
         if n/c go to L0775
-L0505:  if 0 = s 4
+
+L0505:  if 0 = s 4		; key 64 - R/S/PAUSE/1/x
           then go to L0775
         if 1 = s 6
           then go to L0460
@@ -431,7 +415,7 @@ L0505:  if 0 = s 4
         load constant 11
         go to L0775
 
-L0514:  if 1 = s 4
+L0514:  if 1 = s 4		; key 13 - GSB/FIX/RTN
           then go to L0522
         load constant 7
         jsb S0566
@@ -458,7 +442,7 @@ L0532:  if 1 = s 6
 L0540:  load constant 5
         go to L0530
 
-L0542:  if 0 = s 4
+L0542:  if 0 = s 4		; key 15 - SST/ENG/BST
           then go to L0024
         if 0 = s 6
           then go to L1164
@@ -470,7 +454,7 @@ L0550:  jsb S0566		; key 16 - f
 L0552:  1 -> s 4
         go to L0616
 
-L0554:  if 0 = s 4
+L0554:  if 0 = s 4		; key 25 - g
           then go to L0560
 L0556:  jsb S0566
         go to L0552
@@ -494,7 +478,7 @@ L0573:  load constant 12
 L0575:  load constant 4
         go to L0573
 
-L0577:  if 1 = s 4
+L0577:  if 1 = s 4		; key 35 - Sigma+/Sigma-/DEL
           then go to L0620
         if 0 = s 6
           then go to L0764
@@ -517,7 +501,7 @@ L0620:  if 0 = s 6
           then go to L1155
         go to L0764
 
-L0623:  if 1 = s 4
+L0623:  if 1 = s 4		; key 55 - RCL/PRT REG/ISZ
           then go to L0631
         load constant 9
         jsb S0566
@@ -533,7 +517,7 @@ L0634:  load constant 13
 L0636:  load constant 4
         go to L0634
 
-L0640:  if 1 = s 7
+L0640:  if 1 = s 7		; key 12 - RDN/s/i
           then go to L0650
         if 0 = s 4
           then go to L0653
@@ -549,7 +533,7 @@ L0653:  load constant 4
         load constant 11
         go to L0766
 
-L0656:  if 1 = s 4
+L0656:  if 1 = s 4		; key 24 - CLx/CLR Sigma/DEG
           then go to L0664
         if 0 = s 12
           then go to L0500
@@ -561,7 +545,7 @@ L0664:  if 1 = s 6
         load constant 4
         go to L0606
 
-L0670:  if 1 = s 4
+L0670:  if 1 = s 4		; key 23 - EEX/CLR REG/RAD
           then go to L0674
         1 -> s 3
         go to L0501
@@ -571,7 +555,7 @@ L0674:  if 1 = s 6
         load constant 5
         go to L0606
 
-L0700:  if 1 = s 4
+L0700:  if 1 = s 4		; key 22 - CHS/CLR PRGM/GRD
           then go to L0706
         if 0 = s 12
           then go to L0502
@@ -583,7 +567,7 @@ L0706:  if 1 = s 6
         load constant 6
         go to L0606
 
-L0712:  if 1 = s 4
+L0712:  if 1 = s 4		; key 65 - PRx/PRT STK/SPC
           then go to L0720
 L0714:  1 -> s 3
 L0715:  load constant 1
@@ -594,20 +578,20 @@ L0720:  if 1 = s 6
           then go to L0715
         go to L0714
 
-L0723:  delayed rom @02
+L0723:  delayed rom @02		; key 31 - minus/x<=y/x<0
         go to L1002
 
-L0725:  delayed rom @02
+L0725:  delayed rom @02		; key 51 - times/x!=y/x>=0
         go to L1012
 
-L0727:  delayed rom @02
+L0727:  delayed rom @02		; key 61 - divide/x=y/x=0
         go to L1016
 
-L0731:  delayed rom @02
+L0731:  delayed rom @02		; key 63 - decimal/LASTx/pi
         go to L1047
 
-L0733:  c + 1 -> c[x]
-L0734:  if 1 = s 4
+L0733:  c + 1 -> c[x]		; key 52, 53, 54 - 1, 2, 3
+L0734:  if 1 = s 4		; key 62 - 0/->H.MS/->
           then go to L0747
         if 1 = s 7
           then go to L0755
@@ -647,22 +631,22 @@ L0776:  if 1 = s 13
         delayed rom @03
         go to L1725
 
-L1002:  jsb S1027
+L1002:  jsb S1027		; key 31 - minus/x<=y/x<0
         if p = 1
           then go to L0473
         go to L1024
 
-L1006:  jsb S1027
+L1006:  jsb S1027		; key 41 - plus/x>y/x>=0
         if p = 1
           then go to L0472
         go to L1023
 
-L1012:  jsb S1027
+L1012:  jsb S1027		; key 51 - times/x!=y/x>=0
         if p = 1
           then go to L0471
         go to L1022
 
-L1016:  jsb S1027
+L1016:  jsb S1027		; key 61 - divide/x=y/x=0
         if p = 1
           then go to L0470
         c + 1 -> c[p]
@@ -690,7 +674,7 @@ L1035:  if 0 = s 6
         m1 exchange c
         return
 
-L1047:  if 0 = s 4
+L1047:  if 0 = s 4		; key 63 - decimal/LASTx/pi
           then go to L1054
 L1051:  load constant 1
         load constant 10

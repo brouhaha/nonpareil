@@ -354,7 +354,7 @@ L0366:  p - 1 -> p
 S0400:  delayed rom @02
         go to S1167
 
-L0402:  if 0 = s 4
+L0402:  if 0 = s 4		; key 73 - decimal/LASTx/pi
           then go to L0407
 L0404:  load constant 1
         load constant 10
@@ -479,7 +479,8 @@ L0536:  c + 1 -> c[x]
 L0537:  c + 1 -> c[x]
 L0540:  c + 1 -> c[x]
         if n/c go to L0562
-L0542:  if 0 = s 4
+
+L0542:  if 0 = s 4		; key 74 - R/S/PAUSE/1/x
           then go to L0562
         if 1 = s 6
           then go to L0450
@@ -619,8 +620,8 @@ L0727:  load constant 4
         load constant 11
         go to L0553
 
-L0732:  c + 1 -> c[x]
-L0733:  if 1 = s 4
+L0732:  c + 1 -> c[x]		; key 62 - 1/INT/FRAC
+L0733:  if 1 = s 4		; key 72 - 0/->H.MS/->
           then go to L0745
         if 1 = s 7
           then go to L0747
