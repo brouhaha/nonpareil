@@ -946,7 +946,8 @@ L1177:  0 -> a[w]
         load constant 4
 L1221:  c - 1 -> c[x]
         if n/c go to L1221
-        display toggle
+
+        display toggle		; flush PICK keyboard buffer
         a exchange b[w]
         a - 1 -> a[p]
 L1226:  delayed rom @00
@@ -955,6 +956,7 @@ L1226:  delayed rom @00
         if n/c go to L1226
         a exchange b[w]
         display toggle
+
         m1 exchange c
         0 -> s 3
 L1236:  crc fs?c prog_mode

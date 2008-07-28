@@ -170,8 +170,8 @@ L0151:  1 -> s 0
 
 L0163:  if 0 = s 11
           then go to L0265
-L0165:  0 -> s 0
-        0 -> s 5
+L0165:  0 -> s 0		; disable PROG mode switch
+        0 -> s 5		; battery low?
         if 1 = s 5
           then go to L0173
         jsb S0375
@@ -812,10 +812,10 @@ L1216:  m2 exchange c
         return
 
 L1221:  0 -> s 14
-        delayed rom @05
+        delayed rom @05		; display and print Error
         go to L2625
 
-        delayed rom @05
+        delayed rom @05		; display Error (no print) - not used?
         go to L2632
 
 L1226:  jsb S1365

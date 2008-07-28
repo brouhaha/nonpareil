@@ -308,6 +308,7 @@ S0323:  p <- 1
         b exchange c[w]
         return
 
+; The 19C equivalent of this routine is at L7253
 S0331:  p <- 0
         if a[p] # 0
           then go to L0361

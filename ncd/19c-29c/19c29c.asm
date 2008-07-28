@@ -33,8 +33,8 @@ L6546	.equ	@6546
 ;	L2472	; Sigma+
 ;	L2545	; s
 ;	L2612	; isz/dsz	
-;	L2625	; (19c only)
-;	L2632
+;	L2625	; display/print Error (19c only)
+;	L2632	; display Error
 ;	S3000	; 1/x
 ;	L3006	; advance PC
 ;	percent	; percent
@@ -557,40 +557,38 @@ L2632:  0 -> b[w]
 L2652:  c - 1 -> c[x]
         if n/c go to L2652
 
-        display toggle		; turn off display
-	
+        display toggle		; flush PICK keyboard buffer
         a exchange b[w]
         a - 1 -> a[p]
-L2657:  jsb S2734		; get keycode from PIK
+L2657:  jsb get_pick_keycode
         a - 1 -> a[p]
         if n/c go to L2657
-
         a exchange b[w]
         display toggle
 
-L2664:  1 -> s 0		; enable printer mode keys
+L2664:  1 -> s 0		; enable program mode key (19C)
         0 -> s 3
-        if 1 = s 3
+        if 1 = s 3		; program mode?
           then go to L2674
-	
-        0 -> s 0		; disable printer mode keys
+        0 -> s 0		; disable program mode key (19C)
+
         pick key?		; key pressed?
         if 0 = s 3
           then go to L2664	;   no, loop
 
-L2674:  0 -> s 0		; disable printer mode keys
+L2674:  0 -> s 0		; disable program mode key (19C)
         nop
-        0 -> s 3		;  key pressed?
-        pick key?
+        0 -> s 3
+        pick key?		; key pressed?
         if 1 = s 3
           then go to L2706
-        1 -> s 0
+        1 -> s 0		; enable program mode key (19C)
         nop
-        if 1 = s 3
+        if 1 = s 3		; program mode?
           then go to L2674
 
-L2706:  display toggle
-        jsb S2734		; get keycode from PIK
+L2706:  display toggle		; key was pressed
+        jsb get_pick_keycode		; get keycode from PIK
         delayed rom @00
         go to L0062
 
@@ -617,7 +615,8 @@ S2712:  0 -> c[w]		; print "ERROR"?
 ;      end   blank  blank  blank    E      R      R      O      R
 
 
-S2734:  0 -> c[w]		; get keycode from PIK
+get_pick_keycode:
+	0 -> c[w]		; get keycode from PIK
         c - 1 -> c[w]
         c -> data address
         register -> c 15
@@ -642,12 +641,12 @@ L2751:  p <- 4
         c + c -> c[xs]		; a[xs] = ccc0
         c + c -> c[xs]		; a[xs] = cc00 - carry set if ccc was 4..7
         if n/c go to L2764
-        load constant 1		; if col was 4, set c[4] = 1
+        load constant 1		; if col was 4..7 (MAN mode), set c[4] = 1
         go to L2771
 
-L2764:  p <- 3			; set c[3] = 1
+L2764:  p <- 3			; set c[3] = 1 (assume TRACE mode)
         load constant 1
-        c + c -> c[xs]		; if col was 2 or 3, set c[3] to 0
+        c + c -> c[xs]		; if col was 2 or 3, (NORM mode) set c[3] to 0
         if n/c go to L2771
         c - 1 -> c[m]		; set c[3] = 0
 L2771:  a exchange c[x]		; write updated status register back

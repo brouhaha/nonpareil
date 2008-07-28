@@ -873,6 +873,7 @@ L7244:  a - 1 -> a[p]
         b exchange c[w]
         go to L7221
 
+; This routine is the 19C equivalent of the 29C routine at S0331
 L7253:	p <- 0
         if a[p] # 0
           then go to L7304
