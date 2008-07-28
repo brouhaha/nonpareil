@@ -166,7 +166,9 @@ static bool pick_read (sim_t *sim)
     }
   else
     {
-      fprintf (stdout, "PICK key buffer underflow\n");
+      // On an error the microcode blindly reads the buffer a fixed
+      // number of times, causing underflows, so we don't consider it
+      // to be a problem.
     }
 
   reg_zero (act_reg->c, 0, WSIZE - 1);
