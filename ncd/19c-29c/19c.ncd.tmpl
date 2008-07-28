@@ -672,72 +672,62 @@ Copyright 2007, 2008 Eric Smith <eric@brouhaha.com>
 
   <keyboard>
 
-    <switch number="0">
+    <switch number="1">
       <!--
       <switch_pos position="0">  - OFF -
       </switch_pos>
       -->
-      <switch_pos position="1">  <!-- PRGM -->
-        <flag chip_id="act" number="2" value="1"/>
-        <!-- This isn't really correct, ACT F2 is asserted when
-             switch is in PRGM only when ACT flag out is driven -->
+      <switch_pos position="0">  <!-- PRGM -->
       </switch_pos>
-      <switch_pos position="2">  <!-- RUN -->
-        <flag chip_id="act" number="2" value="0"/>
+      <switch_pos position="1">  <!-- RUN -->
       </switch_pos>
     </switch>
 
     <switch number="2">  <!-- printer mode -->
       <switch_pos position="0">  <!-- MAN -->
-        <flag chip_id="crc" number="2" value="1"/>
-        <flag chip_id="crc" number="3" value="0"/>
       </switch_pos>
       <switch_pos position="1">  <!-- TRACE -->
-        <flag chip_id="crc" number="2" value="0"/>
-        <flag chip_id="crc" number="3" value="0"/>
       </switch_pos>
       <switch_pos position="2">  <!-- NORM -->
-        <flag chip_id="crc" number="2" value="0"/>
-        <flag chip_id="crc" number="3" value="1"/>
       </switch_pos>
     </switch>
 
-    <key user_keycode="11" hw_keycode="0x14"/>  <!-- x<>y -->
-    <key user_keycode="12" hw_keycode="0x24"/>  <!-- Rv -->
-    <key user_keycode="13" hw_keycode="0x44"/>  <!-- GSB -->
-    <key user_keycode="14" hw_keycode="0x11"/>  <!-- GTO -->
-    <key user_keycode="15" hw_keycode="0x21"/>  <!-- SST -->
-    <key user_keycode="16" hw_keycode="0x41"/>  <!-- f -->
+    <key user_keycode="11" chip_id="pick" hw_keycode="0x14"/>  <!-- x<>y -->
+    <key user_keycode="12" chip_id="pick" hw_keycode="0x24"/>  <!-- Rv -->
+    <key user_keycode="13" chip_id="pick" hw_keycode="0x44"/>  <!-- GSB -->
+    <key user_keycode="14" chip_id="pick" hw_keycode="0x11"/>  <!-- GTO -->
+    <key user_keycode="15" chip_id="pick" hw_keycode="0x21"/>  <!-- SST -->
+    <key user_keycode="16" chip_id="pick" hw_keycode="0x41"/>  <!-- f -->
 
-    <key user_keycode="21" hw_keycode="0x18"/>  <!-- ENTER^ -->
-    <key user_keycode="22" hw_keycode="0x48"/>  <!-- CHS -->
-    <key user_keycode="23" hw_keycode="0x10"/>  <!-- EEX -->
-    <key user_keycode="24" hw_keycode="0x20"/>  <!-- CLx -->
-    <key user_keycode="25" hw_keycode="0x40"/>  <!-- g -->
+    <key user_keycode="21" chip_id="pick" hw_keycode="0x18"/>  <!-- ENTER^ -->
+    <key user_keycode="22" chip_id="pick" hw_keycode="0x48"/>  <!-- CHS -->
+    <key user_keycode="23" chip_id="pick" hw_keycode="0x10"/>  <!-- EEX -->
+    <key user_keycode="24" chip_id="pick" hw_keycode="0x20"/>  <!-- CLx -->
+    <key user_keycode="25" chip_id="pick" hw_keycode="0x40"/>  <!-- g -->
 
-    <key user_keycode="31" hw_keycode="0x30"/>  <!-- minus -->
-    <key user_keycode="32" hw_keycode="0x90"/>  <!-- 7 -->
-    <key user_keycode="33" hw_keycode="0xd0"/>  <!-- 8 -->
-    <key user_keycode="34" hw_keycode="0xc0"/>  <!-- 9 -->
-    <key user_keycode="35" hw_keycode="0x50"/>  <!-- Sigma+ -->
+    <key user_keycode="31" chip_id="pick" hw_keycode="0x30"/>  <!-- minus -->
+    <key user_keycode="32" chip_id="pick" hw_keycode="0x90"/>  <!-- 7 -->
+    <key user_keycode="33" chip_id="pick" hw_keycode="0xd0"/>  <!-- 8 -->
+    <key user_keycode="34" chip_id="pick" hw_keycode="0xc0"/>  <!-- 9 -->
+    <key user_keycode="35" chip_id="pick" hw_keycode="0x50"/>  <!-- Sigma+ -->
 
-    <key user_keycode="41" hw_keycode="0x38"/>  <!-- plus -->
-    <key user_keycode="42" hw_keycode="0x98"/>  <!-- 4 -->
-    <key user_keycode="43" hw_keycode="0xd8"/>  <!-- 5 -->
-    <key user_keycode="44" hw_keycode="0xc8"/>  <!-- 6 -->
-    <key user_keycode="45" hw_keycode="0x58"/>  <!-- STO -->
+    <key user_keycode="41" chip_id="pick" hw_keycode="0x38"/>  <!-- plus -->
+    <key user_keycode="42" chip_id="pick" hw_keycode="0x98"/>  <!-- 4 -->
+    <key user_keycode="43" chip_id="pick" hw_keycode="0xd8"/>  <!-- 5 -->
+    <key user_keycode="44" chip_id="pick" hw_keycode="0xc8"/>  <!-- 6 -->
+    <key user_keycode="45" chip_id="pick" hw_keycode="0x58"/>  <!-- STO -->
 
-    <key user_keycode="51" hw_keycode="0x34"/>  <!-- multiply -->
-    <key user_keycode="52" hw_keycode="0x94"/>  <!-- 1 -->
-    <key user_keycode="53" hw_keycode="0xd4"/>  <!-- 2 -->
-    <key user_keycode="54" hw_keycode="0xc4"/>  <!-- 3 -->
-    <key user_keycode="55" hw_keycode="0x54"/>  <!-- RCL -->
+    <key user_keycode="51" chip_id="pick" hw_keycode="0x34"/>  <!-- multiply -->
+    <key user_keycode="52" chip_id="pick" hw_keycode="0x94"/>  <!-- 1 -->
+    <key user_keycode="53" chip_id="pick" hw_keycode="0xd4"/>  <!-- 2 -->
+    <key user_keycode="54" chip_id="pick" hw_keycode="0xc4"/>  <!-- 3 -->
+    <key user_keycode="55" chip_id="pick" hw_keycode="0x54"/>  <!-- RCL -->
 
-    <key user_keycode="61" hw_keycode="0x28"/>  <!-- divide -->
-    <key user_keycode="62" hw_keycode="0x91"/>  <!-- 0 -->
-    <key user_keycode="63" hw_keycode="0xd1"/>  <!-- . -->
-    <key user_keycode="64" hw_keycode="0xc1"/>  <!-- R/S -->
-    <key user_keycode="65" hw_keycode="0x51"/>  <!-- PRx -->
+    <key user_keycode="61" chip_id="pick" hw_keycode="0x28"/>  <!-- divide -->
+    <key user_keycode="62" chip_id="pick" hw_keycode="0x91"/>  <!-- 0 -->
+    <key user_keycode="63" chip_id="pick" hw_keycode="0xd1"/>  <!-- . -->
+    <key user_keycode="64" chip_id="pick" hw_keycode="0xc1"/>  <!-- R/S -->
+    <key user_keycode="65" chip_id="pick" hw_keycode="0x51"/>  <!-- PRx -->
   </keyboard>
 
   <obj_file addr_space="inst"

@@ -56,12 +56,20 @@ display
 	end # segments
 end # display
 
-switch 0
-  offset  211  96
-  default 2
+switch 1
+  offset  100  96
+  default 1
 # position 0 should be OFF
-  position 1  image "switch-off.png"  end  # program
-  position 2  image "switch-on.png"   end  # run
+  position 0  image "switch-off.png"  end  # program
+  position 1  image "switch-on.png"   end  # run
+end
+
+switch 2
+  offset  211  96
+  default 0
+  position 0  image "switch-left.png"  end  # MAN
+  position 1  image "switch-mid.png"  end  # TRACE
+  position 2  image "switch-right.png"   end  # NORM
 end
 
 button 11  image "key_11.png"  offset  17 130  end
