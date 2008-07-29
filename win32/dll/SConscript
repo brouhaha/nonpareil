@@ -1,0 +1,125 @@
+# SConscript for Nonpareil
+# $Id$
+# Copyright 2005, 2008 Eric Smith <eric@brouhaha.com>
+
+# Nonpareil is free software; you can redistribute it and/or modify it
+# under the terms of the GNU General Public License version 2 as
+# published by the Free Software Foundation.  Note that I am not
+# granting permission to redistribute or modify Nonpareil under the
+# terms of any later version of the General Public License.
+
+# Nonpareil is distributed in the hope that they will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# General Public License for more details.
+
+# You should have received a copy of the GNU General Public License
+# along with this program (in the file "COPYING"); if not, write to
+# the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+# Boston, MA 02111, USA.
+
+Import('env')
+
+#-----------------------------------------------------------------------------
+# Unzip stuff
+#-----------------------------------------------------------------------------
+
+import os.path
+import zipfile
+
+def unzip_action (target, source, env):
+    zf = zipfile.ZipFile (str (source [0]), 'r')
+    for name in zf.namelist ():
+        if os.path.basename (str (target [0])) == os.path.basename (name):
+            open (str (target [0]), 'w').write (zf.read (name))
+            zf.close ()
+            return 0   # OK
+    zf.close ()
+    return 1   # error - target wasn't found
+
+UNZIP = Builder (action = unzip_action,
+                 suffix = '.dll',
+                 src_suffix = 'zip')
+
+env.Append (BUILDERS = { 'UNZIP' : UNZIP })
+
+#-----------------------------------------------------------------------------
+# Win32 DLLs etc.
+#
+# We don't currently build these ourselves.
+#-----------------------------------------------------------------------------
+
+#-----------------------------------------------------------------------------
+# gtk+
+#-----------------------------------------------------------------------------
+
+gtk_version = '2.12'
+gtk_patch = '11'
+
+gtk_bin_dist = 'gtk+-bundle-' + gtk_version + '.' + gtk_patch + '.zip'
+gtk_bin_dist_url = 'http://ftp.gnome.org/pub/gnome/binaries/win32/gtk+/' + gtk_version + '/' + gtk_bin_dist
+
+gtk_file_paths = ['bin/intl.dll',
+                  'bin/jpeg62.dll',
+                  'bin/libatk-1.0-0.dll',
+                  'bin/libcairo-2.dll',
+                  'bin/libgdk-win32-2.0-0.dll',
+                  'bin/libgdk_pixbuf-2.0-0.dll',
+                  'bin/libglib-2.0-0.dll',
+                  'bin/libgmodule-2.0-0.dll',
+                  'bin/libgobject-2.0-0.dll',
+                  'bin/libgthread-2.0-0.dll',
+                  'bin/libgtk-win32-2.0-0.dll',
+                  'bin/libpango-1.0-0.dll',
+                  'bin/libpangocairo-1.0-0.dll',
+                  'bin/libpangowin32-1.0-0.dll',
+                  'bin/libpng12-0.dll',
+                  'bin/libtiff3.dll',
+                  'bin/zlib1.dll',
+                  'lib/gtk-2.0/2.10.0/engines/libpixmap.dll',
+                  'lib/gtk-2.0/2.10.0/loaders/libpixbufloader-jpeg.dll',
+                  'lib/gtk-2.0/2.10.0/loaders/libpixbufloader-png.dll',
+                  'lib/gtk-2.0/2.10.0/loaders/libpixbufloader-tiff.dll']
+
+gtk_files = [env.UNZIP (p, gtk_bin_dist) [0] for p in gtk_file_paths]
+
+#-----------------------------------------------------------------------------
+# libxml2
+#-----------------------------------------------------------------------------
+
+libxml2_version = '2.6.32+'
+
+libxml2_bin_dist = 'libxml2-' + libxml2_version + '.win32.zip'
+libxml2_bin_dist_url = 'http://www.zlatkovic.com/pub/libxml/' + libxml2_bin_dist
+
+libxml2_dll = env.UNZIP ('libxml2.dll', libxml2_bin_dist)
+
+#-----------------------------------------------------------------------------
+# sdl
+#-----------------------------------------------------------------------------
+
+sdl_version = '1.2.13'
+
+sdl_bin_dist = 'SDL-' + sdl_version + '-win32.zip'
+sdl_bin_dist_url = 'http://www.libsdl.org/release/' + sdl_bin_dist
+
+sdl_dll = env.UNZIP ('SDL.dll', sdl_bin_dist)
+
+#-----------------------------------------------------------------------------
+# Windows distribution ZIP file
+#-----------------------------------------------------------------------------
+
+win32_files = gtk_files + sdl_dll + libxml2_dll
+
+if env ['target'] == 'win32':
+    for f in win32_files:
+        env.ZipDist (env ['dist_zip_file'], f)
+
+#-----------------------------------------------------------------------------
+# source tarball
+#-----------------------------------------------------------------------------
+
+dist_files = ['SConscript']
+
+env.Tarball (env ['source_release_tarball'], dist_files)
+env.Tarball (env ['source_snapshot_tarball'], dist_files)

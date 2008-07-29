@@ -108,6 +108,7 @@ import os
 
 SConscript ('scons/nui.py')
 SConscript ('scons/tarball.py')
+SConscript ('scons/zipdist.py')
 # SConscript ('scons/nsis.py')
 
 #-----------------------------------------------------------------------------
@@ -145,12 +146,10 @@ env.Alias ('srcsnap', source_snapshot_tarball)
 #-----------------------------------------------------------------------------
 
 if env ['target'] == 'win32':
-    win32_bin_dist_dir = Dir ('nonpareil-' + release + '-win32')
-    Export ('win32_bin_dist_dir')
-    Install (win32_bin_dist_dir, bin_dist_files)
-    win32_bin_dist_zip = Zip ('nonpareil-' + release + '-win32.zip', win32_bin_dist_dir)
-    env.Alias ('dist', win32_bin_dist_zip)
-    env.AddPostAction (win32_bin_dist_zip, Delete (win32_bin_dist_dir.path))
+    dist_zip_file = env.ZipDist ('nonpareil-' + release + '.zip',
+				 bin_dist_files)
+    env ['dist_zip_file'] = dist_zip_file
+    env.Alias ('dist', dist_zip_file)
 
 #-----------------------------------------------------------------------------
 # package a Windows installer
@@ -320,3 +319,11 @@ SConscript ('scons/SConscript')
 SConscript ('LICENSES/SConscript')
 SConscript ('dtd/SConscript')
 SConscript ('doc/SConscript')
+
+#-----------------------------------------------------------------------------
+# Windows DLLs
+#-----------------------------------------------------------------------------
+
+SConscript ('win32/dll/SConscript',
+	    build_dir = target_build_dir + '/dll',
+	    duplicate = 0)

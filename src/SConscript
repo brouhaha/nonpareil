@@ -472,5 +472,4 @@ if build_env ['build_target_only'] == 0:
 #-----------------------------------------------------------------------------
 
 if ming and (build_target_only or not cross):
-    Import ('win32_bin_dist_dir')
-    Install (win32_bin_dist_dir, default_targets)
+    native_env.ZipDist (native_env ['dist_zip_file'], default_targets)
