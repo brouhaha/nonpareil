@@ -1,0 +1,19 @@
+The Windows binary release of Nonpareil includes third-party libraries
+covered by various licenses.  See the specific license files for details:
+
+library         license file
+----------	---------------------------
+GTK+		LGPL-2.1.txt
+gdk		LGPL-2.1.txt
+gdk_pixbuf	LGPL-2.1.txt
+atk		LGPL-2.1.txt
+glib		LGPL-2.1.txt
+pango		LGPL-2.1.txt
+Cairo		LGPL-2.1.txt or MPL-1.1.txt
+GetText		LGPL-2.1.txt or GPL-3.0.txt
+SDL		LGPL-2.1.txt
+libxml2		libxml2-license.txt
+zlib		zlib-license.txt
+libpng		libpng-license.txt
+jpeg		IJG-license.txt
+libtiff		libtiff-license.txt
