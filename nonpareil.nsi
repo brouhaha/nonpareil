@@ -636,7 +636,7 @@ Section Uninstall
   RMDir $R0
 
 ; delete "$INSTDIR"
-  RMDir /r "$INSTDIR"
+  RMDir "$INSTDIR"
 ; try to delete parent of install dir (normally ${PRODUCT_ROOT_FOLDER})
   ${un.GetParent} $INSTDIR $R0
   RMDir $R0
