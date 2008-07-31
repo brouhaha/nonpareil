@@ -109,7 +109,7 @@ import os
 SConscript ('scons/nui.py')
 SConscript ('scons/tarball.py')
 SConscript ('scons/zipdist.py')
-# SConscript ('scons/nsis.py')
+SConscript ('win32/nsis.py')
 
 #-----------------------------------------------------------------------------
 # package a release source tarball
@@ -155,12 +155,12 @@ if env ['target'] == 'win32':
 # package a Windows installer
 #-----------------------------------------------------------------------------
 
-#if env ['target'] == 'win32':
-#    win32_nsis_installer_fn = 'nonpareil-' + release + '-setup.exe'
-#    win32_nsis_installer = env.MakeNSISInstaller (win32_nsis_installer_fn,
-#                                                  'src/nonpareil.nsi')
-#    env.Alias ('installer', win32_nsis_installer)
-#    env.AddPostAction (win32_nsis_installer, Delete (win32_bin_dist_dir.path))
+if env ['target'] == 'win32':
+    win32_nsis_installer_fn = 'nonpareil-' + release + '-setup.exe'
+    win32_nsis_installer = env.NSIS (win32_nsis_installer_fn,
+                                     bin_dist_files)
+    env ['win32_nsis_installer'] = win32_nsis_installer
+    env.Alias ('wininst', win32_nsis_installer)
 
 #-----------------------------------------------------------------------------
 # Installation paths
@@ -274,6 +274,7 @@ env.Alias (target = 'install',
            source = env.Install (dir = env ['destdir'] + env ['libdir'],
                                  source = ncd_files + nui_files))
 
+env.NSIS (win32_nsis_installer, ncd_files + nui_files)
 
 def leaf_dependencies (nodes, abs_launch_dir):
     ld = []
@@ -321,9 +322,14 @@ SConscript ('dtd/SConscript')
 SConscript ('doc/SConscript')
 
 #-----------------------------------------------------------------------------
-# Windows DLLs
+# Windows
 #-----------------------------------------------------------------------------
 
-SConscript ('win32/dll/SConscript',
-	    build_dir = target_build_dir + '/dll',
-	    duplicate = 0)
+if env ['target'] == 'win32':
+    SConscript ('win32/dll/SConscript',
+                build_dir = target_build_dir + '/win32/dll',
+                duplicate = 0)
+
+    SConscript ('win32/SConscript',
+                build_dir = target_build_dir + '/win32',
+                duplicate = 0)

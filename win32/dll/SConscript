@@ -114,6 +114,7 @@ win32_files = gtk_files + sdl_dll + libxml2_dll
 if env ['target'] == 'win32':
     for f in win32_files:
         env.ZipDist (env ['dist_zip_file'], f)
+	env.NSIS (env ['win32_nsis_installer'], f)
 
 #-----------------------------------------------------------------------------
 # source tarball
