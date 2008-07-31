@@ -5,6 +5,8 @@ $Id$
 
 Needed for next release:
 
+  Bug - 0-c-1 in decimal mode can go negative!
+
   97 SST/BST key support (CR flag 4 tied to keyboard KBE)
   19C/Topcat switch wiring to ACT key scanner
 
