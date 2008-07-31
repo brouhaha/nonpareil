@@ -3,7 +3,13 @@ Copyright 1995, 2003, 2004, 2005, 2006, 2008 Eric Smith <eric@brouhaha.com>
 $Id$
 
 
-Needed for next release:
+Needed urgently:
+
+  For Windows binary distribution:
+
+    NSIS installer needs to create the GTK config file
+
+    Include licensing information for libraries.
 
   Bug - 0-c-1 in decimal mode can go negative!
 
@@ -28,9 +34,6 @@ Needed for next release:
 
   Improve support for -41C .mod files
 	Make GUI track mod files in ports 1-4
-
-  Windows installer using NSIS, using .nsi file from Christoph Giesselink,
-  latest in email on 14-Dec-2005.
 
   Add 15X with patched ROM.
 

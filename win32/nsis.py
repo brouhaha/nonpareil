@@ -13,8 +13,7 @@ def remove_prefixes (s, prefix):
             s = s [len (p):]
     return s
 
-# $$$ hack alert - how can we get the actual build directory?
-nsis_build_prefixes = ['build/win32-debug/',
+nsis_build_prefixes = [env ['target_build_dir'] + '/',
                        'build/calc/',
                        'win32/dll/']
 
@@ -50,6 +49,13 @@ def nsis_builder_fn (target, source, env):
         raise SCons.Errors.UserError ('must have an .nsi file among the sources for an NSIS Builder')
     nsis_write_file_commands ('inst_file_cmds.nsh', files)
     nsis_write_delete_commands ('uninst_file_cmds.nsh', files)
+    nsis_defs = { 'RELEASE' : env ['RELEASE'],
+                  'BUILD_DIR' : env ['target_build_dir'] }
+    nsis_cmd = 'makensis';
+    for k in nsis_defs:
+        nsis_cmd += ' -D%s=%s' % (k, nsis_defs [k])
+    nsis_cmd += ' %s' % str (nsi)
+    Execute (nsis_cmd)
 
 nsis_builder = env.Builder (action = nsis_builder_fn,
                             multi = 1)

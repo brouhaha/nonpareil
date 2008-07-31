@@ -18,14 +18,18 @@
 # the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
 # Boston, MA 02111, USA.
 
-release = '0.79'  # should get from a file, and use only if a release option
-                  # is specified
+#-----------------------------------------------------------------------------
+# Release number
+#-----------------------------------------------------------------------------
 
-conf_file = 'nonpareil.conf'
+release_major = '0'
+release_minor = '79'
 
 #-----------------------------------------------------------------------------
 # Options
 #-----------------------------------------------------------------------------
+
+conf_file = 'nonpareil.conf'
 
 opts = Options (conf_file)
 
@@ -97,6 +101,7 @@ Help (opts.GenerateHelpText (env))
 # into install directories.
 SConsignFile ()
 
+release = release_major + '.' + release_minor
 env ['RELEASE'] = release
 Export ('env')
 
@@ -109,7 +114,6 @@ import os
 SConscript ('scons/nui.py')
 SConscript ('scons/tarball.py')
 SConscript ('scons/zipdist.py')
-SConscript ('win32/nsis.py')
 
 #-----------------------------------------------------------------------------
 # package a release source tarball
@@ -152,17 +156,6 @@ if env ['target'] == 'win32':
     env.Alias ('dist', dist_zip_file)
 
 #-----------------------------------------------------------------------------
-# package a Windows installer
-#-----------------------------------------------------------------------------
-
-if env ['target'] == 'win32':
-    win32_nsis_installer_fn = 'nonpareil-' + release + '-setup.exe'
-    win32_nsis_installer = env.NSIS (win32_nsis_installer_fn,
-                                     bin_dist_files)
-    env ['win32_nsis_installer'] = win32_nsis_installer
-    env.Alias ('wininst', win32_nsis_installer)
-
-#-----------------------------------------------------------------------------
 # Installation paths
 #-----------------------------------------------------------------------------
 
@@ -187,6 +180,21 @@ target_build_dir = 'build/' + env ['target']
 if env ['debug']:
 	host_build_dir += '-debug'
 	target_build_dir += '-debug'
+
+env ['target_build_dir'] = target_build_dir
+
+#-----------------------------------------------------------------------------
+# package a Windows installer
+#-----------------------------------------------------------------------------
+
+if env ['target'] == 'win32':
+    SConscript ('win32/nsis.py')
+
+    win32_nsis_installer_fn = 'nonpareil-' + release + '-setup.exe'
+    win32_nsis_installer = env.NSIS (win32_nsis_installer_fn,
+                                     bin_dist_files)
+    env ['win32_nsis_installer'] = win32_nsis_installer
+    env.Alias ('wininst', win32_nsis_installer)
 
 #-----------------------------------------------------------------------------
 # sound files
@@ -330,6 +338,4 @@ if env ['target'] == 'win32':
                 build_dir = target_build_dir + '/win32/dll',
                 duplicate = 0)
 
-    SConscript ('win32/SConscript',
-                build_dir = target_build_dir + '/win32',
-                duplicate = 0)
+    SConscript ('win32/SConscript')
