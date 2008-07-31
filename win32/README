@@ -1,5 +1,29 @@
-GTK+ 2.8 uses Cairo, and will not run on Windows95, Windows98, Windows ME,
-or Windows NT 4.0.
+WARNING:
+	GTK+ 2.8 uses Cairo, and will not run on Windows95, Windows98,
+	Windows ME, or Windows NT 4.0.
+
+
+GTK runtime installer:
+	http://sourceforge.net/projects/gtk-win/
+
+
+	GTK 2.12.11, 28-JUL-2008
+		http://downloads.sourceforge.net/gtk-win/gtk2-runtime-2.12.11-2008-07-25-ash.exe?modtime=1216992151&big_mirror=0
+
+
+GTK binary distribution (not an installer):
+	http://www.gtk.org/download-windows.html
+	http://ftp.gnome.org/pub/gnome/binaries/win32/gtk+/
+
+	GTK 2.12.11, 20-JUL-2008
+		http://ftp.gnome.org/pub/gnome/binaries/win32/gtk+/2.12/gtk+-bundle-2.12.11.zip
+
+	GTK 2.6.9, 8-MAY-2006
+		http://downloads.sourceforge.net/gtk-win/gtk2-runtime-2.6.9-050806-ash.exe?modtime=1197419594&big_mirror=0
+
+
+------
+
 
 GTK+ 2.8.18 runtime (for Windows 2000, XP)
 	05-AUG-2006
