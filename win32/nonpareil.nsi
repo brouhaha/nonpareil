@@ -16,7 +16,6 @@
 ; HM NIS Edit Wizard helper defines
 !define PRODUCT_NAME "Nonpareil"
 !define PRODUCT_VERSION ${RELEASE}
-!define PRODUCT_ROOT_FOLDER "Nonpareil"
 !define PRODUCT_WEB_SITE "http://nonpareil.brouhaha.com/"
 !define PRODUCT_DIR_REGKEY "Software\Microsoft\Windows\CurrentVersion\App Paths\${PRODUCT_NAME}.exe"
 !define PRODUCT_UNINST_KEY "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT_NAME}"
@@ -28,7 +27,7 @@ SetCompressor lzma
 
 Name "${PRODUCT_NAME} ${RELEASE}"
 OutFile "${BUILD_DIR}/${PRODUCT_NAME}-${RELEASE}-setup.exe"
-InstallDir "$PROGRAMFILES\${PRODUCT_ROOT_FOLDER}\${PRODUCT_NAME}"
+InstallDir "$PROGRAMFILES\${PRODUCT_NAME}"
 InstallDirRegKey HKLM "${PRODUCT_DIR_REGKEY}" ""
 BrandingText "nonpareil.brouhaha.com"
 ;ShowInstDetails show
@@ -49,7 +48,6 @@ VIAddVersionKey "ProductVersion" "${RELEASE}"
 ; MUI 1.67 compatible ------
 !include "MUI.nsh"
 !include "FileFunc.nsh"
-!insertmacro un.GetParent
 
 ; MUI Settings
 !define MUI_ABORTWARNING
@@ -71,7 +69,7 @@ VIAddVersionKey "ProductVersion" "${RELEASE}"
 ; Start menu page
 var ICONS_GROUP
 !define MUI_STARTMENUPAGE_NODISABLE
-!define MUI_STARTMENUPAGE_DEFAULTFOLDER "${PRODUCT_ROOT_FOLDER}\${PRODUCT_NAME}"
+!define MUI_STARTMENUPAGE_DEFAULTFOLDER "${PRODUCT_NAME}"
 !define MUI_STARTMENUPAGE_REGISTRY_ROOT "${PRODUCT_UNINST_ROOT_KEY}"
 !define MUI_STARTMENUPAGE_REGISTRY_KEY "${PRODUCT_UNINST_KEY}"
 !define MUI_STARTMENUPAGE_REGISTRY_VALUENAME "${PRODUCT_STARTMENU_REGVAL}"
@@ -107,6 +105,9 @@ var ICONS_GROUP
 
 ; MUI end ------
 
+# include part 1 of code to automatically uninstall only installed files
+!include "win32/uninst1.nsh"
+
 InstType "Full"
 
 Section "Program Files" SecMain
@@ -118,14 +119,14 @@ Section "Program Files" SecMain
   SetOutPath "$INSTDIR"
   SetOverwrite on
   
-# File commands automatically generated
-!include "${BUILD_DIR}/inst_file_cmds.nsh"
+  # File commands automatically generated
+  !include "${BUILD_DIR}/inst_file_cmds.nsh"
 
 ; Shortcuts
   !insertmacro MUI_STARTMENU_WRITE_BEGIN Application
-  CreateDirectory "$SMPROGRAMS\$ICONS_GROUP"
-  CreateShortCut "$SMPROGRAMS\$ICONS_GROUP\Nonpareil.lnk" "$INSTDIR\nonpareil.exe"
-  CreateShortCut "$DESKTOP\Nonpareil.lnk" "$INSTDIR\nonpareil.exe"
+  ${CreateDirectory} "$SMPROGRAMS\$ICONS_GROUP"
+  ${CreateShortCut} "$SMPROGRAMS\$ICONS_GROUP\Nonpareil.lnk" "$INSTDIR\nonpareil.exe"
+  ${CreateShortCut} "$DESKTOP\Nonpareil.lnk" "$INSTDIR\nonpareil.exe"
   !insertmacro MUI_STARTMENU_WRITE_END
 SectionEnd
 
@@ -135,15 +136,14 @@ Section -AdditionalIcons
   SetDetailsPrint listonly
 
   !insertmacro MUI_STARTMENU_WRITE_BEGIN Application
-  WriteIniStr "$INSTDIR\${PRODUCT_NAME}.url" "InternetShortcut" "URL" "${PRODUCT_WEB_SITE}"
-  CreateShortCut "$SMPROGRAMS\$ICONS_GROUP\Readme.lnk" "$INSTDIR\README"
-  CreateShortCut "$SMPROGRAMS\$ICONS_GROUP\Website.lnk" "$INSTDIR\${PRODUCT_NAME}.url"
-  CreateShortCut "$SMPROGRAMS\$ICONS_GROUP\Uninstall.lnk" "$INSTDIR\uninst.exe"
+  ${CreateShortCut} "$SMPROGRAMS\$ICONS_GROUP\Readme.lnk" "$INSTDIR\README"
+  ${CreateShortCut} "$SMPROGRAMS\$ICONS_GROUP\Website.lnk" "$INSTDIR\${PRODUCT_NAME}.url"
+  ${CreateShortCut} "$SMPROGRAMS\$ICONS_GROUP\Uninstall.lnk" "$INSTDIR\uninst.exe"
   !insertmacro MUI_STARTMENU_WRITE_END
 SectionEnd
 
 Section -Post
-  WriteUninstaller "$INSTDIR\uninst.exe"
+  ${WriteUninstaller} "$INSTDIR\uninst.exe"
   WriteRegStr HKLM "${PRODUCT_DIR_REGKEY}" "" "$INSTDIR\nonpareil.exe"
   WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "DisplayName" "$(^Name)"
   WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "UninstallString" "$INSTDIR\uninst.exe"
@@ -156,6 +156,9 @@ SectionEnd
 !insertmacro MUI_FUNCTION_DESCRIPTION_BEGIN
   !insertmacro MUI_DESCRIPTION_TEXT ${SecMain}    "The main program files with documentation."
 !insertmacro MUI_FUNCTION_DESCRIPTION_END
+
+# include part 2 of code to automatically uninstall only installed files
+!include "win32/uninst2.nsh"
 
 ; delete application settings
 Function un.DeleteStateFiles
@@ -172,25 +175,7 @@ Section Uninstall
   DetailPrint "Deleting Files..."
   SetDetailsPrint listonly
 
-  Delete "$INSTDIR\${PRODUCT_NAME}.url"
-  Delete "$INSTDIR\uninst.exe"
-
-# Delete commands automatically generated
-!include "${BUILD_DIR}/uninst_file_cmds.nsh"
-
-  Delete "$DESKTOP\Nonpareil.lnk"
-
-; delete ${PRODUCT_ROOT_FOLDER}\${PRODUCT_NAME}
-  RMDir "$SMPROGRAMS\$ICONS_GROUP"
-; try to delete parent of start menu folder (normally ${PRODUCT_ROOT_FOLDER})
-  ${un.GetParent} "$SMPROGRAMS\$ICONS_GROUP" $R0
-  RMDir $R0
-
-  RMDir "$INSTDIR"
-
-; try to delete parent of install dir (normally ${PRODUCT_ROOT_FOLDER})
-  ${un.GetParent} $INSTDIR $R0
-  RMDir $R0
+  Call un.UninstallFiles
 
   DeleteRegKey ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}"
   DeleteRegKey HKLM "${PRODUCT_DIR_REGKEY}"

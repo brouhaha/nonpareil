@@ -190,7 +190,7 @@ env ['target_build_dir'] = target_build_dir
 if env ['target'] == 'win32':
     SConscript ('win32/nsis.py')
 
-    win32_nsis_installer_fn = 'nonpareil-' + release + '-setup.exe'
+    win32_nsis_installer_fn = target_build_dir + '/Nonpareil-' + release + '-setup.exe'
     win32_nsis_installer = env.NSIS (win32_nsis_installer_fn,
                                      bin_dist_files)
     env ['win32_nsis_installer'] = win32_nsis_installer
