@@ -54,44 +54,31 @@ void reg_exch (digit_t *dest, digit_t *src, int first, int last)
 }
 
 
-digit_t digit_add (digit_t x, digit_t y, bool *carry, uint8_t base)
-{
-  int res;
-
-  res = x + y + *carry;
-  if (res >= base)
-    {
-      res -= base;
-      *carry = 1;
-    }
-  else
-    *carry = 0;
-  return (res);
-}
-
-
-digit_t digit_sub (digit_t x, digit_t y, bool *carry, uint8_t base)
-{
-  int res;
-
-  res = (x - y) - *carry;
-  if (res < 0)
-    {
-      res += base;
-      *carry = 1;
-    }
-  else
-    *carry = 0;
-  return (res);
-}
-
-
 digit_t digit_add_sub (bool sub, digit_t x, digit_t y, bool *carry, uint8_t base)
 {
+  digit_t s;
+
+  *carry ^= sub;  // for subtract, treat carry flag as borrow;
   if (sub)
-    return digit_sub (x, y, carry, base);
-  else
-    return digit_add (x, y, carry, base);
+    y ^= 0xf;
+  s = x + y + *carry;
+  *carry = s > 0xf;
+  if (base == 10)
+    {
+      if (sub)
+	{
+	  if (! *carry)
+	    s += 10;
+	}
+      else
+	{
+	  *carry |= (s > 9);
+	  if (*carry)
+	    s += 6;
+	}
+    }
+  *carry ^= sub;  // for subtract, treat carry flag as borrow;
+  return s & 0xf;
 }
 
 
@@ -104,7 +91,7 @@ void reg_add (digit_t *dest, const digit_t *src1, const digit_t *src2,
   for (i = first; i <= last; i++)
     {
       int s2 = src2 ? src2 [i] : 0;
-      dest [i] = digit_add (src1 [i], s2, carry, base);
+      dest [i] = digit_add_sub (false, src1 [i], s2, carry, base);
     }
 }
 
@@ -119,7 +106,7 @@ void reg_sub (digit_t *dest, const digit_t *src1, const digit_t *src2,
     {
       int s1 = src1 ? src1 [i] : 0;
       int s2 = src2 ? src2 [i] : 0;
-      int d = digit_sub (s1, s2, carry, base);
+      int d = digit_add_sub (true, s1, s2, carry, base);
       if (dest)
 	dest [i] = d;
     }
