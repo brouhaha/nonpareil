@@ -1,22 +1,20 @@
 Nonpareil - a calculator simulator
-Copyright 1995, 2003, 2004, 2005, 2006 Eric L. Smith <eric@brouhaha.com>
+Copyright 1995, 2003, 2004, 2005, 2006, 2008 Eric Smith <eric@brouhaha.com>
 $Id$
 
 -----------------------------------------------------------------------------
 
 News:
 
-Release 0.78 fixes a build problem due to missing semicolons in
-kmly.y (which only were noticed by certain versions of bison),
-and eliminates the need for a X server to be available at build
-time.
+Release 0.79 removes the Voyager models pending a licensing update.
+Note that the ROM images of the Voyager calculators as present in
+earlier Nonpareil releases were never covered by the GPL.
 
 In this release, the following calculators are simulated:
 	HP-35, HP-45, HP-55, HP-80
 	HP-21, HP-25
 	HP-31E, HP-33C, HP-34C, HP-37E, HP-38E, HP-38C
 	HP-41CV, HP-41CX
-	HP-11C, HP-12C, HP-15C, HP-16C
 
 Many menu commands are not yet implemented.
 

@@ -59,8 +59,8 @@ if cross and ming and build_target_only:
     build_env.Replace (PROGSUFFIX = '.exe')
 
 if ming and (build_target_only or not cross):
-    build_env.Append (CPPDEFINES = { 'MINGW': '1',
-                                     'MS_WINDOWS' : '1'})
+    build_env.Append (CPPDEFINES = [('MINGW', '1'),
+                                    ('MS_WINDOWS', '1')])
 
 #-----------------------------------------------------------------------------
 # common components
@@ -79,7 +79,7 @@ state_io_srcs = Split ("""state_write.c state_read.c""")
 state_io_objs = [build_env.Object(src) for src in state_io_srcs];
 state_io_packages = "gtk+-2.0 gdk-2.0 gdk-pixbuf-2.0 glib-2.0 libxml-2.0"
 
-release_env = build_env.Copy (CPPDEFINES = { 'NONPAREIL_RELEASE': build_env ['RELEASE']})
+release_env = build_env.Copy (CPPDEFINES = [('NONPAREIL_RELEASE', build_env ['RELEASE'])])
 common_objs.append (release_env.Object ('release.c'))
 
 build_env.ParseConfig(pkg_config_cmd + state_io_packages)
@@ -91,7 +91,7 @@ build_env.ParseConfig(pkg_config_cmd + state_io_packages)
 if build_env ['build_target_only'] == 0:
     str2png_env = build_env.Copy ()
 
-    str2png_env.Append (CPPDEFINES = {'DEFAULT_PATH': 'image'})
+    str2png_env.Append (CPPDEFINES = [('DEFAULT_PATH', 'image')])
 
     str2png_srcs = Split ("""str2png.c""")
 
@@ -272,7 +272,7 @@ for gen in ["nonpareil_title_png",
 nonpareil_env.Append (LIBS = 'png')
 
 if build_env ['has_debugger_gui'] or build_env ['has_debugger_cli']:
-    nonpareil_env.Append (CPPDEFINES = {'HAS_DEBUGGER': 1})
+    nonpareil_env.Append (CPPDEFINES = [('HAS_DEBUGGER', 1)])
 
 if build_env ['has_debugger_cli']:
     nonpareil_packages += ' vte'
@@ -287,22 +287,22 @@ if (not ming) or (cross and not build_target_only):
 
 csim_env = nonpareil_env.Copy ()
 if not ming:
-    csim_env.Append (CPPDEFINES = {'DEFAULT_PATH': build_env ['libdir']})
+    csim_env.Append (CPPDEFINES = [('DEFAULT_PATH', build_env ['libdir'])])
 
 if build_env ['target'] == 'win32':
-    csim_env.Append (CPPDEFINES = {'SHAPE_DEFAULT': "false"})
+    csim_env.Append (CPPDEFINES = [('SHAPE_DEFAULT', "false")])
 
 if build_env ['has_debugger_gui']:
-    csim_env.Append (CPPDEFINES = {'HAS_DEBUGGER_GUI': 1})
+    csim_env.Append (CPPDEFINES = [('HAS_DEBUGGER_GUI', 1)])
 
 if build_env ['has_debugger_cli']:
-    csim_env.Append (CPPDEFINES = {'HAS_DEBUGGER_CLI': 1})
+    csim_env.Append (CPPDEFINES = [('HAS_DEBUGGER_CLI', 1)])
     debugger_cli_env = csim_env.Copy ()
     if build_env ['use_tcl']:
-        debugger_cli_env.Append (CPPDEFINES = {'USE_TCL': 1})
+        debugger_cli_env.Append (CPPDEFINES = [('USE_TCL', 1)])
         nonpareil_env.Append (LIBS = 'tcl')
     if build_env ['use_readline']:
-        debugger_cli_env.Append (CPPDEFINES = {'USE_READLINE': 1})
+        debugger_cli_env.Append (CPPDEFINES = [('USE_READLINE', 1)])
         nonpareil_env.Append (LIBS = 'readline')
     nonpareil_objs.append (debugger_cli_env.Object (nonpareil_debugger_cli_srcs))
 
