@@ -1,6 +1,6 @@
 /*
 $Id$
-Copyright 2004, 2005 Eric L. Smith <eric@brouhaha.com>
+Copyright 2004, 2005, 2008 Eric Smith <eric@brouhaha.com>
 
 Nonpareil is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License version 2 as
@@ -130,7 +130,7 @@ void about_dialog (GtkWidget *main_window, kml_t *kml)
 
   gtk_container_add (GTK_CONTAINER (GTK_DIALOG (dialog)->vbox),
 		     gtk_label_new ("Microcode-level calculator simulator\n"
-				    "Copyright 1995, 2003, 2004, 2005 Eric L. Smith\n"
+				    "Copyright 1995, 2003, 2004, 2005, 2008 Eric Smith\n"
 				    "http://nonpareil.brouhaha.com/"));
 
   gtk_container_add (GTK_CONTAINER (GTK_DIALOG (dialog)->vbox),

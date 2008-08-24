@@ -248,7 +248,6 @@ nonpareil_srcs = Split ("""proc.c glib_async_queue_source.c
                            proc_woodstock.c
                            proc_nut.c
                            coconut_lcd.c phineas.c helios.c helios_chargen.c
-                           voyager_lcd.c
                            mod1_file.c""")
 
 nonpareil_csim_srcs = Split ("""csim.c""")
@@ -403,7 +402,6 @@ if build_env ['build_target_only'] == 0:
                         debugger_gui.h debugger_cli.h
                         dis_woodstock.h dis_nut.h
                         display.h printer.h
-                        voyager_lcd.h
                         coconut_lcd.h helios.h phineas.h
                         csim.h about.h goose.h pixbuf_util.h sound.h
                         asm.h symtab.h

@@ -1,6 +1,6 @@
 /*
 $Id$
-Copyright 1995, 2003, 2004, 2005 Eric L. Smith <eric@brouhaha.com>
+Copyright 1995, 2003, 2004, 2005, 2008 Eric Smith <eric@brouhaha.com>
 
 Nonpareil is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License version 2 as
@@ -34,7 +34,6 @@ MA 02111, USA.
 #include "proc_int.h"
 #include "digit_ops.h"
 #include "coconut_lcd.h"
-#include "voyager_lcd.h"
 #include "proc_nut.h"
 #include "dis_nut.h"
 
@@ -1893,29 +1892,6 @@ static void nut_new_processor (sim_t *sim, int ram_size)
 
       coconut_display_init (sim);
 
-      break;
-
-    case PLATFORM_VOYAGER:
-      nut_new_ram (sim, 0x000, 8);
-      ram_size -= 8;
-
-      nut_new_ram (sim, 0x008, 3);  // I/O registers
-      nut_reg->ram_read_fn  [0x08] = nut_ram_read_zero;
-      nut_reg->ram_write_fn [0x08] = nut_ram_write_ignore;
-
-      if (ram_size > 40)
-	{
-	  nut_new_ram (sim, 0x010, 8);
-	  ram_size -= 8;
-
-	  nut_new_ram (sim, 0x018, 3);  // I/O registers
-	  nut_reg->ram_read_fn  [0x18] = nut_ram_read_zero;
-	  nut_reg->ram_write_fn [0x18] = nut_ram_write_ignore;
-	}
-
-      nut_new_ram (sim, 0x100 - ram_size, ram_size);
-
-      voyager_display_init (sim);
       break;
     }
 
