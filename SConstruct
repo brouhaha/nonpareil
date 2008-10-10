@@ -282,7 +282,8 @@ env.Alias (target = 'install',
            source = env.Install (dir = env ['destdir'] + env ['libdir'],
                                  source = ncd_files + nui_files))
 
-env.NSIS (win32_nsis_installer, ncd_files + nui_files)
+if env ['target'] == 'win32':
+    env.NSIS (win32_nsis_installer, ncd_files + nui_files)
 
 def leaf_dependencies (nodes, abs_launch_dir):
     ld = []
