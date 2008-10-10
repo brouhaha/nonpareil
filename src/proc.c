@@ -203,80 +203,95 @@ static int bank_group [MAX_BANK_GROUP + 1];  // index from 1 .. MAX_BANK_GROUP,
 
 static bool sim_read_mod1_page (sim_t *sim,
 				FILE *f,
-				int port,
+				int port,  // 1 to 4, -1 for not port-based
 				int index)
 {
-  mod1_file_page_t page;
+  mod1_file_page_t mod1_page;
+  uint8_t page;
   addr_t addr;
   int i;
 
-  if (! mod1_read_page (f, & page))
+  if (! mod1_read_page (f, & mod1_page))
     {
       fprintf (stderr, "Can't read MOD1 page\n");
       return false;
     }
 
-  if (! mod1_validate_page (& page))
+  if (! mod1_validate_page (& mod1_page))
     {
       fprintf (stderr, "Unrecognized or inconsistent values in MOD1 page\n");
       return false;
     }
 
-  if (page.Page <= 0x07)
-    addr = page.Page << 12;
-  else if (page.Page <= 0x0f)
+  if (mod1_page.Page <= 0x07)
+    page = mod1_page.Page;
+  else if (mod1_page.Page <= 0x0f)
     {
-      if (((page.Page - 6) / 2) != port)
+      if (((mod1_page.Page - 8) / 2) != (port - 1))
 	{
 	  fprintf (stderr, "Module not compatible with specified port\n");
 	  return false;
 	}
-      addr = page.Page << 12;
+      page = mod1_page.Page;
     }
-  else if (page.Page == POSITION_ANY)
+  else if (mod1_page.Page == POSITION_ANY)
     {
-      addr = (8 + port * 2) << 12;
-      if (index > 0)
-	addr += 0x1000;
+      page = 8 + 2 * (port - 1);
+      if (sim_page_exists (sim, mod1_page.Bank - 1, page))
+	page++;
     }
+  else if ((mod1_page.Page == POSITION_EVEN) ||
+	   (mod1_page.Page == POSITION_LOWER))
+    page = 8 + 2 * (port - 1);
+  else if ((mod1_page.Page == POSITION_ODD) ||
+	   (mod1_page.Page == POSITION_UPPER))
+    page = 9 + 2 * (port - 1);
   else
     {
-      fprintf (stderr, "Currently only MOD1 pages at fixed page numbers are supported\n");
+      fprintf (stderr, "Unsupported ROM page location in MOD1 file\n");
       return false;
     }
 
-  if (page.BankGroup)
+  if (sim_page_exists (sim, mod1_page.Bank - 1, page))
     {
-      if (! bank_group [page.BankGroup])
-	bank_group [page.BankGroup] = sim_create_bank_group (sim);
-      sim_set_bank_group (sim, bank_group [page.BankGroup], addr);
+      fprintf (stderr, "Can't load ROM page as bank %d page %x, address space occupied\n", mod1_page.Bank, page);
+      return false;
+    }
+
+  addr = page << 12;
+
+  if (mod1_page.BankGroup)
+    {
+      if (! bank_group [mod1_page.BankGroup])
+	bank_group [mod1_page.BankGroup] = sim_create_bank_group (sim);
+      sim_set_bank_group (sim, bank_group [mod1_page.BankGroup], addr);
     }
 
   for (i = 0; i < 5120; i += 5)
     {
       rom_word_t data;
 
-      data = (((page.Image [i + 1] & 0x03) << 8) |
-	      (page.Image [i]));
-      if (! sim_load_mod1_rom_word (sim, page.Bank - 1, addr++, data))
+      data = (((mod1_page.Image [i + 1] & 0x03) << 8) |
+	      (mod1_page.Image [i]));
+      if (! sim_load_mod1_rom_word (sim, mod1_page.Bank - 1, addr++, data))
 				    
         return false;
 
-      data = (((page.Image [i + 2] & 0x0f) << 6) |
-	      ((page.Image [i + 1] & 0xfc) >> 2));
-      if (! sim_load_mod1_rom_word (sim, page.Bank - 1, addr++, data))
+      data = (((mod1_page.Image [i + 2] & 0x0f) << 6) |
+	      ((mod1_page.Image [i + 1] & 0xfc) >> 2));
+      if (! sim_load_mod1_rom_word (sim, mod1_page.Bank - 1, addr++, data))
 				    
         return false;
 
-      data = (((page.Image [i + 3] & 0x3f) << 4) |
-	      ((page.Image [i + 2] & 0xf0) >> 4));
-      if (! sim_load_mod1_rom_word (sim, page.Bank - 1, addr++, data))
+      data = (((mod1_page.Image [i + 3] & 0x3f) << 4) |
+	      ((mod1_page.Image [i + 2] & 0xf0) >> 4));
+      if (! sim_load_mod1_rom_word (sim, mod1_page.Bank - 1, addr++, data))
 				    
         return false;
 
-      data = ((page.Image [i + 4] << 2) |
-	      ((page.Image [i + 3] & 0xc0) >> 6));
-      if (! sim_load_mod1_rom_word (sim, page.Bank - 1, addr++, data))
+      data = ((mod1_page.Image [i + 4] << 2) |
+	      ((mod1_page.Image [i + 3] & 0xc0) >> 6));
+      if (! sim_load_mod1_rom_word (sim, mod1_page.Bank - 1, addr++, data))
 				    
         return false;
     }
@@ -287,7 +302,7 @@ static bool sim_read_mod1_page (sim_t *sim,
 
 static bool sim_read_mod1_file (sim_t *sim,
 				FILE *f,
-				int port UNUSED,   // -1 for not port-based
+				int port,   // 1..4, -1 for not port-based
 				bool mem_only)
 {
   mod1_file_header_t header;
