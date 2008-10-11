@@ -29,7 +29,7 @@ MA 02111, USA.
 #define PFADDR_HALFNUT     0x10
 
 
-chip_t *coconut_lcd_install (sim_t *sim,
+chip_t *coconut_lcd_install (sim_t       *sim,
 			     chip_type_t chip_type,
-			     int32_t index UNUSED,
-			     int32_t flags UNUSED);
+			     int32_t     index,
+			     int32_t     flags);

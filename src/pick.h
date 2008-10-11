@@ -34,6 +34,7 @@ MA 02111, USA.
 #define PICK_PRINTER_LINE_HEIGHT_PIXELS 12
 
 
-chip_t *pick_install (sim_t *sim,
-		      int32_t index,
-		      int32_t flags);
+chip_t *pick_install (sim_t       *sim,
+		      chip_type_t type,
+		      int32_t     index,
+		      int32_t     flags);

@@ -548,9 +548,10 @@ static void phineas_init_ops (sim_t *sim UNUSED)
 }
 
 
-chip_t *phineas_install (sim_t *sim,
-			 int32_t index UNUSED,
-			 int32_t flags UNUSED)
+chip_t *phineas_install (sim_t       *sim,
+			 chip_type_t type  UNUSED,
+			 int32_t     index UNUSED,
+			 int32_t     flags UNUSED)
 {
   nut_reg_t *nut_reg;
   phineas_reg_t *clock;

@@ -516,9 +516,10 @@ static void pick_init_ops (sim_t *sim)
 }
 
 
-chip_t *pick_install (sim_t *sim,
-		      int32_t index UNUSED,
-		      int32_t flags UNUSED)
+chip_t *pick_install (sim_t       *sim,
+		      chip_type_t type  UNUSED,
+		      int32_t     index UNUSED,
+		      int32_t     flags UNUSED)
 {
   act_reg_t *act_reg;
   pick_reg_t *pick_reg;

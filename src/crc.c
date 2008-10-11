@@ -359,9 +359,10 @@ static void crc_init_ops (sim_t *sim)
 #endif
 }
 
-chip_t *crc_install (sim_t *sim,
-		     int32_t index UNUSED,
-		     int32_t flags UNUSED)
+chip_t *crc_install (sim_t       *sim,
+		     chip_type_t type  UNUSED,
+		     int32_t     index UNUSED,
+		     int32_t     flags UNUSED)
 {
   act_reg_t *act_reg;
   crc_reg_t *crc_reg;
