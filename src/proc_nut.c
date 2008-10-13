@@ -172,11 +172,6 @@ static rom_word_t nut_get_ucode (nut_reg_t *nut_reg, rom_addr_t addr)
 
 static void nut_set_ucode (nut_reg_t *nut_reg,
 			   rom_addr_t addr,
-			   rom_word_t data) UNUSED;
-
-
-static void nut_set_ucode (nut_reg_t *nut_reg,
-			   rom_addr_t addr,
 			   rom_word_t data)
 {
   uint8_t page = addr / PAGE_SIZE;
@@ -185,12 +180,16 @@ static void nut_set_ucode (nut_reg_t *nut_reg,
 
   if (! nut_reg->rom [page][bank])
     {
+#if 0
       fprintf (stderr, "write to nonexistent ROM location %04x (bank %d)\n", addr, bank);
+#endif
       return;
     }
-  if (! nut_reg->rom_writeable [page][bank])
+  if (! nut_reg->rom_write_enable [page][bank])
     {
+#if 0
       fprintf (stderr, "write to non-writeable ROM location %04x (bank %d)\n", addr, bank);
+#endif
       return;
     }
   nut_reg->rom [page][bank][offset] = data;
@@ -290,6 +289,27 @@ static bool nut_write_rom (sim_t      *sim,
     }
 
   nut_reg->rom [page][bank][offset] = *val;
+  return true;
+}
+
+
+static bool nut_set_rom_write_enable (sim_t      *sim,
+				      bank_t     bank,
+				      addr_t     addr,
+				      bool       write_enable)
+{
+  nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
+  uint8_t page;
+
+  if ((addr >= (MAX_PAGE * PAGE_SIZE)) || (bank > MAX_BANK))
+    return false;
+
+  page = addr / PAGE_SIZE;
+
+  if (! nut_reg->rom [page][bank])  // does the page/bank exist?
+    return false;
+
+  nut_reg->rom_write_enable [page][bank] = write_enable;
   return true;
 }
 
@@ -671,28 +691,47 @@ static void op_goto_c (sim_t *sim,
 
 // Bank selection used in 41CX, Advantage ROM, and perhaps others
 
+static void select_bank_page (sim_t *sim, uint8_t page, bank_t new_bank)
+{
+  nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
+
+  if (nut_page_exists (sim, new_bank, page))
+    nut_reg->active_bank [page] = new_bank;
+  else
+    fprintf (stderr, "bank %d select for page %x: nonexistent!\n", new_bank, page);
+}
+
 static void select_bank (sim_t *sim, rom_addr_t addr, bank_t new_bank)
 {
   nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
   uint8_t page;
   int bank_group;
 
-  bank_group = nut_reg->bank_group [addr / PAGE_SIZE];
-  if (! bank_group)
-    return;
-
-  for (page = 0; page < MAX_PAGE; page++)
-    if ((nut_reg->bank_group [page] == bank_group) &&
-	(nut_reg->rom [page] [new_bank]))
-      nut_reg->active_bank [page] = new_bank;
+  page = addr / PAGE_SIZE;
+  bank_group = nut_reg->bank_group [page];
+  if (bank_group)
+    {
+      for (page = 0; page < MAX_PAGE; page++)
+	if ((nut_reg->bank_group [page] == bank_group) &&
+	    (nut_reg->rom [page] [new_bank]))
+	  select_bank_page (sim, page, new_bank);
+    }
+  else
+    select_bank_page (sim, page, new_bank);
 }
 
 
+// note that banks 3 and 4 are only supported by third-party devices
+// such as the HEPAX
 static void op_enbank (sim_t *sim, int opcode)
 {
   nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
+  bank_t bank = ((opcode >> 5) & 2) + ((opcode >> 7) & 1);
 
-  select_bank (sim, nut_reg->prev_pc, ((opcode >> 5) & 2) + ((opcode >> 7) & 1));
+#ifdef NUT_BANK_SWITCH_DEBUG
+  fprintf (stderr, "enbank %d (%03x) at %04x\n", bank + 1, opcode, nut_reg->prev_pc);
+#endif
+  select_bank (sim, nut_reg->prev_pc, bank);
 }
 
 
@@ -1448,6 +1487,21 @@ static void op_rom_to_c_cycle_2 (sim_t *sim, int opcode)
   nut_reg->inst_state = inst_normal;
 }
 
+// only supported by third-party writeable program memory devices
+static void op_write_mldl (sim_t *sim,
+			   int opcode UNUSED)
+{
+  nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
+  uint16_t addr = ((nut_reg->c [6] << 12) |
+		   (nut_reg->c [5] << 8) |
+		   (nut_reg->c [4] << 4) |
+		   (nut_reg->c [3]));
+  uint16_t data = ((nut_reg->c [2] << 8) |
+		   (nut_reg->c [1] << 4) |
+		   (nut_reg->c [0])) & 0x3ff;
+  nut_set_ucode (nut_reg, addr, data);
+}
+
 static void op_clear_abc (sim_t *sim,
 			  int opcode UNUSED)
 {
@@ -1569,10 +1623,13 @@ static void nut_init_ops (nut_reg_t *nut_reg)
 
   nut_reg->op_fcn [0x000] = op_nop;
 
-  // nut_reg->op_fcn [0x040] = op_write_mldl;
+  nut_reg->op_fcn [0x040] = op_write_mldl;
+  // only supported by third-party writeable program memory devices
 
   for (i = 0; i < 4; i++)
      nut_reg->op_fcn [0x100 + i * 0x040] = op_enbank;
+     // note that banks 3 and 4 are only supported by third-party devices
+     // such as the HEPAX
 
   // for (i = 0; i < 8; i++)
   //   op_fcn [0x200 + (i << 6)] = op_write_pil;
@@ -2157,6 +2214,7 @@ processor_dispatch_t nut_processor =
 
     .read_rom            = nut_read_rom,
     .write_rom           = nut_write_rom,
+    .set_rom_write_enable = nut_set_rom_write_enable,
 
     .get_max_ram_addr    = nut_get_max_ram_addr,
     .create_ram          = nut_create_ram,

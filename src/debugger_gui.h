@@ -54,3 +54,7 @@ void debug_show_reg  (gpointer callback_data,
 void debug_show_ram  (gpointer callback_data,
 		      guint    callback_action,
 		      GtkWidget *widget);
+
+void debug_dump_rom  (gpointer callback_data,
+		      guint    callback_action,
+		      GtkWidget *widget);

@@ -91,6 +91,7 @@ typedef enum
   CMD_SET_BANK_GROUP,
   CMD_WRITE_ROM,
   CMD_READ_ROM,
+  CMD_SET_ROM_WRITE_ENABLE,
   CMD_WRITE_RAM,
   CMD_READ_RAM,
   CMD_GET_CYCLE_COUNT,
@@ -203,11 +204,11 @@ static int bank_group [MAX_BANK_GROUP + 1];  // index from 1 .. MAX_BANK_GROUP,
 
 static bool sim_read_mod1_page (sim_t *sim,
 				FILE *f,
-				int port,  // 1 to 4, -1 for not port-based
-				int index)
+				int port)  // 1 to 4, -1 for not port-based
 {
   mod1_file_page_t mod1_page;
   uint8_t page;
+  bank_t bank;
   addr_t addr;
   int i;
 
@@ -223,11 +224,21 @@ static bool sim_read_mod1_page (sim_t *sim,
       return false;
     }
 
+  bank = mod1_page.Bank - 1;
+
+#if 0
+  if ((strncmp (mod1_page.Name, "Hepax", 5) == 0) && ((bank == 1) || (bank == 2)))
+    {
+      printf ("HEPX bank hack\n");
+      bank = 3 - bank;
+    }
+#endif
+
   if (mod1_page.Page <= 0x07)
     page = mod1_page.Page;
   else if (mod1_page.Page <= 0x0f)
     {
-      if (((mod1_page.Page - 8) / 2) != (port - 1))
+      if ((port != -1) && (((mod1_page.Page - 8) / 2) != (port - 1)))
 	{
 	  fprintf (stderr, "Module not compatible with specified port\n");
 	  return false;
@@ -236,25 +247,44 @@ static bool sim_read_mod1_page (sim_t *sim,
     }
   else if (mod1_page.Page == POSITION_ANY)
     {
-      page = 8 + 2 * (port - 1);
+      if (port == -1)
+	page = 8;
+      else
+	page = 8 + 2 * (port - 1);
       if (sim_page_exists (sim, mod1_page.Bank - 1, page))
 	page++;
     }
   else if ((mod1_page.Page == POSITION_EVEN) ||
 	   (mod1_page.Page == POSITION_LOWER))
-    page = 8 + 2 * (port - 1);
+    {
+      if (port == -1)
+	page = 8;
+      else
+	page = 8 + 2 * (port - 1);
+    }
   else if ((mod1_page.Page == POSITION_ODD) ||
 	   (mod1_page.Page == POSITION_UPPER))
-    page = 9 + 2 * (port - 1);
+    {
+      if (port == -1)
+	page = 9;
+      else
+	page = 9 + 2 * (port - 1);
+    }
   else
     {
       fprintf (stderr, "Unsupported ROM page location in MOD1 file\n");
       return false;
     }
 
-  if (sim_page_exists (sim, mod1_page.Bank - 1, page))
+  if ((bank == 0) && mod1_page.RAM && sim_page_exists (sim, bank, page))
     {
-      fprintf (stderr, "Can't load ROM page as bank %d page %x, address space occupied\n", mod1_page.Bank, page);
+      // HEPAX RAM overlaid by ROM
+      bank = 4;  // HIDDEN_BANK, which isn't visible here, alas
+    }
+
+  if (sim_page_exists (sim, bank, page))
+    {
+      fprintf (stderr, "Can't load ROM page as bank %d page %x, address space occupied\n", bank + 1, page);
       return false;
     }
 
@@ -273,28 +303,37 @@ static bool sim_read_mod1_page (sim_t *sim,
 
       data = (((mod1_page.Image [i + 1] & 0x03) << 8) |
 	      (mod1_page.Image [i]));
-      if (! sim_load_mod1_rom_word (sim, mod1_page.Bank - 1, addr++, data))
+      if (! sim_load_mod1_rom_word (sim, bank, addr++, data))
 				    
         return false;
 
       data = (((mod1_page.Image [i + 2] & 0x0f) << 6) |
 	      ((mod1_page.Image [i + 1] & 0xfc) >> 2));
-      if (! sim_load_mod1_rom_word (sim, mod1_page.Bank - 1, addr++, data))
+      if (! sim_load_mod1_rom_word (sim, bank, addr++, data))
 				    
         return false;
 
       data = (((mod1_page.Image [i + 3] & 0x3f) << 4) |
 	      ((mod1_page.Image [i + 2] & 0xf0) >> 4));
-      if (! sim_load_mod1_rom_word (sim, mod1_page.Bank - 1, addr++, data))
+      if (! sim_load_mod1_rom_word (sim, bank, addr++, data))
 				    
         return false;
 
       data = ((mod1_page.Image [i + 4] << 2) |
 	      ((mod1_page.Image [i + 3] & 0xc0) >> 6));
-      if (! sim_load_mod1_rom_word (sim, mod1_page.Bank - 1, addr++, data))
+      if (! sim_load_mod1_rom_word (sim, bank, addr++, data))
 				    
         return false;
     }
+
+  addr = page << 12;
+
+  // write-enable the page only if page in mod1 file is marked as both RAM
+  // and not write protected
+  sim_set_rom_write_enable (sim,
+			    bank,
+			    addr,
+			    mod1_page.RAM && ! mod1_page.WriteProtect);
 
   return true;
 }
@@ -329,7 +368,7 @@ static bool sim_read_mod1_file (sim_t *sim,
     }
 
   for (i = 0; i < header.NumPages; i++)
-    if (! sim_read_mod1_page (sim, f, port, i))
+    if (! sim_read_mod1_page (sim, f, port))
       return false;
 
   if (mem_only)
@@ -356,6 +395,15 @@ static bool sim_read_mod1_file (sim_t *sim,
 				  (HAS_PAPER_ADVANCE_BUTTON +
 				   HAS_PRINT_BUTTON +
 				   HAS_MODE_SWITCH));
+      break;
+
+    case HARDWARE_HEPAX:
+      (void) sim_add_chip (sim,
+			   CHIP_HEPAX,
+			   port,  // index - use for HEPAX port #
+			   0,  // flags
+			   NULL,
+			   NULL);
       break;
 
     default:
@@ -662,6 +710,20 @@ static void cmd_write_rom (sim_t *sim, sim_msg_t *msg)
 }
 
 
+static void cmd_set_rom_write_enable (sim_t *sim, sim_msg_t *msg)
+{
+  if (! sim->proc->set_rom_write_enable)
+    msg->reply = UNIMPLEMENTED;
+  else if (sim->proc->set_rom_write_enable (sim, 
+					    msg->arg1,   // bank
+					    msg->addr,   // addr
+					    msg->b))     // write_enable
+    msg->reply = OK;
+  else
+    msg->reply = ARG_RANGE_ERROR;
+}
+
+
 static void cmd_read_ram (sim_t *sim, sim_msg_t *msg)
 {
   if (sim->proc->read_ram (sim, msg->addr, msg->data))
@@ -769,6 +831,9 @@ static void handle_sim_cmd (sim_t *sim, sim_msg_t *msg)
       break;
     case CMD_WRITE_ROM:
       cmd_write_rom (sim, msg);
+      break;
+    case CMD_SET_ROM_WRITE_ENABLE:
+      cmd_set_rom_write_enable (sim, msg);
       break;
     case CMD_READ_RAM:
       cmd_read_ram (sim, msg);
@@ -1402,6 +1467,21 @@ bool sim_write_rom (sim_t      *sim,
   msg.addr = addr;
   msg.data = val;
   msg.cmd = CMD_WRITE_ROM;
+  send_cmd_to_sim_thread (sim, (gpointer) & msg);
+  return (msg.reply == OK);
+}
+
+bool sim_set_rom_write_enable (sim_t   *sim,
+			       bank_t  bank,
+			       addr_t  addr,
+			       bool    write_enable)
+{
+  sim_msg_t msg;
+  memset (& msg, 0, sizeof (sim_msg_t));
+  msg.arg1 = bank;
+  msg.addr = addr;
+  msg.b = write_enable;
+  msg.cmd = CMD_SET_ROM_WRITE_ENABLE;
   send_cmd_to_sim_thread (sim, (gpointer) & msg);
   return (msg.reply == OK);
 }

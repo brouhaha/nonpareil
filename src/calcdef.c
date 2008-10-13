@@ -1008,7 +1008,9 @@ void calcdef_init_chips (calcdef_t *calcdef)
       if (is_banked_rom_chip (chip))
 	{
 	  bank_group = sim_create_bank_group (calcdef->sim);
+#ifdef BANK_GROUP_DEBUG
 	  printf ("created bank group %d\n", bank_group);
+#endif
 	}
       for (mem = chip->mem; mem; mem = mem->next)
 	{

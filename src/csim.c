@@ -476,6 +476,7 @@ static GtkItemFactoryEntry menu_items [] =
     { "/Debug/Trace",   NULL,         debug_trace,   1, "<ToggleItem>", 0 },
     { "/Debug/Key Trace", NULL,     debug_key_trace, 1, "<ToggleItem>", 0 },
     { "/Debug/RAM Trace", NULL,     debug_ram_trace, 1, "<ToggleItem>", 0 },
+    { "/Debug/Dump ROM", NULL,      debug_dump_rom,  1, "<Item>", 0 },
 #endif // HAS_DEBUGGER
 #ifdef HAS_DEBUGGER_CLI
     { "/Debug/Command Window", NULL,     debug_cli_window, 1, "<ToggleItem>", 0 },

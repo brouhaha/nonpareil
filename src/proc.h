@@ -210,6 +210,12 @@ bool sim_write_rom (sim_t      *sim,
 		    addr_t     addr,
 		    rom_word_t *val);
 
+bool sim_set_rom_write_enable (sim_t   *sim,
+			       bank_t  bank,
+			       addr_t  addr,
+			       bool    write_enable);
+				
+
 // RAM access routines
 // $$$ should be replaced by new memory API
 addr_t sim_get_max_ram_addr (sim_t *sim);

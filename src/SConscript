@@ -101,6 +101,7 @@ sim_core_srcs = Split ("""calcdef.c
 			  crc.c pick.c
                           proc_nut.c
                           coconut_lcd.c phineas.c helios.c helios_chargen.c
+			  hepax.c
                           voyager_lcd.c
                           mod1_file.c""")
 sim_core_objs = [build_env.Object(src) for src in sim_core_srcs];
@@ -441,6 +442,7 @@ if build_env ['build_target_only'] == 0:
                         keyboard.h cbutton.h
 			crc.h pick.h
                         coconut_lcd.h helios.h phineas.h
+			hepax.h
                         voyager_lcd.h
                         csim.h about.h goose.h pixbuf_util.h sound.h scancode.h
                         asm.h symtab.h

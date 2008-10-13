@@ -118,9 +118,9 @@ static char *nut_op00 [16] =
     /* 0x080 */ "???",
     /* 0x0c0 */ "???",
     /* 0x100 */ "enbank 1",
-    /* 0x140 */ "???",
+    /* 0x140 */ "enbank 3",
     /* 0x180 */ "enbank 2",
-    /* 0x1c0 */ "???",
+    /* 0x1c0 */ "enbank 4",
     /* 0x200 */ "wr pil0",
     /* 0x240 */ "wr pil1",
     /* 0x280 */ "wr pil2",
@@ -176,14 +176,14 @@ static inst_info_t nut_op20 [16] =
 
 static char *nut_op30 [16] =
   { 
-    /* 0x030 */ "disp blink",  /* voyager only */
+    /* 0x030 */ "disp blink",  // voyager only, HEPAX uses it to relocate ROM
     /* 0x070 */ "n=c",
     /* 0x0b0 */ "c=n", 
     /* 0x0f0 */ "c<>n",
     /* 0x130 */ "ldi",  /* handled elsewhere */
     /* 0x170 */ "push c",
     /* 0x1b0 */ "pop c",
-    /* 0x1f0 */ "???",
+    /* 0x1f0 */ "wptog",  // HEPAX write protect toggle
     /* 0x230 */ "goto keys",
     /* 0x270 */ "sel ram",
     /* 0x2b0 */ "clear regs",

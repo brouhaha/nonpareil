@@ -49,7 +49,13 @@ typedef digit_t reg_t [WSIZE];
 
 #define PAGE_SIZE 4096
 #define MAX_PAGE 16
-#define MAX_BANK 4
+
+#define MAX_BANK 5  // HP uses a maximum of two banks
+                    // Hepax uses a maximum of four banks, but the ROM banks
+                    // may "hide" a RAM bank.  In that case, we temporarily
+                    // set up the RAM bank as a hidden bank until the ROM
+                    // banks are moved away.
+#define HIDDEN_BANK (MAX_BANK - 1)
 
 
 typedef enum
@@ -128,7 +134,7 @@ typedef struct nut_reg_t
   // ROM:
   int bank_group [MAX_PAGE];  // defines which pages bank switch together
   uint8_t active_bank [MAX_PAGE];  // bank number from 0..MAX_BANK-1
-  bool rom_writeable [MAX_PAGE][MAX_BANK];
+  bool rom_write_enable [MAX_PAGE][MAX_BANK];
   rom_word_t *rom [MAX_PAGE][MAX_BANK];
   bool *rom_breakpoint [MAX_PAGE][MAX_BANK];
   // source_code_line_info_t *source_code_line_info [MAX_PAGE][MAX_BANK];
@@ -171,6 +177,8 @@ typedef struct nut_reg_t
   chip_t *phineas_chip;   // opaque
 
   chip_t *helios_chip;    // opaque
+
+  chip_t *hepax_chip;     // opaque
 } nut_reg_t;
 
 

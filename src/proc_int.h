@@ -117,6 +117,11 @@ typedef struct
 				addr_t     addr,
 				rom_word_t *val);
 
+  bool (* set_rom_write_enable) (sim_t      *sim,
+				 bank_t     bank,
+				 addr_t     addr,
+				 bool       write_enable);
+
   // RAM:
   int (* get_max_ram_addr)     (sim_t      *sim);
   bool (* create_ram)          (sim_t *sim, addr_t addr, addr_t size);

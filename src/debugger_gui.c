@@ -483,3 +483,43 @@ void init_debugger_gui (csim_t *csim)
 				 debug_trace_callback,
 				 NULL);
 }
+
+static void dump_rom_page (bank_t bank, uint8_t page)
+{
+  int i, j;
+  addr_t addr;
+  rom_word_t data;
+  bool ok;
+
+  for (i = 0x0000; i < 0x1000; i += 16)
+    {
+      fprintf (log_file, "%x-%04x:", bank, (page << 12) + i);
+      for (j = 0; j < 16; j++)
+	{
+	  addr = (page << 12) + i + j;
+	  ok = sim_read_rom (dg_csim->sim, bank, addr, & data);
+	  if (ok)
+	    fprintf (log_file, " %03x", data);
+	  else
+	    fprintf (log_file, " ---");
+	}
+      fprintf (log_file, "\n");
+    }
+  fprintf (log_file, "\n");
+}
+
+void debug_dump_rom  (gpointer callback_data,
+		      guint    callback_action,
+		      GtkWidget *widget)
+{
+  uint8_t page;
+  bank_t bank;
+
+  if (! log_file)
+    return;
+
+  for (page = 0; page < 16; page++)
+    for (bank = 0; bank < 5; bank++)
+      if (sim_page_exists (dg_csim->sim, bank, page))
+	dump_rom_page (bank, page);
+}

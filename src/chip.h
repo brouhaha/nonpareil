@@ -63,6 +63,8 @@ typedef enum
   CHIP_GRAPENUTS,       // 82160A HP-IL interface
   CHIP_BLINKY,          // 82442A infrared printer interface (for 82440A/B)
 
+  CHIP_HEPAX,           // HEPAX module (third-party)
+
   // voyager (uses Nut CPU)
   CHIP_VOYAGER_R2D2,    // RAM/ROM/Display Driver
 

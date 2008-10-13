@@ -35,6 +35,7 @@ chip_install_fn_t pick_install;
 chip_install_fn_t coconut_lcd_install;
 chip_install_fn_t helios_install;
 chip_install_fn_t phineas_install;
+chip_install_fn_t hepax_install;
 
 chip_install_fn_t voyager_r2d2_install;
 
@@ -76,6 +77,7 @@ static chip_type_info_t chip_type_info [] =
   [CHIP_CHESHIRE]                    = { "nut_cheshire", NULL, NULL },
   [CHIP_GRAPENUTS]                   = { "nut_grapenuts", NULL, NULL },
   [CHIP_BLINKY]                      = { "nut_blinky", NULL, NULL },
+  [CHIP_HEPAX]                       = { "nut_hepax", NULL, hepax_install },
 
   // voyager (uses NUT CPU)
   [CHIP_VOYAGER_R2D2]                = { "voyager_r2d2", NULL, voyager_r2d2_install },
