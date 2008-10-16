@@ -80,6 +80,16 @@ enum
 typedef uint16_t rom_addr_t;
 
 
+typedef struct
+{
+  bool ram;
+  bool write_enable;
+  rom_word_t data [PAGE_SIZE];
+  bool breakpoint [PAGE_SIZE];
+  // source_code_line_info_t *source_clde_line_info;
+} prog_mem_page_t;
+
+
 struct nut_reg_t;
 
 typedef void ram_access_fn_t (struct nut_reg_t *nut_reg, int addr, reg_t *reg);
@@ -134,10 +144,8 @@ typedef struct nut_reg_t
   // ROM:
   int bank_group [MAX_PAGE];  // defines which pages bank switch together
   uint8_t active_bank [MAX_PAGE];  // bank number from 0..MAX_BANK-1
-  bool rom_write_enable [MAX_PAGE][MAX_BANK];
-  rom_word_t *rom [MAX_PAGE][MAX_BANK];
-  bool *rom_breakpoint [MAX_PAGE][MAX_BANK];
-  // source_code_line_info_t *source_code_line_info [MAX_PAGE][MAX_BANK];
+
+  prog_mem_page_t *prog_mem_page [MAX_BANK][MAX_PAGE];
 
   // RAM:
   addr_t ram_addr;  // selected RAM address
@@ -202,3 +210,8 @@ bool nut_disassemble (sim_t        *sim,
 
 ram_access_fn_t nut_ram_read_zero;
 ram_access_fn_t nut_ram_write_ignore;
+
+
+bool nut_page_exists (sim_t *sim,
+		      bank_t bank,
+		      uint8_t page);

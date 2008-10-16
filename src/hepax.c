@@ -90,16 +90,14 @@ static bool nut_move_rom_page (sim_t *sim,
 {
   nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
 
-  if (! nut_reg->rom [from_page][from_bank])
+  if (! nut_page_exists (sim, from_bank, from_page))
     return false;
-  if (nut_reg->rom [to_page][to_bank])
+  if (nut_page_exists (sim, to_bank, to_page))
     return false;
   if (preflight)
     return true;
-  nut_reg->rom [to_page][to_bank] = nut_reg->rom [from_page][from_bank];
-  nut_reg->rom_write_enable [to_page][to_bank] = nut_reg->rom_write_enable [from_page][from_bank];
-  nut_reg->rom [from_page][from_bank] = NULL;
-  nut_reg->rom_write_enable [from_page][from_bank] = false;
+  nut_reg->prog_mem_page [to_bank][to_page] = nut_reg->prog_mem_page [from_bank][from_page];
+  nut_reg->prog_mem_page [from_bank][from_page] = NULL;
   return true;
 }
 
@@ -157,7 +155,7 @@ static bool hepax_move_rom_to_page (sim_t   *sim,
 		       false);
 
   // is there a hidden RAM page?
-  if (nut_reg->rom [hepax_reg->rom_page][HIDDEN_BANK])
+  if (nut_page_exists (sim, HIDDEN_BANK, hepax_reg->rom_page))
     {
       // yes, unhide
       nut_move_rom_page (sim,
@@ -167,6 +165,8 @@ static bool hepax_move_rom_to_page (sim_t   *sim,
     }
 
   hepax_reg->rom_page = new_page;
+
+  return true;
 }
 
 static void hepax_op_move_hepax_rom (sim_t *sim,
@@ -182,24 +182,23 @@ static void hepax_op_write_protect_toggle (sim_t *sim,
 					   int opcode UNUSED)
 {
   nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
-  hepax_reg_t *hepax_reg = get_chip_data (nut_reg->hepax_chip);
-
   uint8_t ram_page = nut_reg->c [0];
+  prog_mem_page_t *prog_mem_page = nut_reg->prog_mem_page [0][ram_page];
 
-  if ((ram_page & 0xe) != (8 + 2 * (hepax_reg->port - 1)))
+  if ((! prog_mem_page) || ! (prog_mem_page->ram))
     {
 #ifdef HEPAX_DEBUG
-      fprintf (stderr, "HEPAX WPTOG instruction to a non-HEPAX page\n");
+      fprintf (stderr, "HEPAX WPTOG to non-RAM page %x\n", ram_page);
 #endif
       return;
     }
 
 #ifdef HEPAX_DEBUG
-  fprintf (stderr, "HEPAX write %s of RAM page %x\n",
-	   nut_reg->rom_write_enable [ram_page][0] ? "disabling" : "enabling",
+  fprintf (stderr, "HEPAX WPTOG to of RAM page %x\n",
+	   prog_mem_page->write_enable ? "disabling" : "enabling",
 	   ram_page);
 #endif
-  nut_reg->rom_write_enable [ram_page][0] ^= 1;
+  prog_mem_page->write_enable ^= 1;
 }
 
 
@@ -233,7 +232,6 @@ static void hepax_event_fn (sim_t      *sim,
 			    void       *data UNUSED)
 {
   nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
-  hepax_reg_t *hepax_reg = get_chip_data (nut_reg->hepax_chip);
 
   switch (event)
     {

@@ -94,7 +94,8 @@ def ncd_generator_fn (source, target, env, for_signature):
                                    source [0],
                                    obj_path,
                                    target[0])
-    return [l, s]
+#    return [l, s]
+    return [s]
 
 ncd_builder = env.Builder (generator = ncd_generator_fn,
 			   src_suffix = '.ncd.tmpl',
