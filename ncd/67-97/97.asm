@@ -47,7 +47,7 @@ incpc0	.equ	@2660
 L5616	.equ	@5616
 del	.equ	@5717
 execute	.equ	@6021
-S7706	.equ	@7706
+get_reg_3f	.equ	@7706
 
 ; External references to b1:
 
@@ -229,7 +229,7 @@ L0135:  b -> c[w]
           then go to L0301
 
 L0152:  delayed rom @17
-        jsb S7706
+        jsb get_reg_3f
         a exchange b[w]
         a -> b[w]
         if 1 = s 12
@@ -1118,7 +1118,7 @@ op_prtx:
 L1421:  jsb S1633
         0 -> s 6
 L1423:  delayed rom @17
-        jsb S7706
+        jsb get_reg_3f
         a exchange b[w]
         a -> b[w]
         if 1 = s 12
