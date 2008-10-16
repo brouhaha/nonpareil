@@ -1757,6 +1757,8 @@ static void nut_print_state (sim_t *sim)
   log_print_reg (sim, "a=", nut_reg->a);
   log_print_reg (sim, "b=", nut_reg->b);
   log_print_reg (sim, "c=", nut_reg->c);
+  log_print_reg (sim, "m=", nut_reg->m);
+  log_print_reg (sim, "n=", nut_reg->n);
 
   if (sim->source && sim->source [nut_reg->prev_pc])
     log_printf (sim, "%s", sim->source [nut_reg->prev_pc]);
@@ -1773,7 +1775,7 @@ static void nut_print_state (sim_t *sim)
 				   0,                 // del_rom
 				   buf,
 				   sizeof (buf)))
-	log_printf (sim, "%04x: %s", nut_reg->prev_pc, buf);
+	log_printf (sim, "pc=%04x: %s", nut_reg->prev_pc, buf);
     }
   log_printf (sim, "\n");
   log_send (sim);
