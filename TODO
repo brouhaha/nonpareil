@@ -233,6 +233,8 @@ Debugger:
      GtkSourceView      http://gtksourceview.sourceforge.net/
      Scintilla          http://scintilla.sourceforge.net/
 
+  Investigate changing sound to use PortAudio rather than SDL
+
 
 Better model support:
 
