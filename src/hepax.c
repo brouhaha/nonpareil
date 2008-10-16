@@ -238,8 +238,9 @@ static void hepax_event_fn (sim_t      *sim,
     case event_reset:
       hepax_reset (sim);
       break;
+    case event_sleep:
     case event_wake:
-      // waking up from deep sleep?
+      // going into deep sleep or waking up from deep sleep?
       if (! nut_reg->display_enable)
 	hepax_reset (sim);
       break;
