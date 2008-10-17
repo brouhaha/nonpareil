@@ -40,9 +40,9 @@ MA 02111, USA.
 #include "arch.h"
 #include "platform.h"
 #include "calcdef.h"
+#include "mod1_file.h"
 #include "proc_int.h"
 #include "glib_async_queue_source.h"
-#include "mod1_file.h"
 #include "helios.h"
 #include "phineas.h"
 #include "printer.h"
@@ -342,9 +342,9 @@ static bool sim_read_mod1_page (sim_t *sim,
 static bool sim_read_mod1_file (sim_t *sim,
 				FILE *f,
 				int port,   // 1..4, -1 for not port-based
-				bool mem_only)
+				bool mem_only,
+				mod1_file_header_t *header)
 {
-  mod1_file_header_t header;
   size_t file_size;
   int i;
 
@@ -355,26 +355,26 @@ static bool sim_read_mod1_file (sim_t *sim,
   file_size = ftell (f);
   fseek (f, 0, SEEK_SET);
 
-  if (! mod1_read_file_header (f, & header))
+  if (! mod1_read_file_header (f, header))
     {
       fprintf (stderr, "Can't read MOD1 file header\n");
       return false;
     }
 
-  if (! mod1_validate_file_header (& header, file_size))
+  if (! mod1_validate_file_header (header, file_size))
     {
       fprintf (stderr, "Unrecognized or inconsistent values in MOD1 file header\n");
       return false;
     }
 
-  for (i = 0; i < header.NumPages; i++)
+  for (i = 0; i < header->NumPages; i++)
     if (! sim_read_mod1_page (sim, f, port))
       return false;
 
   if (mem_only)
     return true;
 
-  switch (header.Hardware)
+  switch (header->Hardware)
     {
     case HARDWARE_NONE:
       break;
@@ -407,13 +407,13 @@ static bool sim_read_mod1_file (sim_t *sim,
       break;
 
     default:
-      if ((header.Hardware <= HARDWARE_MAX) &&
-	  mod1_hardware_name [header.Hardware])
+      if ((header->Hardware <= HARDWARE_MAX) &&
+	  mod1_hardware_name [header->Hardware])
 	fprintf (stderr, "Unsupported hardware: %s\n",
-		 mod1_hardware_name [header.Hardware]);
+		 mod1_hardware_name [header->Hardware]);
       else
 	fprintf (stderr, "Unsupported hardware type %d\n",
-		 header.Hardware);
+		 header->Hardware);
 #if 1
       break;  // for debugging, allow unsupported hardware
 #else
@@ -425,6 +425,7 @@ static bool sim_read_mod1_file (sim_t *sim,
 }
 
 
+#if 0
 bool sim_read_object_file (sim_t *sim, char *fn)
 {
   FILE *f;
@@ -492,6 +493,7 @@ bool sim_read_object_file (sim_t *sim, char *fn)
 #endif
   return (true);
 }
+#endif
 
 
 bool sim_read_listing_file (sim_t *sim, char *fn)
@@ -547,6 +549,14 @@ bool sim_read_listing_file (sim_t *sim, char *fn)
 }
 
 
+struct plugin_module_t
+{
+  int port;
+  chip_t *chip;
+  mod1_file_header_t header;
+};
+
+
 plugin_module_t *sim_install_module (sim_t *sim,
 				     char *fn,
 				     int port,
@@ -561,7 +571,7 @@ plugin_module_t *sim_install_module (sim_t *sim,
 
   module = alloc (sizeof (plugin_module_t));
 
-  if (! sim_read_mod1_file (sim, f, port, mem_only))
+  if (! sim_read_mod1_file (sim, f, port, mem_only, & module->header))
     {
       free (module);
       fclose (f);

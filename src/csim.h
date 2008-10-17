@@ -53,6 +53,8 @@ typedef struct
                              // was pressed first if multiple are pressed
                              // simultaneusly, used for two-key rollover
   button_info_t *button_info [KML_MAX_BUTTON];
+
+  uint8_t port_mask;  // bit n (0-3) set if port n+1 is occupied by a module
 } csim_t;
 
 

@@ -242,13 +242,6 @@ void *get_chip_data (chip_t *chip);
 
 // plugin modules:
 
-struct plugin_module_t
-{
-  int port;
-  chip_t *chip;
-};
-
-
 // debug logging
 void log_printf (sim_t *sim, char *fmt, ...);
 void log_send (sim_t *sim);

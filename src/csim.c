@@ -342,6 +342,17 @@ static void edit_reset (gpointer callback_data,
 }
 
 
+static void set_menu_enable (csim_t *csim,
+			     const gchar *path,
+			     gboolean enable)
+{
+  GtkWidget *menu_item;
+
+  menu_item = gtk_item_factory_get_widget (csim->main_menu_item_factory, path);
+  gtk_widget_set_sensitive (GTK_WIDGET (menu_item), enable);
+}
+
+
 static void port_number_label_callback (GtkWidget *widget, gpointer data)
 {
   int *port = data;
@@ -358,6 +369,17 @@ static void port_number_radio_button_callback (GtkWidget *widget, gpointer data)
 }
 
 
+typedef struct module_t
+{
+  char *path;
+  int port;
+  plugin_module_t *module;  // opaque
+} module_t;
+
+
+GList *module_list;
+
+
 static void configure_load_module (gpointer callback_data,
 				   guint    callback_action UNUSED,
 				   GtkWidget *widget        UNUSED)
@@ -366,10 +388,13 @@ static void configure_load_module (gpointer callback_data,
   GtkWidget *dialog;
   GtkWidget *port_frame;
   GtkWidget *port_box;
-  GtkWidget *port_1_radio_button;
+  GtkWidget *first_port_radio_button = NULL;
+  GtkWidget *first_open_port_radio_button = NULL;
   GtkFileFilter *mod_filter;
   char *fn;
   int port;
+
+  module_t *module;
 
   dialog = gtk_file_chooser_dialog_new ("Load Module",
 					GTK_WINDOW (csim->main_window),
@@ -382,29 +407,44 @@ static void configure_load_module (gpointer callback_data,
 
   port_frame = gtk_frame_new ("Port");
   port_box = gtk_vbutton_box_new ();
+
   for (port = 1; port <= 4; port++)
     {
       GtkWidget *button;
       char label [2];
+
       sprintf (label, "%d", port);
-      if (port == 1)
+      if (! first_port_radio_button)
 	{
 	  button = gtk_radio_button_new_with_label (NULL, label);
-	  port_1_radio_button = button;
+	  first_port_radio_button = button;
 	}
       else
-	button = gtk_radio_button_new_with_label_from_widget (GTK_RADIO_BUTTON (port_1_radio_button), label);
+	button = gtk_radio_button_new_with_label_from_widget (GTK_RADIO_BUTTON (first_port_radio_button), label);
+
+      if (csim->port_mask & (1 << (port - 1)))
+	{
+	  // port already occupied, so disable button
+	  gtk_widget_set_sensitive (button, false);
+	}
+      else if (! first_open_port_radio_button)
+	first_open_port_radio_button = button;
+
       g_signal_connect (G_OBJECT (button),
 			"clicked",
 			G_CALLBACK (port_number_radio_button_callback),
 			& port);
       gtk_container_add (GTK_CONTAINER (port_box), button);
     }
+
+  port = 1;
+  gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (first_open_port_radio_button),
+				true);
+
   gtk_container_add (GTK_CONTAINER (port_frame), port_box);
   gtk_widget_show_all (port_frame);
   gtk_file_chooser_set_extra_widget (GTK_FILE_CHOOSER (dialog),
 				     port_frame);
-  port = 1;
 
   mod_filter = gtk_file_filter_new ();
 
@@ -421,7 +461,13 @@ static void configure_load_module (gpointer callback_data,
   fn = gtk_file_chooser_get_filename (GTK_FILE_CHOOSER (dialog));
   gtk_widget_destroy (dialog);
 
-  if (! sim_install_module (csim->sim, fn, port, false))
+  // $$$ should check whether module is already loaded, most modules
+  // only allow a single instance
+
+  module = alloc (sizeof (module_t));
+  module->module = sim_install_module (csim->sim, fn, port, false);
+
+  if (! module->module)
     {
       dialog = gtk_message_dialog_new (GTK_WINDOW (csim->main_window),
 				       GTK_DIALOG_DESTROY_WITH_PARENT,
@@ -431,9 +477,62 @@ static void configure_load_module (gpointer callback_data,
 				       fn);
       gtk_dialog_run (GTK_DIALOG (dialog));
       gtk_widget_destroy (dialog);
+      free (module);
     }
 
+  module->path = newstr (fn);
   g_free (fn);
+
+  module->port = port;
+
+  module_list = g_list_append (module_list, module);
+
+  // mark port as occupied
+  csim->port_mask |= (1 << (port - 1));
+
+  // all ports occupied?
+  if (csim->port_mask == 0x0f)
+    set_menu_enable (csim, "<main>/Configure/Load Module", false);
+
+  // enable port unload module command
+  set_menu_enable (csim, "<main>/Configure/Unload Module", true);
+}
+
+
+static void configure_unload_module (gpointer callback_data,
+				     guint    callback_action UNUSED,
+				     GtkWidget *widget        UNUSED)
+{
+  csim_t *csim = callback_data;
+  GtkWidget *dialog;
+  GtkWidget *content_area;
+  GtkWidget *label;
+
+  dialog = gtk_dialog_new_with_buttons ("Remove module",
+					GTK_WINDOW (csim->main_window),
+					GTK_DIALOG_DESTROY_WITH_PARENT,
+					GTK_STOCK_CANCEL,
+					GTK_RESPONSE_CANCEL,
+					GTK_STOCK_OK,
+					GTK_RESPONSE_OK,
+					NULL);
+
+#if 1
+  content_area = GTK_WIDGET (GTK_DIALOG (dialog)->vbox);
+#else
+  content_area = gtk_dialog_get_content_area (GTK_DIALOG (dialog));
+#endif
+
+  label = gtk_label_new ("Unload module");
+
+  gtk_container_add (GTK_CONTAINER (content_area), label);
+
+  g_signal_connect_swapped (dialog,
+			    "response",
+			    G_CALLBACK (gtk_widget_destroy),
+			    dialog);
+
+  gtk_widget_show_all (dialog);
 }
 
 
@@ -463,6 +562,7 @@ static GtkItemFactoryEntry menu_items [] =
     { "/Edit/Obdurate Reset", NULL,   edit_reset,    1, "<Item>", 0 },
     { "/_Configure",    NULL,         NULL,          0, "<Branch>", 0 },
     { "/Configure/Load Module", NULL, configure_load_module, 1, "<Item>", 0 },
+    { "/Configure/Unload Module", NULL, configure_unload_module, 1, "<Item>", 0 },
 #ifdef HAS_DEBUGGER
     { "/_Debug",        NULL,         NULL,          0, "<Branch>", 0 },
 #endif
@@ -501,6 +601,9 @@ static GtkWidget *create_menus (csim_t *csim,
 				 nmenu_items,
 				 menu_items,
 				 csim);
+
+  set_menu_enable (csim, "<main>/Configure/Unload Module", false);
+
   gtk_window_add_accel_group (GTK_WINDOW (csim->main_window), accel_group);
   return (gtk_item_factory_get_widget (csim->main_menu_item_factory,
 				       "<main>"));

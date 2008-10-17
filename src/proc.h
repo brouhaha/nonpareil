@@ -129,8 +129,8 @@ const char *sim_get_model_name (sim_t *sim);
 const char *sim_get_ncd_fn (sim_t *sim);
 
 
-bool sim_read_object_file (sim_t *sim,
-			   char *fn);
+//bool sim_read_object_file (sim_t *sim,
+//			   char *fn);
 
 bool sim_read_listing_file (struct sim_t *sim,
 			    char *fn);
