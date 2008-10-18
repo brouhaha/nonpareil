@@ -1024,11 +1024,13 @@ void calcdef_init_chips (calcdef_t *calcdef)
       chip_type_info = get_chip_type_info (chip->type);
       if (chip_type_info->chip_gui_install_fn)
 	chip->chip = chip_type_info->chip_gui_install_fn (calcdef->sim,
+							  NULL,  // module
 							  chip->type,
 							  chip->index,
 							  chip->flags);
       else if (chip_type_info->chip_install_fn)
 	chip->chip = sim_add_chip (calcdef->sim,
+				   NULL,  // module
 				   chip->type,
 				   chip->index,
 				   chip->flags,

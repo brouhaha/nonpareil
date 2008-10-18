@@ -3,7 +3,7 @@
 <!-- $Id$ -->
 <!-- Copyright 2005, 2006, 2008 Eric Smith <eric@brouhaha.com> -->
 
-<!ELEMENT state (kmlpath*, modulepath*, ui*, chip*, memory*)>
+<!ELEMENT state (kmlpath*, ui*, chip*, memory*, module*)>
 <!ATTLIST state 
           version  CDATA #REQUIRED
           ncd      CDATA #REQUIRED>
@@ -12,8 +12,8 @@
 <!ATTLIST kmlpath
           path CDATA #REQUIRED>
 
-<!ELEMENT modulepath EMPTY>
-<!ATTLIST modulepath
+<!ELEMENT module (chip*, memory*)>
+<!ATTLIST module
           name CDATA #REQUIRED
           path CDATA #REQUIRED>
 

@@ -23,7 +23,8 @@ MA 02111, USA.
 
 #define PFADDR_PHINEAS 0xfb
 
-chip_t *phineas_install (sim_t       *sim,
-			 chip_type_t type,
-			 int32_t     index,
-			 int32_t     flags);
+chip_t *phineas_install (sim_t           *sim,
+			 plugin_module_t *module,
+			 chip_type_t     type,
+			 int32_t         index,
+			 int32_t         flags);

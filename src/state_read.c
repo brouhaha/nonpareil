@@ -48,6 +48,8 @@ typedef struct
 {
   sim_t *sim;
   chip_t *chip;
+  plugin_module_t *module;
+  bool skip_module;
 } sax_data_t;
 
 
@@ -241,7 +243,7 @@ static void parse_loc (sax_data_t *sdata, char **attrs)
   uint64_t addr;
   uint64_t data;
 
-  for (i = 0; attrs && attrs [i]; i+= 2)
+  for (i = 0; attrs && attrs [i]; i += 2)
     {
       if (strcmp (attrs [i], "addr") == 0)
 	{
@@ -267,6 +269,46 @@ static void parse_loc (sax_data_t *sdata, char **attrs)
 }
 
 
+static void parse_module (sax_data_t *sdata, char **attrs)
+{
+  int i;
+  bool got_port = false;
+  int32_t port;
+  char *name = NULL;
+  char *path = NULL;
+
+  for (i = 0; attrs && attrs [i]; i += 2)
+    {
+      if (strcmp (attrs [i], "name") == 0)
+	{
+	  name = attrs [i + 1];
+	}
+      else if (strcmp (attrs [i], "path") == 0)
+	{
+	  path = attrs [i + 1];
+	}
+      else if (strcmp (attrs [i], "port") == 0)
+	{
+	  port = str_to_int32 (attrs [i + 1], NULL, 10);
+	  got_port = true;
+	}
+      else
+	warning ("unknown attribute '%s' in 'module' element\n", attrs [i]);
+    }
+  if (! port)
+    fatal (3, "missing 'port' attribute in 'module' element\n");
+  if (! path)
+    fatal (3, "missing 'path' attribute in 'module' element\n");
+
+  sdata->module = sim_install_module (sdata->sim,
+				      path,
+				      port,
+				      false); // mem_only
+
+  sdata->skip_module = ! sdata->module;
+}
+
+
 static void sax_start_element (void *ref,
 			       const xmlChar *name,
 			       const xmlChar **attrs)
@@ -289,6 +331,8 @@ static void sax_start_element (void *ref,
     parse_memory (sdata, (char **) attrs);
   else if (xml_strcmp (name, "loc") == 0)
     parse_loc (sdata, (char **) attrs);
+  else if (xml_strcmp (name, "module") == 0)
+    parse_module (sdata, (char **) attrs);
   else
     warning ("unknown element '%s'\n", name);
 }

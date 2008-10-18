@@ -162,6 +162,9 @@ struct sim_t
   chip_t *first_chip;  // opaque, but always the CPU
   chip_t *last_chip;   // opaque
 
+  plugin_module_t *first_module;
+  plugin_module_t *last_module;
+
   bool quit_flag;
 
   bool io_pause_flag;    // If true, don't execute anything, state IO is pending
@@ -221,9 +224,10 @@ struct sim_t
 
 
 // Returns NULL if error.
-chip_t *install_chip (sim_t *sim,
+chip_t *install_chip (sim_t               *sim,
+		      plugin_module_t     *module,
 		      const chip_detail_t *chip_detail,
-		      void *chip_data);
+		      void                *chip_data);
 
 void remove_chip (chip_t *chip);
 

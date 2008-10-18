@@ -1825,7 +1825,10 @@ static void woodstock_new_processor (sim_t *sim)
 
   act_reg = alloc (sizeof (act_reg_t));
 
-  install_chip (sim, & woodstock_cpu_chip_detail, act_reg);
+  install_chip (sim,
+		NULL,  // module
+		& woodstock_cpu_chip_detail,
+		act_reg);
 
   display_setup (sim);
 

@@ -1209,7 +1209,10 @@ static void classic_new_processor (sim_t *sim)
 
   cpu_reg = alloc (sizeof (classic_cpu_reg_t));
 
-  install_chip (sim, & classic_cpu_chip_detail, cpu_reg);
+  install_chip (sim,
+		NULL,  // module
+		& classic_cpu_chip_detail,
+		cpu_reg);
 
   classic_new_rom_addr_space (sim, MAX_BANK, MAX_PAGE, PAGE_SIZE);
 

@@ -341,10 +341,11 @@ static void gui_card_reader_insert_new_card (GtkWidget *widget UNUSED,
 }
 
 
-chip_t *gui_card_reader_install (sim_t *sim,
-				 chip_type_t type,
-				 int32_t index,
-				 int32_t flags)
+chip_t *gui_card_reader_install (sim_t           *sim,
+				 plugin_module_t *module,
+				 chip_type_t     type,
+				 int32_t         index,
+				 int32_t         flags)
 {
   gui_card_reader_t *cr;
   GtkWidget *box;
@@ -355,6 +356,7 @@ chip_t *gui_card_reader_install (sim_t *sim,
   cr->config_flags = flags;
 
   cr->chip = sim_add_chip (sim,
+			   module,
 			   type,                    // chip_type
 			   index,                   // index
 			   flags,                   // flags

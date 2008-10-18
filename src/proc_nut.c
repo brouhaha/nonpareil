@@ -2129,7 +2129,10 @@ static void nut_new_processor (sim_t *sim)
 
   nut_reg = alloc (sizeof (nut_reg_t));
 
-  install_chip (sim, & nut_cpu_chip_detail, nut_reg);
+  install_chip (sim,
+		NULL,  // module
+		& nut_cpu_chip_detail,
+		nut_reg);
 
   nut_init_ops (nut_reg);
 

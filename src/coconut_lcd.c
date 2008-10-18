@@ -454,10 +454,11 @@ static void coconut_display_event_fn (sim_t      *sim,
 }
 
 
-chip_t *coconut_lcd_install (sim_t       *sim,
-			     chip_type_t type  UNUSED,
-			     int32_t     index UNUSED,
-			     int32_t     flags UNUSED)
+chip_t *coconut_lcd_install (sim_t           *sim,
+			     plugin_module_t *module,
+			     chip_type_t     type  UNUSED,
+			     int32_t         index UNUSED,
+			     int32_t         flags UNUSED)
 {
   nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
   coconut_display_reg_t *display;
@@ -483,6 +484,7 @@ chip_t *coconut_lcd_install (sim_t       *sim,
   nut_reg->wr_fcn    [display->pfaddr] = & coconut_lcd_wr;
 
   nut_reg->display_chip = install_chip (sim,
+					module,
 					& coconut_display_chip_detail,
 					display);
 

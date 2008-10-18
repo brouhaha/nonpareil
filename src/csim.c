@@ -380,6 +380,18 @@ typedef struct module_t
 GList *module_list;
 
 
+static uint8_t get_port_mask (sim_t *sim)
+{
+  int port;
+  uint8_t mask = 0;
+
+  for (port = 1; port <= 4; port++)
+    if (plugin_module_get_by_port (sim, port))
+      mask |= (1 << (port - 1));
+  return mask;
+}
+
+
 static void configure_load_module (gpointer callback_data,
 				   guint    callback_action UNUSED,
 				   GtkWidget *widget        UNUSED)
@@ -393,8 +405,10 @@ static void configure_load_module (gpointer callback_data,
   GtkFileFilter *mod_filter;
   char *fn;
   int port;
-
   module_t *module;
+  uint8_t port_mask;
+
+  port_mask = get_port_mask (csim->sim);
 
   dialog = gtk_file_chooser_dialog_new ("Load Module",
 					GTK_WINDOW (csim->main_window),
@@ -422,7 +436,7 @@ static void configure_load_module (gpointer callback_data,
       else
 	button = gtk_radio_button_new_with_label_from_widget (GTK_RADIO_BUTTON (first_port_radio_button), label);
 
-      if (csim->port_mask & (1 << (port - 1)))
+      if (port_mask & (1 << (port - 1)))
 	{
 	  // port already occupied, so disable button
 	  gtk_widget_set_sensitive (button, false);
@@ -488,10 +502,10 @@ static void configure_load_module (gpointer callback_data,
   module_list = g_list_append (module_list, module);
 
   // mark port as occupied
-  csim->port_mask |= (1 << (port - 1));
+  port_mask |= (1 << (port - 1));
 
   // all ports occupied?
-  if (csim->port_mask == 0x0f)
+  if (port_mask == 0x0f)
     set_menu_enable (csim, "<main>/Configure/Load Module", false);
 
   // enable port unload module command

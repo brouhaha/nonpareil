@@ -516,10 +516,11 @@ static void pick_init_ops (sim_t *sim)
 }
 
 
-chip_t *pick_install (sim_t       *sim,
-		      chip_type_t type  UNUSED,
-		      int32_t     index UNUSED,
-		      int32_t     flags UNUSED)
+chip_t *pick_install (sim_t           *sim,
+		      plugin_module_t *module,
+		      chip_type_t     type  UNUSED,
+		      int32_t         index UNUSED,
+		      int32_t         flags UNUSED)
 {
   act_reg_t *act_reg;
   pick_reg_t *pick_reg;
@@ -536,6 +537,7 @@ chip_t *pick_install (sim_t       *sim,
   pick_reg->printer.char_gen = calcdef_get_char_gen (sim->calcdef, "pick");
 
   act_reg->pick_chip = install_chip (sim,
+				     module,
 				     & pick_chip_detail,
 				     pick_reg);
 

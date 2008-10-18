@@ -140,6 +140,15 @@ bool sim_read_listing_file (struct sim_t *sim,
 
 typedef struct plugin_module_t plugin_module_t;
 
+plugin_module_t *plugin_module_get_by_port (sim_t *sim,
+					    int port);
+
+int plugin_module_get_port (plugin_module_t *module);
+
+char *plugin_module_get_path (plugin_module_t *module);
+
+char *plugin_module_get_name (plugin_module_t *module);
+
 plugin_module_t *sim_install_module (sim_t *sim,
 				     char *fn,
 				     int port,
@@ -233,6 +242,11 @@ bool sim_write_ram (sim_t *sim,
 		    uint64_t *val);
 
 
+// Pass in NULL for module to get first module.
+// Returns NULL if there are no more modules.
+plugin_module_t *sim_get_next_module (sim_t *sim, plugin_module_t *module);
+
+
 // Chip access routines
 
 // Callback function used when chip sends asynchronous commands and/or data
@@ -244,6 +258,7 @@ typedef void chip_callback_fn_t (sim_t  *sim,
 
 
 chip_t *sim_add_chip (sim_t              *sim,
+		      plugin_module_t    *module,
 		      chip_type_t        type,
 		      int32_t            index,
 		      int32_t            flags,

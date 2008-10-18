@@ -142,7 +142,9 @@ static void write_chip_address (sim_t *sim,
 }
 
 
-static void write_chips (sim_t *sim, xmlTextWriterPtr writer)
+static void write_chips (sim_t *sim,
+			 plugin_module_t *module,
+			 xmlTextWriterPtr writer)
 {
   chip_t *chip = NULL;
 
@@ -151,6 +153,9 @@ static void write_chips (sim_t *sim, xmlTextWriterPtr writer)
       int first_reg = 0;
       int register_count;
       const chip_info_t *chip_info;
+
+      if (chip_get_module (chip) != module)
+	continue;
 
       chip_info = sim_get_chip_info (sim, chip);
       if (! chip_info)
@@ -195,11 +200,17 @@ static void write_mem_loc (xmlTextWriterPtr writer,
 }
 
 
-static void write_memory (sim_t *sim, xmlTextWriterPtr writer)
+static void write_memory (sim_t *sim,
+			  plugin_module_t *module,
+			  xmlTextWriterPtr writer)
 {
   addr_t addr;
   addr_t max_ram;
   uint64_t data;
+
+  // $$$ need to add support for module RAM
+  if (module)
+    return;
 
   max_ram = sim_get_max_ram_addr (sim);
 
@@ -214,6 +225,30 @@ static void write_memory (sim_t *sim, xmlTextWriterPtr writer)
     }
 
   xml_end_element (writer);  // memory
+}
+
+
+static void write_modules (sim_t *sim, xmlTextWriterPtr writer)
+{
+  plugin_module_t *module = NULL;
+
+  while ((module = sim_get_next_module (sim, module)))
+    {
+      xml_start_element (writer, "module");
+      xml_write_attribute_format (writer,
+				  "port",
+				  "%d", 
+				  plugin_module_get_port (module));
+      xml_write_attribute_string (writer,
+				  "name",
+				  plugin_module_get_name (module));
+      xml_write_attribute_string (writer,
+				  "path",
+				  plugin_module_get_path (module));
+      write_chips (sim, module, writer);
+      write_memory (sim, module, writer);
+      xml_end_element (writer);  // module
+    }
 }
 
 
@@ -242,8 +277,9 @@ void state_write_xml (sim_t *sim, char *fn)
   xml_write_attribute_string (writer, "ncd", sim_get_ncd_fn (sim));
 
   write_ui (sim, writer);
-  write_chips (sim, writer);
-  write_memory (sim, writer);
+  write_chips (sim, NULL, writer);
+  write_memory (sim, NULL, writer);
+  write_modules (sim, writer);
 
   xml_end_element (writer);  // state
 

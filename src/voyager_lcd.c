@@ -356,10 +356,11 @@ static void voyager_display_bitmap_read (nut_reg_t *nut_reg UNUSED,
 }
 
 
-chip_t *voyager_r2d2_install (sim_t       *sim,
-			      chip_type_t type  UNUSED,
-			      int32_t     index,
-			      int32_t     flags UNUSED)
+chip_t *voyager_r2d2_install (sim_t           *sim,
+			      plugin_module_t *module,
+			      chip_type_t     type  UNUSED,
+			      int32_t         index,
+			      int32_t         flags UNUSED)
 {
   nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
   int io_base;
@@ -376,6 +377,7 @@ chip_t *voyager_r2d2_install (sim_t       *sim,
       display = alloc (sizeof (voyager_display_reg_t));
 
       chip = install_chip (sim,
+			   module,
 			   & voyager_display_chip_detail,
 			   display);
 

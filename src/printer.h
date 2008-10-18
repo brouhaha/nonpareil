@@ -47,10 +47,11 @@ typedef struct
 #define HAS_MODE_SWITCH          0x04
 
 
-chip_t *gui_printer_install (sim_t *sim,
-			     chip_type_t type,
-			     int32_t index,
-			     int32_t flags);
+chip_t *gui_printer_install (sim_t           *sim,
+			     plugin_module_t *module,
+			     chip_type_t     type,
+			     int32_t         index,
+			     int32_t         flags);
 
 
 #define MAX_CHARACTER_WIDTH_PIXELS 7

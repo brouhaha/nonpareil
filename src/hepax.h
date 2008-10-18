@@ -21,7 +21,8 @@ MA 02111, USA.
 
 // HEPAX module chip
 
-chip_t *hepax_install (sim_t       *sim,
-		       chip_type_t type,
-		       int32_t     index,  // port number, 1-4
-		       int32_t     flags);
+chip_t *hepax_install (sim_t           *sim,
+		       plugin_module_t *module,
+		       chip_type_t     type,
+		       int32_t         index,  // port number, 1-4
+		       int32_t         flags);

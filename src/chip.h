@@ -72,10 +72,13 @@ typedef enum
 } chip_type_t;
 
 
-typedef struct chip_t *chip_install_fn_t (struct sim_t *sim,
-					  chip_type_t type,
-					  int32_t index,
-					  int32_t flags);
+struct plugin_module_t;
+
+typedef struct chip_t *chip_install_fn_t (struct sim_t           *sim,
+					  struct plugin_module_t *module,
+					  chip_type_t            type,
+					  int32_t                index,
+					  int32_t                flags);
 
 
 typedef struct
@@ -93,3 +96,5 @@ typedef struct chip_t chip_t;
 chip_type_t find_chip_type_by_name (char *s);
 
 chip_type_info_t *get_chip_type_info (chip_type_t type);
+
+struct plugin_module_t *chip_get_module (chip_t *chip);

@@ -66,6 +66,8 @@ struct chip_t
 
   sim_t *sim;
 
+  plugin_module_t *module;
+
   const chip_detail_t *chip_detail;
   void *chip_data;
 
@@ -117,17 +119,18 @@ typedef enum
 
 typedef struct
 {
-  sim_cmd_t     cmd;
-  sim_reply_t   reply;
-  bool          b;
-  uint64_t      cycle_count;
-  addr_t        addr;
-  chip_type_t   chip_type;
-  chip_t        *chip;
-  event_id_t    event;
-  int32_t       arg1;   // reg_num, keycode, flag number, bank, bank group, etc.
-  int32_t       arg2;   // index (in read/write register)
-  void          *data;  // register value, memory value, etc.
+  sim_cmd_t       cmd;
+  sim_reply_t     reply;
+  bool            b;
+  uint64_t        cycle_count;
+  addr_t          addr;
+  plugin_module_t *module;
+  chip_type_t     chip_type;
+  chip_t          *chip;
+  event_id_t      event;
+  int32_t         arg1;   // reg_num, keycode, flag number, bank, bank group, etc.
+  int32_t         arg2;   // index (in read/write register)
+  void            *data;  // register value, memory value, etc.
 } sim_msg_t;
 
 
@@ -339,10 +342,11 @@ static bool sim_read_mod1_page (sim_t *sim,
 }
 
 
-static bool sim_read_mod1_file (sim_t *sim,
-				FILE *f,
+static bool sim_read_mod1_file (sim_t              *sim,
+				plugin_module_t    *module,
+				FILE               *f,
 				int port,   // 1..4, -1 for not port-based
-				bool mem_only,
+				bool               mem_only,
 				mod1_file_header_t *header)
 {
   size_t file_size;
@@ -381,6 +385,7 @@ static bool sim_read_mod1_file (sim_t *sim,
 
     case HARDWARE_TIMER:
       (void) sim_add_chip (sim,
+			   module,
 			   CHIP_PHINEAS,
 			   0,  // index
 			   0,  // flags
@@ -390,6 +395,7 @@ static bool sim_read_mod1_file (sim_t *sim,
 
     case HARDWARE_PRINTER:
       (void) gui_printer_install (sim,
+				  module,
 				  CHIP_HELIOS,
 				  0,   // index
 				  (HAS_PAPER_ADVANCE_BUTTON +
@@ -399,6 +405,7 @@ static bool sim_read_mod1_file (sim_t *sim,
 
     case HARDWARE_HEPAX:
       (void) sim_add_chip (sim,
+			   module,
 			   CHIP_HEPAX,
 			   port,  // index - use for HEPAX port #
 			   0,  // flags
@@ -551,10 +558,42 @@ bool sim_read_listing_file (sim_t *sim, char *fn)
 
 struct plugin_module_t
 {
+  struct plugin_module_t *next;
+  struct plugin_module_t *prev;
+  char *path;
+  char *name;
   int port;
   chip_t *chip;
   mod1_file_header_t header;
 };
+
+plugin_module_t *plugin_module_get_by_port (sim_t *sim,
+					    int port)
+{
+  plugin_module_t *module;
+
+  for (module = sim->first_module; module; module = module->next)
+    {
+      if (module->port == port)
+	return module;
+    }
+  return NULL;
+}
+
+int plugin_module_get_port (plugin_module_t *module)
+{
+  return module->port;
+}
+
+char *plugin_module_get_path (plugin_module_t *module)
+{
+  return module->path;
+}
+
+char *plugin_module_get_name (plugin_module_t *module)
+{
+  return module->name;
+}
 
 
 plugin_module_t *sim_install_module (sim_t *sim,
@@ -571,7 +610,7 @@ plugin_module_t *sim_install_module (sim_t *sim,
 
   module = alloc (sizeof (plugin_module_t));
 
-  if (! sim_read_mod1_file (sim, f, port, mem_only, & module->header))
+  if (! sim_read_mod1_file (sim, module, f, port, mem_only, & module->header))
     {
       free (module);
       fclose (f);
@@ -580,7 +619,23 @@ plugin_module_t *sim_install_module (sim_t *sim,
 
   fclose (f);
 
+  module->path = newstr (fn);
+
+  module->name = newstrn (module->header.Title,
+			  sizeof (module->header.Title));
+
   module->port = port;
+
+  // add module at tail of list
+  if (sim->last_module)
+    {
+      module->prev = sim->last_module;
+      sim->last_module->next = module;
+    }
+  else
+    sim->first_module = module;
+
+  sim->last_module = module;
 
   return module;
 }
@@ -588,6 +643,8 @@ plugin_module_t *sim_install_module (sim_t *sim,
 
 bool sim_remove_module (plugin_module_t *module)
 {
+  if (module->name)
+    free (module->name);
   free (module);
 
   return false;  // $$$ not yet implemented
@@ -763,6 +820,12 @@ static void cmd_event (sim_t *sim, sim_msg_t *msg)
 }
 
 
+plugin_module_t *chip_get_module (chip_t *chip)
+{
+  return chip->module;
+}
+
+
 static void cmd_add_chip (sim_t *sim, sim_msg_t *msg)
 {
   chip_type_info_t *chip_type_info;
@@ -775,6 +838,7 @@ static void cmd_add_chip (sim_t *sim, sim_msg_t *msg)
   if (chip_type_info->chip_install_fn)
     {
       msg->chip = chip_type_info->chip_install_fn (sim,
+						   msg->module,
 						   msg->chip_type,
 						   msg->arg1,  // index
 						   msg->arg2); // flags
@@ -1232,7 +1296,19 @@ bool sim_get_io_pause_flag (sim_t *sim)
 }
 
 
+// Pass in NULL for module to get first module.
+// Returns NULL if there are no more modules.
+plugin_module_t *sim_get_next_module (sim_t *sim, plugin_module_t *module)
+{
+  if (module)
+    return module->next;
+  else
+    return sim->first_module;
+}
+
+
 chip_t *sim_add_chip (sim_t              *sim,
+		      plugin_module_t    *module,
 		      chip_type_t        type,
 		      int                index,
 		      int                flags,
@@ -1243,6 +1319,7 @@ chip_t *sim_add_chip (sim_t              *sim,
 
   memset (& msg, 0, sizeof (sim_msg_t));
   msg.cmd = CMD_ADD_CHIP;
+  msg.module = module;
   msg.chip_type = type;
   msg.arg1 = index;
   msg.arg2 = flags;
@@ -1794,6 +1871,7 @@ bool set_bools (void *data, uint64_t *p, int arg)
 
 
 chip_t *install_chip (sim_t *sim,
+		      plugin_module_t *module,
 		      const chip_detail_t *chip_detail,
 		      void *chip_data)
 {
@@ -1802,6 +1880,7 @@ chip_t *install_chip (sim_t *sim,
   chip = alloc (sizeof (chip_t));
 
   chip->sim = sim;
+  chip->module = module;
 
   chip->chip_detail   = chip_detail;
   chip->chip_data     = chip_data;

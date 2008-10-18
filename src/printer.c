@@ -801,10 +801,11 @@ GtkWidget *gui_printer_create_menubar (gui_printer_t *p)
 }
 
 
-chip_t *gui_printer_install (sim_t *sim,
-			     chip_type_t type,
-			     int32_t index,
-			     int32_t flags)
+chip_t *gui_printer_install (sim_t           *sim,
+			     plugin_module_t *module,
+			     chip_type_t     type,
+			     int32_t         index,
+			     int32_t         flags)
 {
   gui_printer_t *p;
   GtkWidget *menubar;
@@ -838,6 +839,7 @@ chip_t *gui_printer_install (sim_t *sim,
     }
 
   p->chip = sim_add_chip (sim,
+			  module,
 			  type,                // chip_type
 			  index,               // index
 			  flags,               // flags
