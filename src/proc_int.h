@@ -109,9 +109,15 @@ typedef struct
 
   int (* get_max_rom_addr)     (sim_t      *sim);
 
-  bool (* page_exists)         (sim_t      *sim,
-				bank_t     bank,
-				uint8_t    page);
+  bool (* create_page)         (sim_t           *sim,
+				bank_t          bank,
+				uint8_t         page,
+				plugin_module_t *module);
+
+  bool (* get_page_info)       (sim_t           *sim,
+				bank_t          bank,
+				uint8_t         page,
+				plugin_module_t **module);
 
   bool (* read_rom)            (sim_t      *sim,
 				bank_t     bank,

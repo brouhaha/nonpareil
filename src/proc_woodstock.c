@@ -169,13 +169,17 @@ int woodstock_get_max_rom_addr (sim_t *sim UNUSED)
   return MAX_PAGE * PAGE_SIZE;
 }
 
-bool woodstock_page_exists (sim_t   *sim,
-			    bank_t  bank,
-			    uint8_t page)
+bool woodstock_get_page_info (sim_t           *sim UNUSED,
+			      bank_t          bank,
+			      uint8_t         page,
+			      plugin_module_t **module)
 {
   act_reg_t *act_reg = get_chip_data (sim->first_chip);
-
-  return (act_reg->bank_exists [page] & (1 << bank)) != 0;
+  if (! (act_reg->bank_exists [page] & (1 << bank)))
+    return false;
+  if (module)
+    *module = NULL;
+  return true;
 }
 
 
@@ -1904,7 +1908,7 @@ processor_dispatch_t woodstock_processor =
     .get_max_rom_bank    = woodstock_get_max_rom_bank,
     .get_rom_page_size   = woodstock_get_rom_page_size,
     .get_max_rom_addr    = woodstock_get_max_rom_addr,
-    .page_exists         = woodstock_page_exists,
+    .get_page_info       = woodstock_get_page_info,
     .read_rom            = woodstock_read_rom,
     .write_rom           = woodstock_write_rom,
 

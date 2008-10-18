@@ -235,13 +235,39 @@ int nut_get_max_rom_addr (sim_t *sim UNUSED)
   return MAX_PAGE * PAGE_SIZE;
 }
 
-bool nut_page_exists (sim_t *sim,
+bool nut_create_page (sim_t *sim,
 		      bank_t bank,
-		      uint8_t page)
+		      uint8_t page,
+		      plugin_module_t *module)
 {
   nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
+  prog_mem_page_t *prog_mem_page;
 
-  return nut_reg->prog_mem_page [bank][page] != NULL;
+  if (nut_reg->prog_mem_page [bank][page])
+    {
+      fprintf (stderr, "create bank %d page %x failed\n", bank, page);
+      return false;
+    }
+
+  prog_mem_page = alloc (sizeof (prog_mem_page_t));
+  prog_mem_page->module = module;
+  nut_reg->prog_mem_page [bank][page] = prog_mem_page;
+  return true;
+}
+
+bool nut_get_page_info (sim_t          *sim,
+			bank_t         bank,
+			uint8_t        page,
+			plugin_module_t **module)
+{
+  nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
+  prog_mem_page_t *prog_mem_page = nut_reg->prog_mem_page [bank][page];
+  if (! prog_mem_page)
+    return false;
+
+  if (module)
+    *module = prog_mem_page->module;
+  return true;
 }
 
 
@@ -298,7 +324,6 @@ static bool nut_set_rom_write_enable (sim_t      *sim,
 {
   nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
   uint8_t page = addr / PAGE_SIZE;
-  uint16_t offset = addr & (PAGE_SIZE - 1);
   prog_mem_page_t *prog_mem_page = nut_reg->prog_mem_page [bank][page];
 
   if ((addr >= (MAX_PAGE * PAGE_SIZE)) || (bank > MAX_BANK))
@@ -308,7 +333,7 @@ static bool nut_set_rom_write_enable (sim_t      *sim,
     return false;
 
   prog_mem_page->ram = true;
-  prog_mem_page->write_enable = true;
+  prog_mem_page->write_enable = write_enable;
   return true;
 }
 
@@ -693,8 +718,9 @@ static void op_goto_c (sim_t *sim,
 static void select_bank_page (sim_t *sim, uint8_t page, bank_t new_bank)
 {
   nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
+  prog_mem_page_t *prog_mem_page = nut_reg->prog_mem_page [new_bank][page];
 
-  if (nut_page_exists (sim, new_bank, page))
+  if (prog_mem_page)
     nut_reg->active_bank [page] = new_bank;
   else
     fprintf (stderr, "bank %d select for page %x: nonexistent!\n", new_bank, page);
@@ -705,15 +731,18 @@ static void select_bank (sim_t *sim, rom_addr_t addr, bank_t new_bank)
   nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
   uint8_t page;
   int bank_group;
+  prog_mem_page_t *prog_mem_page;
 
   page = addr / PAGE_SIZE;
   bank_group = nut_reg->bank_group [page];
   if (bank_group)
     {
       for (page = 0; page < MAX_PAGE; page++)
-	if ((nut_reg->bank_group [page] == bank_group) &&
-	    nut_page_exists (sim, new_bank, page))
-	  select_bank_page (sim, page, new_bank);
+	{
+	  prog_mem_page = nut_reg->prog_mem_page [new_bank][page];
+	  if ((nut_reg->bank_group [page] == bank_group) && prog_mem_page)
+	    select_bank_page (sim, page, new_bank);
+	}
     }
   else
     select_bank_page (sim, page, new_bank);
@@ -2214,7 +2243,8 @@ processor_dispatch_t nut_processor =
     .get_max_rom_bank    = nut_get_max_rom_bank,
     .get_rom_page_size   = nut_get_rom_page_size,
     .get_max_rom_addr    = nut_get_max_rom_addr,
-    .page_exists         = nut_page_exists,
+    .create_page         = nut_create_page,
+    .get_page_info       = nut_get_page_info,
 
     .read_rom            = nut_read_rom,
     .write_rom           = nut_write_rom,

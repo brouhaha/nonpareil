@@ -113,11 +113,16 @@ int classic_get_max_rom_addr (sim_t *sim UNUSED)
   return MAX_PAGE * PAGE_SIZE;
 }
 
-bool classic_page_exists (sim_t *sim UNUSED,
-		      bank_t bank,
-		      uint8_t page)
+bool classic_get_page_info (sim_t           *sim UNUSED,
+			    bank_t          bank,
+			    uint8_t         page,
+			    plugin_module_t **module)
 {
-  return (bank <= MAX_BANK) && (page <= MAX_PAGE);
+  if ((bank > MAX_BANK) || (page > MAX_PAGE))
+    return false;
+  if (module)
+    *module = NULL;
+  return true;
 }
 
 
@@ -1300,7 +1305,7 @@ processor_dispatch_t classic_processor =
     .get_max_rom_bank    = classic_get_max_rom_bank,
     .get_rom_page_size   = classic_get_rom_page_size,
     .get_max_rom_addr    = classic_get_max_rom_addr,
-    .page_exists         = classic_page_exists,
+    .get_page_info       = classic_get_page_info,
 
     .read_rom            = classic_read_rom,
     .write_rom           = classic_write_rom,

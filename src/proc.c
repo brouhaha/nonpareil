@@ -205,8 +205,9 @@ static int bank_group [MAX_BANK_GROUP + 1];  // index from 1 .. MAX_BANK_GROUP,
                                              // entry 0 not used
 
 
-static bool sim_read_mod1_page (sim_t *sim,
-				FILE *f,
+static bool sim_read_mod1_page (sim_t           *sim,
+				plugin_module_t *module,
+				FILE            *f,
 				int port)  // 1 to 4, -1 for not port-based
 {
   mod1_file_page_t mod1_page;
@@ -254,7 +255,7 @@ static bool sim_read_mod1_page (sim_t *sim,
 	page = 8;
       else
 	page = 8 + 2 * (port - 1);
-      if (sim_page_exists (sim, mod1_page.Bank - 1, page))
+      if (sim_get_page_info (sim, mod1_page.Bank - 1, page, NULL))
 	page++;
     }
   else if ((mod1_page.Page == POSITION_EVEN) ||
@@ -279,13 +280,13 @@ static bool sim_read_mod1_page (sim_t *sim,
       return false;
     }
 
-  if ((bank == 0) && mod1_page.RAM && sim_page_exists (sim, bank, page))
+  if ((bank == 0) && mod1_page.RAM && sim_get_page_info (sim, bank, page, NULL))
     {
       // HEPAX RAM overlaid by ROM
       bank = 4;  // HIDDEN_BANK, which isn't visible here, alas
     }
 
-  if (sim_page_exists (sim, bank, page))
+  if (! sim_create_page (sim, bank, page, module))
     {
       fprintf (stderr, "Can't load ROM page as bank %d page %x, address space occupied\n", bank + 1, page);
       return false;
@@ -372,7 +373,7 @@ static bool sim_read_mod1_file (sim_t              *sim,
     }
 
   for (i = 0; i < header->NumPages; i++)
-    if (! sim_read_mod1_page (sim, f, port))
+    if (! sim_read_mod1_page (sim, module, f, port))
       return false;
 
   if (mem_only)
@@ -1504,9 +1505,20 @@ int sim_get_max_rom_addr  (sim_t *sim)
   return sim->proc->get_max_rom_addr (sim);
 }
 
-bool sim_page_exists      (sim_t *sim, uint8_t bank, uint8_t page)
+bool sim_create_page      (sim_t           *sim,
+			   uint8_t         bank,
+			   uint8_t         page,
+			   plugin_module_t *module)
 {
-  return sim->proc->page_exists (sim, bank, page);
+  return sim->proc->create_page (sim, bank, page, module);
+}
+
+bool sim_get_page_info    (sim_t           *sim,
+			   uint8_t         bank,
+			   uint8_t         page,
+			   plugin_module_t **module)
+{
+  return sim->proc->get_page_info (sim, bank, page, module);
 }
 
 bool sim_read_rom  (sim_t      *sim,

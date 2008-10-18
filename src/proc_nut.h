@@ -82,6 +82,7 @@ typedef uint16_t rom_addr_t;
 
 typedef struct
 {
+  plugin_module_t *module;  // owning module, or NULL for mainframe
   bool ram;
   bool write_enable;
   rom_word_t data [PAGE_SIZE];
@@ -212,6 +213,7 @@ ram_access_fn_t nut_ram_read_zero;
 ram_access_fn_t nut_ram_write_ignore;
 
 
-bool nut_page_exists (sim_t *sim,
-		      bank_t bank,
-		      uint8_t page);
+bool nut_get_page_info (sim_t           *sim,
+			bank_t          bank,
+			uint8_t         page,
+			plugin_module_t **module);

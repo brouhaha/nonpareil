@@ -91,10 +91,16 @@ static bool nut_move_rom_page (sim_t *sim,
 {
   nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
 
-  if (! nut_page_exists (sim, from_bank, from_page))
-    return false;
-  if (nut_page_exists (sim, to_bank, to_page))
-    return false;
+  if (! nut_get_page_info (sim, from_bank, from_page, NULL))
+    {
+      fprintf (stderr, "HEPAX ROMBLK source bank %d page %x not allocated\n", from_bank, from_page);
+      return false;
+    }
+  if (nut_get_page_info (sim, to_bank, to_page, NULL))
+    {
+      fprintf (stderr, "HEPAX ROMBLK dest bank %d page %x already allocated\n", to_bank, to_page);
+      return false;
+    }
   if (preflight)
     return true;
   nut_reg->prog_mem_page [to_bank][to_page] = nut_reg->prog_mem_page [from_bank][from_page];
@@ -156,7 +162,7 @@ static bool hepax_move_rom_to_page (sim_t   *sim,
 		       false);
 
   // is there a hidden RAM page?
-  if (nut_page_exists (sim, HIDDEN_BANK, hepax_reg->rom_page))
+  if (nut_get_page_info (sim, HIDDEN_BANK, hepax_reg->rom_page, NULL))
     {
       // yes, unhide
       nut_move_rom_page (sim,
