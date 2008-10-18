@@ -217,3 +217,6 @@ bool nut_get_page_info (sim_t           *sim,
 			bank_t          bank,
 			uint8_t         page,
 			plugin_module_t **module);
+
+void debug_nut_show_pages (sim_t *sim);
+

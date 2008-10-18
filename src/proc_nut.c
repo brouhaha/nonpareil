@@ -235,6 +235,29 @@ int nut_get_max_rom_addr (sim_t *sim UNUSED)
   return MAX_PAGE * PAGE_SIZE;
 }
 
+
+void debug_nut_show_pages (sim_t *sim)
+{
+  nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
+  uint8_t page;
+  bank_t bank;
+  for (page = 0; page < 16; page++)
+    for (bank = 0; bank < 5; bank++)
+      {
+	prog_mem_page_t *prog_mem_page = nut_reg->prog_mem_page [bank][page];
+	if (prog_mem_page)
+	  {
+	    printf ("page %x bank %d", page, bank);
+	    if (prog_mem_page->module)
+	      {
+		printf (": module %s", plugin_module_get_name (prog_mem_page->module));
+	      }
+	    printf ("\n");
+	  }
+      }
+}
+
+
 bool nut_create_page (sim_t *sim,
 		      bank_t bank,
 		      uint8_t page,

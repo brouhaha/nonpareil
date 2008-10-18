@@ -195,10 +195,20 @@ static bool hepax_restore_rom_page (sim_t    *sim,
   if (! status)
     return false;
 
+#ifdef HEPAX_DEBUG
+  printf ("HEPAX restore: before moving ROM:\n");
+  debug_nut_show_pages (sim);
+#endif
+
   // now move the ROM page
   restored_rom_page = hepax_reg->rom_page;
   hepax_reg->rom_page = 8 + 2 * (hepax_reg->port - 1);
   hepax_move_rom_to_page (sim, restored_rom_page);
+
+#ifdef HEPAX_DEBUG
+  printf ("HEPAX restore: after moving ROM:\n");
+  debug_nut_show_pages (sim);
+#endif
 
   return true;
 }
