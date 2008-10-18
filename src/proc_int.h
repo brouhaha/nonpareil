@@ -25,9 +25,15 @@ MA 02111, USA.
  * processor models (e.g., proc_woodstock):
  */
 
-typedef bool reg_accessor_t (void *data,
+typedef bool reg_accessor_t (sim_t    *sim,
+			     chip_t   *chip,
+			     void     *data,
+			     size_t   size,
 			     uint64_t *p,
-			     int arg);
+			     int      arg);
+
+// default get/set functions
+reg_accessor_t get_reg, set_reg;
 
 // get/set one four-bit digit per uint8
 reg_accessor_t get_digits, set_digits;

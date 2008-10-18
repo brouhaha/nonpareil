@@ -57,11 +57,12 @@ typedef struct
      get, set, arg } 
 
 
+static reg_accessor_t hepax_restore_rom_page;
+
 static const reg_detail_t hepax_reg_detail [] =
 {
-  //    name        field       bits radix  get   set   arg  array
-  PR   ("port",     port,       4,   16,    NULL, NULL, 0),
-  PR   ("rom_page", rom_page,   4,   16,    NULL, NULL, 0)
+  //    name        field       bits radix  get   set                     arg
+  PR   ("rom_page", rom_page,   4,   16,    NULL, hepax_restore_rom_page, 0)
 };
 
 
@@ -169,6 +170,34 @@ static bool hepax_move_rom_to_page (sim_t   *sim,
   return true;
 }
 
+
+// During a restore, the HEPAX ROM needs to be moved from the port
+// space back to the save state's ROM page.
+static bool hepax_restore_rom_page (sim_t    *sim,
+				    chip_t   *chip,
+				    void     *data,
+				    size_t   size,
+				    uint64_t *p,
+				    int      arg)
+{
+  bool status = false;
+  hepax_reg_t *hepax_reg = get_chip_data (chip);
+  uint8_t restored_rom_page;
+
+  // first call the standard set function
+  status = set_reg (sim, chip, data, size, p, arg);
+  if (! status)
+    return false;
+
+  // now move the ROM page
+  restored_rom_page = hepax_reg->rom_page;
+  hepax_reg->rom_page = 8 + 2 * (hepax_reg->port - 1);
+  hepax_move_rom_to_page (sim, restored_rom_page);
+
+  return true;
+}
+
+
 static void hepax_op_move_hepax_rom (sim_t *sim,
 				     int opcode UNUSED)
 {
@@ -194,7 +223,7 @@ static void hepax_op_write_protect_toggle (sim_t *sim,
     }
 
 #ifdef HEPAX_DEBUG
-  fprintf (stderr, "HEPAX WPTOG to of RAM page %x\n",
+  fprintf (stderr, "HEPAX WPTOG %s RAM page %x\n",
 	   prog_mem_page->write_enable ? "disabling" : "enabling",
 	   ram_page);
 #endif
@@ -271,7 +300,7 @@ chip_t *hepax_install (sim_t           *sim,
   hepax_reg = alloc (sizeof (hepax_reg_t));
 
 #ifdef HEPAX_DEBUG
-  fprintf (stderr, "HEPAX ROM in page %x\n", index);
+  fprintf (stderr, "HEPAX in port %x\n", index);
 #endif
   hepax_reg->port = index;
   hepax_reg->rom_page = 8 + 2 * (hepax_reg->port - 1);

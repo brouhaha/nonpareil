@@ -663,13 +663,14 @@ static void send_cmd_to_sim_thread (sim_t *sim, gpointer msg)
 }
 
 
-static void cmd_read_register (sim_t *sim UNUSED,
+static void cmd_read_register (sim_t     *sim,
 			       sim_msg_t *msg)
 {
   const chip_detail_t *chip_detail;
   const reg_detail_t *reg_detail;
   uint8_t *addr;
   uint64_t *result_val;
+  reg_accessor_t *get_fn;
 
   msg->reply = ARG_RANGE_ERROR;
 
@@ -686,33 +687,28 @@ static void cmd_read_register (sim_t *sim UNUSED,
   result_val = msg->data;
 
   if (reg_detail->get)
-    {
-      if (reg_detail->get (addr, result_val, reg_detail->accessor_arg))
-	msg->reply = OK;
-    }
+    get_fn = reg_detail->get;
   else
-    {
-      switch (reg_detail->size)
-	{
-	case 1: *result_val = *((uint8_t  *) addr); break;
-	case 2: *result_val = *((uint16_t *) addr); break;
-	case 4: *result_val = *((uint32_t *) addr); break;
-	case 8: *result_val = *((uint64_t *) addr); break;
-	default:
-	  fatal (3, "bad storage size\n");
-	}
-      msg->reply = OK;
-    }
+    get_fn = & get_reg;
+
+  if (get_fn (sim,
+	      msg->chip,
+	      addr,
+	      reg_detail->size,
+	      result_val,
+	      reg_detail->accessor_arg))
+    msg->reply = OK;
 }
 
 
-static void cmd_write_register (sim_t *sim UNUSED,
+static void cmd_write_register (sim_t     *sim,
 				sim_msg_t *msg)
 {
   const chip_detail_t *chip_detail;
   const reg_detail_t *reg_detail;
   uint8_t *addr;
   uint64_t *source_val;
+  reg_accessor_t *set_fn;
 
   msg->reply = ARG_RANGE_ERROR;
 
@@ -729,23 +725,17 @@ static void cmd_write_register (sim_t *sim UNUSED,
   source_val = msg->data;
 
   if (reg_detail->set)
-    {
-      if (reg_detail->set (addr, source_val, reg_detail->accessor_arg))
-	msg->reply = OK;
-    }
+    set_fn = reg_detail->set;
   else
-    {
-      switch (reg_detail->size)
-	{
-	case 1: *((uint8_t  *) addr) = *source_val; break;
-	case 2: *((uint16_t *) addr) = *source_val; break;
-	case 4: *((uint32_t *) addr) = *source_val; break;
-	case 8: *((uint64_t *) addr) = *source_val; break;
-	default:
-	  fatal (3, "bad storage size\n");
-	}
-      msg->reply = OK;
-    }
+    set_fn = & set_reg;
+
+  if (set_fn (sim,
+	      msg->chip,
+	      addr,
+	      reg_detail->size,
+	      source_val,
+	      reg_detail->accessor_arg))
+    msg->reply = OK;
 }
 
 
@@ -1766,11 +1756,56 @@ processor_dispatch_t *processor_dispatch [ARCH_MAX] =
   };
 
 
+// Standard accessor functions
+bool get_reg (sim_t    *sim UNUSED,
+	      chip_t   *chip UNUSED,
+	      void     *data,
+	      size_t   size,
+	      uint64_t *p,
+	      int      arg UNUSED)
+{
+  switch (size)
+    {
+    case 1: *p = *((uint8_t  *) data); break;
+    case 2: *p = *((uint16_t *) data); break;
+    case 4: *p = *((uint32_t *) data); break;
+    case 8: *p = *((uint64_t *) data); break;
+    default:
+      fatal (3, "bad storage size %d\n", size);
+    }
+  return true;
+}
+
+bool set_reg (sim_t    *sim UNUSED,
+	      chip_t   *chip UNUSED,
+	      void     *data,
+	      size_t   size,
+	      uint64_t *p,
+	      int      arg UNUSED)
+{
+  switch (size)
+    {
+    case 1: *((uint8_t  *) data) = *p; break;
+    case 2: *((uint16_t *) data) = *p; break;
+    case 4: *((uint32_t *) data) = *p; break;
+    case 8: *((uint64_t *) data) = *p; break;
+    default:
+      fatal (3, "bad storage size %d\n", size);
+    }
+  return true;
+}
+
+
 // Common non-standard acccessor functions used for fields that
 // are internally stored as an array of digits, one digit per byte.
 // The external representation is packed into a single uint of an
 // appropriate size.
-bool get_digits (void *data, uint64_t *p, int arg)
+bool get_digits (sim_t    *sim UNUSED,
+		 chip_t   *chip UNUSED,
+		 void     *data,
+		 size_t   size UNUSED,
+		 uint64_t *p,
+		 int      arg)
 {
   uint64_t val = 0;
   uint8_t *d;
@@ -1786,7 +1821,12 @@ bool get_digits (void *data, uint64_t *p, int arg)
 }
 
 
-bool set_digits (void *data, uint64_t *p, int arg)
+bool set_digits (sim_t    *sim UNUSED,
+		 chip_t   *chip UNUSED,
+		 void     *data,
+		 size_t   size UNUSED,
+		 uint64_t *p,
+		 int      arg)
 {
   uint64_t val = *p;
   uint8_t *d;
@@ -1803,7 +1843,12 @@ bool set_digits (void *data, uint64_t *p, int arg)
 }
 
 
-bool get_bit_digits (void *data, uint64_t *p, int arg)
+bool get_bit_digits (sim_t    *sim UNUSED,
+		     chip_t   *chip UNUSED,
+		     void     *data,
+		     size_t   size UNUSED,
+		     uint64_t *p,
+		     int      arg)
 {
   uint64_t val = 0;
   uint8_t *d;
@@ -1819,7 +1864,12 @@ bool get_bit_digits (void *data, uint64_t *p, int arg)
 }
 
 
-bool set_bit_digits (void *data, uint64_t *p, int arg)
+bool set_bit_digits (sim_t    *sim UNUSED,
+		     chip_t   *chip UNUSED,
+		     void     *data,
+		     size_t   size UNUSED,
+		     uint64_t *p,
+		     int      arg)
 {
   uint64_t val = *p;
   uint8_t *d;
@@ -1836,7 +1886,12 @@ bool set_bit_digits (void *data, uint64_t *p, int arg)
 }
 
 
-bool get_bools (void *data, uint64_t *p, int arg)
+bool get_bools (sim_t    *sim UNUSED,
+		chip_t   *chip UNUSED,
+		void     *data,
+		size_t   size UNUSED,
+		uint64_t *p,
+		int      arg)
 {
   uint16_t val;
   bool *d;
@@ -1852,7 +1907,12 @@ bool get_bools (void *data, uint64_t *p, int arg)
   return true;
 }
 
-bool set_bools (void *data, uint64_t *p, int arg)
+bool set_bools (sim_t    *sim UNUSED,
+		chip_t   *chip UNUSED,
+		void     *data,
+		size_t   size UNUSED,
+		uint64_t *p,
+		int      arg)
 {
   uint16_t val;
   bool *d;
