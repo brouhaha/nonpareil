@@ -41,6 +41,7 @@ typedef enum
   event_save_completed,
   event_restore_starting,
   event_restore_completed,
+  event_remove_chip,
 
   event_key,        // arg1 is keycode (user), arg2 is new value (bool)
   event_set_flag,   // arg1 selects flag, arg2 is new value (bool)
@@ -154,7 +155,8 @@ plugin_module_t *sim_install_module (sim_t *sim,
 				     int port,
 				     bool mem_only);
 
-bool sim_remove_module (plugin_module_t *module);
+bool sim_remove_module (sim_t *sim,
+			plugin_module_t *module);
 
 
 /*
@@ -212,6 +214,9 @@ bool sim_create_page      (sim_t           *sim,
 			   uint8_t         page,
 			   bool            ram,
 			   plugin_module_t *module);
+bool sim_destroy_page     (sim_t           *sim,
+			   bank_t          bank,
+			   uint8_t         page);
 bool sim_get_page_info    (sim_t           *sim,
 			   bank_t          bank,
 			   uint8_t         page,
@@ -275,7 +280,7 @@ chip_t *sim_add_chip (sim_t              *sim,
 		      chip_callback_fn_t *callback_fn,
 		      void               *callback_ref);
 
-void sim_remove_chip (sim_t  *sim,
+bool sim_remove_chip (sim_t  *sim,
 		      chip_t *chip);
 
 

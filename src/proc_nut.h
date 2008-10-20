@@ -87,7 +87,7 @@ typedef struct
   bool write_enable;
   rom_word_t data [PAGE_SIZE];
   bool breakpoint [PAGE_SIZE];
-  // source_code_line_info_t *source_clde_line_info;
+  // source_code_line_info_t *source_code_line_info;
 } prog_mem_page_t;
 
 

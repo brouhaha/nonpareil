@@ -282,6 +282,20 @@ bool nut_create_page (sim_t           *sim,
   return true;
 }
 
+bool nut_destroy_page (sim_t           *sim,
+		       bank_t          bank,
+		       uint8_t         page)
+{
+  nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
+
+  if (! nut_reg->prog_mem_page [bank][page])
+    return false;  // doesn't exist!
+
+  free (nut_reg->prog_mem_page [bank][page]);
+  nut_reg->prog_mem_page [bank][page] = NULL;
+  return true;
+}
+
 bool nut_get_page_info (sim_t           *sim,
 			bank_t          bank,
 			uint8_t         page,
@@ -2282,6 +2296,7 @@ processor_dispatch_t nut_processor =
     .get_rom_page_size   = nut_get_rom_page_size,
     .get_max_rom_addr    = nut_get_max_rom_addr,
     .create_page         = nut_create_page,
+    .destroy_page        = nut_destroy_page,
     .get_page_info       = nut_get_page_info,
 
     .read_rom            = nut_read_rom,

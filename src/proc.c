@@ -636,8 +636,37 @@ plugin_module_t *sim_install_module (sim_t *sim,
 }
 
 
-bool sim_remove_module (plugin_module_t *module)
+bool sim_remove_module (sim_t *sim,
+			plugin_module_t *module)
 {
+  chip_t * chip;
+  plugin_module_t *m2;
+  int page, max_page;
+  int page_size;
+  int bank, max_bank;
+
+  max_bank = sim_get_max_rom_bank (sim);
+  page_size = sim_get_rom_page_size (sim);
+  max_page = sim_get_max_rom_addr (sim) / page_size;
+
+  for (chip = sim->first_chip; chip; chip = chip->next)
+    {
+      chip_t *next_chip = chip->next;
+      if (chip->module != module)
+	continue;
+      sim_remove_chip (sim, chip);
+      chip = next_chip;
+    }
+
+  // $$$ remove RAM
+
+  // remove ROM
+  for (page = 0; page < max_page; page++)
+    for (bank = 0; bank < max_bank; bank++)
+      if (sim_get_page_info (sim, bank, page, & m2, NULL, NULL) &&
+	  (m2 == module))
+	sim_destroy_page (sim, bank, page);
+
   if (module->name)
     free (module->name);
   free (module);
@@ -836,10 +865,16 @@ static void cmd_add_chip (sim_t *sim, sim_msg_t *msg)
 }
 
 
-static void cmd_remove_chip (sim_t *sim     UNUSED,
-			     sim_msg_t *msg UNUSED)
+static void cmd_remove_chip (sim_t *sim,
+			     sim_msg_t *msg)
 {
-  // $$$ more code needed here
+  // send chip event
+  chip_event (sim, msg->chip, event_remove_chip, 0, 0, NULL);
+
+  // free chip structure
+  remove_chip (msg->chip);
+
+  msg->reply = OK;
 }
 
 
@@ -1319,10 +1354,16 @@ chip_t *sim_add_chip (sim_t              *sim,
 }
 
 
-void sim_remove_chip (sim_t  *sim  UNUSED,
-		      chip_t *chip UNUSED)
+bool sim_remove_chip (sim_t  *sim,
+		      chip_t *chip)
 {
-  fatal (3, "sim_remove_chip() unimplemented\n");
+  sim_msg_t msg;
+
+  memset (& msg, 0, sizeof (sim_msg_t));
+  msg.cmd = CMD_REMOVE_CHIP;
+  msg.chip = chip;
+  send_cmd_to_sim_thread (sim, (gpointer) & msg);
+  return (msg.reply  == OK);
 }
 
 
@@ -1506,6 +1547,13 @@ bool sim_create_page      (sim_t           *sim,
 			   plugin_module_t *module)
 {
   return sim->proc->create_page (sim, bank, page, ram, module);
+}
+
+bool sim_destroy_page      (sim_t           *sim,
+			    uint8_t         bank,
+			    uint8_t         page)
+{
+  return sim->proc->destroy_page (sim, bank, page);
 }
 
 bool sim_get_page_info    (sim_t           *sim,
@@ -1969,6 +2017,8 @@ chip_t *install_chip (sim_t *sim,
 }
 
 
+// Only call this after the chip has been sent a remove event.  The chip
+// should already have freed its private data.
 void remove_chip (chip_t *chip)
 {
   if (chip->prev)
@@ -1980,9 +2030,6 @@ void remove_chip (chip_t *chip)
     chip->next->prev = chip->prev;
   else
     chip->sim->last_chip = chip->prev;
-
-  // $$$ maybe should call a function via the chip_detail to do this?
-  free (chip->chip_data);
 
   free (chip);
 }

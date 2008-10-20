@@ -115,6 +115,10 @@ typedef struct
 				bool            ram,
 				plugin_module_t *module);
 
+  bool (* destroy_page)        (sim_t           *sim,
+				bank_t          bank,
+				uint8_t         page);
+
   bool (* get_page_info)       (sim_t           *sim,
 				bank_t          bank,
 				uint8_t         page,
