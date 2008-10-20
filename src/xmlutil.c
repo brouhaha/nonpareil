@@ -29,7 +29,8 @@ MA 02111, USA.
 #include "util.h"
 #include "xmlutil.h"
 
-void xml_start_element (xmlTextWriterPtr writer, char *element_name)
+void xml_start_element (xmlTextWriterPtr writer,
+			const char *element_name)
 {
   if (xmlTextWriterStartElement (writer, BAD_CAST element_name) < 0)
     fatal (2, "can't start element\n");
@@ -44,8 +45,8 @@ void xml_end_element (xmlTextWriterPtr writer)
 
 
 void xml_write_element_string (xmlTextWriterPtr writer,
-			       char *element_name,
-			       char *value)
+			       const char *element_name,
+			       const char *value)
 {
   if (xmlTextWriterWriteElement (writer,
 				 BAD_CAST element_name, 
@@ -55,7 +56,7 @@ void xml_write_element_string (xmlTextWriterPtr writer,
 
 
 void xml_write_string_vformat (xmlTextWriterPtr writer,
-			       char *format,
+			       const char *format,
 			       va_list ap)
 {
   if (xmlTextWriterWriteVFormatString (writer, format, ap) < 0)
@@ -64,7 +65,7 @@ void xml_write_string_vformat (xmlTextWriterPtr writer,
 
 
 void xml_write_string_format (xmlTextWriterPtr writer,
-			      char *format,
+			      const char *format,
 			      ...)
 {
   va_list ap;
@@ -75,8 +76,8 @@ void xml_write_string_format (xmlTextWriterPtr writer,
 
 
 void xml_write_attribute_vformat (xmlTextWriterPtr writer,
-				  char *attribute_name,
-				  char *format,
+				  const char *attribute_name,
+				  const char *format,
 				  va_list ap)
 {
   if (xmlTextWriterWriteVFormatAttribute (writer,
@@ -88,8 +89,8 @@ void xml_write_attribute_vformat (xmlTextWriterPtr writer,
 
 
 void xml_write_attribute_format (xmlTextWriterPtr writer,
-				 char *attribute_name,
-				 char *format,
+				 const char *attribute_name,
+				 const char *format,
 				 ...)
 {
   va_list ap;
@@ -100,8 +101,8 @@ void xml_write_attribute_format (xmlTextWriterPtr writer,
 
 
 void xml_write_attribute_string (xmlTextWriterPtr writer,
-				 char *attribute_name,
-				 char *value)
+				 const char *attribute_name,
+				 const char *value)
 {
   if (xmlTextWriterWriteAttribute (writer, 
 				   BAD_CAST attribute_name, 
@@ -110,10 +111,10 @@ void xml_write_attribute_string (xmlTextWriterPtr writer,
 }
 
 
-xmlTextWriterPtr xml_write_document (char *fn,
-				     char *name,
-				     char *dtd_url,
-				     int compression)
+xmlTextWriterPtr xml_write_document (const char *fn,
+				     const char *name,
+				     const char *dtd_url,
+				     const int compression)
 {
   xmlOutputBufferPtr out;
   xmlTextWriterPtr writer;

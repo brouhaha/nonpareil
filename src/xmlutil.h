@@ -19,40 +19,41 @@ Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
 MA 02111, USA.
 */
 
-void xml_start_element (xmlTextWriterPtr writer, char *element_name);
+void xml_start_element (xmlTextWriterPtr writer,
+			const char *element_name);
 
 void xml_end_element (xmlTextWriterPtr writer);
 
 void xml_write_element_string (xmlTextWriterPtr writer,
-			       char *element_name,
-			       char *value);
+			       const char *element_name,
+			       const char *value);
 
 void xml_write_string_vformat (xmlTextWriterPtr writer,
-			       char *format,
+			       const char *format,
 			       va_list ap);
 
 void xml_write_string_format (xmlTextWriterPtr writer,
-			      char *format,
+			      const char *format,
 			      ...);
 
 void xml_write_attribute_vformat (xmlTextWriterPtr writer,
-				  char *attribute_name,
-				  char *format,
+				  const char *attribute_name,
+				  const char *format,
 				  va_list ap);
 
 void xml_write_attribute_format (xmlTextWriterPtr writer,
-				 char *attribute_name,
-				 char *format,
+				 const char *attribute_name,
+				 const char *format,
 				 ...);
 
 void xml_write_attribute_string (xmlTextWriterPtr writer,
-				 char *attribute_name,
-				 char *value);
+				 const char *attribute_name,
+				 const char *value);
 
-xmlTextWriterPtr xml_write_document (char *fn,
-				     char *name,
-				     char *dtd_url,
-				     int compression);  // 0-9, 0 = none
+xmlTextWriterPtr xml_write_document (const char *fn,
+				     const char *name,
+				     const char *dtd_url,
+				     const int compression);  // 0-9, 0 = none
 
 
 int xml_strcmp (const xmlChar *s1, const char *s2);
