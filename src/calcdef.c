@@ -26,8 +26,10 @@ MA 02111, USA.
 #include <string.h>
 
 #include <libxml/SAX.h>
+#include <libxml/xmlwriter.h>
 
 #include "util.h"
+#include "xmlutil.h"
 #include "display.h"
 #include "keyboard.h"
 #include "chip.h"
@@ -731,14 +733,6 @@ static void parse_char (calcdef_t *calcdef,
 }
 
 
-static xmlEntityPtr sax_get_entity (void *ref,
-				    const xmlChar *name)
-{
-  calcdef_t *calcdef UNUSED = ref;
-  return xmlGetPredefinedEntity (name);
-}
-
-
 typedef void element_handler_t (calcdef_t *calcdef,
 				const xmlChar **attrs);
 
@@ -797,48 +791,6 @@ static void sax_end_element (void *ref UNUSED,
 			     const xmlChar *name UNUSED)
 {
   sax_handler.characters = NULL;
-}
-
-
-static void sax_warning (void *ref,
-			 const char *msg,
-			 ...)
-{
-  calcdef_t *calcdef UNUSED = ref;
-  va_list ap;
-
-  va_start (ap, msg);
-  fprintf (stderr, "XML warning: ");
-  vfprintf (stderr, msg, ap);
-  va_end (ap);
-}
-
-
-static void sax_error (void *ref,
-		       const char *msg,
-		       ...)
-{
-  calcdef_t *calcdef UNUSED = ref;
-  va_list ap;
-
-  va_start (ap, msg);
-  fprintf (stderr, "XML warning: ");
-  vfprintf (stderr, msg, ap);
-  va_end (ap);
-}
-
-
-static void sax_fatal_error (void *ref,
-			     const char *msg,
-			     ...)
-{
-  calcdef_t *calcdef UNUSED = ref;
-  va_list ap;
-
-  va_start (ap, msg);
-  fprintf (stderr, "XML warning: ");
-  vfprintf (stderr, msg, ap);
-  va_end (ap);
 }
 
 
