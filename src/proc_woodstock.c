@@ -172,13 +172,19 @@ int woodstock_get_max_rom_addr (sim_t *sim UNUSED)
 bool woodstock_get_page_info (sim_t           *sim UNUSED,
 			      bank_t          bank,
 			      uint8_t         page,
-			      plugin_module_t **module)
+			      plugin_module_t **module,
+			      bool            *ram,
+			      bool            *write_enable)
 {
   act_reg_t *act_reg = get_chip_data (sim->first_chip);
   if (! (act_reg->bank_exists [page] & (1 << bank)))
     return false;
   if (module)
     *module = NULL;
+  if (ram)
+    *ram = false;
+  if (write_enable)
+    *write_enable = false;
   return true;
 }
 

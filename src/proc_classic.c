@@ -116,12 +116,18 @@ int classic_get_max_rom_addr (sim_t *sim UNUSED)
 bool classic_get_page_info (sim_t           *sim UNUSED,
 			    bank_t          bank,
 			    uint8_t         page,
-			    plugin_module_t **module)
+			    plugin_module_t **module,
+			    bool            *ram,
+			    bool            *write_enable)
 {
   if ((bank > MAX_BANK) || (page > MAX_PAGE))
     return false;
   if (module)
     *module = NULL;
+  if (ram)
+    *ram = false;
+  if (write_enable)
+    *write_enable = false;
   return true;
 }
 
