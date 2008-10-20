@@ -32,20 +32,19 @@ Needed urgently:
   Check scons install, Windows binary targets, haven't been tested in
   a while
 
-  Improve support for -41C .mod files
-	Make GUI track mod files in ports 1-4
+  Implement removal of -41C modules
 
   Add 15X with patched ROM.
 
   Better handling of three-position slide switches
 
+  Remove slide switches from 41C state save files
 
 Longer term:
 
   Improve support for -41C .mod files
 	Port 5-7 (or T, P, H) for 0x5000, 0x6000, 0x7000?
 	HP-IL module (w/ printer ROM enabled) would occupy ports P and H!
-
 
 Build process:
 
