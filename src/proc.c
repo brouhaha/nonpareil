@@ -230,14 +230,6 @@ static bool sim_read_mod1_page (sim_t           *sim,
 
   bank = mod1_page.Bank - 1;
 
-#if 0
-  if ((strncmp (mod1_page.Name, "Hepax", 5) == 0) && ((bank == 1) || (bank == 2)))
-    {
-      printf ("HEPX bank hack\n");
-      bank = 3 - bank;
-    }
-#endif
-
   if (mod1_page.Page <= 0x07)
     page = mod1_page.Page;
   else if (mod1_page.Page <= 0x0f)
@@ -255,7 +247,7 @@ static bool sim_read_mod1_page (sim_t           *sim,
 	page = 8;
       else
 	page = 8 + 2 * (port - 1);
-      if (sim_get_page_info (sim, mod1_page.Bank - 1, page, NULL))
+      if (sim_get_page_info (sim, mod1_page.Bank - 1, page, NULL, NULL, NULL))
 	page++;
     }
   else if ((mod1_page.Page == POSITION_EVEN) ||
@@ -280,13 +272,15 @@ static bool sim_read_mod1_page (sim_t           *sim,
       return false;
     }
 
-  if ((bank == 0) && mod1_page.RAM && sim_get_page_info (sim, bank, page, NULL))
+  if ((bank == 0) &&
+      mod1_page.RAM && 
+      sim_get_page_info (sim, bank, page, NULL, NULL, NULL))
     {
       // HEPAX RAM overlaid by ROM
       bank = 4;  // HIDDEN_BANK, which isn't visible here, alas
     }
 
-  if (! sim_create_page (sim, bank, page, module))
+  if (! sim_create_page (sim, bank, page, mod1_page.RAM, module))
     {
       fprintf (stderr, "Can't load ROM page as bank %d page %x, address space occupied\n", bank + 1, page);
       return false;
@@ -1508,17 +1502,20 @@ int sim_get_max_rom_addr  (sim_t *sim)
 bool sim_create_page      (sim_t           *sim,
 			   uint8_t         bank,
 			   uint8_t         page,
+			   bool            ram,
 			   plugin_module_t *module)
 {
-  return sim->proc->create_page (sim, bank, page, module);
+  return sim->proc->create_page (sim, bank, page, ram, module);
 }
 
 bool sim_get_page_info    (sim_t           *sim,
 			   uint8_t         bank,
 			   uint8_t         page,
-			   plugin_module_t **module)
+			   plugin_module_t **module,
+			   bool            *ram,
+			   bool            *write_enable)
 {
-  return sim->proc->get_page_info (sim, bank, page, module);
+  return sim->proc->get_page_info (sim, bank, page, module, ram, write_enable);
 }
 
 bool sim_read_rom  (sim_t      *sim,

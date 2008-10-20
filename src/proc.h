@@ -210,11 +210,14 @@ int sim_get_max_rom_addr  (sim_t *sim);
 bool sim_create_page      (sim_t           *sim,
 			   bank_t          bank,
 			   uint8_t         page,
+			   bool            ram,
 			   plugin_module_t *module);
 bool sim_get_page_info    (sim_t           *sim,
 			   bank_t          bank,
 			   uint8_t         page,
-			   plugin_module_t **module);
+			   plugin_module_t **module,
+			   bool            *ram,
+			   bool            *write_enable);
 
 bool sim_read_rom  (sim_t      *sim,
 		    bank_t     bank,

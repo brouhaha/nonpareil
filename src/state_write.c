@@ -182,27 +182,27 @@ static void write_chips (sim_t *sim,
 
 
 static void write_mem_loc (xmlTextWriterPtr writer,
+			   bool has_bank,
+			   bank_t bank,
 			   int addr,
 			   char *format,
 			   ...)
 {
   va_list ap;
   xml_start_element (writer, "loc");
+  if (has_bank)
+    xml_write_attribute_format (writer, "bank", "%d", bank);
   xml_write_attribute_format (writer, "addr", "%03x", addr);
-#ifdef WRITE_RANDOM_MEM
-  xml_write_attribute_format (writer, "data", "%014" PRIx64, get_random_data());
-#else
   va_start (ap, format);
   xml_write_attribute_vformat (writer, "data", format, ap);
   va_end (ap);
-#endif
   xml_end_element (writer);  // loc
 }
 
 
-static void write_memory (sim_t *sim,
-			  plugin_module_t *module,
-			  xmlTextWriterPtr writer)
+static void write_ram (sim_t *sim,
+		       plugin_module_t *module,
+		       xmlTextWriterPtr writer)
 {
   addr_t addr;
   addr_t max_ram;
@@ -221,10 +221,61 @@ static void write_memory (sim_t *sim,
   for (addr = 0; addr < max_ram; addr++)
     {
       if (sim_read_ram (sim, addr, & data))
-	write_mem_loc (writer, addr, "%014" PRIx64, data);
+	write_mem_loc (writer, false, 0, addr, "%014" PRIx64, data);
     }
 
   xml_end_element (writer);  // memory
+}
+
+
+static void write_rom (sim_t *sim,
+		       plugin_module_t *module,
+		       xmlTextWriterPtr writer)
+{
+  int page, max_page;
+  int page_size;
+  int bank, max_bank;
+  addr_t addr;
+  rom_word_t data;
+  plugin_module_t *m2;
+  bool ram;
+  bool write_enable;
+
+  // don't write mainframe ROM to state file
+  if (! module)
+    return;
+
+  max_bank = sim_get_max_rom_bank (sim);
+  page_size = sim_get_rom_page_size (sim);
+  max_page = sim_get_max_rom_addr (sim) / page_size;
+
+  for (page = 0; page < max_page; page++)
+    for (bank = 0; bank < max_bank; bank++)
+      if (sim_get_page_info (sim, bank, page, & m2, & ram, & write_enable) &&
+	  (m2 == module) &&
+	  ram)
+	{
+	  xml_start_element (writer, "memory");
+	  xml_write_attribute_string (writer, "as", "rom");
+	  xml_write_attribute_format (writer, "write_enable", "%d", write_enable);
+	  xml_write_attribute_format (writer, "bank", "%d", bank);
+	  xml_write_attribute_format (writer, "addr", "%04x", page * page_size);
+	  for (addr = page * page_size; addr < ((page + 1) * page_size); addr++)
+	    {
+	      if (sim_read_rom (sim, bank, addr, & data))
+		write_mem_loc (writer, true, bank, addr, "%03x", data);
+	    }
+	  xml_end_element (writer);  // memory
+	}
+}
+
+
+static void write_memory (sim_t *sim,
+			  plugin_module_t *module,
+			  xmlTextWriterPtr writer)
+{
+  write_ram (sim, module, writer);
+  write_rom (sim, module, writer);
 }
 
 

@@ -520,6 +520,6 @@ void debug_dump_rom  (gpointer callback_data,
 
   for (page = 0; page < 16; page++)
     for (bank = 0; bank < 5; bank++)
-      if (sim_get_page_info (dg_csim->sim, bank, page, NULL))
+      if (sim_get_page_info (dg_csim->sim, bank, page, NULL, NULL, NULL))
 	dump_rom_page (bank, page);
 }

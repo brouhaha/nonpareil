@@ -91,20 +91,32 @@ static bool nut_move_rom_page (sim_t *sim,
 {
   nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
 
-  if (! nut_get_page_info (sim, from_bank, from_page, NULL))
+  if (! nut_get_page_info (sim, from_bank, from_page, NULL, NULL, NULL))
     {
       fprintf (stderr, "HEPAX ROMBLK source bank %d page %x not allocated\n", from_bank, from_page);
       return false;
     }
-  if (nut_get_page_info (sim, to_bank, to_page, NULL))
+  if (nut_get_page_info (sim, to_bank, to_page, NULL, NULL, NULL))
     {
       fprintf (stderr, "HEPAX ROMBLK dest bank %d page %x already allocated\n", to_bank, to_page);
       return false;
     }
   if (preflight)
     return true;
+
+#ifdef HEPAX_DEBUG
+  printf ("HEPAX restore: before moving ROM:\n");
+  debug_nut_show_pages (sim);
+#endif
+
   nut_reg->prog_mem_page [to_bank][to_page] = nut_reg->prog_mem_page [from_bank][from_page];
   nut_reg->prog_mem_page [from_bank][from_page] = NULL;
+
+#ifdef HEPAX_DEBUG
+  printf ("HEPAX restore: after moving ROM:\n");
+  debug_nut_show_pages (sim);
+#endif
+
   return true;
 }
 
@@ -162,7 +174,7 @@ static bool hepax_move_rom_to_page (sim_t   *sim,
 		       false);
 
   // is there a hidden RAM page?
-  if (nut_get_page_info (sim, HIDDEN_BANK, hepax_reg->rom_page, NULL))
+  if (nut_get_page_info (sim, HIDDEN_BANK, hepax_reg->rom_page, NULL, NULL, NULL))
     {
       // yes, unhide
       nut_move_rom_page (sim,
@@ -195,20 +207,10 @@ static bool hepax_restore_rom_page (sim_t    *sim,
   if (! status)
     return false;
 
-#ifdef HEPAX_DEBUG
-  printf ("HEPAX restore: before moving ROM:\n");
-  debug_nut_show_pages (sim);
-#endif
-
   // now move the ROM page
   restored_rom_page = hepax_reg->rom_page;
   hepax_reg->rom_page = 8 + 2 * (hepax_reg->port - 1);
   hepax_move_rom_to_page (sim, restored_rom_page);
-
-#ifdef HEPAX_DEBUG
-  printf ("HEPAX restore: after moving ROM:\n");
-  debug_nut_show_pages (sim);
-#endif
 
   return true;
 }
@@ -227,8 +229,15 @@ static void hepax_op_write_protect_toggle (sim_t *sim,
 					   int opcode UNUSED)
 {
   nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
+  hepax_reg_t *hepax_reg = get_chip_data (nut_reg->hepax_chip);
+  bank_t bank = 0;
   uint8_t ram_page = nut_reg->c [0];
-  prog_mem_page_t *prog_mem_page = nut_reg->prog_mem_page [0][ram_page];
+  prog_mem_page_t *prog_mem_page;
+
+  if (ram_page == hepax_reg->rom_page)
+    bank = HIDDEN_BANK;
+
+  prog_mem_page = nut_reg->prog_mem_page [bank][ram_page];
 
   if ((! prog_mem_page) || ! (prog_mem_page->ram))
     {

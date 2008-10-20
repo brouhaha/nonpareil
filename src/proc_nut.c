@@ -247,20 +247,23 @@ void debug_nut_show_pages (sim_t *sim)
 	prog_mem_page_t *prog_mem_page = nut_reg->prog_mem_page [bank][page];
 	if (prog_mem_page)
 	  {
-	    printf ("page %x bank %d", page, bank);
+	    printf ("page %x bank %d:", page, bank);
+	    if (prog_mem_page->ram)
+	      printf ("  ram");
+	    if (prog_mem_page->write_enable)
+	      printf ("  write enable");
 	    if (prog_mem_page->module)
-	      {
-		printf (": module %s", plugin_module_get_name (prog_mem_page->module));
-	      }
+	      printf ("  module %s", plugin_module_get_name (prog_mem_page->module));
 	    printf ("\n");
 	  }
       }
 }
 
 
-bool nut_create_page (sim_t *sim,
-		      bank_t bank,
-		      uint8_t page,
+bool nut_create_page (sim_t           *sim,
+		      bank_t          bank,
+		      uint8_t         page,
+		      bool            ram,
 		      plugin_module_t *module)
 {
   nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
@@ -273,15 +276,18 @@ bool nut_create_page (sim_t *sim,
     }
 
   prog_mem_page = alloc (sizeof (prog_mem_page_t));
+  prog_mem_page->ram = ram;
   prog_mem_page->module = module;
   nut_reg->prog_mem_page [bank][page] = prog_mem_page;
   return true;
 }
 
-bool nut_get_page_info (sim_t          *sim,
-			bank_t         bank,
-			uint8_t        page,
-			plugin_module_t **module)
+bool nut_get_page_info (sim_t           *sim,
+			bank_t          bank,
+			uint8_t         page,
+			plugin_module_t **module,
+			bool            *ram,
+			bool            *write_enable)
 {
   nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
   prog_mem_page_t *prog_mem_page = nut_reg->prog_mem_page [bank][page];
@@ -290,6 +296,10 @@ bool nut_get_page_info (sim_t          *sim,
 
   if (module)
     *module = prog_mem_page->module;
+  if (ram)
+    *ram = prog_mem_page->ram;
+  if (write_enable)
+    *write_enable = prog_mem_page->write_enable;
   return true;
 }
 
@@ -355,7 +365,12 @@ static bool nut_set_rom_write_enable (sim_t      *sim,
   if (! prog_mem_page)  // does the page/bank exist?
     return false;
 
-  prog_mem_page->ram = true;
+  if (! prog_mem_page->ram && write_enable)
+    {
+      fprintf (stderr, "attempting to write enable ROM in page %x bank %d", page, bank);
+      return false;
+    }
+  
   prog_mem_page->write_enable = write_enable;
   return true;
 }

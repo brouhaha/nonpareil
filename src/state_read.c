@@ -49,6 +49,7 @@ typedef struct
   sim_t *sim;
   chip_t *chip;
   plugin_module_t *module;
+  bool mem_rom;
   bool skip_module;
 } sax_data_t;
 
@@ -230,24 +231,75 @@ static void parse_reg (sax_data_t *sdata, char **attrs)
 static void parse_memory (sax_data_t *sdata UNUSED,
 			  char **attrs UNUSED)
 {
-  ; // don't need to do anything
-  // someday we'll want to check the "as" attribute (address space)
+  int i;
+  bool got_as = false;
+  bool got_write_enable = false;
+  bool got_bank = false;
+  bool got_addr = false;
+  bool write_enable;
+  uint32_t bank;
+  uint32_t addr;
+  for (i = 0; attrs && attrs [i]; i += 2)
+    {
+      if (strcmp (attrs [i], "as") == 0)
+	{
+	  if (strcmp (attrs [i + 1], "ram") == 0)
+	    sdata->mem_rom = false;
+	  else if (strcmp (attrs [i + 1], "rom") == 0)
+	    sdata->mem_rom = true;
+	  got_as = true;
+	}
+      else if (strcmp (attrs [i], "write_enable") == 0)
+	{
+	  write_enable = str_to_bool (attrs [i + 1], NULL);
+	  got_write_enable = true;
+	}
+      else if (strcmp (attrs [i], "bank") == 0)
+	{
+	  bank = str_to_uint32 (attrs [i + 1], NULL, 10);
+	  got_bank = true;
+	}
+      else if (strcmp (attrs [i], "addr") == 0)
+	{
+	  addr = str_to_uint32 (attrs [i + 1], NULL, 16);
+	  got_addr = true;
+	}
+      else
+	warning ("unknown attribute '%s' in 'loc' element\n", attrs [i]);
+    }
+  if (! got_as)
+    fatal (3, "missing 'as' attribute in 'memory' element\n");
+  if (sdata->mem_rom && got_write_enable && got_bank && got_addr)
+    {
+      if (! sim_set_rom_write_enable (sdata->sim,
+				      bank,
+				      addr,
+				      write_enable))
+	fatal (3, "can't restore write enable\n");
+    }
 }
 
 
 static void parse_loc (sax_data_t *sdata, char **attrs)
 {
   int i;
+  bool got_bank = false;
   bool got_addr = false;
   bool got_data = false;
-  uint64_t addr;
+  uint32_t bank;
+  uint32_t addr;
   uint64_t data;
 
   for (i = 0; attrs && attrs [i]; i += 2)
     {
-      if (strcmp (attrs [i], "addr") == 0)
+      if (strcmp (attrs [i], "bank") == 0)
 	{
-	  addr = str_to_uint64 (attrs [i + 1], NULL, 16);
+	  bank = str_to_uint32 (attrs [i + 1], NULL, 16);
+	  got_bank = true;
+	}
+      else if (strcmp (attrs [i], "addr") == 0)
+	{
+	  addr = str_to_uint32 (attrs [i + 1], NULL, 16);
 	  got_addr = true;
 	}
       else if (strcmp (attrs [i], "data") == 0)
@@ -258,14 +310,26 @@ static void parse_loc (sax_data_t *sdata, char **attrs)
       else
 	warning ("unknown attribute '%s' in 'loc' element\n", attrs [i]);
     }
+  if (sdata->mem_rom && ! got_bank)
+    fatal (3, "missing 'bank' attribute in 'loc' element\n");
   if (! got_addr)
     fatal (3, "missing 'addr' attribute in 'loc' element\n");
   if (! got_data)
     fatal (3, "missing 'data' attribute in 'loc' element\n");
 
-  // write RAM
-  if (! sim_write_ram (sdata->sim, addr, & data))
-    fatal (3, "error writing '%014" PRIx64 "' to RAM addr %03x\n", data, addr);
+  if (sdata->mem_rom)
+    {
+      // write "ROM"
+      rom_word_t rom_word = data;
+      if (! sim_write_rom (sdata->sim, bank, addr, & rom_word))
+	fatal (3, "error writing '%03x" PRIx64 "' to ROM bank %d addr %04x\n", data, bank, addr);
+    }
+  else
+    {
+      // write RAM
+      if (! sim_write_ram (sdata->sim, addr, & data))
+	fatal (3, "error writing '%014" PRIx64 "' to RAM addr %03x\n", data, addr);
+    }
 }
 
 

@@ -112,12 +112,15 @@ typedef struct
   bool (* create_page)         (sim_t           *sim,
 				bank_t          bank,
 				uint8_t         page,
+				bool            ram,
 				plugin_module_t *module);
 
   bool (* get_page_info)       (sim_t           *sim,
 				bank_t          bank,
 				uint8_t         page,
-				plugin_module_t **module);
+				plugin_module_t **module,
+				bool            *ram,
+				bool            *write_enable);
 
   bool (* read_rom)            (sim_t      *sim,
 				bank_t     bank,

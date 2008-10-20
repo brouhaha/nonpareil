@@ -37,7 +37,10 @@
           index CDATA #IMPLIED>
 
 <!ELEMENT memory (loc*)>
-<!ATTLIST memory as CDATA #REQUIRED>
+<!ATTLIST memory as CDATA #REQUIRED
+	  write_enable CDATA #IMPLIED
+	  bank CDATA #IMPLIED
+	  addr CDATA #IMPLIED>
 
 <!ELEMENT loc EMPTY>
 <!ATTLIST loc

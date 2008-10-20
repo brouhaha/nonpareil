@@ -172,7 +172,7 @@ static void disassemble_all (sim_t *sim, uint32_t flags)
 
   for (bank = 0; bank < max_bank; bank++)
     for (page = 0; page < max_page; page++)
-      if (sim_get_page_info (sim, bank, page, NULL))
+      if (sim_get_page_info (sim, bank, page, NULL, NULL, NULL))
 	{
 	  fprintf (stderr, "disassembling bank %d page %d\n", bank, page);
 	  addr = page * page_size;
