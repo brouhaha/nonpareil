@@ -342,6 +342,18 @@ static void edit_reset (gpointer callback_data,
 }
 
 
+static uint8_t get_port_mask (sim_t *sim)
+{
+  int port;
+  uint8_t mask = 0;
+
+  for (port = 1; port <= 4; port++)
+    if (plugin_module_get_by_port (sim, port))
+      mask |= (1 << (port - 1));
+  return mask;
+}
+
+
 static void set_menu_enable (csim_t *csim,
 			     const gchar *path,
 			     gboolean enable)
@@ -350,6 +362,20 @@ static void set_menu_enable (csim_t *csim,
 
   menu_item = gtk_item_factory_get_widget (csim->main_menu_item_factory, path);
   gtk_widget_set_sensitive (GTK_WIDGET (menu_item), enable);
+}
+
+
+static void configure_configure_menu (csim_t *csim)
+{
+  uint8_t port_mask = get_port_mask (csim->sim);
+
+  set_menu_enable (csim,
+		   "<main>/Configure/Load Module",
+		   port_mask != 0xf);
+
+  set_menu_enable (csim,
+		   "<main>/Configure/Unload Module",
+		   port_mask != 0x0);
 }
 
 
@@ -380,44 +406,14 @@ typedef struct module_t
 GList *module_list;
 
 
-static uint8_t get_port_mask (sim_t *sim)
+static GtkWidget *create_port_frame (uint8_t port_mask,
+				     int *result_port)
 {
-  int port;
-  uint8_t mask = 0;
-
-  for (port = 1; port <= 4; port++)
-    if (plugin_module_get_by_port (sim, port))
-      mask |= (1 << (port - 1));
-  return mask;
-}
-
-
-static void configure_load_module (gpointer callback_data,
-				   guint    callback_action UNUSED,
-				   GtkWidget *widget        UNUSED)
-{
-  csim_t *csim = callback_data;
-  GtkWidget *dialog;
   GtkWidget *port_frame;
   GtkWidget *port_box;
   GtkWidget *first_port_radio_button = NULL;
-  GtkWidget *first_open_port_radio_button = NULL;
-  GtkFileFilter *mod_filter;
-  char *fn;
+  GtkWidget *first_enabled_port_radio_button = NULL;
   int port;
-  module_t *module;
-  uint8_t port_mask;
-
-  port_mask = get_port_mask (csim->sim);
-
-  dialog = gtk_file_chooser_dialog_new ("Load Module",
-					GTK_WINDOW (csim->main_window),
-					GTK_FILE_CHOOSER_ACTION_OPEN,
-					GTK_STOCK_CANCEL,
-					GTK_RESPONSE_CANCEL,
-					GTK_STOCK_OPEN,
-					GTK_RESPONSE_ACCEPT,
-					NULL);
 
   port_frame = gtk_frame_new ("Port");
   port_box = gtk_vbutton_box_new ();
@@ -436,27 +432,58 @@ static void configure_load_module (gpointer callback_data,
       else
 	button = gtk_radio_button_new_with_label_from_widget (GTK_RADIO_BUTTON (first_port_radio_button), label);
 
-      if (port_mask & (1 << (port - 1)))
+      if (! (port_mask & (1 << (port - 1))))
 	{
-	  // port already occupied, so disable button
 	  gtk_widget_set_sensitive (button, false);
 	}
-      else if (! first_open_port_radio_button)
-	first_open_port_radio_button = button;
+      else if (! first_enabled_port_radio_button)
+	first_enabled_port_radio_button = button;
 
       g_signal_connect (G_OBJECT (button),
 			"clicked",
 			G_CALLBACK (port_number_radio_button_callback),
-			& port);
+			result_port);
       gtk_container_add (GTK_CONTAINER (port_box), button);
     }
 
-  port = 1;
-  gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (first_open_port_radio_button),
+  *result_port = 1;
+
+  gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (first_enabled_port_radio_button),
 				true);
 
   gtk_container_add (GTK_CONTAINER (port_frame), port_box);
   gtk_widget_show_all (port_frame);
+  return port_frame;
+}
+
+
+static void configure_load_module (gpointer callback_data,
+				   guint    callback_action UNUSED,
+				   GtkWidget *widget        UNUSED)
+{
+  csim_t *csim = callback_data;
+  GtkWidget *dialog;
+  uint8_t port_mask;
+  int port;
+  GtkWidget *port_frame;
+  GtkFileFilter *mod_filter;
+  char *fn;
+  module_t *module;
+
+  dialog = gtk_file_chooser_dialog_new ("Load Module",
+					GTK_WINDOW (csim->main_window),
+					GTK_FILE_CHOOSER_ACTION_OPEN,
+					GTK_STOCK_CANCEL,
+					GTK_RESPONSE_CANCEL,
+					GTK_STOCK_OPEN,
+					GTK_RESPONSE_ACCEPT,
+					NULL);
+
+  // get mask of empty ports
+  port_mask = get_port_mask (csim->sim) ^ 0xf;
+
+  port_frame = create_port_frame (port_mask, & port);
+
   gtk_file_chooser_set_extra_widget (GTK_FILE_CHOOSER (dialog),
 				     port_frame);
 
@@ -501,15 +528,7 @@ static void configure_load_module (gpointer callback_data,
 
   module_list = g_list_append (module_list, module);
 
-  // mark port as occupied
-  port_mask |= (1 << (port - 1));
-
-  // all ports occupied?
-  if (port_mask == 0x0f)
-    set_menu_enable (csim, "<main>/Configure/Load Module", false);
-
-  // enable port unload module command
-  set_menu_enable (csim, "<main>/Configure/Unload Module", true);
+  configure_configure_menu (csim);
 }
 
 
@@ -521,8 +540,11 @@ static void configure_unload_module (gpointer callback_data,
   GtkWidget *dialog;
   GtkWidget *content_area;
   GtkWidget *label;
+  uint8_t port_mask;
+  int port;
+  GtkWidget *port_frame;
 
-  dialog = gtk_dialog_new_with_buttons ("Remove module",
+  dialog = gtk_dialog_new_with_buttons ("Unload module",
 					GTK_WINDOW (csim->main_window),
 					GTK_DIALOG_DESTROY_WITH_PARENT,
 					GTK_STOCK_CANCEL,
@@ -546,7 +568,12 @@ static void configure_unload_module (gpointer callback_data,
 			    G_CALLBACK (gtk_widget_destroy),
 			    dialog);
 
+  port_mask = get_port_mask (csim->sim);
+  port_frame = create_port_frame (port_mask, & port);
+
   gtk_widget_show_all (dialog);
+
+  configure_configure_menu (csim);
 }
 
 
@@ -617,6 +644,7 @@ static GtkWidget *create_menus (csim_t *csim,
 				 csim);
 
   set_menu_enable (csim, "<main>/Configure/Unload Module", false);
+  //configure_configure_menu (csim);
 
   gtk_window_add_accel_group (GTK_WINDOW (csim->main_window), accel_group);
   return (gtk_item_factory_get_widget (csim->main_menu_item_factory,
