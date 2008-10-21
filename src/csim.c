@@ -411,32 +411,23 @@ static GtkWidget *create_port_frame (csim_t *csim,
 				     int *result_port)
 {
   GtkWidget *port_frame;
-  //GtkWidget *port_box;
-  GtkWidget *port_table;
+  GtkWidget *port_box;
   GtkWidget *first_port_radio_button = NULL;
   GtkWidget *first_enabled_port_radio_button = NULL;
   int port;
 
   port_frame = gtk_frame_new ("Port");
-  //port_box = gtk_vbutton_box_new ();
-  port_table = gtk_table_new (4,  // rows
-			      2,  // columns
-			      false);  // homogeneous
+  port_box = gtk_vbutton_box_new ();
 
   for (port = 1; port <= 4; port++)
     {
       GtkWidget *button;
       plugin_module_t *module;
-      char label [2];
-      char port_name [30];
-      GtkWidget *port_name_label;
-
-      sprintf (label, "%d", port);
+      char label [48];
 
       module = plugin_module_get_by_port (csim->sim, port);
-      snprintf (port_name, sizeof (port_name), "%s",
+      snprintf (label, sizeof (label), "%d: %s", port,
 		module ? plugin_module_get_name (module) : "<empty>");
-      port_name_label = gtk_label_new (port_name);
 
       if (! first_port_radio_button)
 	{
@@ -447,10 +438,7 @@ static GtkWidget *create_port_frame (csim_t *csim,
 	button = gtk_radio_button_new_with_label_from_widget (GTK_RADIO_BUTTON (first_port_radio_button), label);
 
       if (! (port_mask & (1 << (port - 1))))
-	{
-	  gtk_widget_set_sensitive (button, false);
-	  gtk_widget_set_sensitive (port_name_label, false);
-	}
+	gtk_widget_set_sensitive (button, false);
       else if (! first_enabled_port_radio_button)
 	first_enabled_port_radio_button = button;
 
@@ -458,29 +446,7 @@ static GtkWidget *create_port_frame (csim_t *csim,
 			"clicked",
 			G_CALLBACK (port_number_radio_button_callback),
 			result_port);
-      //gtk_container_add (GTK_CONTAINER (port_box), button);
-      gtk_table_attach (GTK_TABLE (port_table),
-			button,
-			0,  // left attach
-			1,  // right_attach
-			port - 1,  // top_attach
-			port,  // bottom_attach,
-			GTK_SHRINK, // xoptions
-			GTK_SHRINK, // yoptions
-			0, // xpadding,
-			0); // ypadding
-
-      gtk_table_attach (GTK_TABLE (port_table),
-			port_name_label,
-			1,  // left attach
-			2,  // right_attach
-			port - 1,  // top_attach
-			port,  // bottom_attach,
-			GTK_EXPAND, // xoptions
-			GTK_SHRINK, // yoptions
-			0, // xpadding,
-			0); // ypadding
-
+      gtk_container_add (GTK_CONTAINER (port_box), button);
     }
 
   *result_port = 1;
@@ -488,8 +454,7 @@ static GtkWidget *create_port_frame (csim_t *csim,
   gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (first_enabled_port_radio_button),
 				true);
 
-  //gtk_container_add (GTK_CONTAINER (port_frame), port_box);
-  gtk_container_add (GTK_CONTAINER (port_frame), port_table);
+  gtk_container_add (GTK_CONTAINER (port_frame), port_box);
   gtk_widget_show_all (port_frame);
   return port_frame;
 }
