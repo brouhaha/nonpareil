@@ -406,24 +406,38 @@ typedef struct module_t
 GList *module_list;
 
 
-static GtkWidget *create_port_frame (uint8_t port_mask,
+static GtkWidget *create_port_frame (csim_t *csim,
+				     uint8_t port_mask,
 				     int *result_port)
 {
   GtkWidget *port_frame;
-  GtkWidget *port_box;
+  //GtkWidget *port_box;
+  GtkWidget *port_table;
   GtkWidget *first_port_radio_button = NULL;
   GtkWidget *first_enabled_port_radio_button = NULL;
   int port;
 
   port_frame = gtk_frame_new ("Port");
-  port_box = gtk_vbutton_box_new ();
+  //port_box = gtk_vbutton_box_new ();
+  port_table = gtk_table_new (4,  // rows
+			      2,  // columns
+			      false);  // homogeneous
 
   for (port = 1; port <= 4; port++)
     {
       GtkWidget *button;
+      plugin_module_t *module;
       char label [2];
+      char port_name [30];
+      GtkWidget *port_name_label;
 
       sprintf (label, "%d", port);
+
+      module = plugin_module_get_by_port (csim->sim, port);
+      snprintf (port_name, sizeof (port_name), "%s",
+		module ? plugin_module_get_name (module) : "<empty>");
+      port_name_label = gtk_label_new (port_name);
+
       if (! first_port_radio_button)
 	{
 	  button = gtk_radio_button_new_with_label (NULL, label);
@@ -435,6 +449,7 @@ static GtkWidget *create_port_frame (uint8_t port_mask,
       if (! (port_mask & (1 << (port - 1))))
 	{
 	  gtk_widget_set_sensitive (button, false);
+	  gtk_widget_set_sensitive (port_name_label, false);
 	}
       else if (! first_enabled_port_radio_button)
 	first_enabled_port_radio_button = button;
@@ -443,7 +458,29 @@ static GtkWidget *create_port_frame (uint8_t port_mask,
 			"clicked",
 			G_CALLBACK (port_number_radio_button_callback),
 			result_port);
-      gtk_container_add (GTK_CONTAINER (port_box), button);
+      //gtk_container_add (GTK_CONTAINER (port_box), button);
+      gtk_table_attach (GTK_TABLE (port_table),
+			button,
+			0,  // left attach
+			1,  // right_attach
+			port - 1,  // top_attach
+			port,  // bottom_attach,
+			GTK_SHRINK, // xoptions
+			GTK_SHRINK, // yoptions
+			0, // xpadding,
+			0); // ypadding
+
+      gtk_table_attach (GTK_TABLE (port_table),
+			port_name_label,
+			1,  // left attach
+			2,  // right_attach
+			port - 1,  // top_attach
+			port,  // bottom_attach,
+			GTK_EXPAND, // xoptions
+			GTK_SHRINK, // yoptions
+			0, // xpadding,
+			0); // ypadding
+
     }
 
   *result_port = 1;
@@ -451,7 +488,8 @@ static GtkWidget *create_port_frame (uint8_t port_mask,
   gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (first_enabled_port_radio_button),
 				true);
 
-  gtk_container_add (GTK_CONTAINER (port_frame), port_box);
+  //gtk_container_add (GTK_CONTAINER (port_frame), port_box);
+  gtk_container_add (GTK_CONTAINER (port_frame), port_table);
   gtk_widget_show_all (port_frame);
   return port_frame;
 }
@@ -482,7 +520,7 @@ static void configure_load_module (gpointer callback_data,
   // get mask of empty ports
   port_mask = get_port_mask (csim->sim) ^ 0xf;
 
-  port_frame = create_port_frame (port_mask, & port);
+  port_frame = create_port_frame (csim, port_mask, & port);
 
   gtk_file_chooser_set_extra_widget (GTK_FILE_CHOOSER (dialog),
 				     port_frame);
@@ -569,7 +607,9 @@ static void configure_unload_module (gpointer callback_data,
 			    dialog);
 
   port_mask = get_port_mask (csim->sim);
-  port_frame = create_port_frame (port_mask, & port);
+  port_frame = create_port_frame (csim, port_mask, & port);
+
+  gtk_container_add (GTK_CONTAINER (content_area), port_frame);
 
   gtk_widget_show_all (dialog);
 
