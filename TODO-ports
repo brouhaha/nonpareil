@@ -21,6 +21,17 @@ Ports:
       Cross-compiling GTK+ apps:
         http://live.gnome.org/GTK%2B/Win32/Apps
 
+      mingw32 on Fedora:
+        http://fedoraproject.org/wiki/MinGW
+
+        tools in /usr/i686-pc-mingw32/bin
+        DLLs in /usr/i686-pc-mingw32/sys-root/mingw/bin
+                /usr/i686-pc-mingw32/sys-root/mingw/lib/pango/1.6.0/modules
+                /usr/i686-pc-mingw32/sys-root/mingw/lib/gtk-2.0/2.10.0/loaders
+                /usr/i686-pc-mingw32/sys-root/mingw/lib/gtk-2.0/2.10.0/engines
+                /usr/i686-pc-mingw32/sys-root/mingw/lib/gtk-2.0/2.10.0/immodules
+                /usr/i686-pc-mingw32/sys-root/mingw/lib/gtk-2.0/modules
+
     Libraries and Toolkits:
       GTK+ for Windows:  http://www.gtk.org/download-windows.html
                          ftp://ftp.gtk.org/pub/gtk/v2.8/win32/
