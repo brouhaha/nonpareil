@@ -35,12 +35,18 @@ cross = build_env ['PLATFORM'] != build_env ['target']
 ming = build_env ['target'] == 'win32'
 
 if cross and ming and build_target_only:
-    pkg_config_cmd = 'PKG_CONFIG_PATH=/usr/local/i386-mingw32/lib/pkgconfig pkg-config --define-variable=includedir=/usr/local/i386-mingw32/include --define-variable=libdir=/usr/local/i386-mingw32/lib'
+    print 'cross and ming and build_target_only'
+    mingw32_root = '/usr/i686-pc-mingw32/sys-root/mingw'
+    pkg_config_cmd = 'PKG_CONFIG_PATH=' + mingw32_root + '/lib/pkgconfig pkg-config'
+    sdl_pkg_config_cmd = mingw32_root + '/bin/sdl-config'
+    build_env.Replace (CC = '/usr/bin/i686-pc-mingw32-gcc')
+    build_env.Append (CCFLAGS = ['-mms-bitfields'])
+    build_env.Replace (PROGSUFFIX = '.exe')
 else:
     pkg_config_cmd = 'pkg-config'
+    sdl_pkg_config_cmd = 'sdl-config'
 pkg_config_cmd += ' --cflags --libs '
-
-sdl_pkg_config_cmd = 'sdl-config --cflags --libs'
+sdl_pkg_config_cmd += ' --cflags --libs '
 
 build_env.Append (CPPPATH = ['.'])
 build_env.Append (CPPPATH = ['#/build/common'])  # generated includes
@@ -58,18 +64,6 @@ if build_env ['debug'] :
 else:
     build_env.Append (CCFLAGS = ['-O2'])
     build_env.Append (LINKFLAGS = ['-s'])  # strip executables
-
-if cross and ming and build_target_only:
-    build_env.Replace (CC = '/usr/local/bin/i386-mingw32-gcc')
-    build_env.Append (CCFLAGS = ['-mms-bitfields'])
-    build_env.Append (CPPPATH = ['/usr/local/i386-mingw32/include/gtk-2.0'])  # libpng
-    build_env.Append (CPPPATH = ['/usr/local/i386-mingw32/SDL-1.2.12/include'])
-    build_env.Append (LIBPATH = ['/usr/local/i386-mingw32/SDL-1.2.12/lib'])
-    build_env.Append (LIBS = ['libSDL'])
-    build_env.Append (LIBS = ['libxml2', 'libz', 'libiconv', 'libws2_32'])
-# We have to put libxml2 before libz, libiconv, libws2_32, or there are
-# unresolved dependencies.
-    build_env.Replace (PROGSUFFIX = '.exe')
 
 if ming and (build_target_only or not cross):
     build_env.Append (CPPDEFINES = [('MINGW', 1),
@@ -121,10 +115,6 @@ release_obj = release_env.Object ('release.c')
 common_objs.append (release_obj)
 
 build_env.ParseConfig(pkg_config_cmd + state_io_packages)
-if cross and ming and build_target_only:
-    # Ugly hack for library order problem building for Windows: libgsf-1
-    # requires libz, but -lz winds up too early in linker command line.
-    build_env.Append (LIBS = ['libz'])
 
 #-----------------------------------------------------------------------------
 # str2png
@@ -338,8 +328,7 @@ if build_env ['has_debugger_gui']:
     nonpareil_objs.append (nonpareil_env.Object (nonpareil_debugger_gui_srcs))
 
 nonpareil_env.ParseConfig (pkg_config_cmd + nonpareil_packages)
-if (not ming) or (cross and not build_target_only):
-    nonpareil_env.ParseConfig (sdl_pkg_config_cmd)
+nonpareil_env.ParseConfig (sdl_pkg_config_cmd)
 
 csim_env = nonpareil_env.Clone ()
 if not ming:
@@ -363,9 +352,6 @@ for src in nonpareil_csim_srcs:
 
 for src in nonpareil_srcs:
     nonpareil_objs.append (nonpareil_env.Object (src))
-
-if cross and ming and build_target_only and not build_env ['debug']:
-    nonpareil_env.Append (LINKFLAGS = ['-mwindows'])
 
 nonpareil = nonpareil_env.Program (target = 'nonpareil',
                                    source = (nonpareil_objs +
