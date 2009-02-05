@@ -81,8 +81,8 @@ typedef struct
 
   int prev_pc;  /* used to store complete five-digit octal address of instruction */
 
-  bool ext_flag [SSIZE];  /* external flags, e.g., slide switches,
-			     magnetic card inserted */
+  bool ext_flag [EXT_FLAG_SIZE];  /* external flags, e.g., slide switches,
+				     magnetic card inserted */
 
   // keyboard
   bool key_flag;      /* true if a key is down */
