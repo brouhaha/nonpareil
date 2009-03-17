@@ -7,31 +7,45 @@
 ;     5061-0459   (addresses 4000-5777) ROM/RAM
 
 ; s 1 = stack lift disable?
-; s 3 = radian angle mode (hardware switch)
-; s 5 = power
+; s 2 = 1 for FIX, 0 for SCI, ENG
+; s 3 -- NOT a hardware switch
+; s 5 = power low (hardware)
 ; s 10 = RCL prefix (s11 also set)
 ; s 11 = STO/RCL prefix
 ; s 13 = f prefix (s 14 set also)
 ; s 14 = prefix (f or g)
 
+; f = display digits
+;
 ; m2:
 ;	digit 12: trig mode
 ;	digits ?-?: TVM flags
+;	digit 2: 1 for SCI, 0 for FIX, ENG
 ;	digit 0: ?
 
 ; reg 0-9 = user reg
-; reg 4 = stat
-; reg 5 = stat
-; reg 6 = stat
+; reg 4 = stat n
+; reg 5 = stat Sx
+; reg 6 = stat Sx^2
+; reg 7 = stat Sy
+; reg 8 = stat Sy^2
+; reg 9 = stat Sxy
+; reg 10 = n
+; reg 11 = i
+; reg 12 = PMT
+; reg 13 = ???
+; reg 14 = ???
 ; reg 15 = LASTx
 
 	.arch woodstock
 
 	display off
-	1 -> s 2
-	a + 1 -> a[w]
-	a + 1 -> a[w]
+	1 -> s 2		; set FIX mode
+
+	a + 1 -> a[w]		; set display digits to 2
+	a + 1 -> a[w]		;   note - assumes A clear coming out of reset!
 	f exchange a[x]
+
 	c -> data address
 	clear data registers
 	m2 exchange c
@@ -59,7 +73,7 @@ L0030:	if 1 = s 11		; arithmetic keys
 L0032:	stack -> a
 L0033:	clear status
 	decimal
-	c -> register 15
+	c -> register 15	; save LASTx
 	return
 	
 L0037:	jsb L0171		; RCL/PV/NPV key
@@ -528,8 +542,8 @@ L0657:	m1 -> c
 	f -> a[x]
 	if 1 = s 0
 	  then go to L0705
-	if 0 = s 2
-	  then go to L0553
+	if 0 = s 2		; FIX mode?
+	  then go to L0553	;   no
 	a exchange b[x]
 	if c[xs] = 0
 	  then go to L0607
@@ -548,8 +562,8 @@ L0705:	p <- 4
 	jsb L0626
 	go to L0566
 
-L0710:	if 0 = s 2
-	  then go to L0757
+L0710:	if 0 = s 2		; FIX mode?
+	  then go to L0757	;   no
 	if 1 = s 0
 	  then go to L0757
 	p - 1 -> p
@@ -1000,8 +1014,9 @@ op_fv:	b exchange c[w]		; f FV function
 	p <- 3
 	go to L1675
 
-L1511:	jsb L1765
-	c + 1 -> c[xs]
+; f SCI function
+op_sci:	jsb L1765		
+	c + 1 -> c[xs]		; m2 [xs] = 1 for SCI (vs. 0 for ENG)
 	if n/c go to L1750
 
 L1514:	a exchange c[x]		; digit has completed a STO/RCL sequence
@@ -1129,11 +1144,12 @@ L1656:	if b[xs] = 0
 	  then go to L1610
 	go to L1456
 
-L1661:	go to L1747		; f ENG function
-	go to L1511		; f SCI function
+	go to op_eng		; f ENG function
+	go to op_sci		; f SCI function
 
-L1663:	jsb L1765		; f FIX function
-	1 -> s 2
+; f FIX function
+op_fix:	jsb L1765		; clear mode
+	1 -> s 2		; set flag for RIX
 	go to L1750
 
 op_n:	b exchange c[w]		; f n function
@@ -1198,7 +1214,8 @@ L1744:	select rom 05 (L2745)
 L1745:	delayed rom 04
 	go to L2375
 
-L1747:	jsb L1765
+; f ENG function
+op_eng:	jsb L1765
 L1750:	f exchange a[x]
 L1751:	m2 exchange c
 	go to done_x2
@@ -1219,7 +1236,7 @@ L1765:	clear status
 	1 -> s 12
 	delayed rom 00
 	jsb L0201
-	0 -> s 2
+	0 -> s 2			; set non-FIX mode
 	m2 exchange c
 	0 -> c[xs]
 	return
@@ -1334,7 +1351,8 @@ L2133:	if 0 = s 13
 L2137:	delayed rom 05
 	go to L2422
 
-op_npv:	c -> register 15	; g NPV function
+; g NPV function	
+op_npv:	c -> register 15	; save LASTx
 	register -> c 8
 	c -> a[w]
 	jsb L2315
@@ -1359,8 +1377,9 @@ op_npv:	c -> register 15	; g NPV function
 done_x6:
 	select rom 02 (done_x5)
 
+; g %Sigman function
 op_pct_sigma:
-	c -> register 15	; g %Sigman function
+	c -> register 15	; save LASTx
 	c -> a[w]
 	register -> c 5
 	go to L2372
@@ -1515,8 +1534,9 @@ L2360:	jsb L2315
 	c + 1 -> c[x]
 	return
 
+; g Delta % function
 op_delta_pct:
-	c -> register 15	; g Delta % function
+	c -> register 15	; save LASTx
 	y -> a
 	a exchange c[w]
 	jsb L2076
@@ -1527,7 +1547,7 @@ L2372:	jsb L2137
 	go to L1543
 
 L2375:	decimal
-	c -> register 15
+	c -> register 15	; save LASTx
 	a exchange c[w]
 	c -> data address
 	data -> c
@@ -2420,7 +2440,8 @@ L4016:	register -> c 7
 
 L4020:	select rom @11 (L4421)
 
-op_lr:	c -> register 15	; g L.R. function
+; g L.R. function	
+op_lr:	c -> register 15	; save LASTx
 	stack -> a
 L4023:	jsb L4375
 L4024:	jsb L4261
@@ -2498,7 +2519,7 @@ L4106:	c -> register 11
 	m1 exchange c
 	0 -> c[w]
 	c -> register 12
-L4123:	c -> register 15
+L4123:	c -> register 15	; save LASTx
 	register -> c 11
 	c -> a[w]
 	register -> c 12
@@ -2568,7 +2589,8 @@ L4174:	m1 -> c
 	jsb L4101
 	go to L4174
 
-op_s:	c -> register 15	; g s function
+; g s function
+op_s:	c -> register 15	; save LASTx
 	stack -> a
 	jsb L4101
 L4223:	jsb L4261
@@ -2606,7 +2628,8 @@ L4253:	0 -> c[s]
 L4261:	delayed rom 05
 	go to L2415
 
-op_r:	c -> register 15	; g r function
+; g r function
+op_r:	c -> register 15	; save LASTx
 	1 -> s 12
 	go to L4023
 
