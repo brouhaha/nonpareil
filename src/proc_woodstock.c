@@ -40,6 +40,9 @@ MA 02111, USA.
 #include "proc_woodstock.h"
 
 
+#undef DIY_TRACE_HACK
+
+
 #define MAX_RAM_ADDR 256
 
 #undef DEBUG_BANK_SWITCH
@@ -1390,10 +1393,15 @@ static void log_print_reg (sim_t *sim, char *label, reg_t reg)
 {
   int i;
   log_printf (sim, "%s", label);
+#ifdef DIY_TRACE_HACK
+  for (i = WSIZE - 1; i >= 0; i--)
+    log_printf (sim, "%X", reg [i]);
+#else
   for (i = WSIZE - 1; i >= 0; i--)
     log_printf (sim, "%x", reg [i]);
   log_printf (sim, "\n");
   log_send (sim);
+#endif
 }
 
 static void woodstock_print_state (sim_t *sim)
@@ -1406,6 +1414,25 @@ static void woodstock_print_state (sim_t *sim)
   bank = get_effective_bank (act_reg, act_reg->prev_pc);
   mapped_addr = bank * (MAX_PAGE * PAGE_SIZE) + act_reg->prev_pc;
 
+#ifdef DIY_TRACE_HACK
+  log_print_reg (sim, "A:", act_reg->a);
+  log_print_reg (sim, " B:", act_reg->b);
+  log_print_reg (sim, " C:", act_reg->c);
+  log_printf (sim, "\n");
+  log_send (sim);
+
+  log_print_reg (sim, "M:", act_reg->m1);
+  log_print_reg (sim, " N:", act_reg->m2);
+
+  log_printf (sim, " P:%x F:%x C:%x S:", act_reg->p, act_reg->f, act_reg->carry);
+  for (i = 0; i < SSIZE; i++)
+    log_printf (sim, "%d", get_s_bit (sim, i));
+  log_printf (sim, "\n");
+  log_send (sim);
+
+  log_printf (sim, "%06o: %06o\n", mapped_addr, woodstock_get_ucode (act_reg, act_reg->prev_pc));
+  log_send (sim);
+#else
   log_printf (sim, "pc=%05o  radix=%d  p=%d  f=%x  stat:",
 	  mapped_addr, arithmetic_base (act_reg), act_reg->p, act_reg->f);
   for (i = 0; i < SSIZE; i++)
@@ -1438,6 +1465,8 @@ static void woodstock_print_state (sim_t *sim)
 	log_printf (sim, "%s", buf);
     }
   log_printf (sim, "\n");
+#endif
+
   log_send (sim);
 }
 
@@ -1727,6 +1756,7 @@ static bool woodstock_write_ram (sim_t *sim, addr_t addr, uint64_t *val)
 static void woodstock_reset (sim_t *sim)
 {
   act_reg_t *act_reg = get_chip_data (sim->first_chip);
+  int i;
 
   sim->cycle_count = 0;
 
@@ -1740,7 +1770,13 @@ static void woodstock_reset (sim_t *sim)
   act_reg->sp = 0;
 
   op_clear_reg (sim, 0);
-  op_clear_s (sim, 0);
+
+  for (i = 0; i < SSIZE; i++)
+    act_reg->s [i] = 0;
+
+  for (i = 0; i < EXT_FLAG_SIZE; i++)
+    act_reg->ext_flag [i] = 0;
+
   act_reg->p = 0;
   memset (act_reg->p_change, 0, sizeof (act_reg->p_change));
 
