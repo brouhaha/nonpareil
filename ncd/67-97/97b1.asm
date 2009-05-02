@@ -36,23 +36,24 @@ write_mode    .equ 11
 
 ; bank 1 quad 1: printer mnemonics
 
-        go to L12375
-        go to L12326
-        go to L12372
-        go to L12032
-        go to L12027
-        go to L12040
-        go to L12275
-        go to L12265
-        go to L12135
-        go to L12121
-        go to L12154
-        go to L12247
-        go to L12171
-        go to L12241
-        go to L12206
+        go to mnem_0x
+        go to mnem_1x
+        go to mnem_2x
+        go to mnem_3x
+        go to menm_4x
+        go to mnem_5x
+        go to mnem_6x	; DSP n, CF n, spare, DSP (i)
+        go to mnem_7x	; RCL n, RCL A-E, RCL I
+        go to mnem_8x	; STO div 0-9, SF n, spare, STO div i
+        go to mnem_9x	; STO 0-9, STO A-E, STO I
+        go to mnem_ax	; STO - 0-9, GSB f a-e, STO - (i)
+        go to mnem_bx	; GSB 0-9, GSB A-E, GSB (i)
+        go to mnem_cx	; STO + 0-9, GTO f a-e, STO + (i)
+        go to mnem_dx	; GTO 0-9, GTO A-E, GTO (i)
+        go to mnem_ex	; STO * 0-9, LBL f a-e, STO * (i)
 
-        jsb S12352
+mnem_fx:		; LBL 0-9, LBL A-E, spare
+        jsb m_lbl_common
         p <- 6
         load constant 2
         load constant 1
@@ -61,17 +62,21 @@ write_mode    .equ 11
         load constant 1
         go to L12060
 
-L12027:  p <- 6
+menm_4x:
+	p <- 6
         load constant 1
         load constant 6
-L12032:  p <- 3
+mnem_3x:
+	p <- 3
         load constant 8
         p <- 12
-        shift left a[x]
+
+        shift left a[x]			; table at %13000 (30 at 13060, etc.)
         delayed rom @06
         a -> rom address
 
-L12040:  load constant 9
+mnem_5x:
+	load constant 9
         load constant 0
         load constant 0
         load constant 4
@@ -85,7 +90,7 @@ L12040:  load constant 9
         p <- 10
         shift left a[x]
         delayed rom @07
-        a -> rom address
+        a -> rom address	; table at %13520
 
 L12057:  0 -> c[s]
 L12060:  return
@@ -125,9 +130,10 @@ L12112:  load constant 1
         a - c -> c[p]
         return
 
-L12121:  load constant 0
+mnem_9x:
+	load constant 0			; char 0x03 = 'O'
         load constant 3
-        jsb S12227
+        jsb m_sto_common		; get "ST"
         p <- 8
         shift right c[wp]
         shift right c[wp]
@@ -137,69 +143,81 @@ L12127:  jsb S12061
         c - 1 -> c[xs]
         c + 1 -> c[m]
         if n/c go to L12057
-L12135:  load constant 2
+
+mnem_8x:
+	load constant 2			; char 0x2c = divide symbol
         load constant 12
-        jsb S12227
+        jsb m_sto_common		; get "ST"
         load constant 10
         load constant 4
         jsb S12061
         if c[s] # 0
           then go to L12057
-        p <- 12
-        load constant 1
+
+        p <- 12				; SF 0-3
+        load constant 1				; character 0x15 = 'F'
         load constant 5
-        load constant 6
+        load constant 6				; character 0x06 = 'S'
         jsb S12234
         load constant 1
-        go to L12315
+        go to m_flag_common
 
-L12154:  load constant 3
+mnem_ax:
+	load constant 3				; character 0x3b = '-'
         load constant 11
-        jsb S12227
+        jsb m_sto_common		; get "ST"
         load constant 12
         load constant 5
         jsb S12061
         if c[s] # 0
           then go to L12057
-        p <- 12
-        jsb S12261
+
+        p <- 12				; GSB a-e
+        jsb m_gsb_common
         load constant 2
         load constant 3
-        go to L12223
+        go to lc_suffix
 
-L12171:  load constant 3
+mnem_cx:
+	load constant 3			; char 0x3c = '+'
         load constant 12
-        jsb S12227
+        jsb m_sto_common		; get "ST"
         load constant 13
         load constant 5
         jsb S12061
         if c[s] # 0
           then go to L12057
-        p <- 12
-        jsb S12254
-        load constant 2
-        load constant 2
-        go to L12223
 
-L12206:  load constant 2
+        p <- 12				; GTO a-e
+        jsb m_gto_common
+        load constant 2
+        load constant 2
+        go to lc_suffix
+
+mnem_ex:
+	load constant 2			; char 0x2f = multiply symbol
         load constant 15
-        jsb S12227
+        jsb m_sto_common		; get "ST"
         load constant 11
         load constant 5
         jsb S12061
         if c[s] # 0
           then go to L12057
-        p <- 12
-        jsb S12352
+
+        p <- 12				; LBL a-e
+        jsb m_lbl_common
         load constant 2
         load constant 1
         c + 1 -> c[s]
-L12223:  load constant 1
+lc_suffix:
+	load constant 1
         load constant 6
         c + 1 -> c[xs]
         if n/c go to L12060
-S12227:  load constant 7
-        load constant 6
+
+m_sto_common:
+	load constant 7			; 'T'
+        load constant 6			; 'S'
         load constant 3
         load constant 5
         return
@@ -210,56 +228,64 @@ S12234:  load constant 0
         load constant 2
         return
 
-L12241:  jsb S12254
+mnem_dx:
+	jsb m_gto_common
         p <- 6
         load constant 2
         load constant 2
 L12245:  jsb S12061
         go to L12057
 
-L12247:  jsb S12261
+mnem_bx:
+	jsb m_gsb_common
         p <- 6
-        load constant 2
+        load constant 2			; character 0x02 = 'G'
         load constant 3
         go to L12245
 
-S12254:  load constant 0
-        load constant 3
-        load constant 7
-L12257:  load constant 2
+m_gto_common:
+        load constant 0
+        load constant 3			; character 0x03 = 'O'
+        load constant 7			; character 0x07 = 'T'
+L12257: load constant 2
         return
 
-S12261:  load constant 0
-        load constant 11
-        load constant 6
+m_gsb_common:
+        load constant 0
+        load constant 11		; character 0x0b = 'B'
+        load constant 6			; character 0x06 = 'S'
         go to L12257
 
-L12265:  load constant 0
-        load constant 1
-        load constant 12
-        load constant 5
+mnem_7x:
+	load constant 0
+        load constant 1			; 'L'
+        load constant 12		; 'C'
+        load constant 5			; 'R'
         p <- 6
         load constant 3
         load constant 6
         go to L12127
 
-L12275:  load constant 0
-        load constant 4
-        load constant 6
-        load constant 13
+mnem_6x:
+	load constant 0
+        load constant 4			; 'P'
+        load constant 6			; 'S'
+        load constant 13		; 'D'
         p <- 6
         load constant 14
         load constant 3
         jsb S12061
         if c[s] # 0
           then go to L12057
-        p <- 12
-        load constant 1
+
+        p <- 12				; CF 0-3
+        load constant 1				; character 0x15 = 'F'
         load constant 5
-        load constant 12
+        load constant 12			; character 0x0c = 'C'
         jsb S12234
         load constant 2
-L12315:  load constant 0
+m_flag_common:
+	load constant 0
         c - 1 -> c[p]
         a exchange c[x]
         p <- 2
@@ -268,7 +294,9 @@ L12315:  load constant 0
         p <- 1
         a - c -> c[p]
         if n/c go to L12057
-L12326:  load constant 15
+
+mnem_1x:
+	load constant 15
         load constant 14
         load constant 14
         jsb S12061
@@ -284,17 +312,18 @@ L12336:  0 -> a[x]
         load constant 3
         a exchange c[x]
         shift right a[x]
-        go to L12375
+        go to mnem_0x
 
 L12346:  0 -> c[w]
         p <- 12
         0 -> a[xs]
         a -> rom address
 
-S12352:  load constant 0
-        load constant 1
-        load constant 11
-        load constant 1
+m_lbl_common:
+        load constant 0
+        load constant 1			; character 0x01 = 'L'
+        load constant 11		; character 0x0b = 'B'
+        load constant 1			; character 0x01 = 'L'
         return
 
 L12357:  load constant 1
@@ -309,78 +338,83 @@ L12365:  load constant 4
         load constant 15
         return
 
-L12372:  p <- 6
+mnem_2x:
+	p <- 6
         load constant 1
         load constant 6
-L12375:  p <- 12
+
+mnem_0x:
+	p <- 12
         shift left a[x]
         a -> rom address
 
-; addr 12400:
-        go to L12546
-        go to L12713
-        go to L12645
-        go to L12652
-        go to L12657
-        go to L12664
-        go to L12555
-        go to L12562
-        go to L12567
-        go to L12574
-        go to L12602
-        go to L12611
-        go to L12620
-        go to L12633
-        go to L12671
+; addr 12400: mnemonic table 0x
+        go to m_rs
+        go to m_recip
+        go to m_square
+        go to m_sqrt
+        go to m_percent
+        go to m_sigma_plus
+        go to m_y_to_x
+        go to m_ln
+        go to m_exp
+        go to m_r_to_p
+        go to m_sin
+        go to m_cos
+        go to m_tan
+        go to m_p_to_r
+        go to m_rtn
 
+m_rcl_sigma:
         load constant 0
-        load constant 1
-        load constant 12
-        load constant 5
+        load constant 1			; 'L'
+        load constant 12		; 'C'
+        load constant 5			; 'R'
         p <- 6
         load constant 3
         load constant 6
         jsb S12504
         load constant 3
         load constant 8
-        go to L12523
+        go to cm_plus_6
 
 m_eex:  load constant 2		; EEX
         load constant 4			; 'X'
         load constant 14		; 'E'
         load constant 14		; 'E'
         jsb S12507
-        go to L12526
+        go to cm_plus_3
 
-; addr 12440:
-        go to L12743
-        go to L12640
-        go to L12722
-        go to L12727
-        go to L12532
-        go to L12517
-        go to L12540
-        go to L12677
-        go to L12705
-        go to L12464
-        go to L12601
-        go to L12610
-        go to L12617
-        go to L12734
+; addr 12440: mnemonic table 2x
+        go to m_pse
+        go to m_factorial
+        go to m_mean
+        go to m_s
+        go to m_percent_change
+        go to m_sigma_minus
+        go to m_abs
+        go to m_log10
+        go to m_10_to_x
+        go to m_int
+        go to m_asin
+        go to m_acos
+        go to m_atan
+        go to m_frac
 
+m_rnd:
         load constant 0
-        load constant 13
-        load constant 0
-        load constant 5
+        load constant 13		; character 0x0d = 'D'
+        load constant 0			; character 0x00 = 'N'
+        load constant 5			; character 0x05 = 'R'
         jsb S12507
-        go to L12525
+        go to cm_plus_4
 
-L12464:  load constant 0
-        load constant 7
-        load constant 0
-        load constant 15
+m_int:  load constant 0
+        load constant 7			; character 0x07 = 'T'
+        load constant 0			; character 0x00 = 'N'
+        load constant 15		; character 0x0f = 'I'
         jsb S12506
-        go to L12525
+        go to cm_plus_4
 
         go to m_decimal		; 0x1a decimal
         go to m_enter		; 0x1b ENT^
@@ -391,7 +425,7 @@ L12464:  load constant 0
         load constant 14
         load constant 12
         jsb S12507
-        go to L12525
+        go to cm_plus_4
 
 S12503:  c + 1 -> c[m]
 S12504:  c + 1 -> c[m]
@@ -406,87 +440,92 @@ L12511:  p <- 4
         p <- 2
         return
 
-L12517:  load constant 11
-        load constant 11
-        load constant 8
+m_sigma_minus:
+	load constant 11
+        load constant 11		; character 0x3b = '-'
+        load constant 8			; character 0x28 = sigma
         jsb S12504
-L12523:  c + 1 -> c[m]
-L12524:  c + 1 -> c[m]
-L12525:  c + 1 -> c[m]
-L12526:  c + 1 -> c[m]
-L12527:  c + 1 -> c[m]
-L12530:  c + 1 -> c[m]
+
+cm_plus_6:  c + 1 -> c[m]
+cm_plus_5:  c + 1 -> c[m]
+cm_plus_4:  c + 1 -> c[m]
+cm_plus_3:  c + 1 -> c[m]
+cm_plus_2:  c + 1 -> c[m]
+cm_plus_1:  c + 1 -> c[m]
         return
 
-L12532:  load constant 1
-        load constant 3
-        load constant 12
-        load constant 8
+m_percent_change:
+	load constant 1
+        load constant 3			; character 0x13 = 'H'
+        load constant 12		; character 0x0c = 'C'
+        load constant 8			; character 0x08 = '%'
         jsb S12504
-        go to L12524
+        go to cm_plus_5
 
-L12540:  load constant 0
-        load constant 6
-        load constant 11
-        load constant 10
+m_abs:  load constant 0
+        load constant 6			; character 0x06 = 'S'
+        load constant 11		; character 0x0b = 'B'
+        load constant 10		; character 0x0a = 'A'
         jsb S12506
-        go to L12530
+        go to cm_plus_1
 
-L12546:  load constant 2
+m_rs:   load constant 2			; char 0x2b = '/'
         load constant 11
-        load constant 5
+        load constant 5			; 'R'
         jsb S12504
         load constant 1
-        load constant 6
-        go to L12530
+        load constant 6			; 'S'
+        go to cm_plus_1
 
-L12555:  load constant 5
-        load constant 9
-        load constant 0
+m_y_to_x:
+	load constant 5
+        load constant 9			; character 0x19 = superscript 'x'
+        load constant 0			; character 0x10 = 'Y'
         jsb S12506
-        go to L12530
+        go to cm_plus_1
 
-L12562:  load constant 0
-        load constant 0
-        load constant 1
+m_ln:   load constant 0
+        load constant 0			; character 0x00 = 'N'
+        load constant 1			; character 0x01 = 'L'
         jsb S12506
-        go to L12527
+        go to cm_plus_2
 
-L12567:  load constant 5
-        load constant 9
-        load constant 14
+m_exp:  load constant 5
+        load constant 9			; character 0x19 = superscript 'x'
+        load constant 14		; character 0x1e = 'e'
         jsb S12506
-        go to L12526
+        go to cm_plus_3
 
-L12574:  load constant 4
-        load constant 4
-        load constant 7
+m_r_to_p:
+	load constant 4
+        load constant 4			; character 0x04 = 'P'
+        load constant 7			; character 0x17 = right arrow
         jsb S12506
-        go to L12525
+        go to cm_plus_4
 
-L12601:  jsb S12626
-L12602:  load constant 0
-        load constant 0
-        load constant 15
-        load constant 6
+m_asin: jsb S12626
+m_sin:  load constant 0
+        load constant 0			; 'N'
+        load constant 15		; 'I'
+        load constant 6			; 'S'
         jsb S12505
-        go to L12530
+        go to cm_plus_1
 
-L12610:  jsb S12626
-L12611:  load constant 0
-        load constant 6
-        load constant 3
-        load constant 12
+m_acos: jsb S12626
+m_cos:  load constant 0
+        load constant 6			; 'S'
+        load constant 3			; 'O'
+        load constant 12		; 'C'
         jsb S12505
-        go to L12527
+        go to cm_plus_2
 
-L12617:  jsb S12626
-L12620:  load constant 0
-        load constant 0
-        load constant 10
-        load constant 7
+m_atan: jsb S12626
+m_tan:  load constant 0
+        load constant 0			; 'N'
+        load constant 10		; 'A'
+        load constant 7			; 'T'
         jsb S12505
-        go to L12526
+        go to cm_plus_3
 
 S12626:  p <- 1
         load constant 2
@@ -494,104 +533,112 @@ S12626:  p <- 1
         p <- 12
         return
 
-L12633:  load constant 4
-        load constant 5
-        load constant 7
+m_p_to_r:
+	load constant 4
+        load constant 5			; character 0x05 = 'R'
+        load constant 7			; character 0x17 = right arrow
         jsb S12505
-        go to L12525
+        go to cm_plus_4
 
-L12640:  load constant 2
-        load constant 10
-        load constant 0
+m_factorial:
+	load constant 2
+        load constant 10		; character 0x2a = '!'
+        load constant 0			; character 0x00 = 'N'
         jsb S12504
-        go to L12527
+        go to cm_plus_2
 
-L12645:  load constant 9
-        load constant 8
-        load constant 4
+m_square:
+	load constant 9
+        load constant 8			; character 0x18 = superscript 2
+        load constant 4			; character 0x24 = 'X'
         jsb S12504
-        go to L12526
+        go to cm_plus_3
 
-L12652:  load constant 6
-        load constant 4
-        load constant 4
+m_sqrt:	load constant 6
+        load constant 4			; character 0x14 = square root
+        load constant 4			; character 0x24 = 'X'
         jsb S12504
-        go to L12525
+        go to cm_plus_4
 
-L12657:  load constant 3
+m_percent:
+	load constant 3
         load constant 14
-        load constant 8
+        load constant 8			; character 0x08 = '%'
         jsb S12504
-        go to L12524
+        go to cm_plus_5
 
-L12664:  load constant 11
-        load constant 12
-        load constant 8
+m_sigma_plus:
+        load constant 11
+        load constant 12		; character 0x3c = '+'
+        load constant 8			; character 0x28 = sigma
         jsb S12504
-        go to L12523
+        go to cm_plus_6
 
-L12671:  load constant 0
-        load constant 0
-        load constant 7
-        load constant 5
+m_rtn:  load constant 0
+        load constant 0			; character 0x00 = 'N'
+        load constant 7			; character 0x07 = 'T'
+        load constant 5			; character 0x05 = 'R'
         jsb S12507
-        go to L12525
+        go to cm_plus_4
 
-L12677:  load constant 0
-        load constant 2
-        load constant 3
-        load constant 1
+m_log10:
+	load constant 0
+        load constant 2			; character 0x02 = 'G'
+        load constant 3			; character 0x03 = 'O'
+        load constant 1			; character 0x01 = 'L'
         jsb S12506
-        go to L12527
+        go to cm_plus_2
 
-L12705:  load constant 13
-        load constant 9
-        load constant 0
-        load constant 1
+m_10_to_x:
+	load constant 13
+        load constant 9			; character 0x19 = superscript 'x'
+        load constant 0			; character 0x30 = '0'
+        load constant 1			; character 0x31 = '1'
         jsb S12506
-        go to L12526
+        go to cm_plus_3
 
-L12713:  load constant 14
+m_recip:
+	load constant 14
         load constant 11
         load constant 1
         jsb S12504
         load constant 3
         load constant 4
-        go to L12527
+        go to cm_plus_2
 
-L12722:  load constant 11
+m_mean: load constant 11
         load constant 14
-        load constant 6
+        load constant 6			; character 0x26 = x bar
         jsb S12504
-        go to L12526
+        go to cm_plus_3
 
-L12727:  load constant 3
+m_s:    load constant 3
         load constant 14
-        load constant 6
+        load constant 6			; character 0x06 = 'S'
         jsb S12504
-        go to L12525
+        go to cm_plus_4
 
-L12734:  load constant 4
-        load constant 5
-        load constant 5
+m_frac:	load constant 4
+        load constant 5			; character 0x05 = 'R'
+        load constant 5			; character 0x15 = 'F'
         jsb S12505
         load constant 1
         load constant 12
-        go to L12525
+        go to cm_plus_4
 
-L12743:  load constant 0
-        load constant 14
-        load constant 6
-        load constant 4
+m_pse:  load constant 0
+        load constant 14		; character 0x0e = 'E'
+        load constant 6			; character 0x06 = 'S'
+        load constant 4			; character 0x04 = 'P'
         jsb S12504
-        go to L12530
+        go to cm_plus_1
 
 m_decimal:
 	load constant 15	; decimal
         load constant 10
         load constant 14
         jsb S12503
-        go to L12527
+        go to cm_plus_2
 
 m_enter:
 	load constant 0		; ENT^
@@ -601,7 +648,7 @@ m_enter:
         jsb S12507
         load constant 3
         load constant 13		; up arrow character
-        go to L12530
+        go to cm_plus_1
 
 m_chs:  load constant 1		; CHS
         load constant 3			; 'H'
@@ -612,7 +659,7 @@ m_chs:  load constant 1		; CHS
         nop
         nop
         nop
-        go to L13020
+        go to xx_cm_plus_2
 
 S13000:  c + 1 -> c[m]
 S13001:  c + 1 -> c[m]
@@ -628,12 +675,13 @@ m_r_to_d:
         load constant 5
         p <- 1
         load constant 13
+
         c + 1 -> c[m]
-L13015:  c + 1 -> c[m]
-L13016:  c + 1 -> c[m]
-L13017:  c + 1 -> c[m]
-L13020:  c + 1 -> c[m]
-L13021:  c + 1 -> c[m]
+xx_cm_plus_5:  c + 1 -> c[m]
+xx_cm_plus_4:  c + 1 -> c[m]
+xx_cm_plus_3:  c + 1 -> c[m]
+xx_cm_plus_2:  c + 1 -> c[m]
+xx_cm_plus_1:  c + 1 -> c[m]
         return
 
 m_lastx:
@@ -644,7 +692,7 @@ m_lastx:
         jsb S13000
         load constant 3
         load constant 4			; 'x'
-        go to L13017
+        go to xx_cm_plus_3
 
 m_x_exch_y:
 	load constant 9		; x<>y
@@ -652,14 +700,14 @@ m_x_exch_y:
         load constant 7			; exchange character
         load constant 4			; 'x'
         jsb S13002
-        go to L13021
+        go to xx_cm_plus_1
 
 m_clx:  load constant 2		; CLx
         load constant 4			; 'x'
         load constant 1			; 'L'
         load constant 12		; 'C'
         jsb S13001
-        go to L13021
+        go to xx_cm_plus_1
 
 m_prtx: load constant 0		; PRTX
         load constant 7			; 'T'
@@ -668,7 +716,7 @@ m_prtx: load constant 0		; PRTX
         jsb S13005
         load constant 3
         load constant 4			; 'X'
-        go to L13016
+        go to xx_cm_plus_4
 
         nop
 
@@ -711,20 +759,20 @@ m_prtx: load constant 0		; PRTX
         jsb S13005
         load constant 1
         load constant 2			; 'G'
-        go to L13017
+        go to xx_cm_plus_3
 
 m_sci:  load constant 0		; SCI
         load constant 15		; 'I'
         load constant 12		; 'C'
         load constant 6			; 'S'
         jsb S13005
-        go to L13020
+        go to xx_cm_plus_2
 
 m_plus: load constant 15	; +
         load constant 14
         load constant 12		; '+'
         jsb S13001
-        go to L13015
+        go to xx_cm_plus_5
 
 S13141:  p <- 6
         load constant 1
@@ -742,7 +790,7 @@ m_eng:  load constant 0		; ENG
         load constant 0			; 'N'
         load constant 14		; 'E'
         jsb S13005
-        go to L13017
+        go to xx_cm_plus_3
 
 m_fix:  load constant 4		; FIX
         load constant 15		; 'I'
@@ -750,35 +798,35 @@ m_fix:  load constant 4		; FIX
         jsb S13005
         load constant 3
         load constant 4			; 'X'
-        go to L13021
+        go to xx_cm_plus_1
 
 m_minus:
 	load constant 15	; -
         load constant 14
         load constant 11		; '-'
         jsb S13002
-        go to L13015
+        go to xx_cm_plus_5
 
 m_roll_down:
 	load constant 2		; Rv
         load constant 14		; down arrow character
         load constant 5			; 'R'
         jsb S13003
-        go to L13021
+        go to xx_cm_plus_1
 
 m_times:
 	load constant 11	; *
         load constant 14
         load constant 15		; times character
         jsb S13003
-        go to L13015
+        go to xx_cm_plus_5
 
 m_d_to_r:
 	jsb S13141		; D->R
         load constant 13
         p <- 1
         load constant 5
-        go to L13015
+        go to xx_cm_plus_5
 
 m_rcl_ind:
 	0 -> c[w]		; RCLi
@@ -796,7 +844,7 @@ m_hms_to:
         jsb S13003
         load constant 2
         load constant 7			; right arrow character
-        go to L13015
+        go to xx_cm_plus_5
 
 m_to_hms:
 	jsb S13141		; ->HMS
@@ -808,14 +856,14 @@ m_to_hms:
         jsb S13003
         load constant 1
         load constant 6			; 'S'
-        go to L13016
+        go to xx_cm_plus_4
 
 m_spc:  load constant 0		; SPC
         load constant 12		; 'C'
         load constant 4			; 'P'
         load constant 6			; 'S'
         jsb S13005
-        go to L13021
+        go to xx_cm_plus_1
 
 m_prst:
 	load constant 0		; PRST
@@ -825,21 +873,21 @@ m_prst:
         jsb S13005
         load constant 1
         load constant 7			; 'T'
-        go to L13016
+        go to xx_cm_plus_4
 
 m_deg:	load constant 0		; DEG
         load constant 2			; 'G'
         load constant 14		; 'E'
         load constant 13		; 'D'
         jsb S13004
-        go to L13021
+        go to xx_cm_plus_1
 
 m_rad:	load constant 0		; RAD
         load constant 13		; 'D'
         load constant 10		; 'A'
         load constant 5			; 'R'
         jsb S13004
-        go to L13020
+        go to xx_cm_plus_2
 
 m_grad:	load constant 0		; GRAD
         load constant 10		; 'A'
@@ -848,20 +896,20 @@ m_grad:	load constant 0		; GRAD
         jsb S13004
         load constant 1
         load constant 13		; 'D'
-        go to L13017
+        go to xx_cm_plus_3
 
 m_pi:	load constant 1		; Pi
         load constant 15		; 'i'
         load constant 4			; 'P'
         jsb S13004
-        go to L13016
+        go to xx_cm_plus_4
 
 m_roll_up:
 	load constant 2		; R^
         load constant 13		; up arrow character
         load constant 5			; 'R'
         jsb S13003
-        go to L13021
+        go to xx_cm_plus_1
 
 m_x_exch_i:
 	load constant 8		; x<>I
@@ -869,7 +917,7 @@ m_x_exch_i:
         load constant 7			; exchange character
         load constant 4			; 'x'
         jsb S13002
-        go to L13021
+        go to xx_cm_plus_1
 
 m_p_exch_s:
 	load constant 2		; P<>S
@@ -878,7 +926,7 @@ m_p_exch_s:
         jsb S13001
         load constant 1
         load constant 6			; 'S'
-        go to L13021
+        go to xx_cm_plus_1
 
 m_clrg:	load constant 0		; CLRG
         load constant 5			; 'R'
@@ -887,7 +935,7 @@ m_clrg:	load constant 0		; CLRG
         jsb S13001
         load constant 1
         load constant 2			; 'G'
-        go to L13017
+        go to xx_cm_plus_3
 
 m_hms_plus:
 	load constant 4		; HMS+
@@ -897,7 +945,7 @@ m_hms_plus:
         jsb S13001
         load constant 4
         load constant 12		; '+'
-        go to L13015
+        go to xx_cm_plus_5
 
 m_wdta:	load constant 0		; WDTA
         load constant 7			; 'T'
@@ -906,7 +954,7 @@ m_wdta:	load constant 0		; WDTA
         jsb S13000
         load constant 1
         load constant 10		; 'A'
-        go to L13021
+        go to xx_cm_plus_1
 
 m_mrg:  load constant 4		; MRG
         load constant 5			; 'R'
@@ -914,7 +962,7 @@ m_mrg:  load constant 4		; MRG
         jsb S13000
         load constant 1
         load constant 2			; 'G'
-        go to L13020
+        go to xx_cm_plus_2
 
 m_sto_ind:
 	0 -> c[w]		; STOi
@@ -928,31 +976,36 @@ m_sto_ind:
         delayed rom @04
         go to L12365
 
-S13406:  p <- 4
+m_compare_0_common:  p <- 4
         load constant 12
         p <- 12
         load constant 11
         return
 
 L13413:  jsb S13472
-L13414:  c + 1 -> c[m]
-L13415:  c + 1 -> c[m]
-L13416:  c + 1 -> c[m]
-L13417:  c + 1 -> c[m]
-L13420:  c + 1 -> c[m]
-L13421:  return
 
-L13422:  jsb S13435
-        go to L13421
+x_cm_plus_5:  c + 1 -> c[m]
+x_cm_plus_4:  c + 1 -> c[m]
+x_cm_plus_3:  c + 1 -> c[m]		; x=y? jumps directly here
+x_cm_plus_2:  c + 1 -> c[m]
+x_cm_plus_1:  c + 1 -> c[m]
+x_cm_plus_0:  return
 
-L13424:  jsb S13434
-        go to L13420
+m_f_test_0:
+	jsb S13435
+        go to x_cm_plus_0
 
-L13426:  jsb S13433
-        go to L13417
+m_f_test_1:
+	jsb S13434
+        go to x_cm_plus_1
 
-L13430:  jsb S13432
-        go to L13416
+m_f_test_2:
+	jsb S13433
+        go to x_cm_plus_2
+
+m_f_test_3:
+	jsb S13432
+        go to x_cm_plus_3
 
 S13432:  c + 1 -> c[s]
 S13433:  c + 1 -> c[s]
@@ -970,29 +1023,36 @@ S13435:  0 -> c[m]
         load constant 7
         return
 
-L13451:  jsb S13406
-        go to L13416
+m_x_eq_0:
+	jsb m_compare_0_common
+        go to x_cm_plus_3
 
-L13453:  load constant 1
-        jsb S13406
-        go to L13417
+m_x_ne_0:
+	load constant 1			; character 0x21 = not equal
+        jsb m_compare_0_common
+        go to x_cm_plus_2
 
-L13456:  load constant 1
-        go to L13417
+m_x_ne_y:
+	load constant 1			; character 0x21 = not equal
+        go to x_cm_plus_2
 
-L13460:  load constant 2
-        jsb S13406
-        go to L13415
+m_x_gt_0:
+	load constant 2			; character 0x22 = '>'
+        jsb m_compare_0_common
+        go to x_cm_plus_4
 
-L13463:  load constant 9
-        jsb S13406
-        go to L13414
+m_x_lt_0:
+	load constant 9			; character 0x29 = '<'
+        jsb m_compare_0_common
+        go to x_cm_plus_5
 
-L13466:  load constant 2
-        go to L13415
+m_x_gt_y:
+	load constant 2			; character 0x22 = '>'
+        go to x_cm_plus_4
 
-L13470:  load constant 3
-        go to L13414
+m_x_le_y:
+	load constant 3			; character 0x23 = less than or equal
+        go to x_cm_plus_5
 
 S13472:  p <- 12
         load constant 2
@@ -1019,39 +1079,29 @@ S13513:  if a[p] # 0
         load constant 14
         go to L13752
 
-        go to L13456
+; addr 13520: mnemonic table 5x
+        go to m_x_ne_y
+        go to x_cm_plus_3		; x=y? already nearly done
+        go to m_x_gt_y
+        go to m_x_ne_0
+        go to m_x_eq_0
+        go to m_x_gt_0
+        go to m_x_lt_0
+        go to m_x_le_y
+        go to m_f_test_0
+        go to m_f_test_1
+        go to m_f_test_2
+        go to m_f_test_3
 
-        go to L13416
+        jsb S13510		; ISZ I
+        go to L13413		; ISZ i
 
-        go to L13466
-
-        go to L13453
-
-        go to L13451
-
-        go to L13460
-
-        go to L13463
-
-        go to L13470
-
-        go to L13422
-
-        go to L13424
-
-        go to L13426
-
-        go to L13430
-
-        jsb S13510
-        go to L13413
-
-        jsb S13510
-        jsb S13472
+        jsb S13510		; DSZ I
+        jsb S13472		; DSZ i
         load constant 13
         p <- 5
         load constant 5
-        go to L13414
+        go to x_cm_plus_5
 
 L13544:  0 -> s 3
         c - 1 -> c[s]
