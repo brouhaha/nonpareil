@@ -115,8 +115,8 @@ static char *nut_op00 [16] =
   { 
     /* 0x000 */ "nop",
     /* 0x040 */ "wrrom", 
-    /* 0x080 */ "???",
-    /* 0x0c0 */ "???",
+    /* 0x080 */ NULL,
+    /* 0x0c0 */ NULL,
     /* 0x100 */ "enbank 1",
     /* 0x140 */ "enbank 3",
     /* 0x180 */ "enbank 2",
@@ -134,19 +134,19 @@ static char *nut_op00 [16] =
 
 static char *nut_op18 [16] =
   { 
-    /* 0x018 */ "???",
+    /* 0x018 */ NULL,
     /* 0x058 */ "g=c",
     /* 0x098 */ "c=g", 
     /* 0x0d8 */ "c<>g",
-    /* 0x118 */ "???",
+    /* 0x118 */ NULL,
     /* 0x158 */ "m=c",
     /* 0x198 */ "c=m",
     /* 0x1d8 */ "c<>m",
-    /* 0x218 */ "???",
+    /* 0x218 */ NULL,
     /* 0x258 */ "f=sb",
     /* 0x298 */ "sb=f",
     /* 0x2d8 */ "f<>sb",
-    /* 0x318 */ "???",
+    /* 0x318 */ NULL,
     /* 0x358 */ "s=c",
     /* 0x398 */ "c=s",
     /* 0x3d8 */ "c<>s"
@@ -212,7 +212,10 @@ static int nut_disassemble_misc (int op1,
   switch (op1 & 0x03c)
     {
     case 0x000:
-      buf_printf (& buf, & len, "%s", nut_op00 [op1 >> 6]);
+      if (nut_op00 [op1 >> 6])
+	buf_printf (& buf, & len, "%s", nut_op00 [op1 >> 6]);
+      else
+	buf_printf (& buf, & len, "con $%03x", op1);
       break;
     case 0x004:
       if (op1 == 0x3c4)
@@ -246,7 +249,10 @@ static int nut_disassemble_misc (int op1,
 	}
       break;
     case 0x018:
-      buf_printf (& buf, & len, "%s", nut_op18 [op1 >> 6]);
+      if (nut_op18 [op1 >> 6])
+	buf_printf (& buf, & len, "%s", nut_op18 [op1 >> 6]);
+      else
+	buf_printf (& buf, & len, "con $%03x", op1);
       break;
     case 0x01c:
       if (op1 == 0x3dc)
@@ -280,7 +286,7 @@ static int nut_disassemble_misc (int op1,
 	buf_printf (& buf, & len, "%s", nut_op30 [op1 >> 6]);
       break;
     case 0x034:
-      buf_printf (& buf, & len, "??? %d", arg);
+      buf_printf (& buf, & len, "con $%03x", op1);
       break;
     case 0x038:
       buf_printf (& buf, & len, "rdreg %d", arg);
