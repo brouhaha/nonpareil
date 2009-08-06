@@ -38,6 +38,7 @@ MA 02111, USA.
 #include "proc_int.h"
 #include "digit_ops.h"
 #include "proc_woodstock.h"
+#include "pick.h"  // for pick_key_buffer_empty() for key trace support
 
 
 #undef DIY_TRACE_HACK
@@ -1489,9 +1490,6 @@ static bool woodstock_execute_cycle (sim_t *sim)
   act_reg->p_change [1] = act_reg->p_change [0];
   act_reg->p_change [0] = 0;
 
-  act_reg->prev_pc = act_reg->pc;
-  opcode = woodstock_get_ucode (act_reg, act_reg->pc);
-
   if ((sim->platform != PLATFORM_SPICE) &&
       (act_reg->pc < 02000) &&
       (act_reg->bank == 1))
@@ -1503,14 +1501,30 @@ static bool woodstock_execute_cycle (sim_t *sim)
 	act_reg->bank = 0;
      }
 
+  act_reg->prev_pc = act_reg->pc;
+  opcode = woodstock_get_ucode (act_reg, act_reg->pc);
+
 #ifdef HAS_DEBUGGER
   if ((sim->debug_flags & (1 << SIM_DEBUG_KEY_TRACE)) &&
       (act_reg->inst_state == inst_normal))
     {
-      if ((opcode == 00020) | (opcode == 00120))
-	sim->debug_flags |= (1 << SIM_DEBUG_TRACE);
-      else if (opcode == 01724)
-	sim->debug_flags &= ~ (1 << SIM_DEBUG_TRACE);
+      if (sim->platform == PLATFORM_TOPCAT)
+	{
+	  if (opcode == 01320)
+	    {
+	      if (! pick_key_buffer_empty (sim))
+		sim->debug_flags |= (1 << SIM_DEBUG_TRACE);
+	      else
+		sim->debug_flags &= ~ (1 << SIM_DEBUG_TRACE);
+	    }
+	}
+      else
+	{
+	  if ((opcode == 00020) | (opcode == 00120))
+	    sim->debug_flags |= (1 << SIM_DEBUG_TRACE);
+	  else if (opcode == 01724)
+	    sim->debug_flags &= ~ (1 << SIM_DEBUG_TRACE);
+	}
     }
 
   if ((sim->debug_flags & (1 << SIM_DEBUG_TRACE)) &&

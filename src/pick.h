@@ -39,3 +39,6 @@ chip_t *pick_install (sim_t           *sim,
 		      chip_type_t     type,
 		      int32_t         index,
 		      int32_t         flags);
+
+// for key trace support
+bool pick_key_buffer_empty (sim_t *sim);

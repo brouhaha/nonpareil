@@ -194,6 +194,16 @@ static void pick_pulse_act_f2 (sim_t *sim)
 }
 
 
+// for key trace support
+bool pick_key_buffer_empty (sim_t *sim)
+{
+  act_reg_t *act_reg = get_chip_data (sim->first_chip);
+  pick_reg_t *pick_reg = get_chip_data (act_reg->pick_chip);
+
+  return pick_reg->key_buffer.count == 0;
+}
+
+
 static void pick_op_check_keycode_available (sim_t *sim,
 					    int opcode UNUSED)
 {
