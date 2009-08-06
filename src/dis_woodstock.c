@@ -1,6 +1,6 @@
 /*
 $Id$
-Copyright 2005, 2006, 2007, 2008 Eric Smith <eric@brouhaha.com>
+Copyright 2005, 2006, 2007, 2008, 2009 Eric Smith <eric@brouhaha.com>
 
 Nonpareil is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License version 2 as
@@ -131,7 +131,7 @@ static misc_inst_info_t misc_60_info [16] =
   [01360 >> 6] = { NULL, "c -> data",            NULL, NULL, flow_no_branch },
   [01460 >> 6] = { NULL, "rom checksum",         NULL, NULL, flow_subroutine_return },
   [01560 >> 6] = { NULL, NULL,                   NULL, NULL, flow_no_branch },
-  [01660 >> 6] = { NULL, NULL,                   NULL, NULL, flow_no_branch },
+  [01660 >> 6] = { NULL, "pick print 6",         NULL, NULL, flow_no_branch },
   [01760 >> 6] = { NULL, "hi i'm woodstock",     NULL, NULL, flow_no_branch },
 };
 
