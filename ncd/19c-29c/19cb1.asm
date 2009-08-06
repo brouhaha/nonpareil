@@ -13,6 +13,7 @@
 	.bank 1
 	.org @6000
 
+; addr 16000: mnemonic table, high digit
          go to m_op_0x		; 0x
          go to m_op_1x		; 1x
          go to m_op_2x_x	; 2x
@@ -284,9 +285,10 @@ L16346:  0 -> c[p]
          load constant 6
          load constant 1
          load constant 3
+; decode opcode to mnemonic - dispatch high digit via table @16000
          p <- 12
          0 -> a[xs]
-         a -> rom address
+         a -> rom address	; table at @16000
 
          nop
          go to L16370
@@ -331,7 +333,7 @@ m_eex:   load constant 2	; EEX
          load constant 14		; 'E'
          load constant 14		; 'E'
          jsb S16652
-         go to L16665
+         go to cm_plus_3
 
 m_chs:   load constant 1	; CHS
          load constant 3		; 'H'
@@ -339,7 +341,7 @@ m_chs:   load constant 1	; CHS
          jsb S16652
          load constant 1
          load constant 6		; 'S'
-         go to L16666
+         go to cm_plus_2
 
 L16427:  load constant 2
          load constant 8
@@ -349,7 +351,7 @@ L16427:  load constant 2
          load constant 1
          load constant 6
          jsb S16652
-         go to L16664
+         go to cm_plus_4
 
          go to L16621
          go to L16452
@@ -366,7 +368,7 @@ L16427:  load constant 2
 L16452:  p <- 10
          load constant 11
          jsb S16651
-         go to L16667
+         go to cm_plus_1
 
 m_enter: load constant 0	; ENT^
          load constant 7		; 'T'
@@ -375,7 +377,7 @@ m_enter: load constant 0	; ENT^
          jsb S16652
          load constant 3
          load constant 13		; up arrow character
-         go to L16667
+         go to cm_plus_1
 
 m_r_s:   load constant 2
          load constant 11		; '/'
@@ -383,7 +385,7 @@ m_r_s:   load constant 2
          jsb S16646
          load constant 1
          load constant 6		; 'S'
-         go to L16664
+         go to cm_plus_4
 
 L16475:  load constant 15	; +
          load constant 14
@@ -425,7 +427,7 @@ L16527:  load constant 0
 L16536:  jsb S16653
          load constant 2
          load constant 15
-         go to L16666
+         go to cm_plus_2
 
 L16542:  load constant 0
          load constant 3
@@ -484,27 +486,27 @@ L16621:  load constant 15
          load constant 14
          load constant 10
          jsb S16646
-         go to L16665
+         go to cm_plus_3
 
 L16626:  jsb S16650
-         go to L16667
+         go to cm_plus_1
 
 m_clx:   load constant 2	; Clx
          load constant 4		; 'x'
          load constant 1		; 'L'
          load constant 12		; 'C'
          jsb S16652
-         go to L16664
+         go to cm_plus_4
 
 L16636:  load constant 11
          jsb S16646
-         go to L16667
+         go to cm_plus_1
 
 L16641:  load constant 11
          load constant 14
          load constant 6
          jsb S16653
-         go to L16667
+         go to cm_plus_1
 
 S16646:  c + 1 -> c[m]
 S16647:  c + 1 -> c[m]
@@ -520,11 +522,11 @@ L16654:  p <- 4
          return
 
          c + 1 -> c[m]
-L16663:  c + 1 -> c[m]
-L16664:  c + 1 -> c[m]
-L16665:  c + 1 -> c[m]
-L16666:  c + 1 -> c[m]
-L16667:  c + 1 -> c[m]
+cm_plus_5:  c + 1 -> c[m]
+cm_plus_4:  c + 1 -> c[m]
+cm_plus_3:  c + 1 -> c[m]
+cm_plus_2:  c + 1 -> c[m]
+cm_plus_1:  c + 1 -> c[m]
          return
 
 m_prtx:  load constant 0	; PRTX
@@ -534,26 +536,26 @@ m_prtx:  load constant 0	; PRTX
          jsb S16646
          load constant 3
          load constant 4		; 'X'
-         go to L16663
+         go to cm_plus_5
 
 L16701:  load constant 3
          load constant 14
          load constant 6
          jsb S16653
-         go to L16666
+         go to cm_plus_2
 
 L16706:  load constant 0
          load constant 14
          load constant 6
          load constant 4
          jsb S16646
-         go to L16664
+         go to cm_plus_4
 
 L16714:  load constant 11
          load constant 11
          load constant 8
          jsb S16651
-         go to L16663
+         go to cm_plus_5
 
 L16721:  load constant 3
          load constant 12
@@ -606,7 +608,7 @@ L16766:  load constant 11
          load constant 14
          load constant 15
          jsb S16647
-         go to L16667
+         go to cm_plus_1
 
 L16773:  load constant 3
          load constant 11
@@ -618,7 +620,7 @@ L17000:  load constant 9
          load constant 8
          load constant 4
          jsb S17344
-         go to L17356
+         go to x_cm_plus_3
 
 L17005:  load constant 4
          load constant 5
@@ -626,25 +628,25 @@ L17005:  load constant 4
          jsb S17344
          load constant 1
          load constant 12
-         go to L17357
+         go to x_cm_plus_2
 
 L17014:  p <- 10
          load constant 15
          load constant 6
          jsb S17345
-         go to L17357
+         go to x_cm_plus_2
 
 L17021:  p <- 10
          load constant 10
          load constant 7
          jsb S17345
-         go to L17355
+         go to x_cm_plus_4
 
 L17026:  load constant 6
          load constant 4
          load constant 4
          jsb S17344
-         go to L17356
+         go to x_cm_plus_3
 
 L17033:  load constant 0
          load constant 2
@@ -689,7 +691,7 @@ L17072:  load constant 0
          load constant 11
          load constant 10
          jsb S17344
-         go to L17355
+         go to x_cm_plus_4
 
          go to m_lastx		; 0x2a - LASTx
          go to L17113
@@ -702,7 +704,7 @@ L17106:  load constant 4
          load constant 4
 L17110:  load constant 7
          jsb S17346
-         go to L17355
+         go to x_cm_plus_4
 
 L17113:  p <- 10
          load constant 3
@@ -756,7 +758,7 @@ L17165:  load constant 5
          load constant 3
          load constant 7
          jsb S17343
-         go to L17357
+         go to x_cm_plus_2
 
 L17172:  p <- 10
          load constant 15
@@ -764,7 +766,7 @@ L17172:  p <- 10
 L17175:  jsb S17345
          load constant 2
          load constant 2
-         go to L17357
+         go to x_cm_plus_2
 
 L17201:  p <- 10
          load constant 10
@@ -776,7 +778,7 @@ L17206:  load constant 13
          load constant 0
          load constant 1
 L17212:  jsb S17346
-         go to L17356
+         go to x_cm_plus_3
 
 L17214:  load constant 0
          load constant 6
@@ -792,7 +794,7 @@ m_pi:    load constant 1	; Pi
          jsb S17344
          load constant 0
          load constant 0
-         go to L17360
+         go to x_cm_plus_1
 
 L17232:  load constant 0
          load constant 12
@@ -801,7 +803,7 @@ L17232:  load constant 0
          jsb S17344
          load constant 0
          load constant 0
-         go to L17356
+         go to x_cm_plus_3
 
 L17242:  load constant 5
          load constant 1
@@ -810,26 +812,26 @@ L17242:  load constant 5
          jsb S17343
          load constant 1
          load constant 6
-         go to L17357
+         go to x_cm_plus_2
 
 L17252:  load constant 0
          load constant 7
          load constant 0
          load constant 15
          jsb S17344
-         go to L17357
+         go to x_cm_plus_2
 
 L17260:  load constant 5
          load constant 9
          jsb S17344
-         go to L17355
+         go to x_cm_plus_4
 
 L17264:  load constant 0
          load constant 6
          load constant 3
          load constant 12
          jsb S17345
-         go to L17356
+         go to x_cm_plus_3
 
 m_lastx: load constant 0	; LSTx
          load constant 7		; 'T'
@@ -838,7 +840,7 @@ m_lastx: load constant 0	; LSTx
          jsb S17344
          load constant 3
          load constant 4		; 'x'
-         go to L17360
+         go to x_cm_plus_1
 
 L17302:  load constant 0
          load constant 6
@@ -847,13 +849,13 @@ L17302:  load constant 0
          jsb S17344
          load constant 1
          load constant 7
-         go to L17356
+         go to x_cm_plus_3
 
 L17312:  load constant 5
          load constant 9
          load constant 14
 L17315:  jsb S17346
-         go to L17357
+         go to x_cm_plus_2
 
 L17317:  load constant 11
          load constant 0
@@ -891,10 +893,10 @@ S17346:  c + 1 -> c[m]
 
          c + 1 -> c[m]
          c + 1 -> c[m]
-L17355:  c + 1 -> c[m]
-L17356:  c + 1 -> c[m]
-L17357:  c + 1 -> c[m]
-L17360:  c + 1 -> c[m]
+x_cm_plus_4:  c + 1 -> c[m]
+x_cm_plus_3:  c + 1 -> c[m]
+x_cm_plus_2:  c + 1 -> c[m]
+x_cm_plus_1:  c + 1 -> c[m]
          return
 
 L17362:  p <- 10
@@ -920,13 +922,13 @@ m_x_exch_y:
          load constant 7		; exch
          load constant 4		; 'X'
 L17404:  jsb S17566
-         go to L17467
+         go to xx_cm_plus_1
 
 m_rdn:   load constant 2	; Rv
          load constant 14		; down arrow character
          load constant 5		; 'R'
          jsb S17566
-         go to L17466
+         go to xx_cm_plus_2
 
 L17413:  load constant 0
          load constant 7
@@ -939,7 +941,7 @@ L17422:  p <- 6
          load constant 1
          load constant 6
          jsb S17563
-         go to L17463
+         go to xx_cm_plus_5
 
 L17427:  load constant 0
          load constant 14
@@ -955,7 +957,7 @@ L17440:  load constant 11
          load constant 12
          load constant 8
          jsb S17564
-         go to L17463
+         go to xx_cm_plus_5
 
 m_deg:   load constant 0	; DEG
          load constant 2		; 'G'
@@ -973,11 +975,11 @@ S17457:  shift right c[wp]
          return
 
          c + 1 -> c[m]
-L17463:  c + 1 -> c[m]
-L17464:  c + 1 -> c[m]
-L17465:  c + 1 -> c[m]
-L17466:  c + 1 -> c[m]
-L17467:  c + 1 -> c[m]
+xx_cm_plus_5:  c + 1 -> c[m]
+xx_cm_plus_4:  c + 1 -> c[m]
+xx_cm_plus_3:  c + 1 -> c[m]
+xx_cm_plus_2:  c + 1 -> c[m]
+xx_cm_plus_1:  c + 1 -> c[m]
          return
 
 m_recip: load constant 14	; 1/x
@@ -986,7 +988,7 @@ m_recip: load constant 14	; 1/x
          jsb S17561
          load constant 3
          load constant 4		; 'X'
-         go to L17464
+         go to xx_cm_plus_4
 
 ; @17500
          go to m_x_exch_y	; 0x49 - x<>y
@@ -1001,20 +1003,20 @@ m_dsz:   load constant 2	; DSZ
          load constant 6		; 'S'
          load constant 13		; 'D'
          jsb S17563
-         go to L17463
+         go to xx_cm_plus_5
 
 m_isz:   load constant 2	; ISZ
          load constant 5		; 'Z'
          load constant 6		; 'S'
          load constant 15		; 'I'
          jsb S17562
-         go to L17463
+         go to xx_cm_plus_5
 
 m_rtn:   p <- 10		; RTN
          load constant 7		; 'T'
          load constant 5		; 'R'
          jsb S17566
-         go to L17465
+         go to xx_cm_plus_3
 
 m_rad:   load constant 0	; RAD
          load constant 13		; 'D'
@@ -1024,7 +1026,7 @@ L17533:  p <- 6
          load constant 2
          load constant 5
          jsb S17565
-         go to L17465
+         go to xx_cm_plus_3
 
 ; @17540
          go to m_percent	; 0x6a - %
@@ -1040,7 +1042,7 @@ m_grad:  load constant 0	; 0x6f - GRAD
          jsb S17565
          load constant 1
          load constant 13		; 'D'
-         go to L17466
+         go to xx_cm_plus_2
 
 m_percent:
          load constant 3	; %
