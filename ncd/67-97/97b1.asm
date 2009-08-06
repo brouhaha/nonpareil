@@ -36,23 +36,24 @@ write_mode    .equ 11
 
 ; bank 1 quad 1: printer mnemonics
 
-        go to mnem_0x
-        go to mnem_1x
-        go to mnem_2x
-        go to mnem_3x
-        go to menm_4x
-        go to mnem_5x
-        go to mnem_6x	; DSP n, CF n, spare, DSP (i)
-        go to mnem_7x	; RCL n, RCL A-E, RCL I
-        go to mnem_8x	; STO div 0-9, SF n, spare, STO div i
-        go to mnem_9x	; STO 0-9, STO A-E, STO I
-        go to mnem_ax	; STO - 0-9, GSB f a-e, STO - (i)
-        go to mnem_bx	; GSB 0-9, GSB A-E, GSB (i)
-        go to mnem_cx	; STO + 0-9, GTO f a-e, STO + (i)
-        go to mnem_dx	; GTO 0-9, GTO A-E, GTO (i)
-        go to mnem_ex	; STO * 0-9, LBL f a-e, STO * (i)
+; addr 12000: mnemonic table, high digit
+        go to m_op_0x
+        go to m_op_1x
+        go to m_op_2x
+        go to m_op_3x
+        go to m_op_4x
+        go to m_op_5x
+        go to m_op_6x	; DSP n, CF n, spare, DSP (i)
+        go to m_op_7x	; RCL n, RCL A-E, RCL I
+        go to m_op_8x	; STO div 0-9, SF n, spare, STO div i
+        go to m_op_9x	; STO 0-9, STO A-E, STO I
+        go to m_op_ax	; STO - 0-9, GSB f a-e, STO - (i)
+        go to m_op_bx	; GSB 0-9, GSB A-E, GSB (i)
+        go to m_op_cx	; STO + 0-9, GTO f a-e, STO + (i)
+        go to m_op_dx	; GTO 0-9, GTO A-E, GTO (i)
+        go to m_op_ex	; STO * 0-9, LBL f a-e, STO * (i)
 
-mnem_fx:		; LBL 0-9, LBL A-E, spare
+m_op_fx:		; LBL 0-9, LBL A-E, spare
         jsb m_lbl_common
         p <- 6
         load constant 2
@@ -62,11 +63,11 @@ mnem_fx:		; LBL 0-9, LBL A-E, spare
         load constant 1
         go to L12060
 
-menm_4x:
+m_op_4x:
 	p <- 6
         load constant 1
         load constant 6
-mnem_3x:
+m_op_3x:
 	p <- 3
         load constant 8
         p <- 12
@@ -75,7 +76,7 @@ mnem_3x:
         delayed rom @06
         a -> rom address
 
-mnem_5x:
+m_op_5x:
 	load constant 9
         load constant 0
         load constant 0
@@ -130,7 +131,7 @@ L12112:  load constant 1
         a - c -> c[p]
         return
 
-mnem_9x:
+m_op_9x:
 	load constant 0			; char 0x03 = 'O'
         load constant 3
         jsb m_sto_common		; get "ST"
@@ -144,7 +145,7 @@ L12127:  jsb S12061
         c + 1 -> c[m]
         if n/c go to L12057
 
-mnem_8x:
+m_op_8x:
 	load constant 2			; char 0x2c = divide symbol
         load constant 12
         jsb m_sto_common		; get "ST"
@@ -162,7 +163,7 @@ mnem_8x:
         load constant 1
         go to m_flag_common
 
-mnem_ax:
+m_op_ax:
 	load constant 3				; character 0x3b = '-'
         load constant 11
         jsb m_sto_common		; get "ST"
@@ -178,7 +179,7 @@ mnem_ax:
         load constant 3
         go to lc_suffix
 
-mnem_cx:
+m_op_cx:
 	load constant 3			; char 0x3c = '+'
         load constant 12
         jsb m_sto_common		; get "ST"
@@ -194,7 +195,7 @@ mnem_cx:
         load constant 2
         go to lc_suffix
 
-mnem_ex:
+m_op_ex:
 	load constant 2			; char 0x2f = multiply symbol
         load constant 15
         jsb m_sto_common		; get "ST"
@@ -228,7 +229,7 @@ S12234:  load constant 0
         load constant 2
         return
 
-mnem_dx:
+m_op_dx:
 	jsb m_gto_common
         p <- 6
         load constant 2
@@ -236,7 +237,7 @@ mnem_dx:
 L12245:  jsb S12061
         go to L12057
 
-mnem_bx:
+m_op_bx:
 	jsb m_gsb_common
         p <- 6
         load constant 2			; character 0x02 = 'G'
@@ -256,7 +257,7 @@ m_gsb_common:
         load constant 6			; character 0x06 = 'S'
         go to L12257
 
-mnem_7x:
+m_op_7x:
 	load constant 0
         load constant 1			; 'L'
         load constant 12		; 'C'
@@ -266,7 +267,7 @@ mnem_7x:
         load constant 6
         go to L12127
 
-mnem_6x:
+m_op_6x:
 	load constant 0
         load constant 4			; 'P'
         load constant 6			; 'S'
@@ -295,7 +296,7 @@ m_flag_common:
         a - c -> c[p]
         if n/c go to L12057
 
-mnem_1x:
+m_op_1x:
 	load constant 15
         load constant 14
         load constant 14
@@ -312,9 +313,10 @@ L12336:  0 -> a[x]
         load constant 3
         a exchange c[x]
         shift right a[x]
-        go to mnem_0x
+        go to m_op_0x
 
-L12346:  0 -> c[w]
+; decode opcode to mnemonic - dispatch high digit via table @12000
+m_decode:  0 -> c[w]
         p <- 12
         0 -> a[xs]
         a -> rom address
@@ -338,12 +340,12 @@ L12365:  load constant 4
         load constant 15
         return
 
-mnem_2x:
+m_op_2x:
 	p <- 6
         load constant 1
         load constant 6
 
-mnem_0x:
+m_op_0x:
 	p <- 12
         shift left a[x]
         a -> rom address
@@ -1264,8 +1266,8 @@ L13755:  shift right c[wp]
 ; ------------------------------------------------------------------
 ; Bank switch entry points
 
-        delayed rom @04		; from S3764 - keycode decode?
-        go to L12346
+        delayed rom @04		; from S3764 - mnemonic decode
+        go to m_decode
 
         go to L13727		; form L3766
 

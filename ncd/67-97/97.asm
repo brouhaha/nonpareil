@@ -51,11 +51,11 @@ get_reg_3f	.equ	@7706
 
 ; External references to b1:
 
-S3764	.equ	@3764
+S3764	.equ	@3764	; convert opcode to mnemonic
 S3766	.equ	@3766
 L3770	.equ	@3770
 L3771	.equ	@3771	; not referenced in 67
-S3775	.equ	@3775
+S3775	.equ	@3775	; convert mnemonic to "print 6" form
 
 ; CRC flags:
 buffer_ready  .equ 0
@@ -385,7 +385,7 @@ L0301:  jsb getpc
         go to L0527
 
 L0304:  jsb get_inst
-        delayed rom @07
+        delayed rom @07		; convert opcode to mnemonic
         jsb S3764
         delayed rom @01
         go to L0476
@@ -411,7 +411,10 @@ insert:  0 -> s 3		; increment pc
         delayed rom @13
         go to L5616
 
-S0330:  0 -> s 3		; check for key pressed
+; check for a key pressed, and abort if so
+; used in print program and print registers functions
+chk_key_abort:
+	0 -> s 3		; check for key pressed
         pick key?
         if 1 = s 3
           then go to L0273
@@ -444,14 +447,17 @@ prt_prgm:
         jsb getpc
         if c[x] # 0
           then go to L0367
-L0362:  0 -> s 3
+
+print_prgm_next_line:
+	0 -> s 3
         jsb incpc
-        if 1 = s 3
-          then go to L0064
-        jsb S0330
+        if 1 = s 3		; end of memory?
+          then go to L0064	;   yes, done
+
+        jsb chk_key_abort	; check for key pressed, abort if so
 L0367:  jsb get_inst
         delayed rom @03
-        go to L1714
+        go to print_prgm_line
 
 ; ------------------------------------------------------------------
 ; following code matches 67 at address S0116
@@ -875,7 +881,7 @@ L1115:  m1 -> c
         c -> data
         m1 -> c
         delayed rom @00
-        jsb S0330
+        jsb chk_key_abort
         p <- 3
         c - 1 -> c[p]
         if n/c go to L1136
@@ -1235,12 +1241,14 @@ L1543:  load constant 14
         if 1 = s 3
           then go to L1610	;   yes, don't print
 
-        delayed rom @07		; decode keycode?
+; function is being executed in NORM or TRACE mode, print mnemonic
+        delayed rom @07		; convert opcode to mnemonic
         jsb S3764
-        delayed rom @07
+        delayed rom @07		; convert mnemonic to print 6 form
         jsb S3775
         1 -> s 6
         jsb S1613
+
         if 1 = s 12
           then go to L1423
         0 -> s 3
@@ -1298,7 +1306,7 @@ L1647:  jsb S1442
           then go to L1610
         0 -> s 3
         delayed rom @00
-        go to L0362
+        go to print_prgm_next_line
 
 L1656:  p <- 10
         b exchange c[w]
@@ -1310,7 +1318,7 @@ L1656:  p <- 10
         p <- 11
         shift right c[wp]
         load constant 14
-L1670:  delayed rom @07
+L1670:  delayed rom @07		; convert mnemonic to print 6 form
         jsb S3775
         jsb S1613
         1 -> s 8
@@ -1332,7 +1340,8 @@ L1710:  jsb S1631
         jsb S1442
         go to L1436
 
-L1714:  0 -> a[xs]
+print_prgm_line:
+	0 -> a[xs]
         if a[x] # 0
           then go to L1723
         if 1 = s 6
@@ -1342,7 +1351,7 @@ L1714:  0 -> a[xs]
 
 L1723:  0 -> s 6
 L1724:  crc fs?c man_mode
-        delayed rom @07
+        delayed rom @07		; convert opcode to mnemonic
         jsb S3764
 
         0 -> s 3
@@ -1350,7 +1359,7 @@ L1724:  crc fs?c man_mode
         if 1 = s 3
           then go to L1737
 	
-        delayed rom @07
+        delayed rom @07		; convert mnemonic to print 6 form
         jsb S3775
         jsb S1613
         go to L1747
@@ -1359,7 +1368,7 @@ L1737:  delayed rom @07
         jsb S3766
         jsb S1633
         a exchange c[w]
-        delayed rom @07
+        delayed rom @07		; convert mnemonic to print 6 form
         jsb S3775
         jsb S1442
         pick print 6
