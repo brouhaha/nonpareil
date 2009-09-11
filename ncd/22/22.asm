@@ -15,6 +15,12 @@
 ; s 13 = STO pending
 ; s 15 = key pressed (hardware)
 
+; m2 [12] = n flag
+; m2 [11] = i flag
+; m2 [10] = PMT flag
+; m2 [ 9] = PV flag
+; m2 [ 8] = FV flag
+
 ; reg 0-9 = user registers
 ; reg 5 = sigma xy
 ; reg 6 = sigma y
@@ -38,7 +44,7 @@
 	c -> data address
 	clear data registers
 	m2 exchange c
-L0010:	0 -> c[w]		; Clear X function
+op_clx:	0 -> c[w]		; Clear X function
 L0011:	0 -> s 2
 L0012:	clear status
 	decimal
@@ -90,7 +96,7 @@ L0063:	0 -> c[wp]
 	0 -> c[xs]
 	return
 
-L0067:	c -> stack		; ENTER^ function
+op_enter:	c -> stack		; ENTER^ function
 	go to L0011
 
 	nop
@@ -136,10 +142,10 @@ zappo:	0 -> a[wp]
 	decimal
 	return
 
-L0137:	if 0 = s 4		; keycode 32 - CHS/%Sigma
-	  then go to L0362
+key_32:	if 0 = s 4		; keycode 32 - CHS/%Sigma
+	  then go to op_chs
 	delayed rom 07
-	go to L3734
+	go to op_pct_sigma
 
 L0143:	if 0 = s 2
 	  then go to L0146
@@ -296,7 +302,7 @@ L0350:	jsb L0363
 L0360:	1 -> s 2
 	go to L0012
 
-L0362:	0 - c - 1 -> c[s]	; CHS function
+op_chs:	0 - c - 1 -> c[s]	; CHS function
 L0363:	0 -> s 4
 L0364:	c -> a[s]
 	display toggle
@@ -356,7 +362,8 @@ add14:	a - b -> a[w]
 	0 -> b[w]
 	go to L0512
 
-L0452:	1 -> s 6		; decimal function
+op_decimal:
+	1 -> s 6		; decimal function
 	p <- 2
 	return
 
@@ -382,10 +389,10 @@ L0474:	a exchange c[m]
 	0 -> b[w]
 	return
 
-	go to L0616		; keycode 24 - RCL/s
-	go to L0673		; keycode 23 - STO/xbar
-	go to L0732		; keycode 22 - RDN/yhat
-	go to L0665		; keycode 21 - x<>y/L.R.
+	go to key_24_x		; keycode 24 - RCL/s
+	go to key_23_x		; keycode 23 - STO/xbar
+	go to key_22_x		; keycode 22 - RDN/yhat
+	go to key_21		; keycode 21 - x<>y/L.R.
 
 	clear status		; keycode 25 - shift
 	1 -> s 4
@@ -427,8 +434,9 @@ L0540:	a + 1 -> a[p]		; keycode 44 - 9
 
 	if 1 = s 4		; keycode 41 - subtract/ln
 	  then go to op_ln
+
 	jsb L0576
-	0 - c - 1 -> c[s]	; subtract
+	0 - c - 1 -> c[s]
 L0547:	jsb op_add
 	go to L0567
 
@@ -449,8 +457,9 @@ L0557:	a + 1 -> a[p]
 
 	if 1 = s 4		; keycode 61 - multiply/y^x
 	  then go to op_y_to_x
+
 	jsb L0576
-	jsb op_multiply		; multiply
+	jsb op_multiply
 L0567:	if 0 = s 13
 	  then go to L0757
 	delayed rom 00
@@ -478,18 +487,20 @@ L0612:	delayed rom 00
 	data -> c
 	go to L0757
 
-L0616:	delayed rom 06		; keycode 24 - RCL/s
-	go to L3331
+key_24_x:
+	delayed rom 06		; keycode 24 - RCL/s
+	go to key_24
 
-	select rom 07 (L3621)	; keycode 74 - Sigma+/Sigma-
-	go to L0452		; keycode 73 - decimal
+	select rom 07 (key_74)	; keycode 74 - Sigma+/Sigma-
+	go to op_decimal	; keycode 73 - decimal
 	return			; keycode 72 - 0
 
 	if 1 = s 4		; keycode 71 - divide/sqrt
-	  then go to L1354
+	  then go to op_sqrt
+
 	jsb L0576
 	1 -> s 8
-	jsb op_divide		; divide
+	jsb op_divide
 	go to L0567
 
 L0631:	a + 1 -> a[s]
@@ -506,12 +517,13 @@ L0637:	a + 1 -> a[p]
 	go to L0557		; keycode 52 - 4
 
 	if 1 = s 4		; keycode 51 - addition/e^x
-	  then go to L1647
+	  then go to op_e_to_x
+
 	jsb L0576
 	go to L0547
 
-L0647:	delayed rom 07		; keycode 33 - %/Delta%
-	go to L3706
+key_33_x:	delayed rom 07		; keycode 33 - %/Delta%
+	go to key_33
 
 L0651:	0 -> b[w]
 	a exchange b[m]
@@ -521,21 +533,23 @@ L0653:	a - c -> c[s]
 L0656:	0 -> a[w]
 	return
 
-	select rom 04 (L2261)	; keycode 14 - PV/INT
-	select rom 04 (L2262)	; keycode 13 - PMT/ACC
-	select rom 04 (L2263)	; keycode 12 - i/12div
-	select rom 04 (L2264)	; keycode 11 - n/12*
-	select rom 04 (L2265)	; keycode 15 - FV/BAL
+	select rom 04 (key_14_x)	; keycode 14 - PV/INT
+	select rom 04 (key_13_x)	; keycode 13 - PMT/ACC
+	select rom 04 (key_12_x)	; keycode 12 - i/12div
+	select rom 04 (key_11_x)	; keycode 11 - n/12*
+	select rom 04 (key_15_x)	; keycode 15 - FV/BAL
 
-L0665:	if 1 = s 4		; keycode 21 - x<>y/L.R.
-	  then go to L1747
+key_21:	if 1 = s 4		; keycode 21 - x<>y/L.R.
+	  then go to op_lr
+
 	stack -> a		; x<>y
 	c -> stack
 	a exchange c[w]
 	go to L0757
 
-L0673:	delayed rom 06		; keycode 23 - STO/xbar
-	go to L3323
+key_23_x:
+	delayed rom 06		; keycode 23 - STO/xbar
+	go to key_23
 
 L0675:	p <- 1
 	0 -> a[wp]
@@ -558,23 +572,25 @@ L0715:	c + 1 -> c[x]
 	shift right a[w]
 L0717:	return
 
-	go to L0647		; keycode 33 - %/Delta%
+	go to key_33_x		; keycode 33 - %/Delta%
 
 	delayed rom 00		; keycode 32 - CHS/%Sigma
-	go to L0137
+	go to key_32
 
-	go to L0726		; keycode 31 - ENTER^/RESET
+	go to key_31		; keycode 31 - ENTER^/RESET
 
 	delayed rom 03		; keycode 34 - CLx/CLEAR
-	go to L1752
+	go to key_34
 
-L0726:	if 1 = s 4		; keycode 31 - ENTER^/RESET
-	  then go to L1653
+key_31:	if 1 = s 4		; keycode 31 - ENTER^/RESET
+	  then go to op_reset
+
 	delayed rom 00
-	go to L0067
+	go to op_enter
 
-L0732:	delayed rom 07		; keycode 22 - RDN/yhat
-	go to L3730
+key_22_x:
+	delayed rom 07		; keycode 22 - RDN/yhat
+	go to key_22
 
 L0734:	if 1 = s 8
 	  then go to L1132
@@ -874,7 +890,8 @@ L1326:	0 -> c[w]
 op_ln:	jsb ln
 	go to L1001
 
-L1354:	a exchange c[w]
+op_sqrt:
+	a exchange c[w]
 	delayed rom 07
 	go to L3564
 
@@ -947,7 +964,7 @@ L1450:	p <- 1
 	p <- 7
 	return
 
-L1455:	0 -> a[w]		; e^x
+e_to_x:	0 -> a[w]		; e^x
 	a exchange c[m]
 L1457:	b exchange c[w]
 	delayed rom 02
@@ -1078,13 +1095,15 @@ L1632:	a exchange b[w]
 	0 -> c[m]
 	go to L1457
 
-L1647:	jsb L1455
+op_e_to_x:
+	jsb e_to_x
 	delayed rom 00
 	go to L0360
 
 	nop
 
-L1653:	m1 exchange c		; RESET function
+op_reset:
+	m1 exchange c		; RESET function
 	jsb L1767
 	m1 -> c
 L1656:	delayed rom 00
@@ -1150,12 +1169,13 @@ L1744:	p <- 12
 	delayed rom 02
 	go to L1222
 
-L1747:	1 -> s 14
+op_lr:	1 -> s 14		; linear regression
 	delayed rom 07
 	go to L3576
 
-L1752:	if 0 = s 4		; keycode 34 - CLx/CLEAR
-	  then go to L0010
+key_34:	if 0 = s 4		; keycode 34 - CLx/CLEAR
+	  then go to op_clx
+
 	0 -> c[w]		; CLEAR function
 	c -> stack
 	c -> stack
@@ -1204,8 +1224,8 @@ L2013:	delayed rom 00
 	nop
 
 ; keycode 11 - n/12*
-L2025:	if 0 = s 0		; RCL pending?
-	  then go to L2033
+key_11:	if 0 = s 0		; RCL pending?
+	  then go to op_n
 
 ; recall n
 	jsb L2013
@@ -1213,18 +1233,22 @@ L2025:	if 0 = s 0		; RCL pending?
 L2031:	delayed rom 00
 	go to L0360
 
-; compute n
-L2033:	m2 exchange c
+; store or compute n
+op_n:	m2 exchange c		; check n flag
 	p <- 12
 	if c[p] = 0
-	  then go to L2051
-L2037:	m2 exchange c
-	if 0 = s 4
+	  then go to L2051	; clear, so compute
+
+store_n:
+	m2 exchange c
+	if 0 = s 4		; shifted?
 	  then go to L2046
-	jsb con12
+
+	jsb con12		; yes, multiply by 12
 	delayed rom 01
 	jsb op_multiply		; multiply
 	jsb L2011
+
 L2046:	c -> register 10
 L2047:	delayed rom 00
 	go to L0011
@@ -1235,7 +1259,9 @@ L2051:	jsb L2344
 	c + 1 -> c[p]
 	p <- 12
 	c + 1 -> c[p]
-	if n/c go to L2037
+	if n/c go to store_n
+
+; compute n
 L2060:	jsb L2362
 	p <- 9
 	jsb L2373
@@ -1249,27 +1275,30 @@ L2060:	jsb L2362
 	go to L2414
 
 ; keycode 12 - i/12div
-L2073:	if 0 = s 0		; RCL pending?
-	  then go to L2100
+key_12:	if 0 = s 0		; RCL pending?
+	  then go to op_i
 
 ; recall i
 	jsb L2013
 	register -> c 11
 	go to L2031
 
-; compute i
-L2100:	m2 exchange c		; i function
+; store or compute i
+op_i:	m2 exchange c		; i function
 	p <- 11
 	if c[p] = 0
 	  then go to L2115
+
 L2104:	m2 exchange c
-	if 0 = s 4
-	  then go to L2113
-	jsb con12
+	if 0 = s 4		; shifted?
+	  then go to sto_i
+
+	jsb con12		; yes, divide by 12
 	delayed rom 01
-	jsb op_divide		; divide
+	jsb op_divide
 	jsb L2011
-L2113:	c -> register 11
+
+sto_i:	c -> register 11
 	go to L2047
 
 L2115:	jsb L2344
@@ -1279,6 +1308,8 @@ L2115:	jsb L2344
 	p <- 11
 	c + 1 -> c[p]
 	if n/c go to L2104
+
+; compute i
 L2124:	jsb L2366
 	p <- 9
 	jsb L2373
@@ -1292,7 +1323,7 @@ L2124:	jsb L2366
 	go to L2533
 
 ; PMT function
-L2137:	if 0 = s 0		; RCL pending?
+op_pmt:	if 0 = s 0		; RCL pending?
 	  then go to L2144
 
 ; recall PMT
@@ -1300,12 +1331,14 @@ L2137:	if 0 = s 0		; RCL pending?
 	register -> c 12
 	go to L2031
 
-; compute PMT
+; store or compute PMT
 L2144:	m2 exchange c
 	p <- 10
 	if c[p] = 0
 	  then go to L2153
-L2150:	m2 exchange c
+
+store_pmt:
+	m2 exchange c
 	c -> register 12
 	go to L2047
 
@@ -1315,7 +1348,9 @@ L2153:	jsb L2344
 	c + 1 -> c[p]
 	p <- 10
 	c + 1 -> c[p]
-	if n/c go to L2150
+	if n/c go to store_pmt
+
+; compute PMT
 L2162:	jsb L2362
 	jsb L2366
 	p <- 9
@@ -1326,7 +1361,7 @@ L2162:	jsb L2362
 	go to L3151
 
 ; PV function
-L2172:	if 0 = s 0		; RCL pending?
+op_pv:	if 0 = s 0		; RCL pending?
 	  then go to L2177
 
 ; recall PV
@@ -1334,13 +1369,15 @@ L2172:	if 0 = s 0		; RCL pending?
 	register -> c 13
 	go to L2031
 
-; compute PV
+; store or compute PV
 L2177:	m2 exchange c
 	1 -> s 12
 	p <- 9
 	if c[p] = 0
 	  then go to L2207
-L2204:	m2 exchange c
+
+store_pv:
+	m2 exchange c		; store pv
 	c -> register 13
 	go to L2047
 
@@ -1350,7 +1387,9 @@ L2207:	jsb L2344
 	c + 1 -> c[p]
 	p <- 9
 	c + 1 -> c[p]
-	if n/c go to L2204
+	if n/c go to store_pv
+
+; compute PV
 L2216:	jsb L2362
 	jsb L2366
 	p <- 8
@@ -1361,7 +1400,7 @@ L2216:	jsb L2362
 	go to L3176
 
 ; FV function
-L2226:	if 0 = s 0		; RCL pending?
+op_fv:	if 0 = s 0		; RCL pending?
 	  then go to L2233
 
 ; recall FV
@@ -1369,12 +1408,14 @@ L2226:	if 0 = s 0		; RCL pending?
 	register -> c 14
 	go to L2031
 
-; compute FV
+; store or compute FV
 L2233:	m2 exchange c
 	p <- 8
 	if c[p] = 0
 	  then go to L2242
-L2237:	m2 exchange c
+
+store_fv:
+	m2 exchange c
 	c -> register 14
 	go to L2047
 
@@ -1384,7 +1425,8 @@ L2242:	jsb L2344
 	c + 1 -> c[p]
 	p <- 8
 	c + 1 -> c[p]
-	if n/c go to L2237
+	if n/c go to store_fv
+
 L2251:	jsb L2362
 	jsb L2366
 	p <- 9
@@ -1394,26 +1436,38 @@ L2251:	jsb L2362
 	delayed rom 06
 	go to L3221
 
-L2261:	go to L2271		; keycode 14 - PV/INT
-L2262:	go to L2266		; keycode 13 - PMT/ACC
-L2263:	go to L2073		; keycode 12 - i/12div
-L2264:	go to L2025		; keycode 11 - n/12*
-L2265:	go to L2274		; keycode 15 - FV/BAL
+key_14_x:
+	go to key_14		; keycode 14 - PV/INT
 
-L2266:	if 1 = s 4		; keycode 13 - PMT/ACC
-	  then go to L2277
-	go to L2137
+key_13_x:
+	go to key_13		; keycode 13 - PMT/ACC
 
-L2271:	if 1 = s 4		; keycode 14 - PV/INT
-	  then go to L2332
-	go to L2172
+key_12_x:
+	go to key_12		; keycode 12 - i/12div
 
-L2274:	if 1 = s 4		; keycode 15 - FV/BAL
-	  then go to L2300
-	go to L2226
+key_11_x:
+	go to key_11		; keycode 11 - n/12*
 
-L2277:	1 -> s 11		; ACC function
-L2300:	m2 -> c			; BAL function
+key_15_x:
+	go to key_15		; keycode 15 - FV/BAL
+
+; keycode 13 - PMT/ACC
+key_13:	if 1 = s 4		; shifted?
+	  then go to op_acc
+	go to op_pmt
+
+; keycode 14 - PV/INT
+key_14:	if 1 = s 4
+	  then go to op_int
+	go to op_pv
+
+; keycode 15 - FV/BAL
+key_15:	if 1 = s 4
+	  then go to op_bal
+	go to op_fv
+
+op_acc:	1 -> s 11		; ACC function
+op_bal:	m2 -> c			; BAL function
 	jsb L2362
 	p - 1 -> p
 	if c[p] = 0
@@ -1442,7 +1496,7 @@ L2321:	register -> c 8
 	delayed rom 07
 	go to L3456
 
-L2332:	m2 -> c			; INT function
+op_int:	m2 -> c			; INT function
 	jsb L2366
 	jsb L2362
 	p <- 9
@@ -2014,15 +2068,16 @@ L3317:	register -> c 10
 	register -> c 12
 	go to L3205
 
-L3323:	if 1 = s 4		; keycode 23 - STO/xbar
+key_23:	if 1 = s 4		; keycode 23 - STO/xbar
 	  then go to L3336
 	1 -> s 13		; STO function
 	0 -> s 0
 L3327:	delayed rom 01
 	go to L0675
 
-L3331:	if 1 = s 4		; keycode 24 - RCL/s
-	  then go to L3541
+key_24:	if 1 = s 4		; keycode 24 - RCL/s
+	  then go to op_s
+
 	1 -> s 0		; RCL function
 	0 -> s 13
 	go to L3327
@@ -2178,7 +2233,7 @@ L3522:	register -> c 9
 	jsb x34_div
 	go to L3517
 
-L3541:	1 -> s 8		; s function
+op_s:	1 -> s 8		; s function
 	register -> c 9
 	c -> a[w]
 	jsb x34_mul
@@ -2210,7 +2265,7 @@ L3564:	0 -> c[w]
 
 L3576:	m2 exchange c		; yhat function
 	1 -> s 12
-	go to L3541
+	go to op_s
 
 L3601:	register -> c 9
 	a exchange c[w]
@@ -2230,7 +2285,7 @@ L3601:	register -> c 9
 	nop
 	nop
 
-L3621:	c -> a[w]		; keycode 74 - Sigma+/Sigma-
+key_74:	c -> a[w]		; keycode 74 - Sigma+/Sigma-
 	m1 exchange c
 	register -> c 9		; get sigma x
 	if 0 = s 4
@@ -2297,7 +2352,7 @@ L3702:	jsb L3776
 	delayed rom 00
 	go to L0011
 
-L3706:	stack -> a		; keycode 33 - %/Delta%
+key_33:	stack -> a		; keycode 33 - %/Delta%
 	a exchange c[w]
 	c -> stack
 	if 1 = s 4
@@ -2317,12 +2372,13 @@ L3724:	c - 1 -> c[x]
 	jsb x34_div
 	go to L3716
 
-L3730:	if 1 = s 4		; keycode 22 - RDN/yhat
+key_22:	if 1 = s 4		; keycode 22 - RDN/yhat
 	  then go to L3576
 	down rotate		; RDN function
 	go to L3716
 
-L3734:	c -> a[w]		; %Sigma function
+op_pct_sigma:
+	c -> a[w]		; %Sigma function
 	register -> c 9
 	go to L3724
 
