@@ -52,7 +52,8 @@
 	0 -> c[w]
 	go to L0251
 
-L0012:	jsb L0171		; decimal/lastx/pi key
+; decimal/lastx/pi key
+key_73:	jsb do_shift		; handle shifted functions
 	1 -> s 0
 	if 1 = s 7
 	  then go to L0201
@@ -60,9 +61,9 @@ L0012:	jsb L0171		; decimal/lastx/pi key
 	  then go to L0201
 	0 -> s 11
 	0 -> s 12
-	go to L0377
+	go to key_72
 
-L0023:	if 1 = s 10		; f prefix key
+key_14:	if 1 = s 10		; f prefix key
 	  then go to L0127
 	clear status
 L0026:	1 -> s 13
@@ -76,13 +77,15 @@ L0033:	clear status
 	c -> register 15	; save LASTx
 	return
 	
-L0037:	jsb L0171		; RCL/PV/NPV key
+; RCL/PV/NPV key
+key_24:	jsb do_shift		; handle shifted functions
 	clear status			; RCL
 	1 -> s 10
 L0042:	1 -> s 11
 L0043:	go to L0201
 
-L0044:	jsb L0171		; x<>y/n/r key
+; x<>y/n/r key
+key_21:	jsb do_shift		; handle shifted functions
 	stack -> a		; x<>y
 	c -> stack
 	a exchange c[w]
@@ -99,11 +102,13 @@ L0055:	0 - c - 1 -> c[s]
 	  then go to L0655
 	go to L0201
 
-L0062:	jsb L0171		; xbar/SCI/s key
+; xbar/SCI/s key
+key_12:	jsb do_shift		; handle shifted functions
 	jsb L0032
 	select rom @10 (L4065)
 
-L0065:	jsb L0171		; %/ENG/Delta% key
+; %/ENG/Delta% key
+key_13:	jsb do_shift		; handle shifted functions
 	jsb L0033
 	delayed rom 04
 	go to L2223
@@ -116,15 +121,17 @@ L0071:	a exchange c[x]
 L0076:	a exchange c[x]
 	return
 
-	go to L0037		; keycode 24 - RCL/PV/NPV key
-	go to L0273		; keycode 23 - STO/PMT/N.D. key
-	go to L0226		; keycode 22 - RDN/i/VAR key
-	go to L0044		; keycode 21 - x<>y/n/r key
+	go to key_24		; keycode 24 - RCL/PV/NPV key
+	go to key_23		; keycode 23 - STO/PMT/N.D. key
+	go to key_22		; keycode 22 - RDN/i/VAR key
+	go to key_21		; keycode 21 - x<>y/n/r key
 
-L0104:	jsb L0171		; keycode 25 - y^x/FV/IRR key
+; keycode 25 - y^x/FV/IRR key
+key_25:	jsb do_shift		; handle shifted functions
 	select rom 06 (L3106)
 
-L0106:	jsb L0171		; EEX/Clr Reg/RAD key
+; EEX/Clr Reg/RAD key
+key_33:	jsb do_shift		; handle shifted functions
 	if 1 = s 7
 	  then go to L0201
 	if 0 = s 9
@@ -164,7 +171,8 @@ L0141:	a + 1 -> a[x]		; keycode 43 - 8/log/10^x key
 done_x0:
 	go to done
 
-L0147:	jsb L0171		; ENTER^/Clr Prefix/RESET key
+; ENTER^/Clr Prefix/RESET key
+key_31:	jsb do_shift		; handle shifted functions
 	c -> stack
 L0151:	1 -> s 1
 	go to L0250
@@ -183,14 +191,16 @@ L0161:	a + 1 -> a[x]		; keycode 63 - 2/sqrt/x^2
 	jsb L0030
 	select rom 02 (L1166)
 
-L0166:	jsb L0171		; sigma+/sigma-/%sigma key
+; sigma+/sigma-/%sigma key
+key_74:	jsb do_shift		; handle shifted functions
 	jsb L0033
 	select rom @10 (L4171)
 
-L0171:	if 1 = s 13		; is it an f-prefixed function?
-	  then go to L1722	;   yes, go do it
+do_shift:
+	if 1 = s 13		; is it an f-prefixed function?
+	  then go to do_f_shift	;   yes, go do it
 	if 1 = s 14		; is it a g-prefixed function?
-	  then go to L1775	;   yes, go to it
+	  then go to do_g_shift	;   yes, go to it
 	return
 
 L0176:	0 -> s 5
@@ -212,15 +222,16 @@ L0212:	if 0 = s 15
 	0 -> a[wp]
 	keys -> rom address	; main dispatch
 
-	go to L0166		; keycode 74 - sigma+/sigma-/%sigma
-	go to L0012		; keycode 73 - decimal/Lastx/pi
-	go to L0377		; keycode 72 - zero/->H.MS/->H
+	go to key_74		; keycode 74 - sigma+/sigma-/%sigma
+	go to key_73		; keycode 73 - decimal/Lastx/pi
+	go to key_72		; keycode 72 - zero/->H.MS/->H
 
 	1 -> s 6		; keycode 71 - divide key
 	jsb L0030
 	select rom 04 (L2226)
 
-L0226:	jsb L0171		; RDN/i/VAR key
+; RDN/i/VAR key
+key_22:	jsb do_shift		; handle shifted functions
 	down rotate
 done_x1:
 	go to done
@@ -253,21 +264,23 @@ L0252:	if 0 = s 10		; register arithmetic
 L0256:	1 -> s 12
 	go to L0201
 
-	go to L0023		; keycode 14 - f prefix
-	go to L0065		; keycode 13 - %/ENG/Delta%
-	go to L0062		; keycode 12 - xbar/SCI/s
-	go to L0270		; keycode 11 - yhat/FIX/L.R. key
+	go to key_14		; keycode 14 - f prefix
+	go to key_13		; keycode 13 - %/ENG/Delta%
+	go to key_12		; keycode 12 - xbar/SCI/s
+	go to key_11		; keycode 11 - yhat/FIX/L.R. key
 
 	clear status		; keycode 15 - g prefix
 L0265:	1 -> s 14		;    f prefix enters here
 	jsb L0201		; get another key
 	select rom 02 (L1270)
 
-L0270:	jsb L0171		; yhat/FIX/L.R. key
+; yhat/FIX/L.R. key
+key_11:	jsb do_shift		; handle shifted functions
 	jsb L0033
 	select rom @10 (L4273)
 
-L0273:	jsb L0171		; STO/PMT/N.D. key
+; STO/PMT/N.D. key
+key_23:	jsb do_shift		; handle shifted functions
 	clear status
 	go to L0042
 
@@ -290,12 +303,13 @@ L0315:	b -> c[w]
 L0316:	c -> data
 	go to done
 
-	go to L0106		; keycode 33 - EEX/Clr Reg/RAD
-	go to L0360		; keycode 32 - CHS/Clr Sigma/DEG
+	go to key_33		; keycode 33 - EEX/Clr Reg/RAD
+	go to key_32		; keycode 32 - CHS/Clr Sigma/DEG
 L0322:	return			; right half of enter key
-	go to L0147		; keycode 31 - ENTER^/Clr Prefix/RESET
+	go to key_31		; keycode 31 - ENTER^/Clr Prefix/RESET
 
-	jsb L0171		; keycode 34 - CLx/Clr Stack/GRD
+; keycode 34 - CLx/Clr Stack/GRD
+	jsb do_shift		; handle shifted functions
 	0 -> c[w]
 	go to L0151
 
@@ -325,8 +339,8 @@ L0354:	shift left a[x]
 	jsb L0033
 	select rom 05 (L2760)
 
-L0360:	decimal			; CHS/Clear Statusigma/DEG key
-	jsb L0171
+key_32:	decimal			; CHS/Clear Statusigma/DEG key
+	jsb do_shift		; handle shifted functions
 	if c[m] = 0
 	  then go to L0201
 	if 0 = s 7
@@ -341,7 +355,7 @@ L0360:	decimal			; CHS/Clear Statusigma/DEG key
 	go to L1676
 
 L0376:	a + 1 -> a[x]
-L0377:	if 1 = s 14		; digit key - is it prefixed?
+key_72:	if 1 = s 14		; digit key - is it prefixed?
 	  then go to L0322	;   yes, return (?)
 	if 1 = s 7
 	  then go to L0443
@@ -1187,7 +1201,8 @@ op_lastx:
 	go to op_clr_reg	; f CLR Reg function
 	go to op_clr_sigma	; f CLR Sigma function
 
-L1722:	keys -> rom address	; execute f-prefixed function
+do_f_shift:
+	keys -> rom address	; execute f-prefixed function
 
 	go to done_x2		; f CLR Prefix function
 
@@ -1241,7 +1256,8 @@ L1765:	clear status
 	0 -> c[xs]
 	return
 
-L1775:	clear status			; execute g-prefixed functions
+do_g_shift:
+	clear status			; execute g-prefixed functions
 	decimal
 	keys -> rom address
 
@@ -3263,7 +3279,7 @@ L5340:	if c[x] # 0
 
 L5343:	select rom 03 (L1744)
 
-L5344:	0 -> c[w]
+L5344:	0 -> c[w]		; compare S4750 in 67/97
 	c - 1 -> c[w]
 	0 -> c[s]
 	if p = 12
@@ -3314,7 +3330,7 @@ L5414:	p <- 6
 	p <- 10
 	return
 
-trc10:	p <- 12
+trc10:	p <- 12			; load pi/4
 	0 -> c[w]
 	load constant 7
 	load constant 8
@@ -3449,7 +3465,7 @@ L5614:	c - 1 -> c[x]
 	shift left a[w]
 	go to L5635
 
-L5623:	0 -> c[w]
+L5623:	0 -> c[w]		; load 180/4
 	p <- 12
 	load constant 4
 	load constant 5
@@ -3479,7 +3495,7 @@ L5637:	delayed rom @12
 	m1 exchange c
 	p <- 13
 	load constant 6
-	go to L5754
+	go to trg370
 
 L5661:	go to L5670
 
@@ -3541,20 +3557,20 @@ L5733:	1 -> s 10
 	0 -> s 7
 	go to L5535
 
-L5742:	shift right a[wp]
+trg350:	shift right a[wp]
 	shift right a[wp]
-L5744:	a - 1 -> a[s]
-	if n/c go to L5742
+trg360:	a - 1 -> a[s]
+	if n/c go to trg350
 	0 -> a[s]
 	m1 exchange c
 	a exchange c[w]
 	a - c -> c[w]
 	a + b -> a[w]
 	m1 exchange c
-L5754:	a -> b[w]
+trg370:	a -> b[w]
 	c -> a[s]
 	c - 1 -> c[p]
-	if n/c go to L5744
+	if n/c go to trg360
 	a exchange c[w]
 	shift left a[m]
 	a exchange c[w]
@@ -3563,7 +3579,7 @@ L5754:	a -> b[w]
 	c - 1 -> c[s]
 	0 -> a[s]
 	shift right a[w]
-	go to L5754
+	go to trg370
 
 L5771:	delayed rom 02
 	go to L1336
