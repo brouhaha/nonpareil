@@ -893,7 +893,7 @@ op_rcl_sigma:			; 0x0f RCL Sigma
 
 ; H/HMS conversions - to H if s8=0, to HMS if s8=1
 hms_conv:  b exchange c[w]
-        jsb S3372
+        jsb hms_conv_sub
         go to L3001
 
 ; HMS+
@@ -901,14 +901,16 @@ hms_plus:
 	jsb save_lastx
         go to L3352
 
+; HMS-
+; entry point unused?
         jsb save_lastx
         0 - c - 1 -> c[s]
 L3352:  b exchange c[w]
-        jsb S3372
+        jsb hms_conv_sub
         stack -> a
         c -> stack
         a exchange b[w]
-        jsb S3372
+        jsb hms_conv_sub
         jsb addxy
         delayed rom @05
         jsb $over0
@@ -921,7 +923,8 @@ hmsm20: a + c -> a[wp]
           then go to hmsm20
         return
 
-S3372:  if b[m] = 0			; compare L1575 in 27
+hms_conv_sub:
+	if b[m] = 0			; compare L1575 in 27
           then go to hms120
         p <- 12
         b -> c[x]

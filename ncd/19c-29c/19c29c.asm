@@ -958,7 +958,7 @@ rcl_sigma:
 ; H/HMS conversions - to H if s8=0, to HMS if s8=1
 hms_conv:
 	b exchange c[w]
-        jsb S3373
+        jsb hms_conv_sub
         go to L3032
 
 ; following code not in 67/97
@@ -987,7 +987,8 @@ hmsm20: a + c -> a[wp]
           then go to hmsm20
         return
 
-S3373:  if b[m] = 0
+hms_conv_sub:
+	if b[m] = 0
           then go to hms120
         p <- 12
         b -> c[x]
@@ -1595,6 +1596,7 @@ L4405:  if c[s] = 0
 L4417:  p <- 12
         if c[xs] = 0
           then go to L4607
+; 67/97 has call to conditionally save X to LASTx here
         if 0 = s 6
           then go to L4620
         jsb S4730
@@ -1669,6 +1671,7 @@ L4510:  a -> b[w]
 L4524:  delayed rom @12
         jsb trc10
 L4526:  a exchange c[w]
+; 67/97 has call to conditionally save X to LASTx here
         0 -> c[w]
 L4530:  delayed rom @10
         jsb S4334
