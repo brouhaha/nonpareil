@@ -1,6 +1,6 @@
 /*
 $Id$
-Copyright 1995, 2004, 2005, 2006, 2007, 2008 Eric Smith <eric@brouhaha.com>
+Copyright 1995, 2004-2009 Eric Smith <eric@brouhaha.com>
 
 Nonpareil is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License version 2 as
@@ -508,7 +508,16 @@ inst_noop       : NOP			    { emit (00000); } ;
 
 inst_rom_checksum : ROM CHECKSUM            { emit (01460); } ;
 
-inst_bank_toggle: BANK TOGGLE               { emit (01060); } ;
+inst_bank_toggle: BANK TOGGLE               { emit (01060); }
+		| BANK TOGGLE '(' expr ')'  { emit (01060);
+                                              addr_t tgt = (pc + 1) & 07777;
+					      if ((pass == 2) && ($4 != tgt))
+						{
+						  error ("'bank toggle' target value incorrect - requested %05o, actual %05o\n", $4, tgt);
+						}
+					    }
+
+		;
 
 inst_woodstock	: HI IAM WOODSTOCK	    { emit (01760); } ;
 
