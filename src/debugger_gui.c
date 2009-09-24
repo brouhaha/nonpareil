@@ -118,6 +118,14 @@ static void update_register_window (void)
 }
 
 
+static gboolean register_window_update_callback (GtkWidget *widget  UNUSED,
+						 gpointer data)
+{
+  update_register_window ();
+  return FALSE;
+}
+
+
 static int log2tab [17] =
   { 1, 1, 1, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 4, 4  };
 
@@ -236,6 +244,8 @@ void debug_show_reg  (gpointer callback_data,
 		      guint    callback_action,
 		      GtkWidget *widget)
 {
+  GtkWidget *vbox;
+  GtkWidget *update_button;
   GtkWidget *notebook;
   
   if (! reg_window)
@@ -249,9 +259,25 @@ void debug_show_reg  (gpointer callback_data,
 			GTK_SIGNAL_FUNC (on_destroy_reg_window_event),
 			NULL);
 
-      notebook = gtk_notebook_new ();
+      vbox = gtk_vbox_new (FALSE,  // homogeneous
+			   1);     // spacing
+      gtk_container_add (GTK_CONTAINER (reg_window), vbox);
+			  
+      update_button = gtk_button_new_with_label ("update");
+      //gtk_container_add (GTK_CONTAINER (vbox), update_button);
+      gtk_box_pack_start (GTK_BOX (vbox),// box
+			  update_button, // child
+			  FALSE, // expand
+			  TRUE, // fill
+			  0); // padding
 
-      gtk_container_add (GTK_CONTAINER (reg_window), notebook);
+      g_signal_connect (G_OBJECT (update_button),
+			"pressed",
+			G_CALLBACK (register_window_update_callback),
+			NULL);
+
+      notebook = gtk_notebook_new ();
+      gtk_container_add (GTK_CONTAINER (vbox), notebook);
 
       max_reg = 0;
 
@@ -284,6 +310,14 @@ static void update_ram_window (void)
 	snprintf (buf, sizeof (buf), "err");
       gtk_entry_set_text (GTK_ENTRY (ram_widget [index]), buf);
     }
+}
+
+
+static gboolean ram_window_update_callback (GtkWidget *widget  UNUSED,
+					    gpointer data)
+{
+  update_ram_window ();
+  return FALSE;
 }
 
 
@@ -330,6 +364,8 @@ void debug_show_ram  (gpointer callback_data,
 		      guint    callback_action,
 		      GtkWidget *widget)
 {
+  GtkWidget *vbox;
+  GtkWidget *update_button;
   GtkWidget *table;
   GtkWidget *scrolled_window;
   int addr = 0;
@@ -348,13 +384,30 @@ void debug_show_ram  (gpointer callback_data,
 			GTK_SIGNAL_FUNC (on_destroy_ram_window_event),
 			NULL);
 
+      vbox = gtk_vbox_new (FALSE,  // homogeneous
+			   1);     // spacing
+      gtk_container_add (GTK_CONTAINER (ram_window), vbox);
+			  
+      update_button = gtk_button_new_with_label ("update");
+      //gtk_container_add (GTK_CONTAINER (vbox), update_button);
+      gtk_box_pack_start (GTK_BOX (vbox),// box
+			  update_button, // child
+			  FALSE, // expand
+			  TRUE, // fill
+			  0); // padding
+
+      g_signal_connect (G_OBJECT (update_button),
+			"pressed",
+			G_CALLBACK (ram_window_update_callback),
+			NULL);
+
       table = gtk_table_new (1, 2, FALSE);
 
       scrolled_window = gtk_scrolled_window_new (NULL, NULL);
 
       gtk_scrolled_window_add_with_viewport (GTK_SCROLLED_WINDOW (scrolled_window), table);
 
-      gtk_container_add (GTK_CONTAINER (ram_window), scrolled_window);
+      gtk_container_add (GTK_CONTAINER (vbox), scrolled_window);
 
       limit = sim_get_max_ram_addr (dg_csim->sim);
       for (addr = 0; addr < limit; addr++)
