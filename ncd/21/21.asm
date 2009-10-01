@@ -17,17 +17,17 @@
 
 	.arch woodstock
 
-	.rom 0
+	.org @0000
 
 	a + 1 -> a[w]
 	a + 1 -> a[w]
 	f exchange a[x]
 	m1 exchange c
-$kclx:	0 -> c[w]
-$L0005:	0 -> s 2
+kclx:	0 -> c[w]
+L0005:	0 -> s 2
 L0006:	clear status
 L0007:	display off
-	jsb $$ovrf3
+	jsb $ovrf3
 	if c[m] # 0
 	  then go to L0014
 	0 -> c[w]
@@ -44,8 +44,8 @@ sci1:	a - 1 -> a[xs]
 	go to sci4
 
 L0027:	0 -> a[wp]
-L0030:	jsb $dmeex
-	jsb $getkey
+L0030:	jsb dmeex
+	jsb getkey
 	p <- 1
 	shift left a[wp]
 	p <- 3
@@ -62,13 +62,12 @@ deeex4:	p <- 4
 L0047:	jsb L0276
 	a exchange c[ms]
 	p <- 4
-	jsb $$ovrf3
+	jsb $ovrf3
 	if p = 12
 	  then go to L0006
 	go to L0030
 
-$errmsg:
-	jsb $err5
+errmsg:	jsb err5
 	a exchange c[w]
 	load constant 14			; E
 	load constant 10			; r
@@ -89,11 +88,11 @@ fix9:	jsb zappo
 	a exchange b[x]
 	go to fix6
 
-$push:	if 0 = s 2
+push:	if 0 = s 2
 	  then go to push1
 	c -> stack
 push1:	1 -> s 2
-$err5:	0 -> c[w]
+err5:	0 -> c[w]
 	p <- 12
 	jsb zappo
 	0 -> a[s]
@@ -121,9 +120,9 @@ fix6:	0 -> a[x]
 	a exchange b[x]
 outpu2:	0 -> s 5
 	if 0 = s 5
-	  then go to $outp3a
-$L0140:	jsb L0364
-	jsb $push
+	  then go to outp3a
+L0140:	jsb L0364
+	jsb push
 L0142:	if 1 = s 14
 	  then go to L0334
 	jsb wait2
@@ -147,7 +146,7 @@ dige6:	p - 1 -> p
 	0 -> a[ms]
 dige8:	a exchange c[ms]
 L0170:	0 -> s 14
-	jsb $getkey
+	jsb getkey
 	if p = 2
 	  then go to L0170
 	go to L0142
@@ -175,8 +174,8 @@ round2:	0 -> a[w]
 round3:	a -> b[x]
 	return
 
-$kdsp:	0 -> s 9
-L0223:	jsb $getkey
+kdsp:	0 -> s 9
+L0223:	jsb getkey
 	if p = 2
 	  then go to L0223
 	0 -> s 1
@@ -209,7 +208,7 @@ fix8:	p <- 4
 	jsb round2
 	go to sci1
 
-$kshift:
+kshift:
 	clear status
 	1 -> s 13
 	go to L0007
@@ -222,7 +221,7 @@ sci2:	jsb zappo
 	0 - c -> c[x]
 	c - 1 -> c[xs]
 sci3:	a exchange c[x]
-sci4:	jsb $dmeex
+sci4:	jsb dmeex
 	go to outpu2
 
 L0276:	p <- 13
@@ -249,8 +248,8 @@ L0320:	return
 fix5:	shift right b[m]
 	go to fix4
 
-$kchs:	if 1 = s 13
-	  then go to $ksqrt
+kchs:	if 1 = s 13
+	  then go to ksqrt
 	if 0 = s 14
 	  then go to L0362
 	p <- 4
@@ -261,7 +260,7 @@ $kchs:	if 1 = s 13
 
 L0334:	if c[m] # 0
 	 then go to L0341
-	jsb $err5
+	jsb err5
 	c + 1 -> c[p]
 	c -> a[p]
 L0341:	p <- 4
@@ -272,12 +271,11 @@ L0341:	p <- 4
 dige7:	jsb L0276
 	go to dige8
 
-$$ovrf3:
-	select rom 01 ($ovrf3)
+$ovrf3:	select rom 01 (overf3)
 
 	nop
 
-$dmeex:	p <- 4			; make mask and move exp over
+dmeex:	p <- 4			; make mask and move exp over
 	shift left a[wp]
 	shift left a[wp]
 	0 -> b[wp]
@@ -288,44 +286,42 @@ $dmeex:	p <- 4			; make mask and move exp over
 	return
 
 L0362:	0 - c - 1 -> c[s]
-$getkey:	0 -> s 13
+getkey:	0 -> s 13
 L0364:	c -> a[s]
 	display toggle
-$wait:	0 -> s 15
+wait:	0 -> s 15
 	p <- 7
 wait1:	p - 1 -> p
 	if p # 0
 	  then go to wait1
 	if 1 = s 15
-	  then go to $wait
+	  then go to wait
 	hi i'm woodstock
 wait2:	if 0 = s 15
 	  then go to wait2
-
-	.rom 1
 
 	display off
 	p <- 0
 	0 -> a[p]
 	keys -> rom address
 
-L0404:	select rom 00 ($L0005)
+L0404:	select rom 00 (L0005)
 
 ksin:	1 -> s 6
 ktan:	0 -> s 3
-	jsb $$nrm25
+	jsb $nrm25
 	if 0 = s 13
-	  then go to $L1622
+	  then go to L1622
 	if 0 = s 6
-	  then go to $atan
+	  then go to atan
 	0 - c - 1 -> c[s]
 	a exchange c[s]
-	select rom 03 ($asin)
+	select rom 03 (asin)
 
 krdn:	if 1 = s 13
 	  then go to kr-p
 	down rotate
-	go to $retrn
+	go to retrn
 
 k.:	1 -> s 9
 	p <- 2
@@ -341,20 +337,20 @@ L0432:	stack -> a
 	a exchange c[w]
 	return
 
-$trig3:	if 0 = s 7
-	  then go to $retrn
+trig3:	if 0 = s 7
+	  then go to retrn
 	0 -> a[w]
 	a + 1 -> a[p]
 	if c[m] = 0
 	  then go to L0703
 	m2 exchange c
-	jsb $L0734
+	jsb L0734
 	m2 -> c
-	jsb $$mpy21
-	jsb $ovrf3
+	jsb $mpy21
+	jsb overf3
 	go to L0705
 
-$add3:	p <- 12
+add3:	p <- 12
 	0 -> b[w]
 	a + 1 -> a[xs]
 	a + 1 -> a[xs]
@@ -369,14 +365,14 @@ add4:	a exchange c[m]
 	a exchange c[w]
 add5:	b exchange c[m]
 add6:	if a >= c[x]
-	  then go to $add1
+	  then go to add1
 	shift right b[w]
 	a + 1 -> a[x]
 	if b[w] = 0
-	  then go to $add1
+	  then go to add1
 	go to add6
 
-$$push:	select rom 00 ($push)
+$push:	select rom 00 (push)
 
 k25:	go to krcl		; RCL/10^x
 k24:	go to klog		; STO/LOG
@@ -384,8 +380,8 @@ k23:	go to L0773		; e^x/LN
 k22:	go to krdn		; RDN/->P
 
 k21:	if 0 = s 13
-	  then go to $kxexy	; x<>y/->R
-	jsb $$nrm25
+	  then go to kxexy	; x<>y/->R
+	jsb $nrm25
 	1 -> s 7
 	0 -> s 13
 	jsb L0432
@@ -397,9 +393,9 @@ L0513:	p <- 12
 	0 -> c[w]
 	return
 
-$$sqrt: select rom 03 ($sqrt)
+$sqrt: select rom 03 (sqrt)
 
-$atc11:	0 -> c[w]
+atc11:	0 -> c[w]
 	p <- 11
 	load constant 7
 	load constant 8
@@ -414,8 +410,8 @@ $atc11:	0 -> c[w]
 	p <- 12
 	return
 
-$kxexy:	jsb L0432
-	go to $retrn
+kxexy:	jsb L0432
+	go to retrn
 
 k44:	a + 1 -> a[p]			; 9
 k43:	a + 1 -> a[p]			; 8
@@ -424,12 +420,12 @@ k42:	.legal
 
 k41:	jsb L0760			; -
 	0 - c - 1 -> c[s]
-L0546:	jsb $add3
+L0546:	jsb add3
 L0547:	if 0 = s 13
-	  then go to $retrn
-	jsb $ovrf3
+	  then go to retrn
+	jsb overf3
 	m1 exchange c
-	go to $retrn
+	go to retrn
 
 L0554:	0 -> c[wp]
 	c - 1 -> c[wp]
@@ -443,7 +439,7 @@ k62:	.legal
 	go to kdigit		; 1 - always taken
 
 k61:	jsb L0760		; *
-	jsb $$mpy21
+	jsb $mpy21
 	go to L0547
 
 kr-p:	1 -> s 7
@@ -456,24 +452,24 @@ L0573:	m2 exchange c
 	if a[m] # 0
 	  then go to L0602
 	if c[m] = 0
-	  then go to $retrn
+	  then go to retrn
 L0602:	p <- 12
-	jsb $L0734
-	jsb $ovrf3
+	jsb L0734
+	jsb overf3
 	m2 exchange c
 	jsb L0732
 	jsb L0432
 	jsb L0732
 	stack -> a
-	jsb $add3
+	jsb add3
 	a - 1 -> a[xs]
 	a - 1 -> a[xs]
 	if a[xs] # 0
-	  then go to $ksqrt
-	jsb $ovrf3
-	go to $L0700
+	  then go to ksqrt
+	jsb overf3
+	go to L0700
 
-k74:	select rom 00 ($kdsp)
+k74:	select rom 00 (kdsp)
 
 k73:	go to k.
 
@@ -483,11 +479,11 @@ k71:	p <- 12			; /
 	jsb L0760
 	go to L0671
 
-kpi:	jsb $$push
-	jsb $atc11
+kpi:	jsb $push
+	jsb atc11
 	c + c -> c[w]
 	c + c -> c[w]
-$retrn:	1 -> s 2
+retrn:	1 -> s 2
 	delayed rom 00	; go to L0235
 
 	go to ktan
@@ -506,17 +502,17 @@ k51:	jsb L0760		; +
 
 krcl:	1 -> s 8
 	if 1 = s 13
-	  then go to $10tox
-	jsb $$push
+	  then go to 10tox
+	jsb $push
 krcl2:	m1 -> c
-	go to $retrn
+	go to retrn
 
 kclr:	if 0 = s 13
-	  then go to $kclx
+	  then go to kclx
 	clear regs
-	go to $retrn
+	go to retrn
 
-k15:	select rom 00 ($kshift)
+k15:	select rom 00 (kshift)
 
 k14:	go to ktan			; tan/tan^-1	
 
@@ -529,40 +525,39 @@ k11:	if 1 = s 13			; 1/x / y^x
 	p <- 12
 	a + 1 -> a[p]
 L0671:	1 -> s 8
-	jsb $L0734
+	jsb L0734
 	go to L0547
 
-$ksqrt:	jsb $$nrm25
-	jsb $$sqrt
+ksqrt:	jsb $nrm25
+	jsb $sqrt
 	if 0 = s 7
-	  then go to $retrn
-$L0700:	c -> stack
+	  then go to retrn
+L0700:	c -> stack
 	m2 exchange c
 	go to ktan
 
 L0703:	m2 exchange c
 	a exchange c[w]
 L0705:	y -> a
-	jsb $$mpy21
-	jsb $ovrf3
+	jsb $mpy21
+	jsb overf3
 	if 0 = s 4
 	  then go to L0713
 	0 - c - 1 -> c[s]
 L0713:	stack -> a
 	c -> stack
 	m2 -> c
-	jsb $$mpy21
-	go to $retrn
+	jsb $mpy21
+	go to retrn
 
 k34:	go to kclr			; CLx/CLR
 k33:	go to keex			; EEX/pi
-k32:	select rom 00 ($kchs)
+k32:	select rom 00 (kchs)
 
-$$nrm25:
-	select rom 02 ($nrm25)
+$nrm25:	select rom 02 (nrm25)
 
 k31:	if 1 = s 13			; ENTER
-	  then go to $getkey
+	  then go to getkey
 	c -> stack
 	go to L0404
 
@@ -570,25 +565,24 @@ kdigit:	a + 1 -> a[p]
 	return
 
 L0732:	c -> a[w]
-$$mpy21:
-	select rom 02 ($mpy21)
+$mpy21:	select rom 02 (mpy21)
 
-$L0734:	a - c -> c[x]
-	select rom 02 ($div21)
+L0734:	a - c -> c[x]
+	select rom 02 (div21)
 
-$outp3a: p <- 12
+outp3a: p <- 12
 outpu3:	b exchange c[p]
 	0 - c - 1 -> c[p]
 	b exchange c[p]
 	p - 1 -> p
 	if p = 4
-	  then go to $L0140
+	  then go to L0140
 	go to outpu3
 
 L0746:	stack -> a
 	return
 
-$ovrf3:	if c[xs] = 0
+overf3:	if c[xs] = 0
 	  then go to overf4
 	c - 1 -> c[x]
 	c + 1 -> c[xs]
@@ -611,15 +605,13 @@ klog:	if 0 = s 13
 	1 -> s 6
 L0773:	1 -> s 8
 	if 0 = s 13
-	  then go to $exp21
+	  then go to exp21
 
 ; the following matches on inst after ln in 25:
 
 	0 -> a[w]
 	a - c -> a[m]
 
-	.rom 2
-	
 	if n/c go to err
 	shift right a[w]
 	c - 1 -> c[s]
@@ -638,17 +630,17 @@ ln26:	a -> b[w]
 	p <- 8
 	jsb pmu22
 	p <- 9
-	jsb $pmu21
+	jsb pmu21
 	jsb lncd3
 	p <- 10
-	jsb $pmu21
+	jsb pmu21
 	jsb lncd2
 	p <- 11
-	jsb $pmu21
+	jsb pmu21
 	jsb lncd1
-	jsb $pmu21
+	jsb pmu21
 	jsb lnc2
-	jsb $pmu21
+	jsb pmu21
 	jsb lnc10
 	a exchange c[w]
 	a - c -> c[w]
@@ -670,14 +662,14 @@ ln29:	c + 1 -> c[x]
 	if 1 = s 10
 	  then go to xty22
 	if 0 = s 6
-	  then go to $retrn
+	  then go to retrn
 	jsb lnc10
 	jsb mpy22
 	go to retur2
 
-pqo21:	select rom 03 ($pqo11)
+pqo21:	select rom 03 (pqo11)
 
-$pmu21:	shift right a[w]
+pmu21:	shift right a[w]
 pmu22:	b exchange c[w]
 	go to L1073
 	
@@ -689,7 +681,7 @@ L1073:	c - 1 -> c[s]
 	a exchange c[w]
 $pqo23:	go to pqo23
 
-$pre21:	a exchange c[w]
+pre21:	a exchange c[w]
 	a -> b[w]
 	c -> a[m]
 	c + c -> c[xs]
@@ -700,10 +692,10 @@ L1107:	shift right a[w]
 	if n/c go to L1107
 	go to pre26
 
-$10tox:	jsb ln10b
-ytox29:	jsb $mpy21
-$exp21:	jsb ln10b
-	jsb $pre21
+10tox:	jsb ln10b
+ytox29:	jsb mpy21
+exp21:	jsb ln10b
+	jsb pre21
 	jsb lnc2
 	p <- 11
 	jsb pqo21
@@ -783,8 +775,8 @@ exp23:	a exchange c[w]
 	if n/c go to exp22
 	a exchange b[w]
 	a + 1 -> a[p]
-	jsb $norm
-retur2: select rom 01 ($retrn)
+	jsb norm
+retur2: select rom 01 (retrn)
 
 pre23:	if 0 = s 8
 	  then go to pre24
@@ -823,13 +815,13 @@ pqo24:	shift right c[w]
 
 mpy26:	a + b -> a[w]
 mpy27:	c - 1 -> c[p]
-$L1277:	if n/c go to mpy26
+L1277:	if n/c go to mpy26
 mpy28:	shift right a[w]
 	p + 1 -> p
 	if p # 13
 	  then go to mpy27
 	c + 1 -> c[x]
-$norm:	0 -> a[s]
+norm:	0 -> a[s]
 	p <- 12
 	0 -> b[w]
 nrm23:	if a[p] # 0
@@ -844,7 +836,7 @@ nrm24:	a -> b[x]
 	if a[s] # 0
 	  then go to mpy28
 	a exchange c[m]
-$nrm25:	c -> a[w]
+nrm25:	c -> a[w]
 	0 -> b[w]
 nrm27:	p <- 12
 nrm26:	return		; nrm26 label not used
@@ -855,9 +847,9 @@ lncd3:	p <- 5
 xty22:	stack -> a	; modified from 25
 	go to ytox29
 
-$mpy21:	p <- 3
+mpy21:	p <- 3
 mpy22:	a + c -> c[x]
-$div21:	a - c -> c[s]
+div21:	a - c -> c[s]
 	if n/c go to div22
 	0 - c -> c[s]
 div22:	0 -> b[w]
@@ -868,13 +860,13 @@ div22:	0 -> b[w]
 	if c[m] # 0
 	  then go to div23
 err:	if 1 = s 8
-	  then go to $errmsg
+	  then go to errmsg
 	b -> c[wp]
 	a - 1 -> a[m]
 	c + 1 -> c[xs]
 div23:	b exchange c[wp]
 	a exchange c[m]
-	select rom 03 ($div15)
+	select rom 03 (div15)
 
 lnc2:	load constant 6
 	load constant 9
@@ -894,8 +886,6 @@ eca22:	a - 1 -> a[s]
 	a + b -> a[w]
 	return
 
-	.rom 3
-
 tan15:	a exchange b[w]
 	jsb tnm11
 	jsb stacka
@@ -911,15 +901,15 @@ tan31:	if 0 = s 6
 	1 -> s 4
 tan32:	0 -> c[s]
 	jsb div11
-$asin:	jsb cstack	; $asin label not used
+asin:	jsb cstack	; asin label not used
 	jsb mpy11
 	jsb add10
-	jsb $sqrt
+	jsb sqrt
 	jsb stacka
 asn12:	jsb div11
 	if 0 = s 13
-	  then go to $trig3
-$atan:	0 -> a[w]
+	  then go to trig3
+atan:	0 -> a[w]
 	a + 1 -> a[p]
 	a -> b[m]
 	a exchange c[m]
@@ -938,12 +928,12 @@ atn14:	b exchange c[w]
 
 add10:	0 -> a[w]
 	a + 1 -> a[p]
-add11:	select rom 01 ($add3)
+add11:	select rom 01 (add3)
 
 sqt12:	p - 1 -> p
 	a + b -> a[ms]
 	if n/c go to sqt18
-	select rom 00 ($errmsg)
+	select rom 00 (errmsg)
 
 tnm11:	jsb cstack
 	a exchange c[w]
@@ -954,9 +944,9 @@ tnm12:	c -> a[w]
 	b -> c[x]
 	go to add15
 
-pmu11:	select rom 02 ($pmu21)
+pmu11:	select rom 02 (pmu21)
 
-$pqo11:	shift left a[w]
+pqo11:	shift left a[w]
 pqo12:	shift right b[ms]
 	b exchange c[w]
 	go to pqo16
@@ -967,7 +957,7 @@ pqo16:	a - b -> a[w]
 	a + b -> a[w]
 pqo13:	select rom 02 ($pqo23)
 
-pre11:	select rom 02 ($pre21)
+pre11:	select rom 02 (pre21)
 
 sqt15:	c + 1 -> c[p]
 sqt16:	a - c -> a[w]
@@ -986,10 +976,9 @@ stacka:	a exchange c[w]
 	a exchange c[w]
 	return
 
-$$atc11:
-	select rom 01 ($atc11)
+$atc11:	select rom 01 (atc11)
 
-$sqrt:	b exchange c[w]		; missing c->a[w], 0->b[w]
+sqrt:	b exchange c[w]		; missing c->a[w], 0->b[w]
 	p <- 4
 	go to sqt14
 
@@ -1031,12 +1020,12 @@ atn17:	jsb pqo13	; atn17 label not used
 	jsb pmu11
 	jsb atcd1
 	jsb pmu11
-	jsb $$atc11
+	jsb $atc11
 	shift left a[w]
 	jsb pmu11
 	b -> c[w]
 atn19:	jsb add15	; atn19 label not used
-	jsb $$atc11
+	jsb $atc11
 	c + c -> c[w]
 	if 1 = s 10
 	  then go to atan1
@@ -1048,7 +1037,7 @@ atn19:	jsb add15	; atn19 label not used
 atan1:	a exchange c[w]
 	0 - c - 1 -> c[s]
 	jsb add11
-$atan9:	jsb $$atc11	; $atan9 label not used
+atan9:	jsb $atc11	; atan9 label not used
 	c + c -> c[w]
 atan2:	a exchange c[w]
 	if 1 = s 3
@@ -1058,61 +1047,61 @@ atan2:	a exchange c[w]
 
 ; following differs from 25:
 
-$L1622:	0 -> c[w]
+L1622:	0 -> c[w]
 	c - 1 -> c[p]
 	c + 1 -> c[x]
 	if 0 = s 13
 	  then go to L1633
 	jsb mpy11
 atan34:	if 1 = s 7
-	  then go to $kxexy
-	select rom 01 ($retrn)
+	  then go to kxexy
+	select rom 01 (retrn)
 
 L1633:	if 1 = s 3		; equiv. tan + 1 in 25
 	  then go to L1641
 	jsb div11
-	jsb $$atc11
+	jsb $atc11
 	c + c -> c[w]
 	jsb mpy11
 
-L1641:	jsb $$atc11		; load pi/4
+L1641:	jsb $atc11		; load pi/4
 	c + c -> c[w]		; pi/2
 	c + c -> c[w]		; pi
 	c + c -> c[w]		; 2*pi
 	jsb pre11
-	jsb $$atc11
+	jsb $atc11
 	p <- 10
-	jsb $pqo11
+	jsb pqo11
 	jsb atcd1
 	p <- 8
 	jsb pqo12
 	p <- 2
 	load constant 8
 	p <- 6
-	jsb $pqo11
+	jsb pqo11
 	p <- 4
-	jsb $pqo11
-	jsb $pqo11
+	jsb pqo11
+	jsb pqo11
 	a exchange b[w]
 	shift right c[w]
 	p <- 13
 	load constant 5
 	go to tan14
 
-$add1:	c - 1 -> c[xs]
+add1:	c - 1 -> c[xs]
 	c - 1 -> c[xs]
 	0 -> a[x]
 	a - c -> a[s]
 	if a[s] # 0
 	  then go to add13
-	select rom 02 ($L1277)
+	select rom 02 (L1277)
 
 add13:	if a >= b[m]
 	  then go to add14
 	0 - c - 1 -> c[s]
 	a exchange b[w]
 add14:	a - b -> a[w]
-add15:	select rom 02 ($norm)
+add15:	select rom 02 (norm)
 
 tan18:	shift right b[wp]
 	shift right b[wp]
@@ -1136,9 +1125,9 @@ tan14:	a exchange c[wp]
 	b exchange c[s]
 	go to tan13
 
-mpy11:	select rom 01 ($$mpy21)
+mpy11:	select rom 01 ($mpy21)
 
-div11:	select rom 01 ($L0734)
+div11:	select rom 01 (L0734)
 
 sqt18:	a + b -> a[x]
 	if n/c go to sqt14
@@ -1162,13 +1151,13 @@ cstack:	m2 exchange c
 	return
 
 div14:	c + 1 -> c[p]
-$div15:	a - b -> a[ms]
+div15:	a - b -> a[ms]
 	if n/c go to div14
 	a + b -> a[ms]
 	shift left a[ms]
 div16:	p - 1 -> p	; div16 label not used
 	if p # 0
-	  then go to $div15
+	  then go to div15
 	go to tnm12
 
 atcd1:	p <- 6
