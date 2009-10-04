@@ -1788,32 +1788,33 @@ L4771:  p <- 10
         load constant 6
         go to L5062
 
-S5006:  load constant 6		; fill word to end with sixes
+six_fill:
+	load constant 6		; fill word to end with sixes
         if p = 0
           then go to L4766
-        go to S5006
+        go to six_fill
 
 L5012:  p <- 8
-        jsb S5006
+        jsb six_fill
         p <- 4
         load constant 8
         p <- 11
         return
 
 L5020:  p <- 6
-        jsb S5006
+        jsb six_fill
         p <- 0
         load constant 9
         p <- 10
         return
 
 L5026:  p <- 4
-        jsb S5006
+        jsb six_fill
         p <- 9
         return
 
 L5032:  p <- 2
-        jsb S5006
+        jsb six_fill
         p <- 8
         return
 
