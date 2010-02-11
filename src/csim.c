@@ -826,6 +826,14 @@ void close_zip_file (GsfInfile *infile)
 }
 
 
+void setup_path (void)
+{
+  char *p = getenv ("NONPAREIL_PATH");
+  if (p)
+    default_path = p;
+}
+
+
 int main (int argc, char *argv[])
 {
   csim_t *csim;
@@ -849,6 +857,8 @@ int main (int argc, char *argv[])
   GdkBitmap *image_mask_bitmap = NULL;
 
   progname = newstr (argv [0]);
+
+  setup_path ();
 
   g_thread_init (NULL);
 
