@@ -1,6 +1,6 @@
 /*
 $Id$
-Copyright 2004, 2005, 2006 Eric L. Smith <eric@brouhaha.com>
+Copyright 2004, 2005, 2006, 2010 Eric Smith <eric@brouhaha.com>
 
 Nonpareil is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License version 2 as
@@ -22,30 +22,30 @@ MA 02111, USA.
 
 /* CPU architectures: */
 
-#define ARCH_UNKNOWN   0
+#define ARCH_UNKNOWN      0
 
 // Open architectures:
-#define ARCH_M68K      1
-#define ARCH_H8        2
-#define ARCH_SUNPLUS   3
-#define ARCH_ARM       4
+#define ARCH_M68K         1
+#define ARCH_H8           2
+#define ARCH_6502         3  // core used by SunPlus/GeneralPlus
+#define ARCH_ARM          4
 
 // HP proprietary architectures:
-#define ARCH_CLASSIC   5
-#define ARCH_WOODSTOCK 6
-#define ARCH_CRICKET   7
-#define ARCH_NUT       8
-#define ARCH_CAPRICORN 9
-#define ARCH_SATURN    10
+#define ARCH_CLASSIC      5
+#define ARCH_WOODSTOCK    6
+#define ARCH_CRICKET      7
+#define ARCH_NUT          8
+#define ARCH_CAPRICORN    9
+#define ARCH_SATURN      10
 
 // TI proprietary architectures:
-#define ARCH_TMS1802   11
-#define ARCH_TMS0200   12
-#define ARCH_TMC0501   13  // variant 0 = TMC0501, variant 1 = TMC0501E
-#define ARCH_TMC0980   14
-#define ARCH_TMC1500   15
+#define ARCH_TMS1802     11
+#define ARCH_TMS0200     12
+#define ARCH_TMC0501     13  // variant 0 = TMC0501, variant 1 = TMC0501E
+#define ARCH_TMC0980     14
+#define ARCH_TMC1500     15
 
-#define ARCH_MAX       16
+#define ARCH_MAX         16
 
 
 typedef struct

@@ -1,6 +1,6 @@
 /*
 $Id$
-Copyright 2004, 2005, 2006 Eric L. Smith <eric@brouhaha.com>
+Copyright 2004, 2005, 2006, 2010 Eric Smith <eric@brouhaha.com>
 
 Nonpareil is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License version 2 as
@@ -26,25 +26,25 @@ MA 02111, USA.
 
 static arch_info_t arch_info [ARCH_MAX] =
   {
-    [ARCH_UNKNOWN]   = { "unknown",    0 },
+    [ARCH_UNKNOWN]     = { "unknown",    0 },
 
-    [ARCH_M68K]      = { "m68k",       8 },  // 32-bit longword
-    [ARCH_H8]        = { "h8",         8 },
-    [ARCH_SUNPLUS]   = { "sunplus",    8 },
-    [ARCH_ARM]       = { "arm",        8 },  // 32-bit word
+    [ARCH_M68K]        = { "m68k",       8 },  // 32-bit longword
+    [ARCH_H8]          = { "h8",         8 },
+    [ARCH_6502]        = { "6502",       8 },
+    [ARCH_ARM]         = { "arm",        8 },  // 32-bit word
 
-    [ARCH_CLASSIC]   = { "classic",   56 },
-    [ARCH_WOODSTOCK] = { "woodstock", 56 },
-    [ARCH_CRICKET]   = { "cricket",   48 },
-    [ARCH_NUT]       = { "nut",       56 },
-    [ARCH_CAPRICORN] = { "capricorn",  8 },
-    [ARCH_SATURN]    = { "saturn",     4 },  // 64-bit word
+    [ARCH_CLASSIC]     = { "classic",   56 },
+    [ARCH_WOODSTOCK]   = { "woodstock", 56 },
+    [ARCH_CRICKET]     = { "cricket",   48 },
+    [ARCH_NUT]         = { "nut",       56 },
+    [ARCH_CAPRICORN]   = { "capricorn",  8 },
+    [ARCH_SATURN]      = { "saturn",     4 },  // 64-bit word
 
-    [ARCH_TMS1802]   = { "tms1802",   64 },
-    [ARCH_TMS0200]   = { "tms0200",   64 },
-    [ARCH_TMC0501]   = { "tmc0501",   64 },
-    [ARCH_TMC0980]   = { "tmc0501",   64 },
-    [ARCH_TMC1500]   = { "tmc0501",   64 }
+    [ARCH_TMS1802]     = { "tms1802",   64 },
+    [ARCH_TMS0200]     = { "tms0200",   64 },
+    [ARCH_TMC0501]     = { "tmc0501",   64 },
+    [ARCH_TMC0980]     = { "tmc0501",   64 },
+    [ARCH_TMC1500]     = { "tmc0501",   64 }
   };
 
 
