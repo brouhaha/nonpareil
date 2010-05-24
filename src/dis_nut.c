@@ -69,8 +69,11 @@ static int nut_disassemble_short_branch (rom_word_t op1,
 }
 
 
-static bool nut_disassemble_long_branch (rom_word_t op1,
+static bool nut_disassemble_long_branch (uint32_t flags,
+					 rom_word_t op1,
 					 rom_word_t op2,
+					 rom_word_t op3,
+					 addr_t *addr, 
 					 bank_t *bank,
 					 bool *carry_known_clear,
 					 flow_type_t *flow_type,
@@ -79,25 +82,82 @@ static bool nut_disassemble_long_branch (rom_word_t op1,
 					 char *buf,
 					 int len)
 {
-  bool cond_c, type, uncond;
+  bool cond_c, call, uncond;
+  bool special_41 = false;
 
   *target_addr = (op1 >> 2) | ((op2 & 0x3fc) << 6);
   *target_bank = *bank;
 
   cond_c = op2 & 0x001;
-  type = op2 & 0x002;
+  call = ! (op2 & 0x002);
 
-  if ((! cond_c) && * carry_known_clear)
-    uncond = true;
+  uncond = (! cond_c) && (* carry_known_clear);
 
-  if (type)
-    *flow_type = uncond ? flow_uncond_branch : flow_cond_branch;
-  else
+  if (call && (flags & DIS_FLAG_NUT_41_JUMPS))
+    {
+      special_41 = true;
+      switch (*target_addr)
+	{
+	case 0x0fd9:
+	  *target_addr = (*addr & 0xfc00) + op3;
+	  call = false;
+	  break;
+	case 0x0fdd:
+	  *target_addr = (*addr & 0xfc00) + op3;
+	  call = true;
+	  break;
+	case 0x23d0:
+	  *target_addr = (*addr & 0xf000) + 0x0000 + op3;
+	  call = false;
+	  break;
+	case 0x23d2:
+	  *target_addr = (*addr & 0xf000) + 0x0000 + op3;
+	  call = true;
+	  break;
+	case 0x23d9:
+	  *target_addr = (*addr & 0xf000) + 0x0400 + op3;
+	  call = false;
+	  break;
+	case 0x23db:
+	  *target_addr = (*addr & 0xf000) + 0x0400 + op3;
+	  call = true;
+	  break;
+	case 0x23e2:
+	  *target_addr = (*addr & 0xf000) + 0x0800 + op3;
+	  call = false;
+	  break;
+	case 0x23e4:
+	  *target_addr = (*addr & 0xf000) + 0x0800 + op3;
+	  call = true;
+	  break;
+	case 0x23eb:
+	  *target_addr = (*addr & 0xf000) + 0x0c00 + op3;
+	  call = false;
+	  break;
+	case 0x23ed:
+	  *target_addr = (*addr & 0xf000) + 0x0c00 + op3;
+	  call = true;
+	  break;
+	default:
+	  special_41 = false;
+	}
+    }
+
+  if (call)
     *flow_type = flow_subroutine_call;
+  else
+    *flow_type = uncond ? flow_uncond_branch : flow_cond_branch;
 
-  if (! uncond)
-    buf_printf (& buf, & len, "?%s ", cond_c ? "c " : "nc");
-  buf_printf (& buf, & len, "%s %%s", type ? "goto" : "call");
+  if (special_41)
+    {
+      buf_printf (& buf, & len, "q%s %%s", call ? "call" : "goto");
+    }
+  else
+    {
+      if (! uncond)
+	buf_printf (& buf, & len, "?%s ", cond_c ? "c " : "nc");
+      buf_printf (& buf, & len, "%s %%s", call ? "call" : "goto");
+    }
 
   return true;
 }
@@ -378,8 +438,35 @@ static bool nut_two_word_instruction (rom_word_t op1)
 }
 
 
+static bool nut_three_word_instruction (rom_word_t op1, rom_word_t op2)
+{
+  addr_t target;
+
+  if ((op1 & 3) != 1)
+    return false;
+  if ((op2 & 2) != 0)
+    return false;
+  target = (op1 >> 2) | ((op2 & 0x3fc) << 6);
+  switch (target)
+    {
+    case 0x0fd9:
+    case 0x0fdd:
+    case 0x23d0:
+    case 0x23d2:
+    case 0x23d9:
+    case 0x23db:
+    case 0x23e2:
+    case 0x23e4:
+    case 0x23eb:
+    case 0x23ed:
+      return true;
+    }
+  return false;
+}
+
+
 bool nut_disassemble (sim_t        *sim,
-		      uint32_t     flags UNUSED,
+		      uint32_t     flags,
 		      // input and output:
 		      bank_t       *bank,
 		      addr_t       *addr,
@@ -396,9 +483,10 @@ bool nut_disassemble (sim_t        *sim,
 {
   bool new_carry_known_clear = true;
   bool status;
-  bool two_word;
+  bool two_word, three_word;
   rom_word_t op1;
   rom_word_t op2 = 0;
+  rom_word_t op3 = 0;
   addr_t base_addr = *addr;
 
   if ((*inst_state) != inst_normal)
@@ -414,6 +502,14 @@ bool nut_disassemble (sim_t        *sim,
   if (two_word)
     {
       if (! sim_read_rom (sim, *bank, *addr, & op2))
+	return false;
+      (*addr) = ((*addr) + 1) & 0xffff;
+    }
+
+  three_word = (two_word && (flags & DIS_FLAG_NUT_41_JUMPS) && nut_three_word_instruction (op1, op2));
+  if (three_word)
+    {
+      if (! sim_read_rom (sim, *bank, *addr, & op3))
 	return false;
       (*addr) = ((*addr) + 1) & 0xffff;
     }
@@ -443,8 +539,11 @@ bool nut_disassemble (sim_t        *sim,
 				     len);
       break;
     case 1:
-      status = nut_disassemble_long_branch (op1,
+      status = nut_disassemble_long_branch (flags,
+					    op1,
 					    op2,
+					    op3,
+					    addr,
 					    bank,
 					    carry_known_clear,
 					    flow_type,

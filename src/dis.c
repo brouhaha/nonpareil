@@ -36,6 +36,10 @@ MA 02111, USA.
 #include "chip.h"
 #include "calcdef.h"
 #include "proc.h"
+#include "digit_ops.h"
+
+// 41-specific stuff:
+#include "proc_nut.h"
 #include "mod1_file.h"
 #include "dis_uc41.h"
 
@@ -650,6 +654,7 @@ int main (int argc, char *argv[])
   calcdef_t *calcdef;
   int arch;
   arch_info_t *arch_info;
+  int platform;
   bool got_bank = false;
   bool got_page = false;
   bool got_start_addr = false;
@@ -754,12 +759,14 @@ int main (int argc, char *argv[])
   calcdef = sim_get_calcdef (sim);
   arch = calcdef_get_arch (calcdef);
   arch_info = get_arch_info (arch);
+  platform = calcdef_get_platform (calcdef);
+
   hex_addr_mode = (arch == ARCH_NUT);
 
   if (decode_fat)
     {
-      if (arch != ARCH_NUT)
-	fatal (1, "--fat only works on the Nut architecture\n");
+      if ((arch != ARCH_NUT) || (platform != PLATFORM_COCONUT))
+	fatal (1, "--fat only works on the Nut architecture and Coconut platform\n");
       if (! got_start_addr)
 	fatal (1, "--fat requires --page (or --start and --end)\n");
       if ((start_addr & 0x0fff) ||
@@ -784,6 +791,9 @@ int main (int argc, char *argv[])
   flags = DIS_FLAG_LABEL;
   if (listing_mode)
     flags |= DIS_FLAG_LISTING;
+
+  if (platform == PLATFORM_COCONUT)
+    flags |= DIS_FLAG_NUT_41_JUMPS;
 
   pass_two = false;
   if (decode_fat)

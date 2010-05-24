@@ -1,6 +1,6 @@
 /*
 $Id$
-Copyright 1995, 2003-2008 Eric Smith <eric@brouhaha.com>
+Copyright 1995, 2003-2008, 2010 Eric Smith <eric@brouhaha.com>
 
 Nonpareil is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License version 2 as
@@ -222,3 +222,4 @@ bool nut_get_page_info (sim_t           *sim,
 
 void debug_nut_show_pages (sim_t *sim);
 
+#define DIS_FLAG_NUT_41_JUMPS (1 << 16)
