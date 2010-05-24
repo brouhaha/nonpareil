@@ -1,6 +1,6 @@
 # SConscript for Nonpareil
 # $Id$
-# Copyright 2004, 2005, 2006, 2008 Eric Smith <eric@brouhaha.com>
+# Copyright 2004-2006, 2008, 2010 Eric Smith <eric@brouhaha.com>
 
 # Nonpareil is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License version 2 as
@@ -82,7 +82,7 @@ if build_env ['has_debugger_cli']:
 # common components
 #-----------------------------------------------------------------------------
 
-common_srcs = Split ("""util.c xmlutil.c arch.c model.c platform.c pixbuf_util.c""")
+common_srcs = Split ("""util.c xmlutil.c arch.c platform.c pixbuf_util.c""")
 common_objs = [build_env.Object(src) for src in common_srcs]
 
 sim_core_srcs = Split ("""calcdef.c
@@ -416,7 +416,7 @@ if build_env ['build_target_only'] == 0:
 if build_env ['build_target_only'] == 0:
     headers = Split ("""util.h xmlutil.h
                         calc_chooser.h
-                        calcdef.h arch.h model.h platform.h kml.h
+                        calcdef.h arch.h platform.h kml.h
 			chip.h
                         proc.h proc_int.h glib_async_queue_source.h
                         digit_ops.h

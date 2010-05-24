@@ -1,6 +1,6 @@
 /*
 $Id$
-Copyright 1995, 2003-2008 Eric Smith <eric@brouhaha.com>
+Copyright 1995, 2003-2008, 2010 Eric Smith <eric@brouhaha.com>
 
 Nonpareil is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License version 2 as
@@ -29,13 +29,12 @@ MA 02111, USA.
 
 #include "arch.h"
 #include "platform.h"
-#include "model.h"
 #include "util.h"
 #include "display.h"
 #include "keyboard.h"
 #include "chip.h"
-#include "proc.h"
 #include "calcdef.h"
+#include "proc.h"
 #include "proc_int.h"
 #include "digit_ops.h"
 #include "proc_nut.h"
@@ -808,6 +807,7 @@ static void op_enbank (sim_t *sim, int opcode)
   nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
   bank_t bank = ((opcode >> 5) & 2) + ((opcode >> 7) & 1);
 
+#undef NUT_BANK_SWITCH_DEBUG
 #ifdef NUT_BANK_SWITCH_DEBUG
   fprintf (stderr, "enbank %d (%03x) at %04x\n", bank + 1, opcode, nut_reg->prev_pc);
 #endif

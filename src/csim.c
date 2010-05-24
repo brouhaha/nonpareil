@@ -37,12 +37,13 @@ MA 02111, USA.
 
 #include "util.h"
 #include "display.h"
+#include "keyboard.h"
 #include "kml.h"
 #include "chip.h"
+#include "calcdef.h"
 #include "proc.h"
 #include "arch.h"
 #include "platform.h"
-#include "model.h"
 #include "state_io.h"
 #include "about.h"
 #include "sound.h"
@@ -849,9 +850,6 @@ int main (int argc, char *argv[])
   gboolean run = TRUE;
   bool sound_enabled = TRUE;
 
-  int model;
-  model_info_t *model_info;
-
   GtkWidget *vbox;
 
   GdkBitmap *image_mask_bitmap = NULL;
@@ -945,15 +943,6 @@ int main (int argc, char *argv[])
   if (! csim->kml->image_fn)
     fatal (2, "No image file spsecified in KML\n");
 
-  if (! csim->kml->model)
-    fatal (2, "No model specified in KML\n");
-
-  model = find_model_by_name (csim->kml->model);
-  if (model == MODEL_UNKNOWN)
-    fatal (2, "Unrecognized model specified in KML\n");
-
-  model_info = get_model_info (model);
-
   csim->file_pixbuf = load_pixbuf (csim, csim->kml->image_fn);
 
   if (! csim->kml->has_background_size)
@@ -1007,13 +996,6 @@ int main (int argc, char *argv[])
       gtk_box_pack_start (GTK_BOX (vbox), csim->menubar, FALSE, TRUE, 0);
     }
 
-  // Only the Coconut platform (41C family) is configurable, so remove
-  // the Configure menu if the platform isn't a Coconut.
-  if (model_info->platform != PLATFORM_COCONUT)
-    gtk_container_remove (GTK_CONTAINER (csim->menubar),
-			  gtk_item_factory_get_item (csim->main_menu_item_factory,
-						     "/Configure"));
-
   csim->fixed = gtk_fixed_new ();
   gtk_widget_set_size_request (csim->fixed,
 			       csim->kml->background_size.width,
@@ -1051,6 +1033,13 @@ int main (int argc, char *argv[])
   csim->sim = sim_init (ncd_fn,
 			(display_update_callback_fn_t *) gui_display_update,
 			csim->gui_display);  // display_update_callback_ref
+
+  // Only the Coconut platform (41C family) is configurable, so remove
+  // the Configure menu if the platform isn't a Coconut.
+  if (calcdef_get_platform (sim_get_calcdef (csim->sim)) != PLATFORM_COCONUT)
+    gtk_container_remove (GTK_CONTAINER (csim->menubar),
+			  gtk_item_factory_get_item (csim->main_menu_item_factory,
+						     "/Configure"));
 
 #ifdef HAS_DEBUGGER_GUI
   init_debugger_gui (csim);

@@ -1,6 +1,6 @@
 /*
 $Id$
-Copyright 2006 Eric L. Smith <eric@brouhaha.com>
+Copyright 2006, 2010 Eric Smith <eric@brouhaha.com>
 
 Nonpareil is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License version 2 as
@@ -23,7 +23,7 @@ MA 02111, USA.
 typedef struct calcdef_t calcdef_t;
 
 
-calcdef_t *calcdef_load (sim_t *sim, char *ncd_fn);
+calcdef_t *calcdef_load (struct sim_t *sim, char *ncd_fn);
 
 void calcdef_free (calcdef_t *calcdef);
 

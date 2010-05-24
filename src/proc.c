@@ -1,6 +1,6 @@
 /*
 $Id$
-Copyright 1995, 2004, 2005, 2006, 2007, 2008 Eric Smith <eric@brouhaha.com>
+Copyright 1995, 2004-2008, 2010 Eric Smith <eric@brouhaha.com>
 
 Nonpareil is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License version 2 as
@@ -36,10 +36,10 @@ MA 02111, USA.
 #include "display.h"
 #include "keyboard.h"
 #include "chip.h"
+#include "calcdef.h"
 #include "proc.h"
 #include "arch.h"
 #include "platform.h"
-#include "calcdef.h"
 #include "mod1_file.h"
 #include "proc_int.h"
 #include "glib_async_queue_source.h"
@@ -1181,6 +1181,11 @@ void sim_init_debug_trace_callback (sim_t *sim,
   sim->debug_trace_callback = debug_trace_callback;
 }
 
+
+calcdef_t *sim_get_calcdef (sim_t *sim)
+{
+  return sim->calcdef;
+}
 
 int sim_get_arch (sim_t *sim)
 {

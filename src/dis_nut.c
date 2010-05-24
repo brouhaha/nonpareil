@@ -1,6 +1,6 @@
 /*
 $Id$
-Copyright 2004, 2005, 2007, 2008, 2009 Eric Smith <eric@brouhaha.com>
+Copyright 2004, 2005, 2007-2010 Eric Smith <eric@brouhaha.com>
 
 Nonpareil is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License version 2 as
@@ -29,8 +29,8 @@ MA 02111, USA.
 #include "display.h"
 #include "keyboard.h"
 #include "chip.h"
-#include "proc.h"
 #include "calcdef.h"
+#include "proc.h"
 #include "digit_ops.h"
 #include "proc_nut.h"
 
