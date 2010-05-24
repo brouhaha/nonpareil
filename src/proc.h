@@ -125,10 +125,6 @@ void sim_init_debug_trace_callback (sim_t *sim,
 
 calcdef_t *sim_get_calcdef (sim_t *sim);
 
-int sim_get_arch (sim_t *sim);
-
-const char *sim_get_model_name (sim_t *sim);
-
 const char *sim_get_ncd_fn (sim_t *sim);
 
 

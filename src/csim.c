@@ -695,7 +695,7 @@ void set_default_state_path (csim_t *csim)
   const char *p;
   const char *model_name;
 
-  model_name = sim_get_model_name (csim->sim);
+  model_name = calcdef_get_model_name (sim_get_calcdef (csim->sim));
 
   p = g_get_home_dir ();
   strcpy (csim->state_fn, p);

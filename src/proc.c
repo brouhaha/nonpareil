@@ -1187,16 +1187,6 @@ calcdef_t *sim_get_calcdef (sim_t *sim)
   return sim->calcdef;
 }
 
-int sim_get_arch (sim_t *sim)
-{
-  return sim->arch;
-}
-
-const char *sim_get_model_name (sim_t *sim)
-{
-  return calcdef_get_model_name (sim->calcdef);
-}
-
 const char *sim_get_ncd_fn (sim_t *sim)
 {
   return sim->ncd_fn;

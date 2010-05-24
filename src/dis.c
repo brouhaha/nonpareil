@@ -647,6 +647,7 @@ int main (int argc, char *argv[])
   char *module_str = NULL;
   char *mod1_fn;
   sim_t *sim;
+  calcdef_t *calcdef;
   int arch;
   arch_info_t *arch_info;
   bool got_bank = false;
@@ -750,7 +751,8 @@ int main (int argc, char *argv[])
 
   symtab = alloc (max_bank * max_addr * sizeof (uint8_t));
 
-  arch = sim_get_arch (sim);
+  calcdef = sim_get_calcdef (sim);
+  arch = calcdef_get_arch (calcdef);
   arch_info = get_arch_info (arch);
   hex_addr_mode = (arch == ARCH_NUT);
 
