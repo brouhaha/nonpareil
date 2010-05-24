@@ -1,6 +1,6 @@
 /*
 $Id$
-Copyright 2005, 2006, 2007, 2008 Eric Smith <eric@brouhaha.com>
+Copyright 2005, 2006, 2007, 2008, 2010 Eric Smith <eric@brouhaha.com>
 
 Nonpareil is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License version 2 as
@@ -633,6 +633,14 @@ static void disassemble_fat (sim_t    *sim,
 }
 
 
+void setup_path (void)
+{
+  char *p = getenv ("NONPAREIL_PATH");
+  if (p)
+    default_path = p;
+}
+
+
 int main (int argc, char *argv[])
 {
   char *model_str = NULL;
@@ -653,6 +661,8 @@ int main (int argc, char *argv[])
   uint32_t flags;
 
   progname = argv [0];
+
+  setup_path ();
 
   g_thread_init (NULL);
 
