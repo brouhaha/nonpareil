@@ -427,7 +427,7 @@ static bool nut_two_word_instruction (rom_word_t op1)
   switch (op1 & 3)
     {
     case 0:  // misc
-      two_word = ((op1 & 0x3c) == 0x30);  // ldi
+      two_word = (op1 == 0x130);       // ldi
       break;
     case 1:  two_word = true; break;   // long branch
     case 2:  two_word = false; break;  // arith
