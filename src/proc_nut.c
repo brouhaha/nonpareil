@@ -1824,6 +1824,8 @@ static void log_print_stat (sim_t *sim)
 static void nut_print_state (sim_t *sim)
 {
   nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
+  uint8_t page = nut_reg->prev_pc / PAGE_SIZE;
+  bank_t bank = nut_reg->active_bank [page];
 
   log_printf (sim, "cycle %5" PRId64 "  ", sim->cycle_count);
   log_printf (sim, "%c=%x ", (nut_reg->q_sel) ? 'p' : 'P', nut_reg->p);
@@ -1846,8 +1848,8 @@ static void nut_print_state (sim_t *sim)
     {
       char buf [80];
       if (sim_disassemble_runtime (sim,
-				   0,                 // flags
-				   0,                 // bank $$$ wrong
+				   DIS_FLAG_LISTING,  // flags
+				   bank,              // bank
 				   nut_reg->prev_pc,  // addr
 				   nut_reg->inst_state,
 				   nut_reg->carry,
