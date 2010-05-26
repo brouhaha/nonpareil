@@ -1674,10 +1674,15 @@ static void op_powoff (sim_t *sim,
 		       int opcode UNUSED)
 {
   nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
+  int i;
+
+  for (i = 0; i < MAX_PAGE; i++)
+    nut_reg->active_bank [i] = 0;
 
 #ifdef SLEEP_DEBUG
   printf ("going to sleep!\n");
 #endif
+
   nut_reg->awake = false;
   nut_reg->pc = 0;
   chip_event (sim,
