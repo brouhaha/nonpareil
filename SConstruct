@@ -31,67 +31,68 @@ release_minor = '79'
 
 conf_file = 'nonpareil.conf'
 
-opts = Options (conf_file)
+vars = Variables (conf_file)
 
-opts.AddOptions (EnumOption ('target',
-			     help = 'execution target platform',
-			     allowed_values = ('posix', 'win32'),
-			     default = 'posix',
-			     ignorecase = 1),
+vars.AddVariables (EnumVariable ('target',
+                                 help = 'execution target platform',
+                                 allowed_values = ('posix', 'win32'),
+                                 default = 'posix',
+                                 ignorecase = 1),
 
-		 PathOption ('prefix',
-			     'installation path prefix',
-			     '/usr/local'),
+                   PathVariable ('prefix',
+                                 'installation path prefix',
+                                 '/usr/local'),
 
-		 # Don't use PathOption for other paths, because we don't
-		 # require the directories to preexist.
-		 ('bindir',
-		  'path for executable files (default is $prefix/bin)',
-		  ''),
+                   PathVariable ('bindir',
+                                 'path for executable files (default is $prefix/bin)',
+                                 '',
+                                 PathVariable.PathAccept),
 
-		 ('libdir',
-		  'path for library files (default is $prefix/lib/nonpareil)',
-		  ''),
+                   PathVariable ('libdir',
+                                 'path for library files (default is $prefix/lib/nonpareil)',
+                                 '',
+                                 PathVariable.PathAccept),
 
-		 ('destdir',
-		  'installation virtual root directory (for packaging)',
-		  ''),
+                   PathVariable ('destdir',
+                                 'installation virtual root directory (for packaging)',
+                                 '',
+                                 PathVariable.PathAccept),
 
-		 BoolOption ('debug',
-			     help = 'compile for debugging',
-			     default = 1),
+                   BoolVariable ('debug',
+                                 help = 'compile for debugging',
+                                 default = 1),
 
 		 # Feature switches:
 
-		 BoolOption ('has_debugger_gui',
-			     help = 'enable debugger GUI interface',
-			     default = 0),
+                   BoolVariable ('has_debugger_gui',
+                                 help = 'enable debugger GUI interface',
+                                 default = 0),
 
-		 BoolOption ('has_debugger_cli',
-			     help = 'enable debugger command-line interface',
-			     default = 0),
+                   BoolVariable ('has_debugger_cli',
+                                 help = 'enable debugger command-line interface',
+                                 default = 0),
 
-		 BoolOption ('use_tcl',
-			     help = 'use Tcl as debug command interpreter (only when debugger CLI is enabled)',
-			     default = 1),  # only if has_debugger_cli
+                   BoolVariable ('use_tcl',
+                                 help = 'use Tcl as debug command interpreter (only when debugger CLI is enabled)',
+                                 default = 1),  # only if has_debugger_cli
 
-		 BoolOption ('use_readline',
-			     help = 'use Readline library for command editing and history (only when debugger CLI is enabled)',
-			     default = 1))  # only if has_debugger_cli
+                   BoolVariable ('use_readline',
+                                 help = 'use Readline library for command editing and history (only when debugger CLI is enabled)',
+                                 default = 1))  # only if has_debugger_cli
 
 #-----------------------------------------------------------------------------
 # Cache options
 #-----------------------------------------------------------------------------
 
-env = Environment (options = opts)
-opts.Update (env)
-opts.Save (conf_file, env)
+env = Environment (variables = vars)
+vars.Update (env)
+vars.Save (conf_file, env)
 
 #-----------------------------------------------------------------------------
 # Generate help text from options
 #-----------------------------------------------------------------------------
 
-Help (opts.GenerateHelpText (env))
+Help (vars.GenerateHelpText (env))
 
 #-----------------------------------------------------------------------------
 # More defaults and variable settings

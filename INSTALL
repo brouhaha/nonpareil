@@ -1,5 +1,5 @@
 Nonpareil - a calculator microassembler and simulator
-Copyright 2005, 2006, 2008 Eric Smith <eric@brouhaha.com>
+Copyright 2005, 2006, 2008, 2010 Eric Smith <eric@brouhaha.com>
 $Id$
 
 -----------------------------------------------------------------------------
@@ -18,7 +18,7 @@ The recommended minimum tool versions are:
     NetPBM	10.35.41
     Python	2.5.1
     PyXML	0.8.4
-    SCons	0.98.4
+    SCons	1.2.0
 
 In addition, the libraries and header files for the runtime dependencies
 must be available at build time.  A list of these is in the README file.
