@@ -817,7 +817,6 @@ static void op_c_to_data (sim_t *sim,
 			  int opcode UNUSED)
 {
   act_reg_t *act_reg = get_chip_data (sim->first_chip);
-  int i;
 
   if (! act_reg->ram_exists [act_reg->ram_addr])
     {
@@ -827,6 +826,7 @@ static void op_c_to_data (sim_t *sim,
 #ifdef HAS_DEBUGGER
   if (sim->debug_flags & (1 << SIM_DEBUG_RAM_TRACE))
     {
+      int i;
       printf ("C -> DATA, addr %02x  data ", act_reg->ram_addr);
       for (i = 0; i < WSIZE; i++)
 	printf ("%x", act_reg->c [i]);
@@ -866,7 +866,6 @@ static void op_data_to_c (sim_t *sim,
 static void op_c_to_register (sim_t *sim, int opcode)
 {
   act_reg_t *act_reg = get_chip_data (sim->first_chip);
-  int i;
 
   act_reg->ram_addr &= ~017;
   act_reg->ram_addr += (opcode >> 6);
@@ -879,6 +878,7 @@ static void op_c_to_register (sim_t *sim, int opcode)
 #ifdef HAS_DEBUGGER
   if (sim->debug_flags & (1 << SIM_DEBUG_RAM_TRACE))
     {
+      int i;
       printf ("C -> REGISTER %d, addr %02x  data ", opcode >> 6, act_reg->ram_addr);
       for (i = 0; i < WSIZE; i++)
 	printf ("%x", act_reg->c [i]);
@@ -1788,8 +1788,12 @@ static void woodstock_reset (sim_t *sim)
   for (i = 0; i < SSIZE; i++)
     act_reg->s [i] = 0;
 
+#if 0
+  // resetting the CPU doesn't clear the external flags,
+  // since they're external!
   for (i = 0; i < EXT_FLAG_SIZE; i++)
     act_reg->ext_flag [i] = 0;
+#endif
 
   act_reg->p = 0;
   memset (act_reg->p_change, 0, sizeof (act_reg->p_change));
