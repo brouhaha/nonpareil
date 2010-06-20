@@ -308,7 +308,8 @@ static void helios_event_fn (sim_t      *sim,
 }
 
 
-static bool helios_add_column (printer_line_data_t *line,
+static bool helios_add_column (helios_reg_t *helios,
+			       printer_line_data_t *line,
 			       int *col_idx,
 			       uint8_t col)
 {
@@ -316,6 +317,8 @@ static bool helios_add_column (printer_line_data_t *line,
     return false;
 
   line->columns [(*col_idx)++] = col;
+  if (helios_get_status_bit (helios, HS_DOUBLE_WIDE))
+    line->columns [(*col_idx)++] = col;
 
   return true;
 }
@@ -384,7 +387,7 @@ static void helios_eol (sim_t *sim, bool right_justify)
 	{
 	  if (mode & HM_GRAPHICS)
 	    {
-	      if (! helios_add_column (line, & col_idx, byte))
+	      if (! helios_add_column (helios, line, & col_idx, byte))
 		break;  // not room for another column
 	      buf_idx++;
 	    }
@@ -408,7 +411,7 @@ static void helios_eol (sim_t *sim, bool right_justify)
 	}
       else if ((byte > 0xb8) && (byte <= 0xbf))
 	{
-	  if (! helios_add_column (line, & col_idx, 0x00))
+	  if (! helios_add_column (helios, line, & col_idx, 0x00))
 	    break;
 	  helios->buffer [buf_idx]--;
 	}
