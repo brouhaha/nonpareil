@@ -1434,8 +1434,8 @@ static void woodstock_print_state (sim_t *sim)
   log_printf (sim, "%06o: %06o\n", mapped_addr, woodstock_get_ucode (act_reg, act_reg->prev_pc));
   log_send (sim);
 #else
-  log_printf (sim, "pc=%05o  radix=%d  p=%d  f=%x  stat:",
-	  mapped_addr, arithmetic_base (act_reg), act_reg->p, act_reg->f);
+  log_printf (sim, "radix=%d  p=%d  f=%x  stat:",
+	  arithmetic_base (act_reg), act_reg->p, act_reg->f);
   for (i = 0; i < SSIZE; i++)
     if (get_s_bit (sim, i))
       log_printf (sim, " %d", i);
@@ -1447,12 +1447,15 @@ static void woodstock_print_state (sim_t *sim)
   log_print_reg (sim, "m1: ", act_reg->m1);
   log_print_reg (sim, "m2: ", act_reg->m2);
 
+  log_printf (sim, "cycle %" PRId64 "\n", sim->cycle_count);
+
+  log_printf (sim, "pc=%05o: ", mapped_addr);
+
   if (sim->source && sim->source [mapped_addr])
     log_printf (sim, "%s", sim->source [mapped_addr]);
   else
     {
       char buf [80];
-      log_printf (sim, "%" PRId64 ": ", sim->cycle_count);
       if (sim_disassemble_runtime (sim,
 				   0,                 // flags
 				   bank,
