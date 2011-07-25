@@ -341,7 +341,7 @@ static int nut_disassemble_misc (int op1,
       else
 	{
 	  buf_printf (& buf, & len, "pt= %d", tmap [arg]);
-	  *new_carry_known_clear = false;
+	  *new_carry_known_clear = true;
 	}
       break;
     case 0x020:
