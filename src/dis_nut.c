@@ -84,6 +84,8 @@ static bool nut_disassemble_long_branch (uint32_t flags,
 {
   bool cond_c, call, uncond;
   bool special_41 = false;
+  bool set_hex = false;
+  int special_page = -1;
 
   *target_addr = (op1 >> 2) | ((op2 & 0x3fc) << 6);
   *target_bank = *bank;
@@ -99,43 +101,57 @@ static bool nut_disassemble_long_branch (uint32_t flags,
       switch (*target_addr)
 	{
 	case 0x0fd9:
+	  set_hex = true;
+	  // FALL
+	case 0x0fda:
 	  *target_addr = (*addr & 0xfc00) + op3;
 	  call = false;
 	  break;
 	case 0x0fdd:
+	  set_hex = true;
+	  // FALL
+	case 0x0fde:
 	  *target_addr = (*addr & 0xfc00) + op3;
 	  call = true;
 	  break;
 	case 0x23d0:
 	  *target_addr = (*addr & 0xf000) + 0x0000 + op3;
+	  special_page = 0;
 	  call = false;
 	  break;
 	case 0x23d2:
 	  *target_addr = (*addr & 0xf000) + 0x0000 + op3;
+	  special_page = 0;
 	  call = true;
 	  break;
 	case 0x23d9:
 	  *target_addr = (*addr & 0xf000) + 0x0400 + op3;
+	  special_page = 1;
 	  call = false;
 	  break;
 	case 0x23db:
 	  *target_addr = (*addr & 0xf000) + 0x0400 + op3;
+	  special_page = 1;
 	  call = true;
 	  break;
 	case 0x23e2:
 	  *target_addr = (*addr & 0xf000) + 0x0800 + op3;
+	  special_page = 2;
 	  call = false;
 	  break;
 	case 0x23e4:
 	  *target_addr = (*addr & 0xf000) + 0x0800 + op3;
+	  special_page = 2;
 	  call = true;
 	  break;
 	case 0x23eb:
 	  *target_addr = (*addr & 0xf000) + 0x0c00 + op3;
+	  special_page = 3;
 	  call = false;
 	  break;
 	case 0x23ed:
 	  *target_addr = (*addr & 0xf000) + 0x0c00 + op3;
+	  special_page = 3;
 	  call = true;
 	  break;
 	default:
@@ -150,13 +166,18 @@ static bool nut_disassemble_long_branch (uint32_t flags,
 
   if (special_41)
     {
-      buf_printf (& buf, & len, "q%s %%s", call ? "call" : "goto");
+      if (special_page >= 0)
+	buf_printf (& buf, & len, "x%s%d %%s", call ? "gosub" : "goto", special_page);
+      else if (set_hex)
+        buf_printf (& buf, & len, "x%s %%s", call ? "gosubh" : "gotoh");
+      else
+        buf_printf (& buf, & len, "x%s %%s", call ? "gosub" : "goto");
     }
   else
     {
       if (! uncond)
 	buf_printf (& buf, & len, "?%s ", cond_c ? "c " : "nc");
-      buf_printf (& buf, & len, "%s %%s", call ? "call" : "goto");
+      buf_printf (& buf, & len, "%s %%s", call ? "gosub" : "goto");
     }
 
   return true;
@@ -450,7 +471,9 @@ static bool nut_three_word_instruction (rom_word_t op1, rom_word_t op2)
   switch (target)
     {
     case 0x0fd9:
+    case 0x0fda:
     case 0x0fdd:
+    case 0x0fde:
     case 0x23d0:
     case 0x23d2:
     case 0x23d9:
@@ -516,11 +539,13 @@ bool nut_disassemble (sim_t        *sim,
 
   if (flags & DIS_FLAG_LISTING)
     {
-      buf_printf (& buf, & len, "%04x: %03x ", base_addr, op1);
-      if (two_word)
-	buf_printf (& buf, & len, "%03x  ", op2);
+      buf_printf (& buf, & len, "%04x: ", base_addr);
+      if (three_word)
+	buf_printf (& buf, & len, "%03x %03x %03x  ", op1, op2, op3);
+      else if (two_word)
+	buf_printf (& buf, & len, "%03x %03x      ", op1, op2);
       else
-	buf_printf (& buf, & len, "     ");
+	buf_printf (& buf, & len, "%03x          ", op1);
     }
 
   if (flags & DIS_FLAG_LABEL)
