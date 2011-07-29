@@ -1,5 +1,5 @@
 /*
-$Id$
+$Id: modutil.c 1142 2008-06-26 03:01:48Z eric $
 Copyright 2005, 2008 Eric Smith <eric@brouhaha.com>
 
 MOD File utility main program for Linux/Posix systems.
@@ -115,12 +115,32 @@ void usage (FILE *f)
   fprintf (f, "usage: %s [options...] mod_file...\n", progname);
   fprintf (f, "options:\n");
   fprintf (f, "   -v  verbose\n");
-  fprintf (f, "   -e  extract ROM images, if any\n");
+  fprintf (f, "   -e  extract ROM images (if any) as raw binary files\n");
+  fprintf (f, "   -c  extract ROM images (if any) as C source to standard out\n");
   fprintf (f, "   -f  decode FAT, if any\n");
   fprintf (f, "   -h  hex/text dump of pages\n");
   fprintf (f, "\n");
 }
 
+
+bool write_rom_file_as_c_source (uint16_t *ROM)
+{
+  int i;
+  int addr;
+
+  printf ("#include <stdint.h>\n");
+  printf ("const uint16_t rom [] = {");
+  for (i = 0; i < 4096; i++)
+    {
+      if ((i % 8) == 0)
+	printf ("\n  /* %04x */", i);
+      printf (" 0x%03x", ROM [i]);
+      if (addr != 4095)
+	printf (",");
+    }
+  printf ("}\n");
+  return true;
+}
 
 bool write_rom_file (char *fn, uint16_t *ROM)
 {
@@ -733,11 +753,83 @@ bool extract_roms (char *fn)
 }
 
 
+// Returns true for success, false for any failure
+
+bool extract_roms_c (char *fn)
+{
+  bool result = false;
+  FILE *mod_file = NULL;
+  uint8_t *buffer = NULL;
+  size_t file_size,size_read;
+  mod1_file_header_t *header;
+  int i;
+
+  // open and read MOD file into a buffer
+  mod_file = fopen (fn, "rb");
+  if (! mod_file)
+    goto done;
+  fseek (mod_file, 0, SEEK_END);
+  file_size = ftell (mod_file);
+  fseek (mod_file, 0, SEEK_SET);
+  if ((file_size - sizeof (mod1_file_header_t)) % sizeof (mod1_file_page_t))
+    goto done;
+  buffer = alloc (file_size);
+  size_read = fread (buffer, 1, file_size, mod_file);
+  fclose(mod_file);
+  mod_file = NULL;
+  if (size_read != file_size)
+    goto done;
+
+  // check header
+  header = (mod1_file_header_t *) buffer;
+  if (file_size != (sizeof (mod1_file_header_t) +
+		    (header->NumPages * sizeof(mod1_file_page_t))))
+    goto done;
+  if (strcmp (header->FileFormat, MOD_FORMAT) != 0)
+    goto done;
+
+  if ((header->MemModules > 4) || 
+      (header->XMemModules > 3) ||
+      (header->Original > 1) ||
+      (header->AppAutoUpdate > 1) ||
+      (header->Category > CATEGORY_MAX) ||
+      (header->Hardware > HARDWARE_MAX))    // out of range
+    goto done;
+
+  /* go through each page */
+  for (i = 0; i < header->NumPages; i++)
+    {
+      mod1_file_page_t *page;
+      uint16_t ROM [0x1000];
+
+      page = (mod1_file_page_t *) (buffer +
+				  sizeof (mod1_file_header_t) +
+				  i * sizeof (mod1_file_page_t));
+
+      // write the ROM file
+      unpack_image (ROM, page->Image);
+      write_rom_file_as_c_source (ROM);
+    }
+
+  result = true;  // everything OK
+      
+ done:
+  if (buffer)
+    free (buffer);
+
+  if (mod_file)
+    fclose (mod_file);
+
+  return result;
+}
+
+
 int main (int argc, char *argv [])
 {
   int errors = 0;
   bool verbose = false;
   bool extract = false;
+  bool extract_c = false;
   bool decode_fat = false;
   bool hex_dump = false;
 
@@ -755,6 +847,8 @@ int main (int argc, char *argv [])
 	    verbose = true;
 	  else if (strcmp (argv [0], "-e") == 0)
 	    extract = true;
+	  else if (strcmp (argv [0], "-c") == 0)
+	    extract_c = true;
 	  else if (strcmp (argv [0], "-f") == 0)
 	    decode_fat = true;
 	  else if (strcmp (argv [0], "-h") == 0)
@@ -767,6 +861,8 @@ int main (int argc, char *argv [])
 	  if (! output_mod_info (stdout, argv [0], verbose, decode_fat, hex_dump))
 	    errors++;
 	  if (extract && ! extract_roms (argv [0]))
+	    errors++;
+	  if (extract_c && ! extract_roms_c (argv [0]))
 	    errors++;
 	}
     }
