@@ -1,6 +1,6 @@
 ; 27 ROM disassembly
 ; Copyright 2006, 2008 Eric Smith <eric@brouhaha.com>
-; $Id$
+; $Id: 27.asm 1284 2009-09-11 11:22:22Z eric $
 ;
 ; Verified to match 27 ROM part numbers:	
 ;     5061-0430-2 (addresses 0000-3777) ROM/anode driver
@@ -1829,6 +1829,9 @@ add13:	if a >= b[m]
 	0 - c - 1 -> c[s]
 	a exchange b[w]
 add14:	a - b -> a[w]
+
+; normalize a 13-digit floating point result
+; compare S3235 in 67/97, S3237 in 19C/29C?
 L2745:	p <- 12
 	if a[wp] # 0
 	  then go to L2764
@@ -1846,6 +1849,9 @@ L2754:	jsb add3
 L2760:	delayed rom @11
 	go to L4424
 
+; The increment of a[s] should be done in binary. This bug was fixed by
+; a patch in the 67/97, and may have been correct in the initial 19C/29C.
+; Unknown whether there was a later 27 ROM with the fix.
 L2762:	a + 1 -> a[s]
 	c - 1 -> c[x]
 L2764:	if a[p] # 0
@@ -3056,13 +3062,14 @@ L5002:	delayed rom 07
 L5017:	delayed rom 05
 	go to L2651
 
+; compare 67/97 L4516, 19C/29C L4510
 L5021:	a -> b[w]
 	if b[w] = 0
 	  then go to L5137
 	a - 1 -> a[p]
 	if a[w] # 0
 	  then go to L5217
-	0 -> c[w]
+	0 -> c[w]		; is "a exchange b[w]" in old 67/97, "a exchange c[w]" in 19C/29C and new 67/97
 	if 0 = s 6
 	  then go to L5131
 	jsb togs10
@@ -3131,7 +3138,7 @@ L5116:	b exchange c[w]
 	a exchange b[w]
 	go to L5223
 
-L5131:	delayed rom @13
+L5131:	delayed rom @13		; compare 67/97 L4532, 19C/29C L4524
 	jsb trc10
 	a exchange c[w]
 	0 -> c[w]
