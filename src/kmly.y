@@ -275,7 +275,7 @@ segments_stmt_list	:	segments_stmt
 			|	segments_stmt segments_stmt_list
 			;
 
-segments_stmt		:	image_stmt { yy_kml->segment_image_fn = $1 }
+segments_stmt		:	image_stmt { yy_kml->segment_image_fn = $1; }
 			|	offset_stmt
 				{ yy_kml->has_segment_image_offset = 1;
 				  yy_kml->segment_image_offset.x = $1.a;
