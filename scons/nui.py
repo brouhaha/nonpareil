@@ -17,7 +17,7 @@ def unique (list):
 image_re = re.compile (r'image\s+"(\S+)"', re.M)
 
 def kml_scanner_fn (node, env, path):
-    contents = node.get_contents ()
+    contents = node.get_text_contents ()
     images = image_re.findall (contents)
     nui_files = unique (images)
     fl = []
