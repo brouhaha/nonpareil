@@ -858,8 +858,6 @@ int main (int argc, char *argv[])
 
   setup_path ();
 
-  g_thread_init (NULL);
-
   gtk_init (& argc, & argv);
 
   while (--argc)

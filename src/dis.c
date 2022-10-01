@@ -669,8 +669,6 @@ int main (int argc, char *argv[])
 
   setup_path ();
 
-  g_thread_init (NULL);
-
   while (--argc)
     {
       argv++;
