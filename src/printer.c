@@ -30,6 +30,7 @@ MA 02111, USA.
 
 #include <gsf/gsf-infile.h>
 
+#include <zlib.h>
 #include <png.h>
 
 #include "util.h"
