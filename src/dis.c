@@ -820,6 +820,7 @@ chip_t *gui_printer_install (sim_t *sim,
 			     int32_t index,
 			     int32_t flags)
 {
+  return NULL;
 }
 
 chip_t *gui_card_reader_install (sim_t *sim,
@@ -827,6 +828,7 @@ chip_t *gui_card_reader_install (sim_t *sim,
 				 int32_t index,
 				 int32_t flags)
 {
+  return NULL;
 }
 
 
