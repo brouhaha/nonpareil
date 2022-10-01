@@ -191,7 +191,7 @@ void print_kml (FILE *f, kml_t *kml);
 
 extern FILE *yyin;
 
-GsfInfile *kml_gsfinfile;
+extern GsfInfile *kml_gsfinfile;
 
 extern int kml_lineno;
 extern int kml_tokenpos;
