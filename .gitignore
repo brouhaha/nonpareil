@@ -1,0 +1,11 @@
+*.o
+*~
+*.output
+.sconsign.dblite
+build
+nonpareil.conf
+src/bin2c
+src/build_ncd
+src/str2png
+src/uasm
+src/*.png
