@@ -30,7 +30,7 @@ MA 02111, USA.
 #include "display.h"
 #include "util.h"
 #include "kml.h"
-#include "kmly.h"
+#include "kml_y.h"
 
 
 int octal_escape (char *p);

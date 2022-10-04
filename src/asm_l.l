@@ -27,7 +27,7 @@ MA 02111, USA.
 #include <stdint.h>
 #include <string.h>
 
-#include "asmy.h"
+#include "asm_y.h"
 #include "util.h"
 #include "symtab.h"
 #include "arch.h"

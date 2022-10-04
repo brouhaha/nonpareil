@@ -35,7 +35,7 @@ MA 02111, USA.
 #include <stdint.h>
 #include <string.h>
 
-#include "wasmy.h"
+#include "wasm_y.h"
 #include "util.h"
 #include "symtab.h"
 #include "arch.h"

@@ -35,7 +35,7 @@ cross = build_env ['PLATFORM'] != build_env ['target']
 ming = build_env ['target'] == 'win32'
 
 if cross and ming and build_target_only:
-    print 'cross and ming and build_target_only'
+    print('cross and ming and build_target_only')
     mingw32_root = '/usr/i686-pc-mingw32/sys-root/mingw'
     pkg_config_cmd = 'PKG_CONFIG_PATH=' + mingw32_root + '/lib/pkgconfig pkg-config'
     sdl_pkg_config_cmd = mingw32_root + '/bin/sdl-config'
@@ -103,7 +103,7 @@ sim_core_objs = [build_env.Object(src) for src in sim_core_srcs];
 common_dis_srcs = Split ("""dis_woodstock.c dis_nut.c""")
 common_dis_objs = [build_env.Object(src) for src in common_dis_srcs];
 
-kml_srcs = Split ("""kmll.l kmly.y kml.c""")
+kml_srcs = Split ("""kml_l.l kml_y.y kml.c""")
 kml_objs = [build_env.Object(src) for src in kml_srcs]
 
 state_io_srcs = Split ("""state_write.c state_read.c""")
@@ -211,10 +211,10 @@ if not build_target_only:
 #-----------------------------------------------------------------------------
 
 uasm_srcs = Split ("""asm.c symtab.c
-            	      asml.l asmy.y
+            	      asm_l.l asm_y.y
 		      asm_cond_l.l asm_cond_y.y
-                      casml.l casmy.y
-                      wasml.l wasmy.y""")
+                      casm_l.l casm_y.y
+                      wasm_l.l wasm_y.y""")
 
 uasm = build_env.Program (target = 'uasm',
                           source = uasm_srcs + ["util.c",'arch.c',release_obj])
@@ -329,6 +329,7 @@ if build_env ['has_debugger_gui']:
 
 nonpareil_env.ParseConfig (pkg_config_cmd + nonpareil_packages)
 nonpareil_env.ParseConfig (sdl_pkg_config_cmd)
+nonpareil_env.Append (LIBS = 'm')
 
 csim_env = nonpareil_env.Clone ()
 if not ming:
