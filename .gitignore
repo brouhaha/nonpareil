@@ -9,3 +9,8 @@ src/build_ncd
 src/str2png
 src/uasm
 src/*.png
+src/*_l.c
+src/*_l.o
+src/*_y.c
+src/*_y.h
+src/*_y.o
