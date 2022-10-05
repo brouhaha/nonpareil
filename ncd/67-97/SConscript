@@ -1,0 +1,33 @@
+# Nonpareil
+# Copyright 2022 Eric SMith <spacewar@gmail.com>
+
+Import('env')
+
+ncd_names = ['97']
+#             '67', '97']
+
+ncd_template_files = [env.File(nn + '.ncd.tmpl') for nn in ncd_names]
+
+source_names = ['67',
+                '97',
+                '6797',
+                '67b1',
+                '97b1']
+
+source_files = [env.File(sn + '.asm') for sn in source_names]
+
+object_files = []
+listing_files = []
+for sn in source_names:
+    o, l = env.UASM(target = sn)
+    object_files.append(o)
+    listing_files.append(l)
+
+ncd_files = [env.NCD(target = nn)[0] for nn in ncd_names]
+
+dist_files = source_files + ncd_files
+env.Tarball(env['source_release_tarball'], dist_files)
+env.Tarball(env['source_snapshot_tarball'], dist_files)
+
+Return('ncd_files')
+

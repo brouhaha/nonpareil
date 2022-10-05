@@ -62,7 +62,7 @@ vars.AddVariables (EnumVariable ('target',
                                  help = 'compile for debugging',
                                  default = 1),
 
-		 # Feature switches:
+                 # Feature switches:
 
                    BoolVariable ('has_debugger_gui',
                                  help = 'enable debugger GUI interface',
@@ -109,10 +109,7 @@ Export ('env')
 #-----------------------------------------------------------------------------
 # Add some builders to the environment:
 #-----------------------------------------------------------------------------
-import sys
-import os
 
-SConscript ('scons/nui.py')
 SConscript ('scons/tarball.py')
 SConscript ('scons/zipdist.py')
 
@@ -152,7 +149,7 @@ env.Alias ('srcsnap', source_snapshot_tarball)
 
 if env ['target'] == 'win32':
     dist_zip_file = env.ZipDist ('nonpareil-' + release + '.zip',
-				 bin_dist_files)
+                                 bin_dist_files)
     env ['dist_zip_file'] = dist_zip_file
     env.Alias ('dist', dist_zip_file)
 
@@ -161,10 +158,10 @@ if env ['target'] == 'win32':
 #-----------------------------------------------------------------------------
 
 if not env ['bindir']:
-	env ['bindir'] = env ['prefix'] + '/bin'
+        env ['bindir'] = env ['prefix'] + '/bin'
 
 if not env ['libdir']:
-	env ['libdir'] = env ['prefix'] + '/lib/nonpareil'
+        env ['libdir'] = env ['prefix'] + '/lib/nonpareil'
 
 #-----------------------------------------------------------------------------
 # Prepare for SConscription
@@ -179,8 +176,8 @@ host_build_dir = 'build/' + env ['PLATFORM']
 target_build_dir = 'build/' + env ['target']
 
 if env ['debug']:
-	host_build_dir += '-debug'
-	target_build_dir += '-debug'
+        host_build_dir += '-debug'
+        target_build_dir += '-debug'
 
 env ['target_build_dir'] = target_build_dir
 
@@ -216,68 +213,76 @@ native_env ['build_target_only'] = 0
 SConscript ('src/SConscript',
             build_dir = host_build_dir,
             duplicate = 0,
-	    exports = {'build_env' : native_env,
-		       'native_env' : env})
+            exports = {'build_env' : native_env,
+                       'native_env' : env})
 
 #-----------------------------------------------------------------------------
-# Add more builders to the environment:
+# .ncd calculator definitions
 #-----------------------------------------------------------------------------
 
 SConscript ('scons/uasm.py')
 SConscript ('scons/ncd.py')
 
+ncd_dir_sub = {'19c':  '19c-29c',
+               '25':   '25-25c',
+               '25c':  '25-25c',
+               '29c':  '19c-29c',
+               '41cv': '41c',
+               '41cx': '41c',
+               '67':   '67-97',
+               '97':   '67-97'}
+
+ncd_files = []
+
+for ncd_dir in ['67-97']:
+    n = SConscript('ncd/' + ncd_dir + '/SConscript',
+                   variant_dir = 'build/ncd',
+                   duplicate = False)
+    ncd_files += n
+
+Default (ncd_files)
+
 #-----------------------------------------------------------------------------
-# the calculators
+# .nui calculator user interfaces
 #-----------------------------------------------------------------------------
+
+SConscript ('scons/nui.py')
 
 all_calcs = {'classic':    ['35', '45', '55', '67', '80'],
              'woodstock':  ['21', '22', '25', '27', '29c'],
              'sting':      ['19c'],
              'topcat':     ['97'],
-	     'spice':      ['32e', '33c', '34c', '37e', '38c', '38e'],
-	     'nut':        ['41c', '41cv', '41cx'],
-	     'voyager':    ['11c', '12c', '15c', '16c']
-	     }
-
-ncd_dir_sub = {'19c':  '19c-29c',
-               '25':   '25-25c',
-	       '25c':  '25-25c',
-               '29c':  '19c-29c',
-	       '41cv': '41c',
-	       '41cx': '41c',
-	       '67':   '67-97',
-	       '97':   '67-97'}
+             'spice':      ['32e', '33c', '34c', '37e', '38c', '38e'],
+             'nut':        ['41c', '41cv', '41cx'],
+             'voyager':    ['11c', '12c', '15c', '16c']
+             }
 
 nui_dir_sub = {'41cv': '41c',
                '41cx': '41c',
-	       '55':   None,
-	       '80':   None}
+               '55':   None,
+               '80':   None}
 
 nui_files = []
-ncd_files = []
 
 for family in all_calcs:
     for model in all_calcs [family]:
-        if model in ncd_dir_sub:
-            ncd_dir = ncd_dir_sub [model]
-        else:
-            ncd_dir = model
-        ncd_files += env.NCD (target = 'build/calc/' + model + '.ncd',
-                              source = 'ncd/' + ncd_dir + '/' + model + '.ncd.tmpl')
-
         nui_dir = 'nui/' + family + '/'
         if model in nui_dir_sub:
-	    if nui_dir_sub [model] == None:
-	        continue
+            if nui_dir_sub [model] == None:
+                continue
             nui_dir += nui_dir_sub [model]
         else:
             nui_dir += model;
         kml = FindFile (model + '.kml', nui_dir)
-	# parse kml to find ROM, image files, etc.
+        # parse kml to find ROM, image files, etc.
         nui_files += env.NUI (target = 'build/calc/' + model + '.nui',
                               source = nui_dir + '/' + model + '.kml')
 
-Default (ncd_files + nui_files)
+Default(nui_files)
+
+#-----------------------------------------------------------------------------
+# install/installer targets
+#-----------------------------------------------------------------------------
 
 env.Alias (target = 'install',
            source = env.Install (dir = env ['destdir'] + env ['libdir'],
@@ -286,36 +291,18 @@ env.Alias (target = 'install',
 if env ['target'] == 'win32':
     env.NSIS (win32_nsis_installer, ncd_files + nui_files)
 
-def leaf_dependencies (nodes, abs_launch_dir):
-    ld = []
-    for node in nodes:
-    	if not os.path.abspath (str (node)).startswith (abs_launch_dir):
-            continue
-        if not node.is_derived ():
-            ld += [node]
-        ld += leaf_dependencies (node.all_children (), abs_launch_dir)
-    return ld
-
-# The source tarballs need to contain the dependencies of the NCD and NUI
-# targets.
-ncd_ld = leaf_dependencies (ncd_files, os.path.abspath (env.GetLaunchDir ()))
-nui_ld = leaf_dependencies (nui_files, os.path.abspath (env.GetLaunchDir ()))
-env.Tarball (source_release_tarball,  ncd_ld + nui_ld)
-env.Tarball (source_snapshot_tarball, ncd_ld + nui_ld)
-
-
 #-----------------------------------------------------------------------------
 # target platform code if cross-compiling
 #-----------------------------------------------------------------------------
 
 if (env ['PLATFORM'] != env ['target']):
-	cross_build_env = env.Clone ()
-	cross_build_env ['build_target_only'] = 1
-	SConscript ('src/SConscript',
-		    build_dir = target_build_dir,
-		    duplicate = 0,
-		    exports = {'build_env': cross_build_env,
-			       'native_env' : env})
+        cross_build_env = env.Clone ()
+        cross_build_env ['build_target_only'] = 1
+        SConscript ('src/SConscript',
+                    build_dir = target_build_dir,
+                    duplicate = 0,
+                    exports = {'build_env': cross_build_env,
+                               'native_env' : env})
 
 #-----------------------------------------------------------------------------
 # SCons builders
