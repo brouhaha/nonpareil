@@ -1,6 +1,5 @@
 # SConscript for Nonpareil
-# $Id$
-# Copyright 2005, 2008 Eric Smith <eric@brouhaha.com>
+# Copyright 2005, 2008, 2022 Eric Smith <spacewar@gmail.com>
 
 # Nonpareil is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License version 2 as
@@ -23,12 +22,3 @@ Import('env')
 sounds = Split ("""canada_goose.wav""")
 
 env.Append (SND_GOOSE = File ('canada_goose.wav'))
-
-#-----------------------------------------------------------------------------
-# source tarball
-#-----------------------------------------------------------------------------
-
-dist_files = ['SConscript'] + sounds
-
-env.Tarball (env ['source_release_tarball'], dist_files)
-env.Tarball (env ['source_snapshot_tarball'], dist_files)

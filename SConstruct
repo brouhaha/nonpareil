@@ -1,6 +1,5 @@
 # SConstruct for Nonpareil
-# $Id$
-# Copyright 2004, 2005, 2006, 2008 Eric Smith <eric@brouhaha.com>
+# Copyright 2004, 2005, 2006, 2008, 2022 Eric Smith <spacewar@gmail.com>
 
 # Nonpareil is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License version 2 as
@@ -110,38 +109,7 @@ Export ('env')
 # Add some builders to the environment:
 #-----------------------------------------------------------------------------
 
-SConscript ('scons/tarball.py')
 SConscript ('scons/zipdist.py')
-
-#-----------------------------------------------------------------------------
-# package a release source tarball
-#-----------------------------------------------------------------------------
-
-bin_dist_files = Split ("""README COPYING CREDITS""")
-
-src_dist_files = Split ("""INSTALL DEBUGGING TODO SConstruct""")
-
-source_release_tarball = env.Tarball ('nonpareil-' + release + '.tar.gz',
-                                      bin_dist_files + src_dist_files)
-
-env ['source_release_tarball'] = source_release_tarball
-
-env.Alias ('srcdist', source_release_tarball)
-
-#-----------------------------------------------------------------------------
-# package a source snapshot tarball
-#-----------------------------------------------------------------------------
-
-import time
-
-snap_date = time.strftime ("%Y.%m.%d")
-
-source_snapshot_tarball = env.Tarball ('nonpareil-' + snap_date + '.tar.gz',
-                                       bin_dist_files + src_dist_files)
-
-env ['source_snapshot_tarball'] = source_snapshot_tarball
-
-env.Alias ('srcsnap', source_snapshot_tarball)
 
 #-----------------------------------------------------------------------------
 # package a Windows binary distribution ZIP file
@@ -199,6 +167,10 @@ if env ['target'] == 'win32':
 #-----------------------------------------------------------------------------
 
 SConscript ('sound/SConscript')
+
+#-----------------------------------------------------------------------------
+# license files
+#-----------------------------------------------------------------------------
 
 env.Append (GPLv2 = File ('LICENSES/GPL-2.txt'))
 
@@ -303,20 +275,6 @@ if (env ['PLATFORM'] != env ['target']):
                     duplicate = 0,
                     exports = {'build_env': cross_build_env,
                                'native_env' : env})
-
-#-----------------------------------------------------------------------------
-# SCons builders
-#-----------------------------------------------------------------------------
-
-SConscript ('scons/SConscript')
-
-#-----------------------------------------------------------------------------
-# Licenses, DTDs, and documentation
-#-----------------------------------------------------------------------------
-
-SConscript ('LICENSES/SConscript')
-SConscript ('dtd/SConscript')
-SConscript ('doc/SConscript')
 
 #-----------------------------------------------------------------------------
 # Windows

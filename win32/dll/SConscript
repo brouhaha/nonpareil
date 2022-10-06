@@ -1,6 +1,5 @@
 # SConscript for Nonpareil
-# $Id$
-# Copyright 2005, 2008 Eric Smith <eric@brouhaha.com>
+# Copyright 2005, 2008, 2022 Eric Smith <spacewar@gmail.com>
 
 # Nonpareil is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License version 2 as
@@ -115,12 +114,3 @@ if env ['target'] == 'win32':
     for f in win32_files:
         env.ZipDist (env ['dist_zip_file'], f)
 	env.NSIS (env ['win32_nsis_installer'], f)
-
-#-----------------------------------------------------------------------------
-# source tarball
-#-----------------------------------------------------------------------------
-
-dist_files = ['SConscript']
-
-env.Tarball (env ['source_release_tarball'], dist_files)
-env.Tarball (env ['source_snapshot_tarball'], dist_files)

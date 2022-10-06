@@ -1,6 +1,5 @@
 # SConscript for Nonpareil
-# $Id$
-# Copyright 2004-2006, 2008, 2010 Eric Smith <eric@brouhaha.com>
+# Copyright 2004-2006, 2008, 2010, 2022 Eric Smith <spacewar@gmail.com>
 
 # Nonpareil is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License version 2 as
@@ -409,52 +408,6 @@ if build_env ['build_target_only'] == 0:
     native_env.Alias (target = 'install',
                       source = native_env.Install (dir = native_env ['destdir'] + native_env ['bindir'],
                                                    source = default_targets))
-
-#-----------------------------------------------------------------------------
-# source tarball
-#-----------------------------------------------------------------------------
-
-if build_env ['build_target_only'] == 0:
-    headers = Split ("""util.h xmlutil.h
-                        calc_chooser.h
-                        calcdef.h arch.h platform.h kml.h
-			chip.h
-                        proc.h proc_int.h glib_async_queue_source.h
-                        digit_ops.h
-                        proc_classic.h proc_nut.h proc_woodstock.h
-                        state_io.h
-                        debugger_gui.h debugger_cli.h
-                        dis.h dis_uc41.h
-                        display.h printer.h card_reader.h
-                        keyboard.h cbutton.h
-			crc.h pick.h
-                        coconut_lcd.h helios.h phineas.h
-			hepax.h
-                        voyager_lcd.h
-                        csim.h about.h goose.h pixbuf_util.h sound.h scancode.h
-                        asm.h symtab.h
-                        mod1_file.h
-                        proc_tmc1500.h""")
-
-    misc = Split ("""SConscript ChangeLog release.c""")
-
-    dist_srcs = (kml_srcs + common_srcs + common_dis_srcs +
-                 sim_core_srcs + state_io_srcs +
-                 nonpareil_srcs + nonpareil_csim_srcs +
-                 nonpareil_debugger_gui_srcs +
-                 nonpareil_debugger_cli_srcs +
-                 build_ncd_srcs +
-                 modutil_srcs +
-                 uasm_srcs +
-                 udis_srcs +
-                 str2png_srcs +
-                 bin2c_srcs)
-
-    dist_files = (misc + headers + dist_srcs)
-                  
-
-    native_env.Tarball (native_env ['source_release_tarball'], dist_files)
-    native_env.Tarball (native_env ['source_snapshot_tarball'], dist_files)
 
 #-----------------------------------------------------------------------------
 # Windows distribution ZIP file

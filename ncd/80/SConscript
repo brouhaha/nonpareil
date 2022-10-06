@@ -1,5 +1,5 @@
 # Nonpareil
-# Copyright 2022 Eric SMith <spacewar@gmail.com>
+# Copyright 2022 Eric Smith <spacewar@gmail.com>
 
 Import('env')
 
@@ -19,9 +19,4 @@ for sn in source_names:
 
 ncd_files = [env.NCD(target = nn)[0] for nn in ncd_names]
 
-dist_files = source_files + ncd_template_files
-env.Tarball(env['source_release_tarball'], dist_files)
-env.Tarball(env['source_snapshot_tarball'], dist_files)
-
 Return('ncd_files')
-
