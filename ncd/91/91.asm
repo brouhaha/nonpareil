@@ -496,9 +496,9 @@ L0572:	load constant 11
 L0576:	jsb S0713
 	select rom go to L0200
 
-L0600:	go to L0564
+	go to L0564		; key 200?
 
-L0601:	go to L0564
+	go to L0564		; key 200?
 
 L0602:	m1 -> c
 	decimal
@@ -518,7 +518,7 @@ L0610:	if 1 = s 13
 
 L0617:	go to L0742
 
-L0620:	go to L0561		; key 220 - x^2, H.MS-
+	go to L0561		; key 220 - x^2, H.MS-
 
 	jsb S0765		; key 221 - cos, cos^-1
 	delayed rom @11
@@ -629,9 +629,9 @@ L0735:	down rotate
 L0736:	jsb S0713
 	go to L0742
 
-L0740:	go to L0730
+	go to L0730		; key 340?
 
-L0741:	go to L0730
+	go to L0730		; key 341?
 
 L0742:	delayed rom @00
 	go to L0036
@@ -1263,8 +1263,7 @@ S2032:	p <- 12
 
 L2034:	if 1 = s 13
 	  then go to L2740
-
-L2036:	load constant 14
+	load constant 14
 	load constant 9
 	load constant 6
 	jsb S2313
@@ -2936,7 +2935,7 @@ L5003:	0 -> a[s]
 	b exchange c[w]
 	jsb S5167
 	0 -> a[s]
-L5013:	m1 exchange c
+	m1 exchange c
 	jsb trc10
 	jsb S5054
 	select rom go to L5417
