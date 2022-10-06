@@ -472,10 +472,15 @@ inst_sel_rom    : SELECT ROM expr           { addr_t tgt = ($3 << 8) + ((pc + 1)
 						  error ("'select rom' target value incorrect - requested %05o, actual %05o\n", $5, tgt);
 						}
 					      flag_char = '*'; }
-		| SELECT ROM ADDRESS expr 
-					    { addr_t tgt = $4;
-					      emit (((tgt >> 2) & 01700) | 00040);
+		| SELECT ROM GO TO expr 
+					    { int rom = $5 >> 8;
+					      emit ((rom << 6) | 00040);
+					      addr_t tgt = (rom << 8) + ((pc + 1) & 0377);
 					      target (tgt);
+					      if ((pass == 2) && ($5 != tgt))
+						{
+						  error ("'select rom' target value incorrect - requested %05o, actual %05o\n", $5, tgt);
+						}
 					      flag_char = '*'; }
 		;
 

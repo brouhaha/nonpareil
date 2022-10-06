@@ -313,7 +313,7 @@ L0356:	display off
 	a exchange c[x]
 	c -> data address
 	register -> c 15
-	m1 -> c
+L0364:	m1 -> c
 L0365:	0 -> s 11
 	go to L0037
 
@@ -398,7 +398,7 @@ L0464:	jsb S0765
 	delayed rom @04
 	go to L2034
 
-x_pi:	select rom @05
+x_pi:	select rom go to op_pi
 
 	jsb S0642		; key 070 - f
 	1 -> s 13
@@ -420,7 +420,7 @@ L0502:	p <- 0
 
 L0505:	a + c -> c[p]
 	if n/c go to L0515
-	select rom @05
+	select rom go to L2510
 
 	jsb S0772		; key 110 - sto, pi
 	if 1 = s 13
@@ -463,9 +463,9 @@ L0541:	jsb S0765
 	if 1 = s 13
 	  then go to x_lastx
 x_rcl_sto:
-	select rom @05		; goes to 2550
+	select rom go to L2550
 
-L0550:	select rom @10
+L0550:	select rom go to L4151
 
 L0551:	jsb S0774
 	if 1 = s 13
@@ -494,7 +494,7 @@ L0572:	load constant 11
 	m1 exchange c
 	c -> stack
 L0576:	jsb S0713
-	select rom @00
+	select rom go to L0200
 
 L0600:	go to L0564
 
@@ -506,7 +506,7 @@ L0602:	m1 -> c
 
 S0605:	jsb S0774
 	load constant 12
-	select rom @02
+	select rom go to L1210
 
 L0610:	if 1 = s 13
 	  then go to L0675
@@ -532,7 +532,7 @@ L0620:	go to L0561		; key 220 - x^2, H.MS-
 
 	go to L0665		; key 203 - ln, log
 
-L0631:	select rom @06
+L0631:	select rom go to L3232
 
 L0632:	load constant 13
 	load constant 12
@@ -581,9 +581,9 @@ L0665:	jsb S0765
 	return
 
 L0675:	jsb S0765
-	select rom @06
+	select rom go to L3277
 
-S0677:	select rom @06
+S0677:	select rom go to S3300
 
 	go to L0464		; key 300 - sqrt, H.MS+
 
@@ -596,7 +596,7 @@ S0677:	select rom @06
 	go to L3006
 
 x_lastx:
-	select rom @05
+	select rom go to op_lastx
 
 	jsb S0765		; key 310 - e^x, 10^x
 	delayed rom @05
@@ -637,7 +637,7 @@ L0742:	delayed rom @00
 	go to L0036
 
 L0744:	jsb S0765
-	select rom @05
+	select rom go to L2746
 
 L0746:	delayed rom @04
 	go to L2205
@@ -654,7 +654,7 @@ L0754:	p <- 3
 L0761:	1 -> s 11
 L0762:	1 -> s 9
 	jsb S0715
-	select rom @00
+	select rom go to L0365
 
 S0765:	0 -> s 10
 S0766:	0 -> s 4
@@ -685,7 +685,7 @@ L1010:	p - 1 -> p
 L1014:	p <- 13
 	load constant 14
 L1016:	p <- 0
-	select rom @03
+	select rom go to L1420
 
 L1020:	a - 1 -> a[p]
 	.legal
@@ -699,7 +699,7 @@ L1023:	f exchange a[x]
 	c - 1 -> c[p]
 	if n/c go to L1060
 L1030:	b exchange c[w]
-	select rom @01
+	select rom go to L0432
 
 L1032:	1 -> s 2
 	c - 1 -> c[p]
@@ -725,7 +725,7 @@ L1051:	a exchange b[x]
 	jsb S1641
 	if p = 0
 	  then go to L1023
-	select rom @00
+	select rom go to L0060
 
 L1060:	0 -> s 1
 	0 -> s 2
@@ -843,7 +843,7 @@ L1210:	load constant 2
 L1225:	p <- 0
 	a exchange c[p]
 	c -> a[p]
-	select rom @01
+	select rom go to L0631
 
 	nop
 	nop
@@ -944,7 +944,7 @@ L1362:	c + 1 -> c[s]
 	shift left a[w]
 	a exchange c[x]
 	binary
-L1371:	select rom @01
+L1371:	select rom go to S0772
 
 L1372:	0 -> s 4
 	delayed rom @00
@@ -1024,7 +1024,7 @@ L1472:	p - 1 -> p
 	c -> a[p]
 	0 -> a[x]
 	f -> a[x]
-	select rom @02
+	select rom go to L1104
 
 L1504:	pick print 3
 L1505:	return
@@ -1139,7 +1139,7 @@ L1652:	p - 1 -> p
 	0 -> c[ms]
 	load constant 3
 	b exchange c[w]
-	jsb S1765
+L1660:	jsb S1765
 	display toggle
 	hi i'm woodstock
 	binary
@@ -1210,7 +1210,7 @@ L1751:	jsb S1765
 	c + 1 -> c[p]
 	if n/c go to L1405
 L1763:	m1 -> c
-	select rom @00
+	select rom go to L0365
 
 S1765:	0 -> s 3
 L1766:	pick print cr?
@@ -1234,7 +1234,7 @@ L2004:	jsb S2044
 
 	nop
 
-	go to S2075
+L2007:	go to S2075
 
 	nop
 
@@ -1244,7 +1244,7 @@ L2011:	if 1 = s 13
 	load constant 10
 	jsb S2313
 	stack -> a
-	jsb S2327
+L2017:	jsb S2327
 	go to L2043
 
 S2021:	if c[m] = 0
@@ -1269,7 +1269,7 @@ L2036:	load constant 14
 	load constant 6
 	jsb S2313
 	jsb S2110
-L2043:	select rom @06
+L2043:	select rom go to L3044
 S2044:	stack -> a
 S2045:	jsb S2032
 	go to S2334
@@ -1280,7 +1280,7 @@ S2047:	a + c -> c[x]
 	if n/c go to L2054
 	0 - c -> c[s]
 L2054:	0 -> a[w]
-S2055:	select rom @05
+S2055:	select rom go to L2456
 
 L2056:	shift right a[wp]
 L2057:	a - 1 -> a[s]
@@ -1342,14 +1342,14 @@ L2140:	shift right c[w]
 	p <- 13
 	load constant 5
 	shift right c[w]
-	select rom @06
+	select rom go to L3150
 
 S2150:	if 0 = s 4
 	  then go to L2153
 	0 - c - 1 -> c[s]
 L2153:	jsb S2075
 	jsb S2334
-	select rom @00
+	select rom go to S0156
 
 L2156:	jsb S2024
 	go to L2043
@@ -1416,7 +1416,7 @@ L2243:	jsb S2376
 	a + c -> a[w]
 	b exchange c[w]
 	jsb S2202
-	go to L2153
+L2250:	go to L2153
 
 L2251:	a -> b[w]
 	c - 1 -> c[s]
@@ -1429,7 +1429,7 @@ L2254:	shift right a[wp]
 	if n/c go to L2251
 	a exchange b[w]
 	a + 1 -> a[p]
-	jsb S2150
+L2264:	jsb S2150
 	go to L2043
 
 L2266:	0 -> b[w]
@@ -1454,7 +1454,7 @@ L2303:	if a >= c[x]
 	go to L2303
 
 S2312:	load constant 8
-S2313:	select rom @01
+S2313:	select rom go to S0714
 
 L2314:	c + 1 -> c[p]
 L2315:	a - b -> a[w]
@@ -1471,7 +1471,7 @@ L2315:	a - b -> a[w]
 S2327:	jsb S2027
 S2330:	0 -> b[w]
 	a exchange b[m]
-	jsb S2047
+L2332:	jsb S2047
 	jsb S2202
 S2334:	p <- 12
 	0 -> b[w]
@@ -1544,7 +1544,7 @@ L2431:	jsb S2533
 	jsb S2535
 L2433:	b exchange c[w]
 	jsb S2571
-L2435:	select rom @00
+L2435:	select rom go to L0036
 
 L2436:	jsb S2414
 	c + 1 -> c[w]
@@ -1575,17 +1575,17 @@ L2465:	if b[xs] = 0
 	  then go to L2604
 	go to L2763
 
-L2470:	p <- 3
+op_pi:	p <- 3
 	load constant 9
 	jsb S2533
 	jsb S2650
 	delayed rom @12
-	jsb S5266
+	jsb trc10		; get pi/4
+	c + c -> c[w]		; multiply by 4
 	c + c -> c[w]
-	c + c -> c[w]
-	shift right c[w]
-	c + 1 -> c[m]
-	0 -> c[x]
+	shift right c[w]	; position appropriately
+	c + 1 -> c[m]		; round
+	0 -> c[x]		; clear exponent
 	go to l2435
 
 L2504:	jsb S2414
@@ -1607,7 +1607,7 @@ L2513:	m1 exchange c
 	a exchange c[w]
 	go to L2435
 
-L2524:	select rom @10
+L2524:	select rom go to L4125
 
 L2525:	a + c -> a[wp]
 	shift right c[wp]
@@ -1632,7 +1632,7 @@ L2544:	c -> stack
 	go to L2615
 
 L2547:	b exchange c[p]
-	a exchange b[x]		; 2550 - sto, rcl
+L2550:	a exchange b[x]		; 2550 - sto, rcl
 	delayed rom @03
 	jsb S1641
 	0 -> c[w]
@@ -1671,12 +1671,12 @@ L2606:	load constant 5
 	y -> a
 	if a[w] # 0
 	  then go to L3033
-L2615:	select rom @06
+L2615:	select rom go to L3216
 
 L2616:	b exchange c[w]
 	delayed rom @07
 	jsb lnc10
-	select rom @04
+	select rom go to L2222
 
 L2622:	if 1 = s 13
 	  then go to L3306
@@ -1686,7 +1686,7 @@ L2622:	if 1 = s 13
 	0 -> a[w]
 	jsb S2535
 	a exchange c[m]
-	select rom @07
+	select rom go to L3633
 
 L2633:	load constant 0
 	load constant 3
@@ -1701,7 +1701,7 @@ L2643:	p - 1 -> p
 	jsb S2400
 	c -> a[w]
 	b -> c[w]
-	select rom @04
+	select rom go to L2250
 
 S2650:	if 1 = s 8		; check stack lift disable
 	  then go to L2653
@@ -1720,14 +1720,14 @@ L2662:	p <- 12
 	if c[s] # 0
 	  then go to L3736
 	jsb S2535
-	if c[x] = 0
+L2670:	if c[x] = 0
 	  then go to L2775
 	c + 1 -> c[x]
 	0 -> a[w]
 	a - c -> a[m]
 	if c[x] = 0
 	  then go to L3657
-	shift right a[wp]
+L2677:	shift right a[wp]
 	a -> b[s]
 	p <- 13
 L2702:	p - 1 -> p
@@ -1735,9 +1735,10 @@ L2702:	p - 1 -> p
 	if n/c go to L2702
 	a exchange b[s]
 	0 -> c[ms]
-	select rom @07
+	select rom go to L3710
 
-L2710:	load constant 14
+op_lastx:
+	load constant 14
 	load constant 3
 	load constant 0
 	load constant 2
@@ -1794,7 +1795,7 @@ L2763:	0 -> c[w]
 	jsb S2400
 	go to L2643
 
-S2774:	select rom @04
+S2774:	select rom go to L2375
 
 L2775:	c -> a[w]
 	a - 1 -> a[p]
@@ -1815,7 +1816,7 @@ L3006:	if 1 = s 13
 	y -> a
 	a - 1 -> a[x]
 	a - 1 -> a[x]
-L3016:	select rom @04
+L3016:	select rom go to L2017
 
 L3017:	jsb S3300
 	jsb S3003
@@ -1825,7 +1826,7 @@ L3017:	jsb S3300
 	binary
 	go to L3353
 
-S3026:	select rom @04
+S3026:	select rom go to S2027
 
 L3027:	jsb S3300
 	jsb S3004
@@ -1916,7 +1917,7 @@ L3143:	a - c -> a[w]
 	a + c -> a[w]
 	shift left a[w]
 	p - 1 -> p
-	shift right c[wp]
+L3150:	shift right c[wp]
 	if p # 0
 	  then go to L3143
 	0 -> c[p]
@@ -1957,7 +1958,7 @@ L3202:	a -> b[w]
 	if n/c go to L3044
 L3214:	a - 1 -> a[x]
 	if n/c go to L3202
-L3216:	select rom @11
+L3216:	select rom go to L4617
 
 L3217:	if p # 0
 	  then go to L2510
@@ -1997,7 +1998,7 @@ L3257:	if 1 = s 10
 	  then go to L2212
 	if 1 = s 6
 	  then go to L2616
-	select rom @04
+	select rom go to L2264
 
 lncd1:	p <- 9			; ln(1.1)
 	load constant 3
@@ -2007,7 +2008,8 @@ lncd1:	p <- 9			; ln(1.1)
 	load constant 7
 	load constant 9
 	load constant 8
-	select rom @11
+	select rom go to L4675
+
 L3275:	jsb S3026
 	go to L3037
 
@@ -2067,7 +2069,7 @@ L3355:	c -> data address
 	b exchange c[w]
 	c + 1 -> c[p]
 	if n/c go to L3355
-L3363:	select rom @00
+L3363:	select rom go to L0364
 
 S3364:	delayed rom @04
 	go to S2075
@@ -2090,7 +2092,7 @@ load33:	load constant 3
 	load constant 3
 	return
 
-S3406:	select rom @04
+S3406:	select rom go to L2007
 
 lncd3:	p <- 5			; ln(1.001)
 	jsb load33
@@ -2116,7 +2118,7 @@ L3427:	if a[s] # 0
 	delayed rom @04
 	jsb S2027
 	0 -> c[w]
-L3435:	select rom @00
+L3435:	select rom go to L0036
 
 L3436:	c + 1 -> c[s]
 S3437:	a - b -> a[w]
@@ -2154,7 +2156,7 @@ L3470:	p - 1 -> p
 	  then go to L3654
 	shift left a[m]
 L3500:	a exchange c[w]
-	select rom @04
+	select rom go to L2102
 
 S3502:	0 -> c[w]
 	if p = 12
@@ -2191,7 +2193,7 @@ lncd2:	p <- 7
 l3540:	if a[x] # 0
 	  then go to l3745
 	a exchange b[w]
-	select rom @05
+	select rom go to L2544
 
 L3544:	0 -> c[w]
 	c + 1 -> c[p]
@@ -2267,7 +2269,7 @@ L3642:	jsb S3502
 	load constant 7
 	a exchange c[s]
 	b exchange c[w]
-	select rom @04
+	select rom go to L2254
 
 L3654:	a + 1 -> a[x]
 	p - 1 -> p
@@ -2282,7 +2284,7 @@ L3663:	0 -> c[s]		; maybe trg120
 L3664:	b exchange c[w]		; maybe trg130
 	c -> stack
 	b exchange c[w]
-	select rom @05
+	select rom go to L2670
 
 L3670:	jsb S3406
 	delayed rom @04
@@ -2290,7 +2292,7 @@ L3670:	jsb S3406
 	a + c -> a[s]
 	a - 1 -> a[s]
 L3675:	0 -> c[x]
-	select rom @05
+	select rom go to L2677
 
 L3677:	a + 1 -> a[s]
 	c - 1 -> c[x]
@@ -2302,7 +2304,7 @@ L3701:	if a[p] # 0
 L3705:	shift right a[w]
 	c + 1 -> c[p]
 L3707:	a exchange b[s]
-	a -> b[w]
+L3710:	a -> b[w]
 	binary
 	a + c -> a[s]
 	m1 exchange c
@@ -2383,7 +2385,7 @@ L4012:	a exchange c[w]
 
 S4022:	if c[m] = 0
  	 then go to L4617
-	select rom @04
+	select rom go to S2025
 
 L4025:	jsb S4044
 	1 -> s 7
@@ -2394,7 +2396,7 @@ L4031:	a exchange c[w]
 	m1 -> c
 	a exchange c[w]
 	jsb S4022
-	select rom @00
+	select rom go to L0036
 
 L4036:	0 -> s 10
 	return
@@ -2403,7 +2405,7 @@ S4040:	a exchange c[w]
 S4041:	if 0 = s 13
 	  then go to S4044
 S4043:	0 - c - 1 -> c[s]
-S4044:	select rom @04
+S4044:	select rom go to S2045
 
 L4045:	a exchange c[w]
 	m2 -> c
@@ -2456,7 +2458,7 @@ L4115:	if 1 = s 13
 	load constant 14
 	load constant 8
 	jsb S4325
-	select rom @13
+	select rom go to L5525
 
 L4125:	jsb S4364
 	load constant 7
@@ -2472,7 +2474,7 @@ L4125:	jsb S4364
 	register -> c 11
 L4141:	jsb S4147
 	load constant 4
-L4143:	select rom @03
+L4143:	select rom go to L1544
 
 S4144:	0 -> c[w]
 	c -> data address
@@ -2486,7 +2488,7 @@ L4151:	jsb S4364
 	load constant 2
 	go to L4330
 
-S4155:	select rom @00
+S4155:	select rom go to S0156
 
 L4156:	register -> c 14
 	jsb S4040
@@ -2593,12 +2595,12 @@ L4316:	if 1 = s 13
 	load constant 6
 	load constant 14
 	jsb S4325
-	select rom @11
+	select rom go to L4725
 
 S4325:	load constant 4
-S4326:	select rom @01
+S4326:	select rom go to L0727
 
-S4327:	select rom @04
+S4327:	select rom go to S2330
 
 L4330:	if 1 = s 13
 	  then go to L4333
@@ -2629,7 +2631,7 @@ L4333:	jsb S4326
 	a exchange c[w]
 	go to L4156
 
-S4364:	select rom @01
+S4364:	select rom go to S0765
 
 S4365:	jsb S4155
 	c -> data
@@ -2686,7 +2688,7 @@ L4440:	jsb S4702		; mabye trg135
 	c + 1 -> c[x]
 	shift right a[w]
 L4451:	b exchange c[w]		; maybe trg140
-	m1 exchange c		; maybe trg150
+L4452:	m1 exchange c		; maybe trg150
 	m1 -> c
 	c + c -> c[w]
 	c + c -> c[w]
@@ -2743,7 +2745,7 @@ L4531:	c + 1 -> c[xs]
 L4535:	a exchange b[w]
 	stack -> a
 	b exchange c[w]
-	select rom @12
+	select rom go to L5141
 
 L4541:	if 0 = s 10
 	  then go to L4761
@@ -2758,7 +2760,7 @@ L4550:	m2 -> c
 	stack -> a
 	c -> stack
 	m1 -> c
-	select rom @13
+	select rom go to L5556
 
 L4556:	a exchange c[w]
 	shift left a[x]
@@ -2794,7 +2796,7 @@ L4606:	0 -> c[wp]
 	if 1 = s 4
 	  then go to L4616
 L4615:	0 -> c[s]
-L4616:	select rom @01
+L4616:	select rom go to L0617
 
 L4617:	m1 exchange c
 	binary
@@ -2828,12 +2830,12 @@ L4641:	p - 1 -> p
 	0 -> b[w]
 	a exchange c[w]
 	1 -> s 11
-	select rom @03
+	select rom go to L1660
 
 L4660:	0 -> c[w]
 	0 -> a[w]
 	a + 1 -> a[p]
-L4663:	select rom @04
+L4663:	select rom go to L2264
 
 L4664:	c + 1 -> c[x]
 L4665:	a - b -> a[w]
@@ -2855,8 +2857,8 @@ L4675:	load constant 0
 S4702:	0 -> c[w]		; load 180/4
 	p <- 12
 	load constant 4
-	load constant 5
-	select rom @13
+L4705:	load constant 5
+	select rom go to L5707
 
 L4707:	load constant 3
 	load constant 0
@@ -2866,7 +2868,7 @@ L4707:	load constant 3
 	go to L4401
 
 S4715:	1 -> s 6
-	select rom @12
+	select rom go to S5317
 
 L4717:	a exchange c[w]
 	shift left a[wp]
@@ -2880,7 +2882,7 @@ L4725:	1 -> s 13
 	stack -> a
 	go to L4412
 
-S4731:	select rom @04
+S4731:	select rom go to L2332
 
 L4732:	shift right a[wp]
 	shift right a[wp]
@@ -2917,7 +2919,7 @@ L4761:	1 -> s 10
 L4770:	if 0 = s 13
 	  then go to L4660
 	0 -> c[w]
-	select rom @12
+	select rom go to L5374
 
 L4774:	c + 1 -> c[x]		; maybe trg260
 L4775:	if c[xs] # 0		; maybe trg270
@@ -2935,9 +2937,9 @@ L5003:	0 -> a[s]
 	jsb S5167
 	0 -> a[s]
 L5013:	m1 exchange c
-	jsb S5266
+	jsb trc10
 	jsb S5054
-	select rom @13
+	select rom go to L5417
 
 L5017:	c + 1 -> c[x]
 L5020:	c - 1 -> c[s]		; compare trg400 in 41C
@@ -2966,11 +2968,11 @@ L5033:	if b[w] = 0		; compare trg420 in 41C
 
 	nop
 
-L5050:	jsb S5266
-	select rom @11
+L5050:	jsb trc10
+	select rom go to L4452
 
 S5052:	p <- 0
-	select rom @04
+	select rom go to L2054
 
 S5054:	a exchange b[w]
 S5055:	jsb S5052
@@ -2990,11 +2992,11 @@ L5060:	a -> b[w]
 	0 -> c[w]
 	go to L5306
 
-S5074:	select rom @04
+S5074:	select rom go to S2075
 
 L5075:	b exchange c[w]
 	jsb S5167
-	select rom @13
+	select rom go to L5500
 
 S5100:	0 -> b[w]
 	b exchange c[x]
@@ -3011,7 +3013,7 @@ L5110:	a + 1 -> a[p]
 
 L5114:	jsb S5201
 L5115:	0 -> b[w]
-S5116:	select rom @04
+S5116:	select rom go to S2117
 
 L5117:	a + 1 -> a[ms]
 	if n/c go to L5336
@@ -3031,7 +3033,7 @@ L5122:	p <- 12			; trg315
 L5135:	if 0 = s 4		; compare trg500 in 41C
 	  then go to L5140
 	0 - c - 1 -> c[s]
-L5140:	select rom @10
+L5140:	select rom go to L4141
 
 L5141:	c -> stack
 	b exchange c[w]
@@ -3039,7 +3041,7 @@ L5141:	c -> stack
 	jsb S5100
 	a exchange b[w]
 	a exchange c[w]
-	select rom @11
+	select rom go to L4550
 
 S5150:	delayed rom @04
 	jsb S2334
@@ -3047,7 +3049,7 @@ S5150:	delayed rom @04
 S5152:	if 0 = s 7
 	  then go to L5155
 	0 - c - 1 -> c[s]
-L5155:	select rom @00
+L5155:	select rom go to S0156
 
 L5156:	p - 1 -> p
 	if p # 0
@@ -3059,7 +3061,7 @@ S5163:	0 -> a[w]
 	a + 1 -> a[s]
 	shift right a[w]
 	0 - c -> c[x]
-S5167:	select rom @04
+S5167:	select rom go to S2170
 
 L5170:	a exchange b[w]		; maybe trg250
 	a - b -> a[w]
@@ -3071,7 +3073,7 @@ S5174:	m1 exchange c
 	jsb S5052
 	m1 -> c
 	c + c -> c[x]
-S5201:	select rom @04
+S5201:	select rom go to S2202
 
 L5202:	0 -> c[w]
 	a -> b[w]
@@ -3124,12 +3126,12 @@ L5257:	if 1 = s 6
 	  then go to L5372
 	a exchange b[w]
 	jsb S5163
-	select rom @04
+	select rom go to L2264
 
 S5264:	delayed rom @04
 	go to L2162
 
-S5266:	p <- 12			; load pi/4
+trc10:	p <- 12			; load pi/4
 	0 -> c[w]
 	load constant 7
 	load constant 8
@@ -3143,16 +3145,16 @@ S5266:	p <- 12			; load pi/4
 	load constant 3
 	load constant 9
 	load constant 7
-	select rom @11
+	select rom go to L4705
 
-L5305:	jsb S5266
+L5305:	jsb trc10
 L5306:	delayed rom @13
 	jsb S5660
 	0 -> c[w]
 L5311:	delayed rom @06
 	jsb S3067
 L5313:	b exchange c[w]
-	jsb S5266
+	jsb trc10
 	delayed rom @13
 	go to L5722
 
@@ -3166,7 +3168,7 @@ S5323:	if 0 = s 13
 	b exchange c[w]
 S5326:	a exchange b[w]
 	m2 -> c
-	select rom @11
+	select rom go to S4731
 
 L5331:	a + 1 -> a[s]
 	shift right a[w]
@@ -3204,7 +3206,7 @@ L5336:	a exchange c[ms]
 
 L5372:	jsb S5323
 	jsb S5152
-	c -> stack
+L5374:	c -> stack
 	m2 -> c
 	go to L5135
 
@@ -3241,7 +3243,7 @@ L5426:	0 -> c[w]
 	c - 1 -> c[w]
 	0 -> c[xs]
 	0 -> c[s]
-L5434:	select rom @05
+L5434:	select rom go to L2435
 
 L5435:	p - 1 -> p		; maybe trg305
 	if p = 6
@@ -3276,13 +3278,13 @@ L5466:	p <- 8
 	p <- 11
 	return
 
-S5474:	select rom @04
+S5474:	select rom go to S2075
 
 S5475:	delayed rom @04
 	go to S2170
 
 L5477:	shift right a[wp]	; mabye trg350, but 67/97 has TWO shfit right a[wp] here
-	a - 1 -> a[s]
+L5500:	a - 1 -> a[s]
 	if n/c go to L5477
 	0 -> a[s]
 	0 -> c[x]
@@ -3330,7 +3332,7 @@ L5541:	delayed rom @00
 L5553:	0 -> a[w]
 	0 -> b[w]
 	c -> a[m]
-	if c[s] = 0
+L5556:	if c[s] = 0
 	  then go to L5570
 	1 -> s 4
 	if 0 = s 13
@@ -3425,7 +3427,7 @@ L5673:	p <- 10
 	load constant 1
 	load constant 1
 	load constant 6
-	p <- 12
+L5707:	p <- 12
 L5710:	return
 
 L5711:	a + b -> a[w]
@@ -3475,7 +3477,7 @@ L5760:	delayed rom @04
 	stack -> a
 	c -> stack
 	0 -> a[s]
-	select rom @10
+	select rom go to L4370
 
 six_fill:
 	load constant 6		; fill word to end with sixes
