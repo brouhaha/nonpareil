@@ -19,7 +19,7 @@ for sn in source_names:
 
 ncd_files = [env.NCD(target = nn)[0] for nn in ncd_names]
 
-dist_files = source_files + ncd_files
+dist_files = source_files + ncd_template_files
 env.Tarball(env['source_release_tarball'], dist_files)
 env.Tarball(env['source_snapshot_tarball'], dist_files)
 
