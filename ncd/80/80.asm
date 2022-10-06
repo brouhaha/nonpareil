@@ -1,7 +1,9 @@
 ; HP-80 ROM source code from United States Patent 3,863,060
-; Copyright 2004 Eric L. Smith <eric@brouhaha.com>
-; $Id$
+; Copyright 2004, 2022 Eric Smith <spacewar@gmail.com>
 ; Keyed in by Eric Smith on 15-Jan-2004 - any errors are probably mine.
+; An error in the code listing in the patent was found and fixed by
+; Thomas Klemm:
+;    https://www.hpmuseum.org/forum/thread-1713.html
 
 ; The code from the patent may not match released code in actual HP-80
 ; calculators.  It does not match the interest rate calculation code
@@ -1709,7 +1711,7 @@ dd1:	p + 1 -> p
 	b exchange c[wp]
 dd2:	shift right c[w]
 	p - 1 -> p
-	if p # 14
+	if p # 15
 	     then go to dd2
 	if c[x] = 0
 	     then go to err71
