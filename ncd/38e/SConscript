@@ -1,0 +1,19 @@
+# Nonpareil
+# Copyright 2022 Eric SMith <spacewar@gmail.com>
+
+Import('env')
+
+ncd_names = ['38e']
+rom_names = ['38e']
+
+ncd_template_files = [env.File(nn + '.ncd.tmpl') for nn in ncd_names]
+
+rom_files = [env.File(rom_name + '.rom') for rom_name in rom_names]
+
+ncd_files = [env.NCD(target = nn)[0] for nn in ncd_names]
+
+dist_files = rom_files + ncd_files
+env.Tarball(env['source_release_tarball'], dist_files)
+env.Tarball(env['source_snapshot_tarball'], dist_files)
+
+Return('ncd_files')

@@ -223,20 +223,20 @@ SConscript ('src/SConscript',
 SConscript ('scons/uasm.py')
 SConscript ('scons/ncd.py')
 
-ncd_dir_sub = {'19c':  '19c-29c',
-               '25':   '25-25c',
-               '25c':  '25-25c',
-               '29c':  '19c-29c',
-               '41cv': '41c',
-               '41cx': '41c',
-               '67':   '67-97',
-               '97':   '67-97'}
+ncd_dirs = ['35', '45', '55', '80',
+            '21', '22', '25-25c', '27',
+            '67-97',
+            '19c-29c',
+            '32e', '37e', '38e',
+            '33c', '34c', '38c',
+            '41c',
+            '11c', '12c', '15c', '16c']
 
 ncd_files = []
 
-for ncd_dir in ['67-97']:
+for ncd_dir in ncd_dirs:
     n = SConscript('ncd/' + ncd_dir + '/SConscript',
-                   variant_dir = 'build/ncd',
+                   variant_dir = 'build/ncd/' + ncd_dir,
                    duplicate = False)
     ncd_files += n
 
@@ -248,9 +248,9 @@ Default (ncd_files)
 
 SConscript ('scons/nui.py')
 
-all_calcs = {'classic':    ['35', '45', '55', '67', '80'],
+all_calcs = {'classic':    ['35', '45', '67'],  # 55, 80
              'woodstock':  ['21', '22', '25', '27', '29c'],
-             'sting':      ['19c'],
+#             'sting':      ['19c'],
              'topcat':     ['97'],
              'spice':      ['32e', '33c', '34c', '37e', '38c', '38e'],
              'nut':        ['41c', '41cv', '41cx'],

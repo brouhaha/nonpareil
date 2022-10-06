@@ -3,15 +3,10 @@
 
 Import('env')
 
-ncd_names = ['67', '97']
+ncd_names = ['80']
+source_names = ['80']
 
 ncd_template_files = [env.File(nn + '.ncd.tmpl') for nn in ncd_names]
-
-source_names = ['67',
-                '97',
-                '6797',
-                '67b1',
-                '97b1']
 
 source_files = [env.File(sn + '.asm') for sn in source_names]
 
