@@ -1,6 +1,6 @@
 ; 67/97 common ROM disassembly
 ; Copyright 2007, 2008 Eric Smith <eric@brouhaha.com>
-; $Id$
+; $Id: 6797.asm 1294 2009-10-04 17:18:05Z eric $
 
 	.arch woodstock
 
@@ -518,7 +518,7 @@ L2624:  a exchange c[w]
         go to L2624
 
 ;------------------------------------------------------------------
-; Start of math package (almost same as 67/97)
+; Start of math package (almost same as 19C/29C)
 ;------------------------------------------------------------------
 
 S2636:  0 -> a[w]		; 1/x
@@ -811,19 +811,22 @@ add13:  if a >= b[m]
         a exchange b[w]
 add14:  a - b -> a[w]
 
+; normalize a 13-digit floating point result
+; compare S3237 in 19C/29C, L2745 in 27
 S3235:  p <- 12
         if a[wp] # 0
           then go to L3244
         0 -> c[x]
 L3241:  return
 
-L3242:  delayed rom @10
+L3242:  delayed rom @10		; patch for normalize bug
         go to L4015
 
 L3244:  if a[p] # 0
           then go to L3241
         shift left a[wp]
         go to L3242
+
 
 S3250:  if 0 = s 4
           then go to L3253
@@ -1235,6 +1238,10 @@ lnc2:   p <- 11			; load ln(2)
         p <- 12
         return
 
+; patch for normalize bug
+; original code at L3242 did the increment of a[s]
+; in decimal mode, but in 13-bit arithmetic the shift
+; count can be greater than 9
 L4015:  binary
         a + 1 -> a[s]
         decimal
@@ -1589,11 +1596,11 @@ L4515:  return
 
 L4516:  a -> b[w]
         if b[w] = 0
-          then go to L4534
+          then go to L4534	; patched, was "then goto L4541" in old ROM
         a - 1 -> a[p]
         if a[w] # 0
           then go to L4621
-        a exchange c[w]
+        a exchange c[w]		; patched, was "a exchange b[w]" in old ROM
         if 0 = s 6
           then go to L4532
         jsb toggle_s10
@@ -2278,7 +2285,8 @@ L5704:  m1 -> c
 L5706:  delayed rom @00
         go to L0125
 
-S5710:  rotate left a			; rotate A left six digits
+; rotate A left six digits - compare 19C/29C S5576
+S5710:  rotate left a
         rotate left a
         rotate left a
         rotate left a
@@ -2393,7 +2401,7 @@ L6034:  decimal			; 0x00..0x0f, 0x20..0x2f misc
 
 L6040:  1 -> s 6
 
-; 0x00..0x0f digit entry, divide
+; 0x10..0x1f digit entry, divide
 
 L6041:  p <- 0
         load constant 10	; check for 0-9

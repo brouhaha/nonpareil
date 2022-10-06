@@ -1,6 +1,6 @@
 ; 19c/29c common ROM disassembly
 ; Copyright 2008 Eric Smith <eric@brouhaha.com>
-; $Id$
+; $Id: 19c29c.asm 1285 2009-09-17 05:36:27Z eric $
 ;
 
 	.arch woodstock
@@ -864,21 +864,20 @@ add13:  if a >= b[m]
 add14:  a - b -> a[w]
 
 ; Entry point
-
+; normalize a 13-digit floating point result
+; compare S3235 in 67/97, L2745 in 27
 S3237:  p <- 12
         if a[wp] # 0
           then go to L3250
         0 -> c[x]
 L3243:  return
 
-; additional code in 67/97 here
-
-; following code not in 67/97
+; The 67/97 originally didn't have the binary and decimal set, so they
+; were added later as a patch routine. Here they're inline.
 L3244:  binary
         a + 1 -> a[s]
         decimal
         c - 1 -> c[x]
-; above code not in 67/97
 L3250:  if a[p] # 0
           then go to L3243
         shift left a[wp]
@@ -1657,11 +1656,11 @@ L4466:  a exchange b[w]
 
 L4510:  a -> b[w]
         if b[w] = 0
-          then go to L4526
+          then go to L4526	; has part of 67/97 inverse trig fix
         a - 1 -> a[p]
         if a[w] # 0
           then go to L4612
-        a exchange b[w]
+        a exchange b[w]		; missing second part of 67/97 inverse trig fix, which replaces this with "a exchange c[w]"
         if 0 = s 6
           then go to L4524
         jsb toggle_s10
@@ -2276,6 +2275,7 @@ S5571:  if 0 = s 7
 L5574:  delayed rom @05
         go to S2436
 
+; rotate A left six digits - compare 67/97 S5710
 S5576:  rotate left a
         rotate left a
         rotate left a
@@ -2368,7 +2368,7 @@ L5705:  c -> data address		; compare 67/97 L5745
         a exchange c[w]
         c -> data
         b -> c[w]
-L5721:  p <- 0			; compare 67/97 L5760
+L5721:  p <- 0			; compare 67/97 L5760, which doesn't have p <- 0
         c - 1 -> c[wp]
         if n/c go to L5705
         a exchange c[w]
