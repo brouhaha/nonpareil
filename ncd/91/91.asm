@@ -67,7 +67,7 @@ L0022:	1 -> s 11
 L0027:	0 -> a[xs]
 	go to L0262
 
-L0031:	if 1 = s 6
+L0031:	if s 6 = 1
 	  then go to L0331
 	1 -> s 6
 	0 -> a[x]
@@ -80,9 +80,9 @@ L0040:	jsb S0156
 	m1 -> c
 	delayed rom @02
 	jsb S1267
-	if 0 = s 11
+	if s 11 = 0
 	  then go to L0051
-	if 1 = s 12
+	if s 12 = 1
 	  then go to L0754
 L0051:	0 -> s 4
 	0 -> s 6
@@ -95,11 +95,11 @@ L0060:	if p = 9
 	  then go to L0550
 	0 -> s 10
 	m1 -> c
-	if 1 = s 7
+	if s 7 = 1
 	  then go to L0102
 	0 -> c[w]
 	m1 exchange c
-	if 1 = s 8
+	if s 8 = 1
 	  then go to L0073
 	c -> stack
 L0073:	a exchange b[x]
@@ -118,7 +118,7 @@ L0102:	if p = 12
 	if p = 5
 	  then go to L0367
 	jsb S0215
-	if 1 = s 6
+	if s 6 = 1
 	  then go to L0254
 	shift left a[x]
 	shift left a[x]
@@ -131,7 +131,7 @@ L0120:	a + 1 -> a[p]
 
 L0125:	jsb S0207		; wait for keyboard cycle
 	1 -> s 0		; enable flag output
-L0127:	if 0 = s 15
+L0127:	if s 15 = 0
 	  then go to L0127
 
 	0 -> s 5
@@ -147,7 +147,7 @@ L0127:	if 0 = s 15
 	0 -> s 11
 
 	0 -> s 12		; copy s5 (F1, NORM) to s12
-	if 0 = s 5
+	if s 5 = 0
 	  then go to L0144
 	1 -> s 12
 L0144:
@@ -197,7 +197,7 @@ L0203:	c + c -> c[xs]
 ; wait for keybaord cycle
 S0207:	0 -> s 0		; disable flag output
 L0210:	0 -> s 15
-	if 1 = s 15
+	if s 15 = 1
 	  then go to L0210
 L0213:	p <- 12
 	return
@@ -219,7 +219,7 @@ L0227:	a - 1 -> a[p]
 	0 -> c[wp]
 	if p = 2
 	  then go to L0244
-	if 1 = s 4
+	if s 4 = 1
 	  then go to L0241
 L0236:	b exchange c[s]
 	c + 1 -> c[s]
@@ -230,7 +230,7 @@ L0241:	a exchange c[p]
 L0244:	0 -> a[wp]
 	a - 1 -> a[wp]
 	shift right a[x]
-	if 0 = s 6
+	if s 6 = 0
 	  then go to L0252
 	0 -> a[x]
 L0252:	a exchange b[x]
@@ -290,7 +290,7 @@ L0333:	c + 1 -> c[p]
 L0334:	b exchange c[w]
 	go to L0317
 
-L0336:	if 1 = s 6
+L0336:	if s 6 = 1
 	  then go to L0347
 	if c[m] = 0
 	  then go to L0331
@@ -308,7 +308,7 @@ L0347:	jsb S0215
 	a + 1 -> a[xs]
 	if n/c go to L0262
 L0356:	display off
-	if 0 = s 11
+	if s 11 = 0
 	  then go to L0125
 	a exchange c[x]
 	c -> data address
@@ -365,7 +365,7 @@ L0414:	decimal
 
 L0432:	jsb S0774
 	a exchange b[x]
-	if 1 = s 9
+	if s 9 = 1
 	  then go to L0762
 	0 -> s 11
 	go to L0762
@@ -380,7 +380,7 @@ L0446:	a + 1 -> a[p]
 	return
 
 	jsb S0642		; key 050 - fix, sci
-	if 0 = s 13
+	if s 13 = 0
 	  then go to L0455
 	c + 1 -> c[p]
 L0454:	c + 1 -> c[p]
@@ -423,7 +423,7 @@ L0505:	a + c -> c[p]
 	select rom go to L2510
 
 	jsb S0772		; key 110 - sto, pi
-	if 1 = s 13
+	if s 13 = 1
 	  then go to x_pi
 	1 -> s 10
 	go to x_rcl_sto		; sto
@@ -460,7 +460,7 @@ L0541:	jsb S0765
 	go to L2722
 
 	jsb S0642		; key 144 - rcl, last x
-	if 1 = s 13
+	if s 13 = 1
 	  then go to x_lastx
 x_rcl_sto:
 	select rom go to L2550
@@ -468,7 +468,7 @@ x_rcl_sto:
 L0550:	select rom go to L4151
 
 L0551:	jsb S0774
-	if 1 = s 13
+	if s 13 = 1
 	  then go to L1535
 	load constant 2
 	load constant 3
@@ -481,7 +481,7 @@ L0561:	jsb S0765
 	delayed rom @06
 	go to L3122
 
-L0564:	if 0 = s 13		; key 164 - decimal, eng
+L0564:	if s 13 = 0		; key 164 - decimal, eng
 	  then go to L1001
 	jsb S0642
 	go to L0454
@@ -508,9 +508,9 @@ S0605:	jsb S0774
 	load constant 12
 	select rom go to L1210
 
-L0610:	if 1 = s 13
+L0610:	if s 13 = 1
 	  then go to L0675
-	if 1 = s 9
+	if s 9 = 1
 	  then go to L0010
 	jsb S0765
 	jsb S0677
@@ -554,9 +554,9 @@ S0642:	0 -> s 10
 	go to L0402
 
 	jsb S0774		; key 250 - chs
-	if 1 = s 13
+	if s 13 = 1
 	  then go to L1723
-	if 1 = s 7
+	if s 7 = 1
 	  then go to L0213
 	load constant 3
 	load constant 1
@@ -575,7 +575,7 @@ L0665:	jsb S0765
 	go to L2654
 
 	jsb S0774		; key 270 - eex
-	if 1 = s 13
+	if s 13 = 1
 	  then go to L1603
 	p <- 13
 	return
@@ -604,7 +604,7 @@ x_lastx:
 
 S0713:	m1 exchange c
 S0714:	a exchange b[x]
-S0715:	if 1 = s 11
+S0715:	if s 11 = 1
 	  then go to L1457
 	go to L0602
 
@@ -644,7 +644,7 @@ L0746:	delayed rom @04
 
 	jsb S0774		; key 350 - print x
 	a exchange b[x]
-	if 1 = s 9
+	if s 9 = 1
 	  then go to L0761
 L0754:	p <- 3
 	load constant 6
@@ -759,7 +759,7 @@ L1110:	c -> a[x]
 	c + 1 -> c[p]
 	c - 1 -> c[p]
 	if n/c go to L1137
-	if 1 = s 2
+	if s 2 = 1
 	  then go to L1003
 L1117:	shift right a[w]
 	p <- 12
@@ -892,7 +892,7 @@ L1301:	p - 1 -> p
 	if n/c go to L1301
 	0 -> a[x]
 	c -> a[m]
-	if 1 = s 2
+	if s 2 = 1
 	  then go to L1323
 	f -> a[x]
 	if c[xs] = 0
@@ -933,7 +933,7 @@ L1340:	0 -> a[wp]
 L1353:	c -> a[x]
 	p <- 11
 	0 -> c[xs]
-	if 0 = s 1
+	if s 1 = 0
 	  then go to L1362
 L1360:	c - 1 -> c[x]
 	if n/c go to L1072
@@ -950,9 +950,9 @@ L1372:	0 -> s 4
 	delayed rom @00
 	jsb S0156
 	m1 exchange c
-	if 0 = s 11
+	if s 11 = 0
 	  then go to L1763
-	if 0 = s 12
+	if s 12 = 0
 	  then go to L1763
 S1402:	0 -> c[x]
 	p <- 2
@@ -966,7 +966,7 @@ L1405:	b exchange c[x]
 L1412:	b exchange c[x]
 	0 -> s 0
 	0 -> s 5
-	if 1 = s 5
+	if s 5 = 1
 	  then go to L1730
 	go to L1763
 
@@ -993,7 +993,7 @@ S1436:	c -> data address
 	jsb S1267
 	load constant 6
 	load constant 1
-S1445:	if 1 = s 3
+S1445:	if s 3 = 1
 	  then go to L1763
 	return
 
@@ -1004,13 +1004,13 @@ S1450:	load constant 14
 	load constant 0
 	load constant 10
 	a exchange b[x]
-L1457:	if 0 = s 9
+L1457:	if s 9 = 0
 	  then go to S1506
 L1461:	jsb S1765
 	jsb S1773
 	pick print 6
 S1464:	jsb S1567
-	if 1 = s 3
+	if s 3 = 1
 	  then go to L1720
 	p <- 0
 	b -> c[w]
@@ -1050,7 +1050,7 @@ S1517:	delayed rom @02
 	jsb S1773
 	pick print 2
 	jsb S1567
-	if 1 = s 3
+	if s 3 = 1
 	  then go to L1555
 	go to S1464
 
@@ -1070,7 +1070,7 @@ L1544:	b exchange c[x]
 	b exchange c[x]
 	m1 -> c
 	jsb S1517
-L1555:	if 0 = s 4
+L1555:	if s 4 = 0
 	  then go to L1763
 	0 -> s 4
 	m1 -> c
@@ -1083,7 +1083,7 @@ L1555:	if 0 = s 4
 S1567:	p <- 5
 L1570:	0 -> s 3
 	pick print home?
-	if 0 = s 3
+	if s 3 = 0
 	  then go to L1505
 	c - 1 -> c[s]
 	if n/c go to L1570
@@ -1122,7 +1122,7 @@ L1603:	jsb S1450
 	go to L1763
 
 L1636:	m1 -> c
-	if 1 = s 11
+	if s 11 = 1
 	  then go to L0365
 S1641:	b -> c[w]
 	0 -> s 11
@@ -1145,10 +1145,10 @@ L1660:	jsb S1765
 	binary
 	0 -> s 0
 L1665:	pick key?
-	if 1 = s 3
+	if s 3 = 1
 	  then go to L0356
 	0 -> s 5
-	if 1 = s 5
+	if s 5 = 1
 	  then go to L1665
 	display off
 	b exchange c[w]
@@ -1157,7 +1157,7 @@ L1665:	pick key?
 	p <- 7
 	0 -> c[wp]
 L1701:	jsb S1773
-	if 1 = s 5
+	if s 5 = 1
 	  then go to L1636
 	pick print 0
 	jsb S1765
@@ -1191,7 +1191,7 @@ L1730:	jsb S1436
 	b -> c[x]
 	p <- 1
 	load constant 14
-	if 0 = s 4
+	if s 4 = 0
 	  then go to L1751
 	p <- 1
 	load constant 10
@@ -1214,14 +1214,14 @@ L1763:	m1 -> c
 
 S1765:	0 -> s 3
 L1766:	pick print cr?
-	if 0 = s 3
+	if s 3 = 0
 	  then go to L1766
 	0 -> s 3
 	return
 
 S1773:	0 -> s 3
 L1774:	pick print home?
-	if 0 = s 3
+	if s 3 = 0
 	  then go to L1774
 	return
 
@@ -1238,7 +1238,7 @@ L2007:	go to S2075
 
 	nop
 
-L2011:	if 1 = s 13
+L2011:	if s 13 = 1
 	  then go to L3017
 	jsb S2362
 	load constant 10
@@ -1261,7 +1261,7 @@ S2027:	m2 exchange c		; copy x to LASTx
 S2032:	p <- 12
 	go to L2266
 
-L2034:	if 1 = s 13
+L2034:	if s 13 = 1
 	  then go to L2740
 	load constant 14
 	load constant 9
@@ -1343,7 +1343,7 @@ L2140:	shift right c[w]
 	shift right c[w]
 	select rom go to L3150
 
-S2150:	if 0 = s 4
+S2150:	if s 4 = 0
 	  then go to L2153
 	0 - c - 1 -> c[s]
 L2153:	jsb S2075
@@ -1396,7 +1396,7 @@ L2222:	b exchange c[w]
 	jsb S2334
 	go to L2043
 
-L2226:	if 1 = s 13
+L2226:	if s 13 = 1
 	  then go to L3027
 	jsb S2361
 	load constant 9
@@ -1499,7 +1499,7 @@ S2361:	c + 1 -> c[p]
 S2362:	c + 1 -> c[p]
 S2363:	c + 1 -> c[p]
 S2364:	c + 1 -> c[p]
-	if 0 = s 10
+	if s 10 = 0
 	  then go to L2372
 L2367:	c + 1 -> c[p]
 	if b[p] = 0
@@ -1517,7 +1517,7 @@ S2400:	c -> a[wp]
 	c + c -> c[wp]
 	c + c -> c[wp]
 	a - c -> c[wp]
-	if 0 = s 8
+	if s 8 = 0
 	  then go to L2525
 	0 -> a[w]
 	c -> a[x]
@@ -1621,7 +1621,7 @@ S2533:	delayed rom @01
 S2535:	delayed rom @04
 	go to S2027
 
-L2537:	if 0 = s 10
+L2537:	if s 10 = 0
 	  then go to L3216
 	stack -> a
 	if a[m] # 0
@@ -1637,7 +1637,7 @@ L2550:	a exchange b[x]		; 2550 - sto, rcl
 	0 -> c[w]
 	if p = 5
 	  then go to L2506
-	if 1 = s 10
+	if s 10 = 1
 	  then go to L3217
 	if p = 9
 	  then go to L2524
@@ -1677,7 +1677,7 @@ L2616:	b exchange c[w]
 	jsb lnc10
 	select rom go to L2222
 
-L2622:	if 1 = s 13
+L2622:	if s 13 = 1
 	  then go to L3306
 	load constant 9
 	load constant 7
@@ -1702,13 +1702,13 @@ L2643:	p - 1 -> p
 	b -> c[w]
 	select rom go to L2250
 
-S2650:	if 1 = s 8		; check stack lift disable
+S2650:	if s 8 = 1		; check stack lift disable
 	  then go to L2653
 	c -> stack
 L2653:	return
 
 L2654:	load constant 14
-	if 1 = s 13
+	if s 13 = 1
 	  then go to L2633
 	load constant 3
 	load constant 4
@@ -1748,7 +1748,7 @@ op_lastx:
 	m2 -> c
 	go to L2435
 
-L2722:	if 1 = s 13
+L2722:	if s 13 = 1
 	  then go to L2504
 	load constant 1
 	load constant 15
@@ -1770,7 +1770,7 @@ L2740:	jsb S2414
 	jsb S2535
 	go to L2443
 
-L2746:	if 1 = s 13
+L2746:	if s 13 = 1
 	  then go to L2423
 	load constant 4
 	load constant 11
@@ -1786,7 +1786,7 @@ L2761:	c - 1 -> c[x]
 	if n/c go to L2601
 L2763:	0 -> c[w]
 	b -> c[m]
-	if 0 = s 8
+	if s 8 = 0
 	  then go to L2235
 	p + 1 -> p
 	if p # 13
@@ -1807,7 +1807,7 @@ S3003:	load constant 8
 S3004:	delayed rom @01
 	go to S0714
 
-L3006:	if 1 = s 13
+L3006:	if s 13 = 1
 	  then go to L2606
 	p <- 3
 	load constant 13
@@ -1867,7 +1867,7 @@ S3067:	c - 1 -> c[x]
 	  then go to S3066
 	return
 
-L3073:	if 1 = s 13
+L3073:	if s 13 = 1
 	  then go to L3170
 	load constant 3
 	load constant 5
@@ -1892,7 +1892,7 @@ L3111:	a - 1 -> a[p]
 	jsb S2330
 	go to l3060
 
-L3122:	if 1 = s 13
+L3122:	if s 13 = 1
 	  then go to L2436
 	load constant 5
 	load constant 11
@@ -1990,12 +1990,12 @@ L3242:	c - 1 -> c[p]
 	jsb S3066
 L3252:	jsb S3364
 	0 -> a[s]
-	if 0 = s 7
+	if s 7 = 0
 	  then go to L3257
 	0 - c - 1 -> c[s]
-L3257:	if 1 = s 10
+L3257:	if s 10 = 1
 	  then go to L2212
-	if 1 = s 6
+	if s 6 = 1
 	  then go to L2616
 	select rom go to L2264
 
@@ -2326,7 +2326,7 @@ L3733:	a exchange b[w]
 	shift left a[w]
 	go to L3421
 
-L3736:	if 0 = s 10
+L3736:	if s 10 = 0
 	  then go to L3216
 	stack -> a
 	a -> b[w]
@@ -2376,7 +2376,7 @@ L4000:	p <- 3
 L4012:	a exchange c[w]
 	register -> c 10
 	jsb S4022
-	if 0 = s 13
+	if s 13 = 0
 	  then go to L4141
 	jsb S4110
 	register -> c 11
@@ -2401,7 +2401,7 @@ L4036:	0 -> s 10
 	return
 
 S4040:	a exchange c[w]
-S4041:	if 0 = s 13
+S4041:	if s 13 = 0
 	  then go to S4044
 S4043:	0 - c - 1 -> c[s]
 S4044:	select rom go to S2045
@@ -2430,7 +2430,7 @@ L4071:	register -> c 10
 	jsb s4022
 	a exchange c[w]
 	m1 exchange c
-	if 1 = s 8
+	if s 8 = 1
 	  then go to l4025
 	jsb S4022
 	jsb S4147
@@ -2450,7 +2450,7 @@ S4110:	0 -> s 13
 	c -> stack
 	return
 
-L4115:	if 1 = s 13
+L4115:	if s 13 = 1
 	  then go to L4000
 	load constant 7
 	load constant 10
@@ -2532,7 +2532,7 @@ L4223:	c -> a[w]
 	register -> c 10
 	jsb S4022
 	register -> c 12
-	if 0 = s 13
+	if s 13 = 0
 	  then go to L4233
 	register -> c 14
 L4233:	jsb S4043
@@ -2541,13 +2541,13 @@ L4233:	jsb S4043
 	0 -> c[s]
 	delayed rom @04
 	jsb S2113
-	if 0 = s 13
+	if s 13 = 0
 	  then go to L4141
 	jsb S4110
 	register -> c 11
 	go to L4223
 
-L4246:	if 1 = s 13
+L4246:	if s 13 = 1
 	  then go to L4103
 	p <- 3
 	load constant 1
@@ -2564,7 +2564,7 @@ L4256:	register -> c 11
 	a exchange c[w]
 	register -> c 12
 	jsb S4043
-	if 1 = s 7
+	if s 7 = 1
 	  then go to L4031
 	if c[m] = 0
 	  then go to L4617
@@ -2581,14 +2581,14 @@ L4256:	register -> c 11
 	register -> c 15
 	jsb S4043
 	a exchange c[w]
-	if 1 = s 8
+	if s 8 = 1
 	  then go to L4045
 	m1 -> c
 	jsb S4022
 	jsb S4110
 	go to L4051
 
-L4316:	if 1 = s 13
+L4316:	if s 13 = 1
 	  then go to L4201
 	load constant 8
 	load constant 6
@@ -2601,7 +2601,7 @@ S4326:	select rom go to L0727
 
 S4327:	select rom go to S2330
 
-L4330:	if 1 = s 13
+L4330:	if s 13 = 1
 	  then go to L4333
 	load constant 12
 L4333:	jsb S4326
@@ -2646,13 +2646,13 @@ L4374:	1 -> s 6
 	load constant 2
 	load constant 9
 L4400:	load constant 13
-L4401:	if 0 = s 13
+L4401:	if s 13 = 0
 	  then go to L4405
 	p - 1 -> p
 	load constant 5
 L4405:	delayed rom @01
 	jsb S0714
-	if 1 = s 13
+	if s 13 = 1
 	  then go to L5553
 	c -> a[w]
 L4412:	delayed rom @04
@@ -2664,14 +2664,14 @@ L4412:	delayed rom @04
 	if c[s] = 0
 	  then go to L4427
 	1 -> s 7
-	if 1 = s 10
+	if s 10 = 1
 	  then go to L4426
 	1 -> s 4
 L4426:	0 -> c[s]		; maybe trg120
 L4427:	b exchange c[w]		; maybe trg130
-	if 1 = s 0
+	if s 0 = 1
 	  then go to L5050
-	if 0 = s 15
+	if s 15 = 0
 	  then go to L4440
 	a exchange c[w]
 	c -> a[w]
@@ -2702,7 +2702,7 @@ L4452:	m1 exchange c		; maybe trg150
 	m1 -> c
 	c + c -> c[w]
 	shift left a[w]
-	if 0 = s 0
+	if s 0 = 0
 	  then go to L4475
 	shift right a[w]
 	shift right c[w]
@@ -2713,7 +2713,7 @@ L4476:	a - b -> a[w]		; maybe trg170
 L4501:	b exchange c[w]		; mabye trg180
 	m1 -> c
 	b exchange c[w]
-	if 0 = s 0
+	if s 0 = 0
 	  then go to L4775
 	if c[x] # 0
 	  then go to L4774
@@ -2746,10 +2746,10 @@ L4535:	a exchange b[w]
 	b exchange c[w]
 	select rom go to L5141
 
-L4541:	if 0 = s 10
+L4541:	if s 10 = 0
 	  then go to L4761
 	0 -> s 10
-L4544:	if 1 = s 4
+L4544:	if s 4 = 1
 	  then go to L4567
 	1 -> s 4
 	go to L4476
@@ -2765,7 +2765,7 @@ L4556:	a exchange c[w]
 	shift left a[x]
 	a exchange c[w]
 	shift left a[w]
-	if 0 = s 8
+	if s 8 = 0
 	  then go to L4665
 	if c[xs] # 0
 	  then go to L4606
@@ -2792,7 +2792,7 @@ L4606:	0 -> c[wp]
 	  then go to L4615
 	c - 1 -> c[w]
 	0 -> c[xs]
-	if 1 = s 4
+	if s 4 = 1
 	  then go to L4616
 L4615:	0 -> c[s]
 L4616:	select rom go to L0617
@@ -2803,7 +2803,7 @@ L4617:	m1 exchange c
 	c - 1 -> c[w]
 	c -> data address
 	c -> a[w]
-	if 0 = s 11
+	if s 11 = 0
 	  then go to L4640
 	p <- 6
 	0 -> c[wp]
@@ -2908,14 +2908,14 @@ L4744:	a -> b[w]
 	go to L4744
 
 L4761:	1 -> s 10
-	if 0 = s 6
+	if s 6 = 0
 	  then go to L4544
-	if 0 = s 7
+	if s 7 = 0
 	  then go to L4673
 	0 -> s 7
 	go to L4476
 
-L4770:	if 0 = s 13
+L4770:	if s 13 = 0
 	  then go to L4660
 	0 -> c[w]
 	select rom go to L5374
@@ -2928,7 +2928,7 @@ L4775:	if c[xs] # 0		; maybe trg270
 	a + b -> a[w]
 L5002:	jsb S5074		; maybe trg280
 L5003:	0 -> a[s]
-	if 1 = s 0
+	if s 0 = 1
 	  then go to L5417
 	b exchange c[w]
 	m1 -> c
@@ -2948,7 +2948,7 @@ L5020:	c - 1 -> c[s]		; compare trg400 in 41C
 	a exchange c[w]
 	a - 1 -> a[w]
 	m1 -> c
-	if 1 = s 10
+	if s 10 = 1
 	  then go to L5033
 	0 - c -> c[x]		; compare trg415 in 41C
 	a exchange b[w]
@@ -2956,7 +2956,7 @@ L5033:	if b[w] = 0		; compare trg420 in 41C
 	  then go to L5426
 	jsb S5167
 	0 -> a[s]
-	if 0 = s 6
+	if s 6 = 0
 	  then go to L4663
 	a -> b[w]
 	p <- 1
@@ -2985,7 +2985,7 @@ L5060:	a -> b[w]
 	if a[w] # 0
 	  then go to L5623
 	a exchange b[w]
-	if 0 = s 6
+	if s 6 = 0
 	  then go to L5305
 	jsb S5317
 	0 -> c[w]
@@ -3020,16 +3020,16 @@ L5117:	a + 1 -> a[ms]
 
 L5122:	p <- 12			; trg315
 	m1 -> c
-	if 1 = s 10
+	if s 10 = 1
 	  then go to L5257
-	if 0 = s 13
+	if s 13 = 0
 	  then go to L4663
 	b exchange c[w]
 	m2 -> c
 	jsb S5152
 	c -> stack
 	jsb S5326
-L5135:	if 0 = s 4		; compare trg500 in 41C
+L5135:	if s 4 = 0		; compare trg500 in 41C
 	  then go to L5140
 	0 - c - 1 -> c[s]
 L5140:	select rom go to L4141
@@ -3045,7 +3045,7 @@ L5141:	c -> stack
 S5150:	delayed rom @04
 	jsb S2334
 
-S5152:	if 0 = s 7
+S5152:	if s 7 = 0
 	  then go to L5155
 	0 - c - 1 -> c[s]
 L5155:	select rom go to S0156
@@ -3121,7 +3121,7 @@ L5253:	c - 1 -> c[x]
 	b -> c[w]
 	go to L5110
 
-L5257:	if 1 = s 6
+L5257:	if s 6 = 1
 	  then go to L5372
 	a exchange b[w]
 	jsb S5163
@@ -3157,12 +3157,12 @@ L5313:	b exchange c[w]
 	delayed rom @13
 	go to L5722
 
-S5317:	if 1 = s 10
+S5317:	if s 10 = 1
 	  then go to L4036
 	1 -> s 10
 	return
 
-S5323:	if 0 = s 13
+S5323:	if s 13 = 0
 	  then go to L4660
 	b exchange c[w]
 S5326:	a exchange b[w]
@@ -3177,7 +3177,7 @@ L5335:	shift left a[w]
 L5336:	a exchange c[ms]
 	jsb S5174
 	jsb S5100
-	if 0 = s 13
+	if s 13 = 0
 	  then go to L5512
 	b exchange c[w]
 	a exchange b[w]
@@ -3237,7 +3237,7 @@ L5417:	c - 1 -> c[x]
 	go to L5442
 
 L5426:	0 -> c[w]
-	if 1 = s 6
+	if s 6 = 1
 	  then go to L4770
 	c - 1 -> c[w]
 	0 -> c[xs]
@@ -3334,9 +3334,9 @@ L5553:	0 -> a[w]
 L5556:	if c[s] = 0
 	  then go to L5570
 	1 -> s 4
-	if 0 = s 13
+	if s 13 = 0
 	  then go to L5570
-	if 0 = s 10
+	if s 10 = 0
 	  then go to L5570
 	0 -> s 10
 	1 -> s 7
@@ -3345,7 +3345,7 @@ L5570:	p <- 12
 	if c[xs] = 0
 	  then go to L5620
 	jsb S5661
-	if 0 = s 6
+	if s 6 = 0
 	  then go to L5235
 	jsb S5400
 	delayed rom @12
@@ -3370,7 +3370,7 @@ S5601:	0 -> c[w]
 L5620:	if c[x] = 0
 	  then go to L5060
 	a exchange b[w]
-L5623:	if 1 = s 6
+L5623:	if s 6 = 1
 	  then go to L4617
 	jsb S5661
 	delayed rom @12
@@ -3402,7 +3402,7 @@ L5644:	a -> b[w]
 	go to L5644
 
 S5660:	a exchange c[w]
-S5661:	if 0 = s 13
+S5661:	if s 13 = 0
 	  then go to L5710
 S5663:	delayed rom @04
 	go to S2027
@@ -3442,7 +3442,7 @@ L5712:	c - 1 -> c[p]
 L5722:	c + c -> c[w]
 	shift right c[w]
 	b exchange c[w]
-	if 0 = s 10
+	if s 10 = 0
 	  then go to L5740
 	jsb S5401
 	b exchange c[w]
@@ -3453,25 +3453,25 @@ L5722:	c + c -> c[w]
 	0 -> c[w]
 	jsb S5474
 	0 -> a[s]
-L5740:	if 0 = s 7
+L5740:	if s 7 = 0
 	  then go to L5744
 	jsb S5401
 	a + b -> a[w]
 L5744:	0 -> c[s]
-	if 1 = s 0
+	if s 0 = 1
 	  then go to L5760
 	c + 1 -> c[x]
 	c + 1 -> c[x]
 	jsb S5475
 	0 -> a[s]
-	if 1 = s 15
+	if s 15 = 1
 	  then go to L5760
 	a -> b[w]
 	shift right b[w]
 	a - b -> a[w]
 L5760:	delayed rom @04
 	jsb S2150
-	if 1 = s 13
+	if s 13 = 1
 	  then go to L5434
 	stack -> a
 	c -> stack
