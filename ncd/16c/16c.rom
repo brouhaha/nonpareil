@@ -1,29 +1,5 @@
-# $Id$
-# Copyright 2004, 2005, 2008 Eric Smith <eric@brouhaha.com>
-
-# WARNING:  This work is NOT "Open Source" or "Free Software".
-
-# This work is licensed under the Creative Commons
-# Attribution-Noncommmercial-No Derivative Works 3.0
-# License. To view a simplified description of this license,
-# visit
-
-#     http://creativecommons.org/licenses/by-nc-nd/3.0/
-
-# To view the actual license, visit
-
-#     http://creativecommons.org/licenses/by-nc-nd/3.0/legalcode
-
-# or send a letter to
-
-#     Creative Commons
-#     543 Howard Street, 5th Floor
-#     San Francisco, California, 94105, USA.
-
-# Contents of 16C ROM
-# Extracted on 25-Jan-2004
-# Modified on 5-May-2005
-
+# HP-16C ROM dump
+# Extracted on 2004-01-25
 0000:1cf
 0001:04e
 0002:270
@@ -5125,8 +5101,8 @@
 13ea:310
 13eb:010
 13ec:2d0
-13ed:050
-13ee:050
+13ed:010
+13ee:310
 13ef:268
 13f0:04e
 13f1:25c
@@ -5141,9 +5117,9 @@
 13fa:0ee
 13fb:030
 13fc:3e0
-13fd:0b2
-13fe:123
-13ff:0ab
+13fd:000
+13fe:000
+13ff:000
 1400:28c
 1401:101
 1402:032

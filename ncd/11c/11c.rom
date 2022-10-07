@@ -1,29 +1,5 @@
-# $Id$
-# Copyright 2004, 2005, 2008 Eric Smith <eric@brouhaha.com>
-
-# WARNING:  This work is NOT "Open Source" or "Free Software".
-
-# This work is licensed under the Creative Commons
-# Attribution-Noncommmercial-No Derivative Works 3.0
-# License. To view a simplified description of this license,
-# visit
-
-#     http://creativecommons.org/licenses/by-nc-nd/3.0/
-
-# To view the actual license, visit
-
-#     http://creativecommons.org/licenses/by-nc-nd/3.0/legalcode
-
-# or send a letter to
-
-#     Creative Commons
-#     543 Howard Street, 5th Floor
-#     San Francisco, California, 94105, USA.
-
-# Contents of 11C ROM
-# Extracted on 23-Jan-2004
-# Modified on 5-May-2005
-
+# HP-11C ROM dump
+# Extracted on 2005-05-05
 0000:1cf
 0001:04e
 0002:270
@@ -1858,8 +1834,8 @@
 0727:310
 0728:010
 0729:2d0
-072a:050
-072b:050
+072a:010
+072b:310
 072c:268
 072d:04e
 072e:25c
@@ -3086,16 +3062,16 @@
 0bf3:090
 0bf4:35c
 0bf5:3e0
-0bf6:116
-0bf7:1ca
-0bf8:1a7
-0bf9:18d
-0bfa:14f
-0bfb:1b7
-0bfc:1a6
-0bfd:1d0
-0bfe:1a1
-0bff:04c
+0bf6:000
+0bf7:000
+0bf8:000
+0bf9:000
+0bfa:000
+0bfb:000
+0bfc:000
+0bfd:000
+0bfe:000
+0bff:000
 0c00:0c8
 0c01:048
 0c02:001
