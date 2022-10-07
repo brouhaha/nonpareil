@@ -3,7 +3,7 @@
 
 Import('env')
 
-ncd_names = ['15c']
+ncd_names = ['15c', '15c-192']
 rom_names = ['15c']
 
 ncd_template_files = [env.File(nn + '.ncd.tmpl') for nn in ncd_names]

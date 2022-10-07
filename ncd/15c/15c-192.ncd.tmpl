@@ -8,7 +8,7 @@ Copyright 2007, 2008, 2022 Eric Smith <spacewar@gmail.com>
 <calcdef version="1.0"
          arch="Nut"
          platform="Voyager"
-         model="15C"
+         model="15C-192"
          copyright="Copyright 2007, 2008, 2022 Eric Smith &lt;spacewar@gmail.com&gt;">
 
   <chip type="nut_cpu">
@@ -42,6 +42,11 @@ Copyright 2007, 2008, 2022 Eric Smith <spacewar@gmail.com>
     <memory addr_space="data" base_addr="0x10" size="0x08">
     </memory>
     <memory addr_space="data" base_addr="0xc0" size="0x20">
+    </memory>
+  </chip>
+
+  <chip type="ram-expansion">
+    <memory addr_space="data" base_addr="0x40" size="0x80">
     </memory>
   </chip>
 
@@ -91,8 +96,14 @@ Copyright 2007, 2008, 2022 Eric Smith <spacewar@gmail.com>
     <key user_keycode="40" hw_keycode="0x15"/>
   </keyboard>
 
-  <obj_file addr_space="inst">
+  <obj_file addr_space="inst"
+            copyright="Copyright 2004, 2005, 2008 Eric Smith &lt;eric@brouhaha.com&gt;"
+            license="CC-BY-NC-ND-3.0">
     15c.rom
+  </obj_file>
+
+  <obj_file addr_space="inst">
+    15c-192.patch
   </obj_file>
 
 </calcdef>

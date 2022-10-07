@@ -1,0 +1,33 @@
+# HP-15C memory size patches by J-F Garnier, Hrastprogrammer, and Eric Smith
+# https://www.hpmuseum.org/forum/thread-18491-post-162115.html#pid162115
+
+# memory size
+0356:040
+035f:110
+0361:250
+0362:350
+0be9:040
+2644:150
+2965:040
+2968:050
+296e:041
+2971:042
+2975:043
+2a3d:03b
+2a4a:040
+
+# MEM display fix
+273f:3cd      
+2740:0dc     
+2741:03b     
+2744:000    
+37f3:1c6     
+37f4:016     
+37f5:381     
+37f6:0cc     
+37f7:260     
+37f8:03c     
+37f9:2f6      
+37fa:360     
+37fb:276     
+37fc:3e0
