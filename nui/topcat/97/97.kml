@@ -64,18 +64,18 @@ end
 #end
 
 switch 1
-  offset 170 94
-  default 1
-  position 0  image "switch-off.png"  end  # program
-  position 1  image "switch-on.png"   end  # run
-end
-
-switch 2
   offset 165 74
   default 2
   position 0  image "switch-left.png"   end  # man
   position 1  image "switch-mid.png"    end  # trace
   position 2  image "switch-right.png"  end  # norm
+end
+
+switch 2
+  offset 170 94
+  default 1
+  position 0  image "switch-off.png"  end  # program
+  position 1  image "switch-on.png"   end  # run
 end
 
 button  11  image "key_11.png"   offset  15 146  end  # A
