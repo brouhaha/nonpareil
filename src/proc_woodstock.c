@@ -1,6 +1,5 @@
 /*
-$Id$
-Copyright 2004-2010 Eric Smith <eric@brouhaha.com>
+Copyright 2004-2010, 2022 Eric Smith <spacewar@gmail.com>
 
 Nonpareil is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License version 2 as
@@ -138,7 +137,11 @@ static inline uint8_t get_effective_bank (act_reg_t *act_reg, rom_addr_t addr)
   uint8_t page = addr / PAGE_SIZE;
   bank_t bank;
 
-  bank = act_reg->bank;
+  if (act_reg->arch_variant & AV_BANK_USING_S0)
+    bank = act_reg->s[0];
+  else
+    bank = act_reg->bank;
+
   if (! (act_reg->bank_exists [page] & (1 << bank)))
     bank = 0;
 
@@ -580,22 +583,8 @@ static void op_load_constant (sim_t *sim, int opcode)
 static bool get_s_bit (sim_t *sim, int bit)
 {
   act_reg_t *act_reg = get_chip_data (sim->first_chip);
-  bool state;
 
-  state = act_reg->s [bit];
-  switch (bit)
-    {
-    case 3:
-      state |= act_reg->ext_flag [EXT_FLAG_ACT_F2];
-      break;
-    case 5:
-      state |= act_reg->ext_flag [EXT_FLAG_ACT_F1];
-      break;
-    case 15:
-      state |= act_reg->key_flag;
-      break;
-    }
-  return state;
+  return act_reg->s [bit];
 }
 
 static void set_s_bit (sim_t *sim, int bit, bool state)
@@ -611,29 +600,52 @@ static void set_s_bit (sim_t *sim, int bit, bool state)
       chip_event (sim,
 		  NULL,  // all chips
 		  event_flag_out_change,
+		  EXT_FLAG_ACT_F0,
 		  state,
-		  0,
 		  NULL);
     }
 }
+
 
 static void set_ext_flag (sim_t *sim, int ext_flag, bool value)
 {
   act_reg_t *act_reg = get_chip_data (sim->first_chip);
 
-  if ((ext_flag >= 0) && (ext_flag < EXT_FLAG_SIZE))
+  switch (ext_flag)
+  {
+  case EXT_FLAG_ACT_F1:
+  case EXT_FLAG_ACT_F1_COND_S0:
+  case EXT_FLAG_ACT_F2:
+  case EXT_FLAG_ACT_F2_COND_S0:
     act_reg->ext_flag [ext_flag] = value;
+    break;
+  case EXT_FLAG_ACT_KA:
+  case EXT_FLAG_ACT_KB:
+  case EXT_FLAG_ACT_KC:
+  case EXT_FLAG_ACT_KD:
+  case EXT_FLAG_ACT_KE:
+    uint8_t mask = 1 << (ext_flag - EXT_FLAG_ACT_KA);
+    if (value)
+      act_reg->key_scanner_inputs |= mask;
+    else
+      act_reg->key_scanner_inputs &= ~mask;
+    break;
+  default:
+    printf("ACT unknown ext flag %d\n", ext_flag);
+  }
 }
 
 static void pulse_ext_flag (sim_t *sim, int ext_flag)
 {
+  act_reg_t *act_reg = get_chip_data (sim->first_chip);
+
   switch (ext_flag)
     {
     case EXT_FLAG_ACT_F1:
-      set_s_bit (sim, 5, true);
+      act_reg->ext_flag[EXT_FLAG_ACT_F1_PULSE] = true;
       break;
     case EXT_FLAG_ACT_F2:
-      set_s_bit (sim, 3, true);
+      act_reg->ext_flag[EXT_FLAG_ACT_F2_PULSE] = true;
       break;
     default:
       fatal (2, "ACT unknown ext flag %d\n", ext_flag);
@@ -786,10 +798,14 @@ static void op_c_to_addr (sim_t *sim,
   act_reg->ram_addr = (act_reg->c [1] << 4) + act_reg->c [0];
 #ifdef HAS_DEBUGGER
   if (sim->debug_flags & (1 << SIM_DEBUG_RAM_TRACE))
-    printf ("RAM select %02x\n", act_reg->ram_addr);
+    printf ("RAM select 0x%02x\n", act_reg->ram_addr);
 #endif
+#if 0
+  // Don't complain about this, as it's perfectly legal to select
+  // addresses out of range, as long as they aren't read or written.
   if (! act_reg->ram_exists [act_reg->ram_addr])
-    printf ("c -> ram addr: address %d out of range\n", act_reg->ram_addr);
+    printf ("c -> ram addr: address 0x%02x out of range, pc %05o\n", act_reg->ram_addr, act_reg->prev_pc);
+#endif
 }
 
 
@@ -820,14 +836,14 @@ static void op_c_to_data (sim_t *sim,
 
   if (! act_reg->ram_exists [act_reg->ram_addr])
     {
-      printf ("c -> data: address %02x out of range\n", act_reg->ram_addr);
+      printf ("c -> data: address 0x%02x out of range, pc %05o\n", act_reg->ram_addr, act_reg->prev_pc);
       return;
     }
 #ifdef HAS_DEBUGGER
   if (sim->debug_flags & (1 << SIM_DEBUG_RAM_TRACE))
     {
       int i;
-      printf ("C -> DATA, addr %02x  data ", act_reg->ram_addr);
+      printf ("C -> DATA, addr 0x%02x  data ", act_reg->ram_addr);
       for (i = 0; i < WSIZE; i++)
 	printf ("%x", act_reg->c [i]);
       printf ("\n");
@@ -845,7 +861,7 @@ static void op_data_to_c (sim_t *sim,
 
   if (! act_reg->ram_exists [act_reg->ram_addr])
     {
-      printf ("data -> c: address %d out of range, loading 0\n", act_reg->ram_addr);
+      printf ("data -> c: address 0x%02x out of range, loading 0, pc %05o\n", act_reg->ram_addr, act_reg->prev_pc);
       for (i = 0; i < WSIZE; i++)
 	act_reg->c [i] = 0;
       return;
@@ -853,7 +869,7 @@ static void op_data_to_c (sim_t *sim,
 #ifdef HAS_DEBUGGER
   if (sim->debug_flags & (1 << SIM_DEBUG_RAM_TRACE))
     {
-      printf ("DATA -> C, addr %02x  data ", act_reg->ram_addr);
+      printf ("DATA -> C, addr 0x%02x  data ", act_reg->ram_addr);
       for (i = 0; i < WSIZE; i++)
 	printf ("%x", act_reg->ram [act_reg->ram_addr] [i]);
       printf ("\n");
@@ -872,14 +888,14 @@ static void op_c_to_register (sim_t *sim, int opcode)
 
   if (! act_reg->ram_exists [act_reg->ram_addr])
     {
-      printf ("c -> register: address %d out of range\n", act_reg->ram_addr);
+      printf ("c -> register: address 0x%02x out of range, pc %05o\n", act_reg->ram_addr, act_reg->prev_pc);
       return;
     }
 #ifdef HAS_DEBUGGER
   if (sim->debug_flags & (1 << SIM_DEBUG_RAM_TRACE))
     {
       int i;
-      printf ("C -> REGISTER %d, addr %02x  data ", opcode >> 6, act_reg->ram_addr);
+      printf ("C -> REGISTER %d, addr 0x%02x  data ", opcode >> 6, act_reg->ram_addr);
       for (i = 0; i < WSIZE; i++)
 	printf ("%x", act_reg->c [i]);
       printf ("\n");
@@ -899,7 +915,7 @@ static void op_register_to_c (sim_t *sim, int opcode)
 
   if (! act_reg->ram_exists [act_reg->ram_addr])
     {
-      printf ("register -> c: address %d out of range, loading 0\n", act_reg->ram_addr);
+      printf ("register -> c: address 0x%02x out of range, loading 0, pc %05o\n", act_reg->ram_addr, act_reg->prev_pc);
       for (i = 0; i < WSIZE; i++)
 	act_reg->c [i] = 0;
       return;
@@ -907,7 +923,7 @@ static void op_register_to_c (sim_t *sim, int opcode)
 #ifdef HAS_DEBUGGER
   if (sim->debug_flags & (1 << SIM_DEBUG_RAM_TRACE))
     {
-      printf ("REGISTER -> C %d, addr %02x  data ", opcode >> 6, act_reg->ram_addr);
+      printf ("REGISTER -> C %d, addr 0x%02x  data ", opcode >> 6, act_reg->ram_addr);
       for (i = 0; i < WSIZE; i++)
 	printf ("%x", act_reg->ram [act_reg->ram_addr] [i]);
       printf ("\n");
@@ -926,7 +942,7 @@ static void op_clear_data_regs (sim_t *sim,
 
 #ifdef HAS_DEBUGGER
   if (sim->debug_flags & (1 << SIM_DEBUG_RAM_TRACE))
-    printf ("clear data regs, addr %02x\n", act_reg->ram_addr);
+    printf ("clear data regs, addr 0x%02x\n", act_reg->ram_addr);
 #endif /* HAS_DEBUGGER */
   base = act_reg->ram_addr & ~ 017;
   for (i = base; i <= base + 15; i++)
@@ -1139,7 +1155,7 @@ static void op_keys_to_rom_addr (sim_t *sim,
   handle_del_rom (act_reg);
   if (act_reg->key_buf < 0)
     {
-      printf ("keys->rom address with no key pressed\n");
+      printf ("keys->rom address with no key pressed, pc = %05o\n", act_reg->prev_pc);
       return;
     }
   act_reg->pc += act_reg->key_buf;
@@ -1153,7 +1169,7 @@ static void op_keys_to_a (sim_t *sim,
 
   if (act_reg->key_buf < 0)
     {
-      printf ("keys->a with no key pressed\n");
+      printf ("keys->a with no key pressed, pc = %05o\n", act_reg->prev_pc);
       act_reg->a [2] = 0;
       act_reg->a [1] = 0;
       return;
@@ -1277,6 +1293,47 @@ static void init_ops (act_reg_t *act_reg)
 }
 
 
+void act_key (sim_t *sim, int keycode, bool state)
+{
+  act_reg_t *act_reg = get_chip_data (sim->first_chip);
+
+  if (state)
+    {
+      act_reg->key_buf = keycode;
+      act_reg->key_flag = true;
+    }
+  else
+    act_reg->key_flag = false;
+}
+
+
+static void key_scan_flag(sim_t *sim)
+{
+  act_reg_t *act_reg = get_chip_data (sim->first_chip);
+  
+  if (! act_reg->s[0])
+  {
+    act_reg->key_flag = false;
+    return;
+  }
+
+  int keycode = 0;
+  if (act_reg->key_scanner_inputs & 0x01) // KA
+    keycode |= 0x04;
+  if (act_reg->key_scanner_inputs & 0x02) // KB
+    keycode |= 0x03;
+  if (act_reg->key_scanner_inputs & 0x04) // KC
+    keycode |= 0x02;
+  if (act_reg->key_scanner_inputs & 0x08) // KD
+    keycode |= 0x01;
+  if (act_reg->key_scanner_inputs & 0x10) // KE
+    keycode |= 0x00;
+
+  act_reg->key_buf = keycode;
+  act_reg->key_flag = true;
+}
+
+
 static void display_scan_advance (sim_t *sim)
 {
   act_reg_t *act_reg = get_chip_data (sim->first_chip);
@@ -1364,20 +1421,6 @@ static void spice_display_scan (sim_t *sim)
   sim->display_segments [act_reg->display_digit_position++] = segs;
 
   display_scan_advance (sim);
-}
-
-
-void act_key (sim_t *sim, int keycode, bool state)
-{
-  act_reg_t *act_reg = get_chip_data (sim->first_chip);
-
-  if (state)
-    {
-      act_reg->key_buf = keycode;
-      act_reg->key_flag = true;
-    }
-  else
-    act_reg->key_flag = false;
 }
 
 
@@ -1570,7 +1613,24 @@ static bool woodstock_execute_cycle (sim_t *sim)
 
   sim->cycle_count++;
 
+  if (act_reg->key_scanner_as_flags)
+    key_scan_flag(sim);
+
   act_reg->display_scan_fn (sim);
+
+  bool f1_state = (act_reg->ext_flag[EXT_FLAG_ACT_F1] |
+		   act_reg->ext_flag[EXT_FLAG_ACT_F1_PULSE] |
+		   (act_reg->s[0] && act_reg->ext_flag[EXT_FLAG_ACT_F1_COND_S0]));
+  act_reg->s[5] |= (f1_state == 0);
+  act_reg->ext_flag[EXT_FLAG_ACT_F1_PULSE] = 0;
+
+  bool f2_state = (act_reg->ext_flag[EXT_FLAG_ACT_F2] |
+		   act_reg->ext_flag[EXT_FLAG_ACT_F2_PULSE] |
+		   (act_reg->s[0] && act_reg->ext_flag[EXT_FLAG_ACT_F2_COND_S0]));
+  act_reg->s[3] |= f2_state;
+  act_reg->ext_flag[EXT_FLAG_ACT_F2_PULSE] = 0;
+
+  act_reg->s[15] |= act_reg->key_flag;
 
   return (true);  /* never sleeps */
 }
@@ -1726,7 +1786,7 @@ static bool woodstock_read_ram (sim_t *sim, addr_t addr, uint64_t *val)
   if (addr >= act_reg->max_ram)
     {
       status = false;
-      // warning ("woodstock_read_ram: address %d out of range\n", addr);
+      // warning ("woodstock_read_ram: address 0x%02x out of range, pc %05o\n", addr, act_reg->prev_pc);
     }
   else
     {
@@ -1892,10 +1952,14 @@ static void woodstock_new_processor (sim_t *sim)
 
   act_reg = alloc (sizeof (act_reg_t));
 
+  act_reg->arch_variant = calcdef_get_arch_variant(sim->calcdef);
+
   install_chip (sim,
 		NULL,  // module
 		& woodstock_cpu_chip_detail,
 		act_reg);
+
+  act_reg->key_scanner_as_flags = calcdef_get_key_scanner_as_flags(sim->calcdef);
 
   display_setup (sim);
 

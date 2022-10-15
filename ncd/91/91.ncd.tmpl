@@ -9,7 +9,7 @@ Copyright 2022 Eric Smith <spacewar@gmail.com>
          arch="Woodstock"
          platform="Topcat"
          model="91"
-         copyright="Copyright 2007, 2008, 2022 Eric Smith &lt;spacewar@gmail.com&gt;"
+         copyright="Copyright 2022 Eric Smith &lt;spacewar@gmail.com&gt;"
          license="GPL-3.0">
 
   <chip id="act" type="woodstock_act">
@@ -22,6 +22,7 @@ Copyright 2022 Eric Smith <spacewar@gmail.com>
       <part_number>MK6216N</part_number>
     </part_info>
     <inst_clock osc_type="LC" freq="185000"/>
+    <key_scanner as_flags="1"/>
   </chip>
 
   <chip id="cathode_driver" type="woodstock_cathode_driver_14">
@@ -90,7 +91,7 @@ Copyright 2022 Eric Smith <spacewar@gmail.com>
       <vendor_name>HP</vendor_name>
 1      <part_number>1820-1564</part_number>
     </part_info>
-    <memory addr_space="data" base_addr="000" size="010">
+    <memory addr_space="data" base_addr="000" size="0x10">
     </memory>
   </chip>
 
@@ -102,523 +103,713 @@ Copyright 2022 Eric Smith <spacewar@gmail.com>
       <part_number>1820-1680</part_number>
     </part_info>
     <chargen type="bitmap" count="35">
-      <char id="0x00">*...*
-                      *...*
-                      **..*
-                      *.*.*
-                      *..**
-                      *...*
-                      *...*</char> <!-- UC N -->
+      <!-- space -->
+      <char id="0x00">
+	.....
+        .....
+        .....
+        .....
+        .....
+        .....
+	.....
+      </char>
 
-      <char id="0x01">*....
-                      *....
-                      *....
-                      *....
-                      *....
-                      *....
-                      *****</char> <!-- UC L -->
+      <!-- x overbar, mean -->
+      <char id="0x01">
+	.***.
+        .....
+        *...*
+        .*.*.
+        ..*..
+        .*.*.
+        *...*
+      </char>
 
-      <char id="0x02">.***.
-                      *...*
-                      *....
-                      *....
-                      *..**
-                      *...*
-                      .***.</char> <!-- UC G -->
+      <!-- UC E -->
+      <char id="0x02">
+	*****
+        *....
+        *....
+        ****.
+        *....
+        *....
+        *****
+      </char>
  
-      <char id="0x03">.***.
-                      *...*
-                      *...*
-                      *...*
-                      *...*
-                      *...*
-                      .***.</char> <!-- UC O -->
+      <!-- UC C -->
+      <char id="0x03">
+	.***.
+        *...*
+        *....
+        *....
+        *....
+        *...*
+        .***.
+      </char>
 
-      <char id="0x04">****.
-                      *...*
-                      *...*
-                      ****.
-                      *....
-                      *....
-                      *....</char> <!-- UC P -->
+      <!-- UC R -->
+      <char id="0x04">
+	****.
+        *...*
+        *...*
+        ****.
+        *.*..
+        *..*.
+        *...*
+      </char>
 
-      <char id="0x05">****.
-                      *...*
-                      *...*
-                      ****.
-                      *.*..
-                      *..*.
-                      *...*</char> <!-- UC R -->
+      <!-- UC G -->
+      <char id="0x05">
+	.***.
+        *...*
+        *....
+        *....
+        *..**
+        *...*
+        .***.
+      </char>
 
-      <char id="0x06">.***.
-                      *...*
-                      *....
-                      .***.
-                      ....*
-                      *...*
-                      .***.</char> <!-- UC S -->
+      <!-- UC Sigma -->
+      <char id="0x06">
+	*****
+        *...*
+        .*...
+        ..*..
+        .*...
+        *...*
+        *****
+      </char>
 
-      <char id="0x07">*****
-                      ..*..
-                      ..*..
-                      ..*..
-                      ..*..
-                      ..*..
-                      ..*..</char> <!-- UC T -->
+      <!-- bang, factorial -->
+      <char id="0x07">
+	..*..
+        ..*..
+        ..*..
+        ..*..
+        ..*..
+        .....
+        ..*..
+      </char>
 
-      <char id="0x08">**...
-                      **..*
-                      ...*.
-                      ..*..
-                      .*...
-                      *..**
-                      ...**</char> <!-- percent -->
+      <!-- hyphen -->
+      <char id="0x08">
+	.....
+        .....
+        .....
+        *****
+        .....
+        .....
+        .....
+      </char>
 
-      <char id="0x09">*...*
-                      *...*
-                      *...*
-                      *.*.*
-                      *.*.*
-                      **.**
-                      *...*</char> <!-- UC W -->
+      <!-- divide -->
+      <char id="0x09">
+	.....
+        .**..
+        .....
+        *****
+        .....
+        ..**.
+        .....
+      </char>
 
-      <char id="0x0a">..*..
-                      .*.*.
-                      *...*
-                      *...*
-                      *****
-                      *...*
-                      *...*</char> <!-- UC A -->
+      <!-- multiplication symbol -->
+      <char id="0x0a">
+	.....
+        *...*
+        .*.*.
+        ..*..
+        .*.*.
+        *...*
+        .....
+      </char>
                       
-      <char id="0x0b">****.
-                      *...*
-                      *...*
-                      ****.
-                      *...*
-                      *...*
-                      ****.</char> <!-- UC B -->
+      <!-- plus -->
+      <char id="0x0b">
+	.....
+        ..*..
+        ..*..
+        *****
+        ..*..
+        ..*..
+        .....
+      </char>
                       
-      <char id="0x0c">.***.
-                      *...*
-                      *....
-                      *....
-                      *....
-                      *...*
-                      .***.</char> <!-- UC C -->
+      <!-- UC S -->
+      <char id="0x0c">
+	.***.
+        *...*
+        *....
+        .***.
+        ....*
+        *...*
+        .***.
+      </char>
 
-      <char id="0x0d">****.
-                      .*..*
-                      .*..*
-                      .*..*
-                      .*..*
-                      .*..*
-                      ****.</char> <!-- UC D -->
+      <!-- UC N -->
+      <char id="0x0d">
+	*...*
+        *...*
+        **..*
+        *.*.*
+        *..**
+        *...*
+        *...*
+      </char>
                       
-      <char id="0x0e">*****
-                      *....
-                      *....
-                      ****.
-                      *....
-                      *....
-                      *****</char> <!-- UC E -->
+      <!-- UC L -->
+      <char id="0x0e">
+	*....
+        *....
+        *....
+        *....
+        *....
+        *....
+        *****
+      </char>
                       
-      <char id="0x0f">.***.
-                      ..*..
-                      ..*..
-                      ..*..
-                      ..*..
-                      ..*..
-                      .***.</char> <!-- UC I -->
+      <!-- UNKNOWN -->
+      <char id="0x0f">
+	.***.
+        ..*..
+        ..*..
+        ..*..
+        ..*..
+        ..*..
+        .***.
+      </char>
                       
-      <char id="0x10">*...*
-                      *...*
-                      .*.*.
-                      ..*..
-                      ..*..
-                      ..*..
-                      ..*..</char> <!-- UC Y -->
+      <!-- y with circumflex, linear estimate -->
+      <char id="0x10">
+        ..*..
+	.*.*.
+        .....
+        *...*
+        .*.*.
+        ..*..
+	..*..
+      </char>
 
-      <char id="0x11">*...*
-                      **.**
-                      *.*.*
-                      *.*.*
-                      *...*
-                      *...*
-                      *...*</char> <!-- UC M -->
+      <!-- superscript -1 -->
+      <char id="0x11">
+	....*
+        ....*
+        ***.*
+        ....*
+        .....
+        .....
+        .....
+      </char> 
 
-      <char id="0x12">....*
-                      ....*
-                      ***.*
-                      ....*
-                      .....
-                      .....
-                      .....</char> <!-- superscript -1 -->
+      <!-- pi -->
+      <char id="0x12">
+	.....
+        ....*
+        .***.
+        **.*.
+        .*.*.
+        .*.*.
+	.*.*.
+      </char>
 
-      <char id="0x13">*...*
-                      *...*
-                      *...*
-                      *****
-                      *...*
-                      *...*
-                      *...*</char> <!-- UC H -->
+      <!-- percent -->
+      <char id="0x13">
+	**...
+        **..*
+        ...*.
+        ..*..
+        .*...
+        *..**
+        ...**
+      </char>
 
-      <char id="0x14">..***
-                      ..*..
-                      ..*..
-                      *.*..
-                      .**..
-                      ..*..
-                      ..*..</char> <!-- square root -->
+      <!-- exchange, right arrow over left arrow -->
+      <char id="0x14">
+	...*.
+        *****
+        ...*.
+        .....
+        .*...
+        *****
+        .*...
+      </char>
 
-      <char id="0x15">*****
-                      *....
-                      *....
-                      ****.
-                      *....
-                      *....
-                      *....</char> <!-- UC F -->
+      <!-- UC delta -->
+      <char id="0x15">
+        .....
+        ..*..
+        ..*..
+        .*.*.
+        .*.*.
+	*...*
+        *****
+      </char>
                       
-      <char id="0x16">.***.
-                      *...*
-                      ....*
-                      ...*.
-                      ..*..
-                      .....
-                      ..*..</char> <!-- question mark -->
+      <!-- UC M -->
+      <char id="0x16">
+	*...*
+        **.**
+        *.*.*
+        *.*.*
+        *...*
+        *...*
+        *...*
+      </char>
                       
-      <char id="0x17">.....
-                      ..*..
-                      ...*.
-                      *****
-                      ...*.
-                      ..*..
-                      .....</char> <!-- right arrow -->
+      <!-- UC H -->
+      <char id="0x17">
+	*...*
+        *...*
+        *...*
+        *****
+        *...*
+        *...*
+        *...*
+      </char> 
                       
-      <char id="0x18">.***.
-                      *...*
-                      ..**.
-                      .*...
-                      .****
-                      .....
-                      .....</char> <!-- superscript 2 -->
+      <!-- UC P -->
+      <char id="0x18">
+	****.
+        *...*
+        *...*
+        ****.
+        *....
+        *....
+	*....
+      </char>
 
-      <char id="0x19">*..*.
-                      .**..
-                      .**..
-                      *..*.
-                      .....
-                      .....
-                      .....</char> <!-- superscript x -->
+      <!-- LC e -->
+      <char id="0x19">
+	.....
+        .....
+        .***.
+        *...*
+        ****.
+        *....
+        .***.
+      </char>
 
-      <char id="0x1a">.....
-                      .....
-                      .....
-                      .**..
-                      *..*.
-                      *..*.
-                      .**.*</char> <!-- LC a -->
+      <!-- UC I -->
+      <char id="0x1a">
+	.***.
+        ..*..
+        ..*..
+        ..*..
+        ..*..
+        ..*..
+        .***.
+      </char>
 
-      <char id="0x1b">*....
-                      *....
-                      *....
-                      *.**.
-                      **..*
-                      **..*
-                      *.**.</char> <!-- LC b -->
+      <!-- UNKNOWN -->
+      <char id="0x1b">
+	*....
+        *....
+        *....
+        *.**.
+        **..*
+        **..*
+        *.**.
+      </char>
 
-      <char id="0x1c">.....
-                      .....
-                      .***.
-                      *...*
-                      *....
-                      *...*
-                      .***.</char> <!-- LC c -->
+      <!-- up arrow -->
+      <char id="0x1c">
+	..*..
+        .***.
+        *.*.*
+        ..*..
+        ..*..
+        ..*..
+        ..*..
+      </char>
 
-      <char id="0x1d">....*
-                      ....*
-                      ....*
-                      .**.*
-                      *..**
-                      *..**
-                      .**.*</char> <!-- LC d -->
+      <!-- down arrow -->
+      <char id="0x1d">
+	..*..
+        ..*..
+        ..*..
+        ..*..
+        *****
+        .***.
+        ..*..
+      </char>
 
-      <char id="0x1e">.....
-                      .....
-                      .***.
-                      *...*
-                      ****.
-                      *....
-                      .***.</char> <!-- LC e -->
+      <!-- UNKNOWN -->
+      <char id="0x1e">
+	.....
+        .....
+        .***.
+        *...*
+        ****.
+        *....
+        .***.
+      </char>
 
-      <char id="0x1f">..**.
-                      ..**.
-                      .....
-                      ..**.
-                      ..**.
-                      ..**.
-                      ..**.</char> <!-- LC i $$$ should be bold -->
+      <!-- UNKNOWN -->
+      <char id="0x1f">
+	..**.
+        ..**.
+        .....
+        ..**.
+        ..**.
+        ..**.
+        ..**.</char>
 
-      <char id="0x20">.....
-                      .....
-                      *****
-                      .....
-                      *****
-                      .....
-                      .....</char> <!-- equal -->
+      <!-- space -->
+      <char id="0x20">
+	.....
+        .....
+        .....
+        .....
+        .....
+        .....
+        .....
+      </char>
 
-      <char id="0x21">.....
-                      ...*.
-                      *****
-                      ..*..
-                      *****
-                      .*...
-                      .....</char> <!-- not equal -->
+      <!-- asterisk -->
+      <char id="0x21">
+	.....
+        ..*..
+        *.*.*
+        .***.
+        *.*.*
+        ..*..
+        .....
+      </char>
 
-      <char id="0x22">.*...
-                      ..*..
-                      ...*.
-                      ....*
-                      ...*.
-                      ..*..
-                      .*...</char> <!-- greater than -->
+      <!-- UC T -->
+      <char id="0x22">
+	*****
+        ..*..
+        ..*..
+        ..*..
+        ..*..
+        ..*..
+        ..*..
+      </char>
 
-      <char id="0x23">...**
-                      ..*..
-                      .*...
-                      *****
-                      .....
-                      .....
-                      *****</char> <!-- less than or equal -->
+      <!-- UC Z -->
+      <char id="0x23">
+	*****
+        ....*
+        ...*.
+        ..*..
+        .*...
+        *....
+        *****
+      </char>
 
-      <char id="0x24">*...*
-                      *...*
-                      .*.*.
-                      ..*..
-                      .*.*.
-                      *...*
-                      *...*</char> <!-- UC X -->
+      <!-- UC Y -->
+      <char id="0x24">
+	*...*
+        *...*
+        .*.*.
+        ..*..
+        ..*..
+        ..*..
+        ..*..
+      </char>
 
-      <char id="0x25">*****
-                      ....*
-                      ...*.
-                      ..*..
-                      .*...
-                      *....
-                      *****</char> <!-- UC Z -->
+      <!-- UC X -->
+      <char id="0x25">
+	*...*
+        *...*
+        .*.*.
+        ..*..
+        .*.*.
+        *...*
+	*...*
+      </char>
 
-      <char id="0x26">.***.
-                      .....
-                      *...*
-                      .*.*.
-                      ..*..
-                      .*.*.
-                      *...*</char> <!-- x-bar -->
+      <!-- UC theta -->
+      <char id="0x26">
+	.***.
+        *...*
+        *...*
+        *****
+        *...*
+        *...*
+	.***.
+      </char>
 
-      <char id="0x27">...*.
-                      *****
-                      ...*.
-                      .....
-                      .*...
-                      *****
-                      .*...</char>  <!-- exchange -->
+      <!-- UC R -->
+      <char id="0x27">
+	****.
+        *...*
+        *...*
+        ****.
+        *.*..
+        *..*.
+        *...*
+      </char>
 
-      <char id="0x28">*****
-                      *...*
-                      .*...
-                      ..*..
-                      .*...
-                      *...*
-                      *****</char> <!-- UC sigma -->
+      <!-- UC A -->
+      <char id="0x28">
+	..*..
+        .*.*.
+        *...*
+        *...*
+        *****
+        *...*
+        *...*
+      </char>
 
-      <char id="0x29">...*.
-                      ..*..
-                      .*...
-                      *....
-                      .*...
-                      ..*..
-                      ...*.</char> <!-- less than -->
+      <!-- UC A -->
+      <char id="0x29">
+	..*..
+        .*.*.
+        *...*
+        *...*
+        *****
+        *...*
+        *...*
+      </char>
 
-      <char id="0x2a">..*..
-                      ..*..
-                      ..*..
-                      ..*..
-                      ..*..
-                      .....
-                      ..*..</char> <!-- bang -->
+      <!-- UNKNOWN -->
+      <char id="0x2a">
+	..*..
+        ..*..
+        ..*..
+        ..*..
+        ..*..
+        .....
+	..*..
+      </char>
 
-      <char id="0x2b">.....
-                      ....*
-                      ...*.
-                      ..*..
-                      .*...
-                      *....
-                      .....</char> <!-- slash -->
+      <!-- right arrow -->
+      <char id="0x2b">
+	.....
+        ..*..
+        ...*.
+        *****
+        ...*.
+        ..*..
+        .....
+      </char> 
 
-      <char id="0x2c">.....
-                      .**..
-                      .....
-                      *****
-                      .....
-                      ..**.
-                      .....</char> <!-- divide -->
+      <!-- superscript x -->
+      <char id="0x2c">
+	*..*.
+        .**..
+        .**..
+        *..*.
+        .....
+        .....
+	.....
+      </char>
 
-      <char id="0x2d">..*..
-                      .***.
-                      *.*.*
-                      ..*..
-                      ..*..
-                      ..*..
-                      ..*..</char> <!-- up arrow -->
+      <!-- superscript 2 -->
+      <char id="0x2d">
+	.***.
+        *...*
+        ..**.
+        .*...
+        .****
+        .....
+        .....
+      </char>
 
-      <char id="0x2e">..*..
-                      ..*..
-                      ..*..
-                      ..*..
-                      *****
-                      .***.
-                      ..*..</char> <!-- down arrow -->
+      <!-- square root -->
+      <char id="0x2e">
+	..***
+        ..*..
+        ..*..
+        *.*..
+        .**..
+        ..*..
+	..*..
+      </char>
 
-      <char id="0x2f">.....
-                      *...*
-                      .*.*.
-                      ..*..
-                      .*.*.
-                      *...*
-                      .....</char> <!-- multiplication symbol -->
+      <!-- UNKNOWN -->
+      <char id="0x2f">
+	.....
+        *...*
+        .*.*.
+        ..*..
+        .*.*.
+        *...*
+	.....
+      </char>
 
-      <char id="0x30">.***.
-                      *...*
-                      *..**
-                      *.*.*
-                      **..*
-                      *...*
-                      .***.</char> <!-- zero -->
+      <!-- zero and O -->
+      <char id="0x30">
+	.***.
+        *...*
+        *...*
+        *...*
+        *...*
+        *...*
+        .***.
+      </char>
 
-      <char id="0x31">..*..
-                      .**..
-                      ..*..
-                      ..*..
-                      ..*..
-                      ..*..
-                      .***.</char> <!-- one -->
+      <!-- one -->
+      <char id="0x31">
+	..*..
+        .**..
+        ..*..
+        ..*..
+        ..*..
+        ..*..
+        .***.
+      </char>
 
-      <char id="0x32">.***.
-                      *...*
-                      ....*
-                      ..**.
-                      **...
-                      *....
-                      *****</char> <!-- two -->
+      <!-- two -->
+      <char id="0x32">
+	.***.
+        *...*
+        ....*
+        ..**.
+        **...
+        *....
+        *****
+      </char>
 
-      <char id="0x33">*****
-                      ....*
-                      ...*.
-                      ..**.
-                      ....*
-                      *...*
-                      .***.</char> <!-- three -->
+      <!-- three -->
+      <char id="0x33">
+	*****
+        ....*
+        ...*.
+        ..**.
+        ....*
+        *...*
+        .***.</char>
 
-      <char id="0x34">...*.
-                      ..**.
-                      .*.*.
-                      *..*.
-                      *****
-                      ...*.
-                      ...*.</char> <!-- four -->
+	<!-- four -->
+      <char id="0x34">
+	...*.
+        ..**.
+        .*.*.
+        *..*.
+        *****
+        ...*.
+        ...*.
+      </char>
 
-      <char id="0x35">*****
-                      *....
-                      ****.
-                      ....*
-                      ....*
-                      *...*
-                      .***.</char> <!-- five -->
+      <!-- five -->
+      <char id="0x35">
+	*****
+        *....
+        ****.
+        ....*
+        ....*
+        *...*
+        .***.
+      </char>
 
-      <char id="0x36">..***
-                      .*...
-                      *....
-                      ****.
-                      *...*
-                      *...*
-                      .***.</char> <!-- six -->
+      <!-- six -->
+      <char id="0x36">
+	..***
+        .*...
+        *....
+        ****.
+        *...*
+        *...*
+        .***.
+      </char>
 
-      <char id="0x37">*****
-                      ....*
-                      ...*.
-                      ..*..
-                      .*...
-                      .*...
-                      .*...</char> <!-- seven -->
+      <!-- seven -->
+      <char id="0x37">
+	*****
+        ....*
+        ...*.
+        ..*..
+        .*...
+        .*...
+        .*...
+      </char>
 
-      <char id="0x38">.***.
-                      *...*
-                      *...*
-                      .***.
-                      *...*
-                      *...*
-                      .***.</char> <!-- eight -->
+      <!-- eight -->
+      <char id="0x38">
+	.***.
+        *...*
+        *...*
+        .***.
+        *...*
+        *...*
+        .***.
+      </char>
 
-      <char id="0x39">.***.
-                      *...*
-                      *...*
-                      .****
-                      ....*
-                      ...*.
-                      ***..</char> <!-- nine -->
+      <!-- nine -->
+      <char id="0x39">
+	.***.
+        *...*
+        *...*
+        .****
+        ....*
+        ...*.
+	***..
+      </char>
 
-      <char id="0x3a">.....
-                      .....
-                      .....
-                      .....
-                      .....
-                      .**..
-                      .**..</char> <!-- period -->
+      <!-- period -->
+      <char id="0x3a">
+	.....
+        .....
+        .....
+        .....
+        .....
+        .**..
+	.**..
+      </char>
 
-      <char id="0x3b">.....
-                      .....
-                      .....
-                      *****
-                      .....
-                      .....
-                      .....</char> <!-- hyphen -->
+      <!-- hyphen -->
+      <char id="0x3b">
+	.....
+        .....
+        .....
+        *****
+        .....
+        .....
+	.....
+      </char>
 
-      <char id="0x3c">.....
-                      ..*..
-                      ..*..
-                      *****
-                      ..*..
-                      ..*..
-                      .....</char> <!-- plus -->
+      <!-- UNKNOWN -->
+      <char id="0x3c">
+	.....
+        ..*..
+        ..*..
+        *****
+        ..*..
+        ..*..
+	.....
+      </char>
 
-      <char id="0x3d">.....
-                      ..*..
-                      *.*.*
-                      .***.
-                      *.*.*
-                      ..*..
-                      .....</char> <!-- asterisk -->
+      <!--- left arrow -->
+      <char id="0x3d">
+	.....
+        ..*..
+        .*...
+        *****
+        .*...
+        ..*..
+	.....
+      </char>
 
-      <char id="0x3e">.....
-                      .....
-                      .....
-                      .....
-                      .....
-                      .....
-                      .....</char> <!-- space -->
+      <!-- space -->
+      <char id="0x3e">
+	.....
+        .....
+        .....
+        .....
+        .....
+        .....
+	.....
+      </char>
 
-      <char id="0x3f">.....
-                      .....
-                      .....
-                      .....
-                      .....
-                      .....
-                      .....</char> <!-- CR -->
+      <!-- end -->
+      <char id="0x3f">
+	.....
+        .....
+        .....
+        .....
+        .....
+        .....
+	.....
+      </char>
     </chargen>
   </chip>
 
   <keyboard>
 
-    <!-- power switch -->
+    <!-- power switch, top left -->
     <!--
     <switch number="0">
       <switch_pos position="0" flag="power" value="0"/>
@@ -626,96 +817,89 @@ Copyright 2022 Eric Smith <spacewar@gmail.com>
     </switch>
     -->
 
+    <!-- printer mode, top right-->
     <switch number="1">
-      <switch_pos position="0">  <!-- PRGM -->
-        <flag chip_id="crc" number="1" value="1"/>
-      </switch_pos>
-      <switch_pos position="1">  <!-- RUN -->
-        <flag chip_id="crc" number="1" value="0"/>
-      </switch_pos>
-    </switch>
-
-    <switch number="2">  <!-- printer mode -->
       <switch_pos position="0">  <!-- MAN -->
-        <flag chip_id="crc" number="2" value="1"/>
-        <flag chip_id="crc" number="3" value="0"/>
+        <flag chip_id="act" number="f1-cond-s0" value="0"/>
+        <flag chip_id="act" number="ka" value="1"/>
       </switch_pos>
-      <switch_pos position="1">  <!-- TRACE -->
-        <flag chip_id="crc" number="2" value="0"/>
-        <flag chip_id="crc" number="3" value="0"/>
+      <switch_pos position="1">  <!-- ALL -->
+        <flag chip_id="act" number="f1-cond-s0" value="0"/>
+        <flag chip_id="act" number="ka" value="0"/>
       </switch_pos>
       <switch_pos position="2">  <!-- NORM -->
-        <flag chip_id="crc" number="2" value="0"/>
-        <flag chip_id="crc" number="3" value="1"/>
+        <flag chip_id="act" number="f1-cond-s0" value="1"/>
+        <flag chip_id="act" number="ka" value="0"/>
       </switch_pos>
     </switch>
 
-    <key user_keycode="11"  chip_id="pick" hw_keycode="0xe4"/> <!-- A -->
-    <key user_keycode="12"  chip_id="pick" hw_keycode="0xd4"/> <!-- B -->
-    <key user_keycode="13"  chip_id="pick" hw_keycode="0xc4"/> <!-- C -->
-    <key user_keycode="14"  chip_id="pick" hw_keycode="0xb4"/> <!-- D -->
-    <key user_keycode="15"  chip_id="pick" hw_keycode="0xa4"/> <!-- E -->
-    <key user_keycode="16"  chip_id="pick" hw_keycode="0x94"/> <!-- f -->
+    <!-- angle units, bottom right -->
+    <switch number="2">
+      <switch_pos position="0">  <!-- DEG -->
+        <flag chip_id="act" number="kc" value="1"/>
+        <flag chip_id="act" number="kd" value="0"/>
+      </switch_pos>
+      <switch_pos position="1">  <!-- GRD -->
+        <flag chip_id="act" number="kc" value="0"/>
+        <flag chip_id="act" number="kd" value="0"/>
+      </switch_pos>
+      <switch_pos position="2">  <!-- RAD -->
+        <flag chip_id="act" number="kc" value="0"/>
+        <flag chip_id="act" number="kd" value="1"/>
+      </switch_pos>
+    </switch>
+                                                               <!-- unshifted shifted   -->
+    <key user_keycode="11"  chip_id="pick" hw_keycode="0xc0"/> <!-- sqrt      HMS+      -->
+    <key user_keycode="12"  chip_id="pick" hw_keycode="0x90"/> <!-- x^2       HMS-      -->
+    <key user_keycode="13"  chip_id="pick" hw_keycode="0x50"/> <!-- y^x       ->HMS     -->
+    <key user_keycode="14"  chip_id="pick" hw_keycode="0xd0"/> <!-- 1/x       HMS->     -->
 						           
-    <key user_keycode="21"  chip_id="pick" hw_keycode="0xb8"/> <!-- LBL -->
-    <key user_keycode="22"  chip_id="pick" hw_keycode="0xd8"/> <!-- GTO -->
-    <key user_keycode="23"  chip_id="pick" hw_keycode="0xc8"/> <!-- GSB -->
-    <key user_keycode="24"  chip_id="pick" hw_keycode="0xe8"/> <!-- RTN -->
-    <key user_keycode="25"  chip_id="pick" hw_keycode="0x60"/> <!-- BST -->
-    <key user_keycode="26"  chip_id="pick" hw_keycode="0x80"/> <!-- SST -->
+    <key user_keycode="21"  chip_id="pick" hw_keycode="0xc1"/> <!-- SIN       SIN-1     -->
+    <key user_keycode="22"  chip_id="pick" hw_keycode="0x91"/> <!-- COS       COS-1     -->
+    <key user_keycode="23"  chip_id="pick" hw_keycode="0x51"/> <!-- TAN       TAN-1     -->
+    <key user_keycode="24"  chip_id="pick" hw_keycode="0xd1"/> <!-- P->R      s         -->
 						           
-    <key user_keycode="31"  chip_id="pick" hw_keycode="0xe1"/> <!-- y^x -->
-    <key user_keycode="32"  chip_id="pick" hw_keycode="0xd1"/> <!-- LN -->
-    <key user_keycode="33"  chip_id="pick" hw_keycode="0xc1"/> <!-- e^x -->
-    <key user_keycode="34"  chip_id="pick" hw_keycode="0xb1"/> <!-- ->P -->
-    <key user_keycode="35"  chip_id="pick" hw_keycode="0x98"/> <!-- STO -->
-    <key user_keycode="36"  chip_id="pick" hw_keycode="0x74"/> <!-- RCL -->
+    <key user_keycode="31"  chip_id="pick" hw_keycode="0xc4"/> <!-- %         Delta%    -->
+    <key user_keycode="32"  chip_id="pick" hw_keycode="0x94"/> <!-- %Sigma    n!        -->
+    <key user_keycode="33"  chip_id="pick" hw_keycode="0x54"/> <!-- lin est   L.R.      -->
+    <key user_keycode="34"  chip_id="pick" hw_keycode="0xd4"/> <!-- R->P      mean      -->
+
+    <key user_keycode="41"  chip_id="pick" hw_keycode="0xc8"/> <!-- e^x       10^x      -->
+    <key user_keycode="42"  chip_id="pick" hw_keycode="0x98"/> <!-- ln        log       -->
+    <key user_keycode="43"  chip_id="pick" hw_keycode="0x78"/> <!-- Sigma+    Sigma-    -->
+    <key user_keycode="44"  chip_id="pick" hw_keycode="0x38"/> <!-- f                   -->
 						           
-    <key user_keycode="41"  chip_id="pick" hw_keycode="0xa1"/> <!-- SIN -->
-    <key user_keycode="42"  chip_id="pick" hw_keycode="0x91"/> <!-- COS -->
-    <key user_keycode="43"  chip_id="pick" hw_keycode="0x81"/> <!-- TAN -->
-    <key user_keycode="44"  chip_id="pick" hw_keycode="0x71"/> <!-- ->R -->
-    <key user_keycode="45"  chip_id="pick" hw_keycode="0x88"/> <!-- (i) -->
-    <key user_keycode="46"  chip_id="pick" hw_keycode="0xa8"/> <!-- I -->
+    <key user_keycode="-11" chip_id="pick" hw_keycode="0xa4"/> <!-- x<>y                -->
+    <key user_keycode="-12" chip_id="pick" hw_keycode="0xd8"/> <!-- RDN                 -->
+    <key user_keycode="-13" chip_id="pick" hw_keycode="0x58"/> <!-- RUP                 -->
+    <key user_keycode="-14" chip_id="pick" hw_keycode="0xe8"/> <!-- PRINT x             -->
 						           
-    <key user_keycode="51"  chip_id="pick" hw_keycode="0xe0"/> <!-- R/S -->
-    <key user_keycode="52"  chip_id="pick" hw_keycode="0xd0"/> <!-- 1/x -->
-    <key user_keycode="53"  chip_id="pick" hw_keycode="0xc0"/> <!-- x^2 -->
-    <key user_keycode="54"  chip_id="pick" hw_keycode="0xb0"/> <!-- sqrt(x) -->
-    <key user_keycode="55"  chip_id="pick" hw_keycode="0xa0"/> <!-- % -->
-    <key user_keycode="56"  chip_id="pick" hw_keycode="0x90"/> <!-- Sigma+ -->
+    <key user_keycode="-21" chip_id="pick" hw_keycode="0xa1"/> <!-- ENTER^    LIST STK   -->
+    <key user_keycode="-22" chip_id="pick" hw_keycode="0xa8"/> <!-- CHS       LIST REG   -->
+    <key user_keycode="-23" chip_id="pick" hw_keycode="0xb8"/> <!-- EEX       LIST Sigma -->
+    <key user_keycode="-24" chip_id="pick" hw_keycode="0x14"/> <!-- divide    CLR REG    -->
 						           
-    <key user_keycode="-11" chip_id="pick" hw_keycode="0x28"/> <!-- FIX -->
-    <key user_keycode="-12" chip_id="pick" hw_keycode="0x78"/> <!-- SCI -->
-    <key user_keycode="-13" chip_id="pick" hw_keycode="0x38"/> <!-- ENG -->
-    <key user_keycode="-14" chip_id="pick" hw_keycode="0x18"/> <!-- PRINT x -->
+    <key user_keycode="-31" chip_id="pick" hw_keycode="0x48"/> <!-- STO       pi         -->
+    <key user_keycode="-32" chip_id="pick" hw_keycode="0xb0"/> <!-- 7                    -->
+    <key user_keycode="-33" chip_id="pick" hw_keycode="0x40"/> <!-- 8                    -->
+    <key user_keycode="-34" chip_id="pick" hw_keycode="0x20"/> <!-- 9                    -->
+    <key user_keycode="-35" chip_id="pick" hw_keycode="0x10"/> <!-- multiply  CLR Sigma  -->
 						           
-    <key user_keycode="-21" chip_id="pick" hw_keycode="0x34"/> <!-- ENTER^ -->
-    <key user_keycode="-22" chip_id="pick" hw_keycode="0x24"/> <!-- CHS -->
-    <key user_keycode="-23" chip_id="pick" hw_keycode="0x14"/> <!-- EEX -->
-    <key user_keycode="-24" chip_id="pick" hw_keycode="0x20"/> <!-- divide -->
+    <key user_keycode="-41" chip_id="pick" hw_keycode="0x64"/> <!-- RCL       LASTx      -->
+    <key user_keycode="-42" chip_id="pick" hw_keycode="0xb1"/> <!-- 4                    -->
+    <key user_keycode="-43" chip_id="pick" hw_keycode="0x41"/> <!-- 5                    -->
+    <key user_keycode="-44" chip_id="pick" hw_keycode="0x21"/> <!-- 6                    -->
+    <key user_keycode="-45" chip_id="pick" hw_keycode="0x11"/> <!-- subtract             -->
 						           
-    <key user_keycode="-31" chip_id="pick" hw_keycode="0x30"/> <!-- Rdn -->
-    <key user_keycode="-32" chip_id="pick" hw_keycode="0x68"/> <!-- 7 -->
-    <key user_keycode="-33" chip_id="pick" hw_keycode="0x58"/> <!-- 8 -->
-    <key user_keycode="-34" chip_id="pick" hw_keycode="0x48"/> <!-- 9 -->
-    <key user_keycode="-35" chip_id="pick" hw_keycode="0x11"/> <!-- multiply -->
+    <key user_keycode="-51" chip_id="pick" hw_keycode="0xa0"/> <!-- CLx       CLEAR      -->
+    <key user_keycode="-52" chip_id="pick" hw_keycode="0xb4"/> <!-- 1                    -->
+    <key user_keycode="-53" chip_id="pick" hw_keycode="0x44"/> <!-- 2                    -->
+    <key user_keycode="-54" chip_id="pick" hw_keycode="0x24"/> <!-- 3                    -->
+    <key user_keycode="-55" chip_id="pick" hw_keycode="0x18"/> <!-- add                  -->
 						           
-    <key user_keycode="-41" chip_id="pick" hw_keycode="0x40"/> <!-- x<>y -->
-    <key user_keycode="-42" chip_id="pick" hw_keycode="0x61"/> <!-- 4 -->
-    <key user_keycode="-43" chip_id="pick" hw_keycode="0x51"/> <!-- 5 -->
-    <key user_keycode="-44" chip_id="pick" hw_keycode="0x41"/> <!-- 6 -->
-    <key user_keycode="-45" chip_id="pick" hw_keycode="0x21"/> <!-- minus -->
-						           
-    <key user_keycode="-51" chip_id="pick" hw_keycode="0x10"/> <!-- CLx -->
-    <key user_keycode="-52" chip_id="pick" hw_keycode="0x64"/> <!-- 1 -->
-    <key user_keycode="-53" chip_id="pick" hw_keycode="0x54"/> <!-- 2 -->
-    <key user_keycode="-54" chip_id="pick" hw_keycode="0x44"/> <!-- 3 -->
-    <key user_keycode="-55" chip_id="pick" hw_keycode="0x31"/> <!-- add -->
-						           
-    <key user_keycode="-61" chip_id="pick" hw_keycode="0x70"/> <!-- 0 -->
-    <key user_keycode="-62" chip_id="pick" hw_keycode="0x50"/> <!-- . -->
-    <key user_keycode="-63" chip_id="pick" hw_keycode="0x84"/> <!-- DSP -->
+    <key user_keycode="-61" chip_id="pick" hw_keycode="0x84"/> <!-- 0                    -->
+    <key user_keycode="-62" chip_id="pick" hw_keycode="0x74"/> <!-- .         ENG        -->
+    <key user_keycode="-63" chip_id="pick" hw_keycode="0x28"/> <!-- FIX       SCI        -->
 
   </keyboard>
 

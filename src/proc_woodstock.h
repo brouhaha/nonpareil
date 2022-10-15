@@ -1,6 +1,5 @@
 /*
-$Id$
-Copyright 1995, 2003-2009 Eric Smith <eric@brouhaha.com>
+Copyright 1995, 2003-2009 Eric Smith <spacewar@gmail.com>
 
 Nonpareil is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License version 2 as
@@ -29,8 +28,6 @@ typedef digit_t reg_t [WSIZE];
 #define SSIZE 16
 #define STACK_SIZE 2
 
-#define EXT_FLAG_SIZE 3
-
 #define PAGE_SIZE 1024
 #define MAX_PAGE 4
 #define MAX_BANK 2
@@ -41,19 +38,39 @@ typedef uint16_t rom_addr_t;
 
 // Architecture variants:
 
-#define AV_P_WRAP_FUNNY 1   // pointer compares funny after wrapping
-                            // off for ACT 1820-1396, 1820-1523, 1820-1741
-                            // on  for ACT 1820-1596, 1820-1812, 1820-2028,
-                            //             1820-2530
-                            // unknown for NMOS ACT 5061-0428
-                            // unknown for Spice series processors
-                            //      1820-2105, 1820-2122, 1820-2162-A
+#define AV_P_WRAP_FUNNY  0x01   // pointer compares funny after wrapping
+                                // off for ACT 1820-1396, 1820-1523, 1820-1741
+                                // on  for ACT 1820-1596, 1820-1812, 1820-2028,
+                                //             1820-2530
+                                // unknown for NMOS ACT 5061-0428
+                                // unknown for Spice series processors
+                                //      1820-2105, 1820-2122, 1820-2162-A
+
+#define AV_BANK_USING_S0 0x02
 
 
-// External flag inputs
-// There is no flag 0 input
-#define EXT_FLAG_ACT_F1 1  // ACT pin 3, affects flag s5
-#define EXT_FLAG_ACT_F2 2  // ACT pin 4, affects flag s3
+typedef enum
+{
+  // External flag outputs
+  EXT_FLAG_ACT_F0,          // ACT pin 22, controlled by flag s0
+
+  // External flag inputs
+  EXT_FLAG_ACT_F1,          // ACT pin 3, affects flag s5
+  EXT_FLAG_ACT_F1_COND_S0,  //   F1, but only while S0 is true
+  EXT_FLAG_ACT_F1_PULSE,    //   F1, but pulsed for a single cycle
+
+  EXT_FLAG_ACT_F2,          // ACT pin 4, affects flag s3
+  EXT_FLAG_ACT_F2_COND_S0,  //   F2, but only while S0 is true
+  EXT_FLAG_ACT_F2_PULSE,    //   F2, but pulsed for a single cycle
+
+  EXT_FLAG_ACT_KA,          // ACT pin 5
+  EXT_FLAG_ACT_KB,          // ACT pin 6
+  EXT_FLAG_ACT_KC,          // ACT pin 7
+  EXT_FLAG_ACT_KD,          // ACT pin 8
+  EXT_FLAG_ACT_KE,          // ACT pin 9
+
+  EXT_FLAG_SIZE             // not an actual flag
+} ext_flag_num_t;
 
 
 typedef struct
@@ -97,7 +114,10 @@ typedef struct
 
   int crc;
 
-  // ACT keyboard (not used for actual keyboard in Topcat series)
+  // ACT keyboard scanner
+
+  bool key_scanner_as_flags;   // true if keyboards scanner is used as flags instead of keyboard (19C, 91, 92, 95C)
+  uint8_t key_scanner_inputs;
 
   bool key_flag;      /* true if a key is down */
   int key_buf;        /* most recently pressed key */
@@ -117,7 +137,8 @@ typedef struct
   void (* op_fcn [1024])(struct sim_t *sim, int opcode);
 
   // ROM:
-  uint8_t bank_exists [MAX_PAGE];  // bitmap
+  int bank_exists [MAX_PAGE];  // bitmap
+  bool bank_using_s0;          // if true, use s0 as bank select rather than bank switch instruction (19C, 95C)
   bool bank;                       // only a single global bank bit
   rom_word_t *rom;
   bool *rom_exists;

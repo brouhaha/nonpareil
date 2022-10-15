@@ -411,7 +411,7 @@ static void pick_paper_advance_button (sim_t *sim, int state)
 	      sim->first_chip,  // ACT only
 	      event_set_flag,
 	      EXT_FLAG_ACT_F1,
-	      ! state,
+	      state,
 	      NULL);
 }
 
@@ -478,28 +478,6 @@ static void pick_event_fn (sim_t      *sim,
       pick_paper_advance_button (sim, arg1);
       break;
     case event_flag_out_change:
-      // ??? in 91
-      // ??? in 92
-      // ??? in 95C
-      // not used in 97
-      // ??? in 19C
-#if 0
-      if (arg1)
-	chip_event (sim,
-		    sim->first_chip,  // ACT only
-		    event_key,
-		    0162,             // $$$ chosen randomly
-		    true,             // press
-		    NULL);
-
-      else
-	chip_event (sim,
-		    sim->first_chip,  // ACT only
-		    event_key,
-		    0162,             // doesn't matter
-		    false,            // release
-		    NULL);
-#endif
       break;
     default:
       // warning ("pick: unknown event %d\n", event);

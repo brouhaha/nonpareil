@@ -7,7 +7,7 @@
 ;   s 2
 ;   s 3  - hardware flag 2 - PICK flags
 ;   s 4
-;   s 5  - hardware flag 1 - NORM switch, paper advance
+;   s 5  - hardware flag 1 - NORM switch (when F0 active), paper advance
 ;   s 6
 ;   s 7
 ;   s 8
@@ -22,13 +22,16 @@
 	.arch woodstock
 	.org @0000
 
-	reset twf
-	p <- 0
+	reset twf		; fourteen-digit display (Topcat)
+
+	p <- 0			; two decimal places
 	a + 1 -> a[p]
 	a + 1 -> a[p]
 	f exchange a[x]
-	c -> data address
+
+	c -> data address	; clear data registers 0x00..0x0f
 	clear data registers
+
 	m2 exchange c
 L0010:	0 -> c[w]
 	display off
@@ -38,30 +41,28 @@ L0014:	1 -> s 8
 	go to L0040
 
 ; slide switch handling from the a -> rom address instruction after L0144
-; pin 5, KA: 0024 - MAN
+; pin 5, KA: 0024 - MAN (when F0 active)
 ; pin 6, KB: 0023 - not used
-; pin 7, KC: 0022 - DEG
-; pin 8, KD: 0021 - RAD
+; pin 7, KC: 0022 - DEG (when F0 active)
+; pin 8, KD: 0021 - RAD (when F0 active)
 ; pin 9, KE: 0020 - switch common, driven by ACT flag out
-; ?      0025
-; note F!, s 5 (ACT 3) is NORM,     
-;      F2, s 3 (ACT 4) is from PIC
-; XXX if MAN mode, how are DEG and RAD read?
+; note F!, s 5 (ACT 3) is NORM
+;      F2, s 3 (ACT 4) is from PICK
 
 L0016:	1 -> s 15
 	go to L0022
 
-	go to L0016		; at 0020
+	go to L0016		; at 0020   no MAN, GRD             S11 = 1  S15 = 1
 
-	1 -> s 0		; at 0021
+	1 -> s 0		; at 0021   no MAN, RAD     S0 = 1  S11 = 1
 
-L0022:	1 -> s 11
+L0022:	1 -> s 11		; at 0022   no MAN, DEG             S11 = 1
 	go to L0372
 
-	go to L0371		; at 0024
+	go to L0371		; at 0024   MAN,    GRD                      S15 = 1
 
-	1 -> s 0		; at 0025
-	go to L0372
+	1 -> s 0		; at 0025   MAN,    RAD     S0 = 1
+	go to L0372		; at 0026   MAN,    DEG
 
 
 L0027:	0 -> a[xs]
@@ -129,12 +130,12 @@ L0120:	a + 1 -> a[p]
 	p + 1 -> p
 	go to L0120
 
-L0125:	jsb S0207		; wait for keyboard cycle
-	1 -> s 0		; enable flag output
-L0127:	if s 15 = 0
+L0125:	jsb S0207		; wait for keyboard release
+	1 -> s 0		; enable slide switches to ACT key scanner
+L0127:	if s 15 = 0		; wait for keyboard scanner to recognize inputs
 	  then go to L0127
 
-	0 -> s 5
+	0 -> s 5		; clear F1 (NORM print mode)
 
 	a exchange c[x]
 	b exchange c[w]
@@ -143,17 +144,17 @@ L0127:	if s 15 = 0
 	     			;   a[1] = column
 				;   a[2] = row (unused in -91)
 	0 -> a[xs]		; set digit 2 to 1, to ignore row and limit
-	a + 1 -> a[xs]		;    range of a[2:1] to @20..24
+	a + 1 -> a[xs]		;    range of a[2:1] to @20..26
 	0 -> s 11
 
-	0 -> s 12		; copy s5 (F1, NORM) to s12
+	0 -> s 12		; copy F1 (NORM print mode) to s12
 	if s 5 = 0
 	  then go to L0144
 	1 -> s 12
 L0144:
 
-	jsb S0207		; wait for keyboard cycle
-	a -> rom address	; dispatch slide switches
+	jsb S0207		; wait for keyboard release
+	a -> rom address	; dispatch slide switches, 0020 through 0026
 
 L0146:	if c[m] # 0
 	  then go to L0031
@@ -194,8 +195,8 @@ L0203:	c + c -> c[xs]
 	go to L0176
 
 
-; wait for keybaord cycle
-S0207:	0 -> s 0		; disable flag output
+; wait for "keyboard" release
+S0207:	0 -> s 0		; disable slide switches
 L0210:	0 -> s 15
 	if s 15 = 1
 	  then go to L0210
@@ -2821,11 +2822,11 @@ L4641:	p - 1 -> p
 	  then go to L4641
 	a exchange c[w]
 	p <- 12
-	load constant 14
-	load constant 10
-	load constant 10
-	load constant 12
-	load constant 10
+	load constant 14	; E
+	load constant 10	; r
+	load constant 10	; r
+	load constant 12	; o
+	load constant 10	; r
 	0 -> b[w]
 	a exchange c[w]
 	1 -> s 11

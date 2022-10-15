@@ -197,7 +197,7 @@ SConscript ('scons/ncd.py')
 
 ncd_dirs = ['35', '45', '55', '80',
             '21', '22', '25-25c', '27',
-            '91',
+            '91', '92',
             '67-97',
             '19c-29c',
             '32e', '37e', '38e',
@@ -223,8 +223,8 @@ SConscript ('scons/nui.py')
 
 all_calcs = {'classic':    ['35', '45', '67'],  # 55, 80
              'woodstock':  ['21', '22', '25', '27', '29c'],
-#             'sting':      ['19c'],
-             'topcat':     ['97'],  # 91
+             'sting':      ['19c'],
+             'topcat':     ['91', '92', '97'],
              'spice':      ['32e', '33c', '34c', '37e', '38c', '38e'],
              'nut':        ['41c', '41cv', '41cx'],
              'voyager':    ['11c', '12c', '15c', '15c-192', '16c']
@@ -247,7 +247,6 @@ for family in all_calcs:
         else:
             nui_dir += model;
         kml = FindFile (model + '.kml', nui_dir)
-        # parse kml to find ROM, image files, etc.
         nui_files += env.NUI (target = 'build/calc/' + model + '.nui',
                               source = nui_dir + '/' + model + '.kml')
 

@@ -1,6 +1,5 @@
 /*
-$Id$
-Copyright 2006, 2008, 2010 Eric Smith <eric@brouhaha.com>
+Copyright 2006, 2008, 2010, 2022 Eric Smith <spacewar@gmail.com>
 
 Nonpareil is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License version 2 as
@@ -38,6 +37,8 @@ MA 02111, USA.
 #include "arch.h"
 #include "platform.h"
 #include "proc_int.h"
+#include "digit_ops.h"
+#include "proc_woodstock.h"
 
 
 static xmlSAXHandler sax_handler;
@@ -123,6 +124,7 @@ struct calcdef_t
   calcdef_chip_t *chip;
   calcdef_key_t **keyboard_map;
   calcdef_switch_t *sw;
+  bool key_scanner_as_flags;
 };
 
 
@@ -318,10 +320,30 @@ static void parse_inst_clock (calcdef_t *calcdef,
 	  ;  // we don't really care
 	}
       else
-	warning ("unknown attribute '%s' in 'loc' element\n", attrs [i]);
+	warning ("unknown attribute '%s' in 'inst_clock' element\n", attrs [i]);
     }
   if (! got_freq)
     warning ("inst_clock element doesn't have freq attribute\n");
+}
+
+
+static void parse_key_scanner(calcdef_t *calcdef,
+			      const xmlChar **attrs)
+{
+  int i;
+  char *endptr = NULL;
+
+  for (i = 0; attrs && attrs [i]; i += 2)
+    {
+      if (strcmp ((char *) attrs [i], "as_flags") == 0)
+	{
+	  calcdef->key_scanner_as_flags = strtod ((char *) attrs [i + 1], & endptr);
+	  if (endptr && (*endptr != '\0'))
+	    fatal (3, "invalid character '%c' in as_flags\n", *endptr);
+	}
+      else
+	warning ("unknown attribute '%s' in 'key_scanner' element\n", attrs [i]);
+    }
 }
 
 
@@ -375,7 +397,7 @@ static void parse_key (calcdef_t *calcdef UNUSED,
 	  got_hw_keycode = true;
 	}
       else
-	warning ("unknown attribute '%s' in 'loc' element\n", attrs [i]);
+	warning ("unknown attribute '%s' in 'key' element\n", attrs [i]);
     }
 
   if (! got_user_keycode)
@@ -392,6 +414,47 @@ static void parse_key (calcdef_t *calcdef UNUSED,
   key->chip_id = chip_id;
 
   calcdef->keyboard_map [user_keycode] = key;
+}
+
+
+typedef struct {
+  char *chip_id;
+  char *name;
+  int value;
+} flag_info_t;
+
+static const flag_info_t flag_info[] =
+{
+  { "act", "f1",         EXT_FLAG_ACT_F1 },
+  { "act", "f1-cond-s0", EXT_FLAG_ACT_F1_COND_S0 },
+  { "act", "f2",         EXT_FLAG_ACT_F2 },
+  { "act", "f2-cond-s0", EXT_FLAG_ACT_F2_COND_S0 },
+  { "act", "ka",         EXT_FLAG_ACT_KA },
+  { "act", "kb",         EXT_FLAG_ACT_KB },
+  { "act", "kc",         EXT_FLAG_ACT_KC },
+  { "act", "kd",         EXT_FLAG_ACT_KD },
+  { "act", "ke",         EXT_FLAG_ACT_KE },
+  { NULL,  NULL,         0 },
+};
+
+static int flag_name_to_number(const char *chip_id, const char *s)
+{
+  // numeric values always accepted
+  if (isdigit(*s))
+    return atoi(s);
+  
+  if (chip_id)
+  {
+    for (const flag_info_t *fi = flag_info; fi->name; fi++)
+    {
+      if (strcasecmp(s, fi->name) == 0)
+      {
+	return fi->value;
+      }
+    }
+  }
+
+  return 0;
 }
 
 
@@ -414,8 +477,9 @@ static void parse_flag (calcdef_t *calcdef UNUSED,
 	}
       else if (strcmp ((char *) attrs [i], "number") == 0)
 	{
-	  flag->number = atoi ((char *) attrs [i + 1]);
-	  got_number = true;
+	  flag->number = flag_name_to_number(flag->chip_id, (char *) attrs [i + 1]);
+	  if (flag->number)
+	    got_number = true;
 	}
       else if (strcmp ((char *) attrs [i], "value") == 0)
 	{
@@ -432,7 +496,7 @@ static void parse_flag (calcdef_t *calcdef UNUSED,
     }
   if (! got_value)
     {
-      warning ("flag element doesn't have number attribute\n");
+      warning ("flag element doesn't have value attribute\n");
       return;
     }
 
@@ -440,8 +504,8 @@ static void parse_flag (calcdef_t *calcdef UNUSED,
 }
 
 
-static void parse_switch_pos (calcdef_t *calcdef UNUSED,
-			      const xmlChar **attrs UNUSED)
+static void parse_switch_pos (calcdef_t *calcdef,
+			      const xmlChar **attrs)
 {
   int i;
   calcdef_switch_position_t *pos;
@@ -748,6 +812,7 @@ static element_handler_info_t element_handlers [] =
 {
   { "calcdef",     parse_calcdef },
   { "inst_clock",  parse_inst_clock },
+  { "key_scanner", parse_key_scanner },
   { "keyboard",    parse_keyboard },
   { "key",         parse_key },
   { "switch",      parse_switch },
@@ -1083,3 +1148,9 @@ bool calcdef_get_switch_position_flag  (calcdef_t *calcdef,
     }
   return false;
 }
+
+bool calcdef_get_key_scanner_as_flags(calcdef_t *calcdef)
+{
+  return calcdef->key_scanner_as_flags;
+}
+

@@ -1,6 +1,5 @@
 /*
-$Id$
-Copyright 2006, 2010 Eric Smith <eric@brouhaha.com>
+Copyright 2006, 2010, 2022 Eric Smith <spacewar@gmail.com>
 
 Nonpareil is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License version 2 as
@@ -47,6 +46,8 @@ const segment_bitmap_t *calcdef_get_char_gen (calcdef_t *calcdef,
 
 void calcdef_init_chips (calcdef_t *calcdef);
 
+
+bool calcdef_get_key_scanner_as_flags(calcdef_t *calcdef);
 
 bool calcdef_get_key (calcdef_t *calcdef,
 		      int user_keycode,
