@@ -66,6 +66,47 @@ MA 02111, USA.
 #define MAX_SOUNDS 4
 
 
+static const char riff_chunk_id[4] = "RIFF";
+static const char wav_magic[4] = "WAVE";
+static const char wav_fmt_chunk_id[4] = "fmt ";
+static const char wav_data_chunk_id[4] = "data";
+
+#define WAV_FORMAT_UNCOMPRESSED_PCM 1
+
+
+typedef struct
+{
+  char chunk_id[4];
+  uint32_t length;  // file length - 8
+} riff_chunk_t;
+
+typedef struct
+{
+  char chunk_id[4];
+  uint32_t length;  // not including this field and the previous
+  uint16_t format_code;
+  uint16_t channel_count;
+  uint32_t sample_rate;
+  uint32_t average_bytes_per_second;
+  uint16_t block_align;
+  uint16_t bits_per_sample;
+} wav_fmt_chunk_t;
+
+typedef struct
+{
+  char chunk_id[4];
+  uint32_t length;
+} wav_data_chunk_header_t;
+
+typedef struct
+{
+  riff_chunk_t riff_chunk;
+  char wav_magic[4];
+  wav_fmt_chunk_t fmt_chunk;
+  wav_data_chunk_header_t data_chunk_header;
+} wav_header_t;
+
+
 typedef enum { SOUND_RECORDED, SOUND_SYNTH } sound_type_t;
 
 #define SYNTH_FRAC_BITS 16
@@ -374,24 +415,74 @@ bool prepare_samples_from_wav_data (const uint8_t *wav_buf,
 				    void    **sample_buf,
 				    size_t  *sample_len)
 {
-  SDL_AudioCVT cvt;
-
   if (! (atomic_bool_get (& sound_v.open) &&
 	 atomic_bool_get (& sound_v.enable)))
     return false;
 
-  wav_buf += 44;  // skip wave, data chunk header
-  wav_len -= 44;
-  // $$$ should parse header
+  const wav_header_t *wav_header = (const wav_header_t *) wav_buf;
 
-  int src_format = AUDIO_U8;
-  int src_channels = 1;
-  int src_freq = 22050;
+  if (memcmp(wav_header->riff_chunk.chunk_id, riff_chunk_id, sizeof(riff_chunk_id)) != 0)
+    {
+      fprintf(stderr, "sound.c: not a RIFF file\n");
+      return false;
+    }
+  if (wav_header->riff_chunk.length != (wav_len - sizeof(riff_chunk_t)))
+    {
+      fprintf(stderr, "sound.c: RIFF length mismatch\n");
+      return false;
+    }
+  if (memcmp(wav_header->wav_magic, wav_magic, sizeof(wav_magic)) != 0)
+    {
+      fprintf(stderr, "sound.c: not a WAV file\n");
+      return false;
+    }
+  if (memcmp(wav_header->fmt_chunk.chunk_id, wav_fmt_chunk_id, sizeof(wav_fmt_chunk_id)) != 0)
+    {
+      fprintf(stderr, "sound.c: bad format chunk\n");
+      return false;
+    }
+  if (wav_header->fmt_chunk.length != (sizeof(wav_fmt_chunk_t) - 8))
+    {
+      fprintf(stderr, "sound.c: unsupported WAV format chunk length %d\n", wav_header->fmt_chunk.length);
+      return false;
+    }
+  if (wav_header->fmt_chunk.format_code != WAV_FORMAT_UNCOMPRESSED_PCM)
+    {
+      fprintf(stderr, "sound.c: unsupported WAV format %d\n", wav_header->fmt_chunk.format_code);
+      return false;
+    }
+  uint8_t src_channel_count = wav_header->fmt_chunk.channel_count;
+  int src_sample_rate = wav_header->fmt_chunk.sample_rate;
+
+  uint16_t src_format;
+  switch (wav_header->fmt_chunk.bits_per_sample)
+  {
+  case 8:
+    src_format = AUDIO_U8;
+    break;
+  case 16:
+    src_format = AUDIO_U16;
+    break;
+  default:
+    fprintf(stderr, "sound.c: unsupported bits/sample %d\n", wav_header->fmt_chunk.bits_per_sample);
+  }
+
+  if (memcmp(wav_header->data_chunk_header.chunk_id, wav_data_chunk_id, sizeof(wav_data_chunk_id)) != 0)
+    {
+      fprintf(stderr, "sound.c: bad data chunk\n");
+      return false;
+    }
+  // XXX should check length field of data chunk
+
+  wav_buf += sizeof(wav_header_t);  // headers
+  wav_len -= sizeof(wav_header_t);
+
+  SDL_AudioCVT cvt;
 
   if (SDL_BuildAudioCVT (& cvt,
 			 src_format,
-			 src_channels,
-			 src_freq,
+			 src_channel_count,
+			 src_sample_rate,
 			 sound_v.hw_fmt.format,
 			 sound_v.hw_fmt.channels,
 			 sound_v.hw_fmt.freq) < 0)
