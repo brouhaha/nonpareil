@@ -30,6 +30,7 @@ MA 02111, USA.
 #include "SDL/SDL_audio.h"
 
 #include "util.h"
+#include "endian.h"
 #include "sound.h"
 
 
@@ -426,7 +427,7 @@ bool prepare_samples_from_wav_data (const uint8_t *wav_buf,
       fprintf(stderr, "sound.c: not a RIFF file\n");
       return false;
     }
-  if (wav_header->riff_chunk.length != (wav_len - sizeof(riff_chunk_t)))
+  if (le_to_h_u32(wav_header->riff_chunk.length) != (wav_len - sizeof(riff_chunk_t)))
     {
       fprintf(stderr, "sound.c: RIFF length mismatch\n");
       return false;
@@ -441,21 +442,22 @@ bool prepare_samples_from_wav_data (const uint8_t *wav_buf,
       fprintf(stderr, "sound.c: bad format chunk\n");
       return false;
     }
-  if (wav_header->fmt_chunk.length != (sizeof(wav_fmt_chunk_t) - 8))
+  if (le_to_h_u32(wav_header->fmt_chunk.length) != (sizeof(wav_fmt_chunk_t) - 8))
     {
       fprintf(stderr, "sound.c: unsupported WAV format chunk length %d\n", wav_header->fmt_chunk.length);
       return false;
     }
-  if (wav_header->fmt_chunk.format_code != WAV_FORMAT_UNCOMPRESSED_PCM)
+  if (le_to_h_u16(wav_header->fmt_chunk.format_code) != WAV_FORMAT_UNCOMPRESSED_PCM)
     {
       fprintf(stderr, "sound.c: unsupported WAV format %d\n", wav_header->fmt_chunk.format_code);
       return false;
     }
   uint8_t src_channel_count = wav_header->fmt_chunk.channel_count;
-  int src_sample_rate = wav_header->fmt_chunk.sample_rate;
+  int src_sample_rate = le_to_h_u32(wav_header->fmt_chunk.sample_rate);
 
+  uint16_t src_bits_per_sample = le_to_h_u16(wav_header->fmt_chunk.bits_per_sample);
   uint16_t src_format;
-  switch (wav_header->fmt_chunk.bits_per_sample)
+  switch (src_bits_per_sample)
   {
   case 8:
     src_format = AUDIO_U8;
@@ -464,7 +466,7 @@ bool prepare_samples_from_wav_data (const uint8_t *wav_buf,
     src_format = AUDIO_U16;
     break;
   default:
-    fprintf(stderr, "sound.c: unsupported bits/sample %d\n", wav_header->fmt_chunk.bits_per_sample);
+    fprintf(stderr, "sound.c: unsupported bits/sample %d\n", src_bits_per_sample);
   }
 
   if (memcmp(wav_header->data_chunk_header.chunk_id, wav_data_chunk_id, sizeof(wav_data_chunk_id)) != 0)

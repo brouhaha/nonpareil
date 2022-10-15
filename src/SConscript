@@ -293,7 +293,7 @@ nonpareil_env = build_env.Clone ()
 
 nonpareil_srcs = Split ("""about.c goose.c
                            calc_chooser.c
-                           sound.c
+                           sound.c endian.c
                            display.c printer.c card_reader.c
                            keyboard.c scancode.c slide_switch.c
                            cbutton.c""")
