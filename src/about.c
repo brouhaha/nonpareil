@@ -1,6 +1,5 @@
 /*
-$Id$
-Copyright 2004, 2005, 2006 Eric L. Smith <eric@brouhaha.com>
+Copyright 2004, 2005, 2006, 2022 Eric Smith <spacewar@gmail.com>
 
 Nonpareil is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License version 2 as
@@ -44,35 +43,44 @@ static char *credits_people [] =
   "Timothee Basset",
   "Les Bell",
   "Paul Davis",
+  "Jim Donnelly",
+  "Tony Duell",
   "Bob Edelen",
   "Mike Elkins",
   "Steven Ellis",
   "Florian Engelhardt",
   "Bernhard Engl",
+  "J-F Garnier",
   "Christoph Gie\u00dfelink",
   "Christophe Gottheimer",
   "Warren Furlow",
   "David Hicks",
   "John Hogerhuis",
+  "Joe Horn",
   "HrastProgrammer",
   "David Jedelsky",
+  "Thomas Klemm",
   "Steven Knight",
   "Allen Kossow",
+  "Jacques Laporte",
   "Wlodek Mier-J\u0119drzejowicz",
   "Peter Monta",
   "Richard Nelson",
   "Thomas Olesen",
   "Richard Ottosen",
   "Howard Owen",
+  "Panamatik",
   "Jim Phillips",
   "Tony Phillips",
   "Hedley Rainnie",
+  "Eric Rechlin",
   "Chris Rocatti",
   "Adam Sampson",
   "Jake Schwartz",
   "Nelson Sicuro",
   "Randy Sloyer",
   "Kenneth Sumrall",
+  "Teenix",
 };
 
 
@@ -229,7 +237,7 @@ void about_dialog (GtkWidget *main_window, kml_t *kml)
 
   gtk_container_add (GTK_CONTAINER (GTK_DIALOG (dialog)->vbox),
 		     gtk_label_new ("High-fidelity calculator simulator\n"
-				    "Copyright 1995, 2003-2006 Eric L. Smith\n"
+				    "Copyright 1995-2022 Eric Smith\n"
 				    "http://nonpareil.brouhaha.com/"));
 
   notebook = gtk_notebook_new ();
