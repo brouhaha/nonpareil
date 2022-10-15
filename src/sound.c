@@ -376,9 +376,6 @@ bool prepare_samples_from_wav_data (const uint8_t *wav_buf,
 				    size_t  *sample_len)
 {
   SDL_AudioCVT cvt;
-  int format;
-  uint8_t channels;
-  int freq;
 
   if (! (atomic_bool_get (& sound_v.open) &&
 	 atomic_bool_get (& sound_v.enable)))
@@ -387,14 +384,15 @@ bool prepare_samples_from_wav_data (const uint8_t *wav_buf,
   wav_buf += 44;  // skip wave, data chunk header
   wav_len -= 44;
   // $$$ should parse header
-  format = AUDIO_U8;
-  channels = 1;
-  freq = 22050;
+
+  int src_format = AUDIO_U8;
+  int src_channels = 1;
+  int src_freq = 22050;
 
   if (SDL_BuildAudioCVT (& cvt,
-			 format,
-			 channels,
-			 freq,
+			 src_format,
+			 src_channels,
+			 src_freq,
 			 sound_v.hw_fmt.format,
 			 sound_v.hw_fmt.channels,
 			 sound_v.hw_fmt.freq) < 0)
@@ -404,14 +402,12 @@ bool prepare_samples_from_wav_data (const uint8_t *wav_buf,
       return false;
     }
 
-  cvt.buf = alloc (wav_len * cvt.len_mult);
   cvt.len = wav_len;
+  cvt.buf = alloc(cvt.len * cvt.len_mult);
   memcpy (cvt.buf, wav_buf, wav_len);
-
   SDL_ConvertAudio (& cvt);
-
   *sample_buf = cvt.buf;
-  *sample_len = cvt.len * cvt.len_mult;
+  *sample_len = cvt.len_cvt;
 
   return true;
 }
