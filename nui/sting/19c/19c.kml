@@ -25,7 +25,7 @@ global
 	image credit "Eric Smith"
 	overlay default image "19c-overlay.png"
 	color 0 87 127 152  # background color, used when transparency is off
-	transparency 128
+#	transparency 128
 end
 
 display

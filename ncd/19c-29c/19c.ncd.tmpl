@@ -1,16 +1,16 @@
 <?xml version="1.0"?>
 <!--
-$Id$
-Copyright 2007, 2008 Eric Smith <eric@brouhaha.com>
+Copyright 2007, 2008, 2022 Eric Smith <spacewar@gmail.com>
 -->
 
 <!DOCTYPE calcdef SYSTEM "http://nonpareil.brouhaha.com/dtd/calcdef-1.0.dtd">
 
 <calcdef version="1.0"
          arch="Woodstock"
+	 arch_variant="2"
          platform="Topcat"
          model="19C"
-         copyright="Copyright 2007, 2008 Eric Smith &lt;eric@brouhaha.com&gt;"
+         copyright="Copyright 2007, 2008, 2022 Eric Smith &lt;spacewar@gmail.com&gt;"
          license="GPL-3.0">
 
   <chip id="act" type="woodstock_act">
@@ -23,6 +23,7 @@ Copyright 2007, 2008 Eric Smith <eric@brouhaha.com>
       <part_number>MK6216N</part_number>
     </part_info>
     <inst_clock osc_type="LC" freq="185000"/>
+    <key_scanner as_flags="1"/>
   </chip>
 
   <chip id="cathode_driver" type="woodstock_cathode_driver_14">
@@ -673,22 +674,27 @@ Copyright 2007, 2008 Eric Smith <eric@brouhaha.com>
   <keyboard>
 
     <switch number="1">
-      <!--
-      <switch_pos position="0">  - OFF -
-      </switch_pos>
-      -->
+      <!-- real calc has OFF/PRGM/RUN -->
       <switch_pos position="0">  <!-- PRGM -->
+        <flag chip_id="act" number="f2-cond-s0" value="1"/>
       </switch_pos>
       <switch_pos position="1">  <!-- RUN -->
+        <flag chip_id="act" number="f2-cond-s0" value="0"/>
       </switch_pos>
     </switch>
 
     <switch number="2">  <!-- printer mode -->
       <switch_pos position="0">  <!-- MAN -->
+        <flag chip_id="act" number="ka" value="1"/>
+        <flag chip_id="act" number="kc" value="0"/>
       </switch_pos>
       <switch_pos position="1">  <!-- TRACE -->
+        <flag chip_id="act" number="ka" value="0"/>
+        <flag chip_id="act" number="kc" value="0"/>
       </switch_pos>
       <switch_pos position="2">  <!-- NORM -->
+        <flag chip_id="act" number="ka" value="0"/>
+        <flag chip_id="act" number="kc" value="1"/>
       </switch_pos>
     </switch>
 
@@ -731,25 +737,25 @@ Copyright 2007, 2008 Eric Smith <eric@brouhaha.com>
   </keyboard>
 
   <obj_file addr_space="inst"
-            copyright="Copyright 2007, 2008 Eric Smith &lt;eric@brouhaha.com&gt;"
+            copyright="Copyright 2007, 2008, 2022 Eric Smith &lt;spacewar@gmail.com&gt;"
             license="GPLv3">
     19c.obj
   </obj_file>
 
   <obj_file addr_space="inst"
-            copyright="Copyright 2007, 2008 Eric Smith &lt;eric@brouhaha.com&gt;"
+            copyright="Copyright 2007, 2008, 2022 Eric Smith &lt;spacewar@gmail.com&gt;"
             license="GPLv3">
     19c29c.obj
   </obj_file>
 
   <obj_file addr_space="inst"
-            copyright="Copyright 2007, 2008 Eric Smith &lt;eric@brouhaha.com&gt;"
+            copyright="Copyright 2007, 2008, 2022 Eric Smith &lt;spacewar@gmail.com&gt;"
             license="GPLv3">
     19c29cq3.obj
   </obj_file>
 
   <obj_file addr_space="inst"
-            copyright="Copyright 2007, 2008 Eric Smith &lt;eric@brouhaha.com&gt;"
+            copyright="Copyright 2007, 2008, 2022 Eric Smith &lt;spacewar@gmail.com&gt;"
             license="GPL-3.0">
     19cb1.obj
   </obj_file>

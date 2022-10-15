@@ -3,10 +3,7 @@
 
 Import('env')
 
-# 19c is not yet functional
-ncd_names = ['29c']
-
-ncd_template_files = [env.File(nn + '.ncd.tmpl') for nn in ncd_names]
+ncd_names = ['19c', '29c']
 
 source_names = ['19c',
                 '29c',
