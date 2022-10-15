@@ -142,7 +142,7 @@ static misc_inst_info_t misc_info [16] =
   { misc_10_info, NULL,                     NULL,         NULL,       flow_no_branch },
   { NULL,         "0 -> s %d",              NULL,         NULL,       flow_no_branch },
   { misc_20_info, NULL,                     NULL,         NULL,       flow_no_branch },
-  { NULL,         "if 1 = s %d",            NULL,         NULL,       flow_cond_branch },
+  { NULL,         "if s %d = 1",            NULL,         NULL,       flow_cond_branch },
   { NULL,         "load constant %d",       NULL,         NULL,       flow_no_branch },
   { NULL,         "if 0 = s %d",            NULL,         NULL,       flow_cond_branch },
   { NULL,         "select rom @%02o (%%s)", NULL,         NULL,       flow_select_rom },
