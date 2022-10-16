@@ -1,20 +1,6 @@
 <?xml version="1.0"?>
 <!--
-$Id$
-Copyright 2007, 2008 Eric Smith <eric@brouhaha.com>
-
-WARNING:  This work is NOT "Open Source" or "Free Software".
-
-This work is licensed under the Creative Commons
-Attribution-Noncommmercial-No Derivative Works 3.0
-License. To view a simplified description of this license,
-visit
-
-    http://creativecommons.org/licenses/by-nc-nd/3.0/
-
-To view the actual license, visit
-
-    http://creativecommons.org/licenses/by-nc-nd/3.0/legalcode
+Copyright 2007, 2008, 2022 Eric Smith <spacewar@gmail.com>
 -->
 
 <!DOCTYPE calcdef SYSTEM "http://nonpareil.brouhaha.com/dtd/calcdef-1.0.dtd">
@@ -23,8 +9,8 @@ To view the actual license, visit
          arch="Nut"
          platform="Voyager"
          model="16C"
-         copyright="Copyright 2007, 2008 Eric Smith &lt;eric@brouhaha.com&gt;"
-         license="CC-BY-NC-ND-3.0">
+         copyright="Copyright 2007, 2008, 2022 Eric Smith &lt;spacewar@gmail.com&gt;"
+         license="GPLv3 only (no later version)">
 
   <chip type="nut_cpu">
     <part_info>
@@ -45,6 +31,144 @@ To view the actual license, visit
     </memory>
     <memory addr_space="data" base_addr="0xe0" size="0x20">
     </memory>
+
+    <lcd digits="11" segments="10">
+      <!-- For each of 11 digits, we need segments a-g for the actual digit,
+	   segment h for the decimal point, segment i for the tail of the
+	   comma, and segment j for the annunciator. -->
+      <digit digit="0">
+	<segment segment="a" reg="-1" bit="-1"/>
+	<segment segment="b" reg="-1" bit="-1"/>
+	<segment segment="c" reg="-1" bit="-1"/>
+	<segment segment="d" reg="-1" bit="-1"/>
+	<segment segment="e" reg="-1" bit="-1"/>
+	<segment segment="f" reg="-1" bit="-1"/>
+	<segment segment="g" reg="9" bit="46"/>
+	<segment segment="h" reg="-1" bit="-1"/>
+	<segment segment="i" reg="-1" bit="-1"/>
+	<segment segment="j" reg="-1" bit="-1"/>
+      </digit>
+      <digit digit="1">
+	<segment segment="a" reg="9" bit="21"/>
+	<segment segment="b" reg="9" bit="23"/>
+	<segment segment="c" reg="9" bit="19"/>
+	<segment segment="d" reg="9" bit="47"/>
+	<segment segment="e" reg="9" bit="18"/>
+	<segment segment="f" reg="9" bit="20"/>
+	<segment segment="g" reg="9" bit="22"/>
+	<segment segment="h" reg="9" bit="39"/>
+	<segment segment="i" reg="9" bit="38"/>
+	<segment segment="j" reg="-1" bit="-1"/>
+      </digit>
+      <digit digit="2">
+	<segment segment="a" reg="9" bit="27"/>
+	<segment segment="b" reg="9" bit="29"/>
+	<segment segment="c" reg="9" bit="25"/>
+	<segment segment="d" reg="9" bit="17"/>
+	<segment segment="e" reg="9" bit="24"/>
+	<segment segment="f" reg="9" bit="26"/>
+	<segment segment="g" reg="9" bit="28"/>
+	<segment segment="h" reg="9" bit="15"/>
+	<segment segment="i" reg="9" bit="14"/>
+	<segment segment="j" reg="9" bit="16"/>
+      </digit>
+      <digit digit="3">
+	<segment segment="a" reg="9" bit="51"/>
+	<segment segment="b" reg="9" bit="53"/>
+	<segment segment="c" reg="9" bit="49"/>
+        <segment segment="d" reg="9" bit="13"/>
+	<segment segment="e" reg="9" bit="48"/>
+	<segment segment="f" reg="9" bit="50"/>
+	<segment segment="g" reg="9" bit="52"/>
+	<segment segment="h" reg="9" bit="55"/>
+	<segment segment="i" reg="9" bit="54"/>
+	<segment segment="j" reg="9" bit="12"/>
+      </digit>
+      <digit digit="4">
+	<segment segment="a" reg="9" bit="33"/>
+	<segment segment="b" reg="9" bit="35"/>
+	<segment segment="c" reg="9" bit="31"/>
+	<segment segment="d" reg="9" bit="9"/>
+	<segment segment="e" reg="9" bit="30"/>
+	<segment segment="f" reg="9" bit="32"/>
+	<segment segment="g" reg="9" bit="34"/>
+	<segment segment="h" reg="9" bit="37"/>
+	<segment segment="i" reg="9" bit="36"/>
+	<segment segment="j" reg="9" bit="8"/>
+      </digit>
+      <digit digit="5">
+	<segment segment="a" reg="9" bit="43"/>
+	<segment segment="b" reg="9" bit="45"/>
+	<segment segment="c" reg="9" bit="41"/>
+	<segment segment="d" reg="9" bit="7"/>
+	<segment segment="e" reg="9" bit="40"/>
+	<segment segment="f" reg="9" bit="42"/>
+	<segment segment="g" reg="9" bit="44"/>
+	<segment segment="h" reg="9" bit="11"/>
+	<segment segment="i" reg="9" bit="10"/>
+	<segment segment="j" reg="9" bit="6"/>
+      </digit>
+      <digit digit="6">
+	<segment segment="a" reg="10" bit="11"/>
+	<segment segment="b" reg="10" bit="13"/>
+	<segment segment="c" reg="10" bit="9"/>
+	<segment segment="d" reg="10" bit="15"/>
+	<segment segment="e" reg="10" bit="8"/>
+	<segment segment="f" reg="10" bit="10"/>
+	<segment segment="g" reg="10" bit="12"/>
+	<segment segment="h" reg="10" bit="17"/>
+	<segment segment="i" reg="10" bit="16"/>
+	<segment segment="j" reg="10" bit="14"/>
+      </digit>
+      <digit digit="7">
+	<segment segment="a" reg="10" bit="21"/>
+	<segment segment="b" reg="10" bit="23"/>
+	<segment segment="c" reg="10" bit="19"/>
+	<segment segment="d" reg="10" bit="7"/>
+	<segment segment="e" reg="10" bit="18"/>
+	<segment segment="f" reg="10" bit="20"/>
+	<segment segment="g" reg="10" bit="22"/>
+	<segment segment="h" reg="10" bit="25"/>
+	<segment segment="i" reg="10" bit="24"/>
+	<segment segment="j" reg="10" bit="6"/>
+      </digit>
+      <digit digit="8">
+	<segment segment="a" reg="10" bit="29"/>
+	<segment segment="b" reg="10" bit="31"/>
+	<segment segment="c" reg="10" bit="27"/>
+	<segment segment="d" reg="10" bit="39"/>
+	<segment segment="e" reg="10" bit="26"/>
+	<segment segment="f" reg="10" bit="28"/>
+	<segment segment="g" reg="10" bit="30"/>
+	<segment segment="h" reg="10" bit="37"/>
+	<segment segment="i" reg="10" bit="36"/>
+	<segment segment="j" reg="10" bit="38"/>
+      </digit>
+      <digit digit="9">
+	<segment segment="a" reg="10" bit="47"/>
+	<segment segment="b" reg="10" bit="49"/>
+	<segment segment="c" reg="10" bit="45"/>
+	<segment segment="d" reg="10" bit="33"/>
+	<segment segment="e" reg="10" bit="44"/>
+	<segment segment="f" reg="10" bit="46"/>
+	<segment segment="g" reg="10" bit="48"/>
+	<segment segment="h" reg="10" bit="35"/>
+	<segment segment="i" reg="10" bit="34"/>
+	<segment segment="j" reg="10" bit="32"/>
+      </digit>
+      <digit digit="10">
+	<segment segment="a" reg="10" bit="53"/>
+	<segment segment="b" reg="10" bit="55"/>
+	<segment segment="c" reg="10" bit="51"/>
+	<segment segment="d" reg="10" bit="41"/>
+	<segment segment="e" reg="10" bit="50"/>
+	<segment segment="f" reg="10" bit="52"/>
+	<segment segment="g" reg="10" bit="54"/>
+	<segment segment="h" reg="10" bit="43"/>
+	<segment segment="i" reg="10" bit="42"/>
+	<segment segment="j" reg="10" bit="40"/>
+      </digit>
+    </lcd>
   </chip>
 
   <keyboard>

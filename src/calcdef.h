@@ -61,3 +61,9 @@ bool calcdef_get_switch_position_flag  (calcdef_t *calcdef,
 					struct chip_t **chip,
 					int *flag,
 					int *value);
+
+bool calcdef_get_lcd_segment(calcdef_t *calcdef,
+			     int digit,
+			     int segment,
+			     uint16_t *reg,
+			     uint8_t *bit);

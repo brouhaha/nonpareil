@@ -110,6 +110,20 @@ typedef struct calcdef_key_t
 } calcdef_key_t;
 
 
+#define LCD_MAX_DIGITS 20
+#define LCD_MAX_SEGMENTS 20
+typedef struct calcdef_lcd_t
+{
+  uint8_t digits;
+  uint8_t segments;
+  // each entry is indexed by digit * segments + segment:
+  //    register numbeer * 0x100 + bit number
+  // or if nonexistent:
+  //    -1
+  int16_t bit[];
+} calcdef_lcd_map_t;
+
+
 struct calcdef_t
 {
   sim_t *sim;
@@ -125,6 +139,7 @@ struct calcdef_t
   calcdef_key_t **keyboard_map;
   calcdef_switch_t *sw;
   bool key_scanner_as_flags;
+  calcdef_lcd_map_t *lcd_map;
 };
 
 
@@ -797,6 +812,122 @@ static void parse_char (calcdef_t *calcdef,
 }
 
 
+static void parse_lcd (calcdef_t *calcdef UNUSED,
+		       const xmlChar **attrs UNUSED)
+{
+  bool got_digits = false;
+  bool got_segments = false;
+  int digits;
+  int segments;
+  
+  for (int i = 0; attrs && attrs[i]; i += 2)
+    {
+      if (strcmp((char *) attrs[i], "digits") == 0)
+	{
+	  digits = atoi((char *) attrs[i+1]);
+	  got_digits = true;
+	}
+      else if (strcmp((char *) attrs[i], "segments") == 0)
+	{
+	  segments = atoi((char *) attrs[i+1]);
+	  got_segments = true;
+	}
+      else
+	warning("unknown attribute '%s' in lcd element\n", attrs[i]);
+    }
+  if (! got_digits)
+    fatal(3, "lcd element doesn't have digits attribute\n");
+  if ((digits < 0) || (digits > LCD_MAX_DIGITS))
+    fatal(3, "lcd element has invalid digits attribute %d\n", digits);
+  if (! got_segments)
+    fatal(3, "lcd element doesn't have segments attribute\n");
+  if ((segments < 0) || (segments > LCD_MAX_SEGMENTS))
+    fatal(3, "lcd element has invalid segments attribute %d\n", segments);
+
+  int size = digits * segments;
+  calcdef->lcd_map = alloc(sizeof(calcdef_lcd_map_t) + size * sizeof(int16_t));
+  calcdef->lcd_map->digits = digits;
+  calcdef->lcd_map->segments = segments;
+  for (int i = 0; i < size; i++)
+      calcdef->lcd_map->bit[i] = -1;
+}
+
+static int lcd_digit = -1;
+
+static void parse_digit (calcdef_t *calcdef,
+			 const xmlChar **attrs)
+{
+  bool got_digit = false;
+  int digit;
+
+  if (! calcdef->lcd_map)
+    fatal(3, "digit element without lcd element\n");
+
+  for (int i = 0; attrs && attrs[i]; i += 2)
+    {
+      if (strcmp((char *) attrs[i], "digit") == 0)
+	{
+	  digit = atoi((char *) attrs[i+1]);
+	  got_digit = true;
+	}
+    }
+  if (! got_digit)
+    fatal(3, "digit element doesn't have digit attribute\n");
+  if ((digit < 0) || (digit >= calcdef->lcd_map->digits))
+    fatal(3, "digit element doesn't have invalid value %d\n", digit);
+  lcd_digit = digit;
+}
+
+static void parse_segment (calcdef_t *calcdef,
+			   const xmlChar **attrs)
+{
+  bool got_segment = false;
+  bool got_reg = false;
+  bool got_bit = false;
+
+  int segment;
+  int reg;
+  int bit;
+
+  if (! calcdef->lcd_map)
+    fatal(3, "segment element without lcd element\n");
+
+  for (int i = 0; attrs && attrs[i]; i += 2)
+    {
+      if (strcmp((char *) attrs[i], "segment") == 0)
+	{
+	  segment = attrs[i+1][0] - 'a';
+	  got_segment = true;
+	}
+      if (strcmp((char *) attrs[i], "reg") == 0)
+	{
+	  reg = atoi((char *) attrs[i+1]);
+	  got_reg = true;
+	}
+      else if (strcmp((char *) attrs[i], "bit") == 0)
+	{
+	  bit = atoi((char *) attrs[i+1]);
+	  got_bit = true;
+	}
+    }
+  if (! got_segment)
+    fatal(3, "segment element doesn't have segment attribute\n");
+  if (! got_reg)
+    fatal(3, "segment element doesn't have reg attribute\n");
+  if (! got_bit)
+    fatal(3, "segment element doesn't have bit attribute\n");
+  if ((segment < 0) || (segment >= calcdef->lcd_map->segments))
+    fatal(3, "segment element has invalid segment attribute %d\n", segment);
+  if ((reg != -1) && (reg != 9) && (reg != 10))
+    fatal(3, "segment element has invalid reg attribute %d\n", reg);
+  if ((bit < -1) || (bit >= 56))
+    fatal(3, "segment element has invalid bit attribute %d\n", bit);
+  int16_t value = -1;
+  if ((reg != -1) && (bit != -1))
+    value = (reg << 8) + bit;
+  calcdef->lcd_map->bit[lcd_digit * calcdef->lcd_map->segments + segment] = value;
+}
+
 typedef void element_handler_t (calcdef_t *calcdef,
 				const xmlChar **attrs);
 
@@ -828,6 +959,9 @@ static element_handler_info_t element_handlers [] =
   { "loc",         parse_loc },
   { "chargen",     parse_chargen },
   { "char",        parse_char },
+  { "lcd",         parse_lcd },
+  { "digit",       parse_digit },
+  { "segment",     parse_segment },
 };
 
 
@@ -1154,3 +1288,25 @@ bool calcdef_get_key_scanner_as_flags(calcdef_t *calcdef)
   return calcdef->key_scanner_as_flags;
 }
 
+bool calcdef_get_lcd_segment(calcdef_t *calcdef,
+			     int digit,
+			     int segment,
+			     uint16_t *reg,
+			     uint8_t *bit)
+{
+  if (! calcdef->lcd_map)
+    return -1;
+  if ((digit < 0) ||
+      (digit >= calcdef->lcd_map->digits) ||
+      (segment < 0) ||
+      (segment >= calcdef->lcd_map->segments))
+    return false;
+
+  int16_t value = calcdef->lcd_map->bit[digit * calcdef->lcd_map->segments + segment];
+  if (value < 0)
+    return false;
+
+  *reg = value >> 8;
+  *bit = value & 0xff;
+  return true;
+}

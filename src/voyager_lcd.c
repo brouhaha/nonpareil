@@ -1,6 +1,5 @@
 /*
-$Id$
-Copyright 1995, 2004-2006, 2008, 2010 Eric Smith <eric@brouhaha.com>
+Copyright 1995, 2004-2006, 2008, 2010, 2022 Eric Smith <spacewar@gmail.com>
 
 Nonpareil is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License version 2 as
@@ -38,7 +37,12 @@ MA 02111, USA.
 #include "proc_nut.h"
 
 
-#define VOYAGER_DISPLAY_BLINK_DIVISOR 150
+#define VOYAGER_LCD_DIGITS 11
+
+#define VOYAGER_LCD_SEGMENTS 10
+#define VOYAGER_LCD_SEGMENT_ANN 9
+
+#define VOYAGER_LCD_BLINK_DIVISOR 150
 
 
 typedef struct
@@ -135,7 +139,7 @@ static void voyager_op_display_blink (sim_t *sim,
   voyager_set_display_state (sim, true);
   display->blink = 1;
   display->blink_state = 1;
-  display->blink_count = VOYAGER_DISPLAY_BLINK_DIVISOR;
+  display->blink_count = VOYAGER_LCD_BLINK_DIVISOR;
   display->count = 0;  // force immediate display update
 }
 
@@ -144,7 +148,7 @@ static void voyager_display_init_ops (sim_t *sim)
 {
   nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
 
-  sim->display_digits = VOYAGER_DISPLAY_DIGITS;
+  sim->display_digits = VOYAGER_LCD_DIGITS;
   nut_reg->op_fcn [0x030] = voyager_op_display_blink;
   nut_reg->op_fcn [0x2e0] = voyager_op_display_off;
   nut_reg->op_fcn [0x320] = voyager_op_display_toggle;
@@ -165,75 +169,12 @@ static void voyager_display_reset (sim_t *sim)
 
 typedef struct
 {
-  int reg;
-  int dig;
-  int bit;
+  bool valid;
+  uint16_t reg;
+  uint8_t bit;
 } voyager_segment_info_t;
 
-
-// For each of 11 digits, we need segments a-g for the actual digit,
-// segment h for the decimal point, segment i for the tail of the comma,
-// and segment j for the annunciator.
-voyager_segment_info_t voyager_display_map [11] [10] =
-  {
-    {  /* leftmost position has only segment g for a minus */
-      { 0,  0, 0 }, { 0,  0, 0 }, { 0,  0, 0 }, { 0,  0, 0 }, { 0,  0, 0 },
-      { 0,  0, 0 }, { 0, 11, 4 }, { 0,  0, 0 }, { 0,  0, 0 },
-      { 0,  0, 0 }  // no annunciator
-    },
-    {
-      { 0,  5, 2 }, { 0,  5, 8 }, { 0,  4, 8 }, { 0, 11, 8 }, { 0,  4, 4 },
-      { 0,  5, 1 }, { 0,  5, 4 }, { 0,  9, 8 }, { 0,  9, 4 },
-      { 0,  0, 0 }  // no annunciator - "*" for low bat in KML, but that's
-                    // not controllable by the calculator microcode
-    },
-    {
-      { 0,  6, 8 }, { 0,  7, 2 }, { 0,  6, 2 }, { 0,  4, 2 }, { 0,  6, 1 },
-      { 0,  6, 4 }, { 0,  7, 1 }, { 0,  3, 8 }, { 0,  3, 4 },
-      { 0,  4, 1 }  // USER annunciator
-    },
-    {
-      { 0, 12, 8 }, { 0, 13, 2 }, { 0, 12, 2 }, { 0,  3, 2 }, { 0, 12, 1 },
-      { 0, 12, 4 }, { 0, 13, 1 }, { 0, 13, 8 }, { 0, 13, 4 },
-      { 0,  3, 1 }  // f annunciator
-    },
-    {
-      { 0,  8, 2 }, { 0,  8, 8 }, { 0,  7, 8 }, { 0,  2, 2 }, { 0,  7, 4 },
-      { 0,  8, 1 }, { 0,  8, 4 }, { 0,  9, 2 }, { 0,  9, 1 },
-      { 0,  2, 1 }  // g annunciator
-    },
-    {
-      { 0, 10, 8 }, { 0, 11, 2 }, { 0, 10, 2 }, { 0,  1, 8 }, { 0, 10, 1 },
-      { 0, 10, 4 }, { 0, 11, 1 }, { 0,  2, 8 }, { 0,  2, 4 },
-      { 0,  1, 4 }  // BEGIN annunciator
-    },
-    {
-      { 1,  2, 8 }, { 1,  3, 2 }, { 1,  2, 2 }, { 1,  3, 8 }, { 1,  2, 1 },
-      { 1,  2, 4 }, { 1,  3, 1 }, { 1,  4, 2 }, { 1,  4, 1 },
-      { 1,  3, 4 }  // G annunciator (for GRAD, or overflow on 16C)
-    },
-    {
-      { 1,  5, 2 }, { 1,  5, 8 }, { 1,  4, 8 }, { 1,  1, 8 }, { 1,  4, 4 },
-      { 1,  5, 1 }, { 1,  5, 4 }, { 1,  6, 2 }, { 1,  6, 1 },
-      { 1,  1, 4 }  // RAD annunciator
-    },
-    {
-      { 1,  7, 2 }, { 1,  7, 8 }, { 1,  6, 8 }, { 1,  9, 8 }, { 1,  6, 4 },
-      { 1,  7, 1 }, { 1,  7, 4 }, { 1,  9, 2 }, { 1,  9, 1 },
-      { 1,  9, 4 }  // D.MY annunciator
-    },
-    {
-      { 1, 11, 8 }, { 1, 12, 2 }, { 1, 11, 2 }, { 1,  8, 2 }, { 1, 11, 1 },
-      { 1, 11, 4 }, { 1, 12, 1 }, { 1,  8, 8 }, { 1,  8, 4 },
-      { 1,  8, 1 }  // C annunciator (Complex on 15C, Carry on 16C)
-    },
-    {
-      { 1, 13, 2 }, { 1, 13, 8 }, { 1, 12, 8 }, { 1, 10, 2 }, { 1, 12, 4 },
-      { 1, 13, 1 }, { 1, 13, 4 }, { 1, 10, 8 }, { 1, 10, 4 },
-      { 1, 10, 1 }  // PRGM annunciator
-    }
-  };
-
+static voyager_segment_info_t voyager_display_map[VOYAGER_LCD_DIGITS][VOYAGER_LCD_SEGMENTS];
 
 static void voyager_display_update (sim_t *sim, voyager_display_reg_t *display)
 {
@@ -242,7 +183,7 @@ static void voyager_display_update (sim_t *sim, voyager_display_reg_t *display)
   int digit;
   int segment;
 
-  for (digit = 0; digit < VOYAGER_DISPLAY_DIGITS; digit++)
+  for (digit = 0; digit < VOYAGER_LCD_DIGITS; digit++)
     {
       sim->display_segments [digit] = 0;
       if (display->enable &&
@@ -250,15 +191,17 @@ static void voyager_display_update (sim_t *sim, voyager_display_reg_t *display)
 	{
 	  for (segment = 0; segment <= 9; segment++)
 	    {
+	      if (! voyager_display_map[digit][segment].valid)
+		continue;
 	      int vreg = voyager_display_map [digit][segment].reg;
-	      int vdig = voyager_display_map [digit][segment].dig;
-	      int vbit = voyager_display_map [digit][segment].bit;
-	      if (vbit && (nut_reg->ram [9 + vreg][vdig] & vbit))
+	      int vdig = voyager_display_map [digit][segment].bit / 4;
+	      int vbit = 1 << (voyager_display_map [digit][segment].bit & 0x03);
+	      if (nut_reg->ram[vreg][vdig] & vbit)
 		{
-		  if (segment < 9)
-		    sim->display_segments [digit] |= (1 << segment);
-		  else
+		  if (segment == VOYAGER_LCD_SEGMENT_ANN)
 		    sim->display_segments [digit] |= SEGMENT_ANN;
+		  else
+		    sim->display_segments [digit] |= (1 << segment);
 		}
 	    }
 	}
@@ -270,7 +213,7 @@ static void voyager_display_update (sim_t *sim, voyager_display_reg_t *display)
       if (! display->blink_count)
 	{
 	  display->blink_state ^= 1;
-	  display->blink_count = VOYAGER_DISPLAY_BLINK_DIVISOR;
+	  display->blink_count = VOYAGER_LCD_BLINK_DIVISOR;
 	}
     }
 }
@@ -356,6 +299,21 @@ static void voyager_display_bitmap_read (nut_reg_t *nut_reg UNUSED,
 }
 
 
+static void voyager_display_init_lcd_map(sim_t *sim)
+{
+  calcdef_t *calcdef = sim->calcdef;
+  for (int digit = 0; digit < VOYAGER_LCD_DIGITS; digit++)
+    for (int segment = 0; segment < VOYAGER_LCD_SEGMENTS; segment++)
+      {
+	voyager_segment_info_t *info = & voyager_display_map[digit][segment];
+	info->valid = calcdef_get_lcd_segment(calcdef,
+					      digit,
+					      segment,
+					      & info->reg,
+					      & info->bit);
+      }
+}
+
 chip_t *voyager_r2d2_install (sim_t           *sim,
 			      plugin_module_t *module,
 			      chip_type_t     type  UNUSED,
@@ -372,6 +330,8 @@ chip_t *voyager_r2d2_install (sim_t           *sim,
   // so other than the memory, we don't "install" them.
   if (index == 0)
     {
+      voyager_display_init_lcd_map(sim);
+
       voyager_display_init_ops (sim);
 
       display = alloc (sizeof (voyager_display_reg_t));
