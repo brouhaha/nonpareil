@@ -1,0 +1,101 @@
+<?xml version="1.0"?>
+<!--
+Copyright 2007, 2008, 2022 Eric Smith <spacewar@gmail.com>
+
+WARNING:  This work is NOT "Open Source" or "Free Software".
+
+This work is licensed under the Creative Commons
+Attribution-Noncommmercial-No Derivative Works 3.0
+License. To view a simplified description of this license,
+visit
+
+    http://creativecommons.org/licenses/by-nc-nd/3.0/
+
+To view the actual license, visit
+
+    http://creativecommons.org/licenses/by-nc-nd/3.0/legalcode
+-->
+
+<!DOCTYPE calcdef SYSTEM "http://nonpareil.brouhaha.com/dtd/calcdef-1.0.dtd">
+
+<calcdef version="1.0"
+         arch="Nut"
+         platform="Voyager"
+         model="11C"
+         copyright="Copyright 2007, 2008, 2022 Eric Smith &lt;eric@brouhaha.com&gt;"
+         license="CC-BY-NC-ND-3.0">
+
+  <chip type="nut_cpu">
+    <part_info>
+      <vendor_name>HP</vendor_name>
+      <part_number>1LF5-0301</part_number>
+    </part_info>
+    <inst_clock osc_type="LC" freq="215000"/>
+  </chip>
+
+  <chip type="voyager_r2d2" index="0">
+    <part_info>
+      <vendor_name>HP</vendor_name>
+      <part_number>1LH1-0305</part_number>
+    </part_info>
+    <memory addr_space="inst" banks="0" base_addr="0x0000" size="0x1000">
+    </memory>
+    <memory addr_space="data" base_addr="0x00" size="0x08">
+    </memory>
+    <memory addr_space="data" base_addr="0xe0" size="0x20">
+    </memory>
+  </chip>
+
+  <keyboard>
+
+    <key user_keycode="11" hw_keycode="0x13"/>
+    <key user_keycode="12" hw_keycode="0x33"/>
+    <key user_keycode="13" hw_keycode="0x73"/>
+    <key user_keycode="14" hw_keycode="0xc3"/>
+    <key user_keycode="15" hw_keycode="0x83"/>
+    <key user_keycode="16" hw_keycode="0x82"/>
+    <key user_keycode="17" hw_keycode="0xc2"/>
+    <key user_keycode="18" hw_keycode="0x72"/>
+    <key user_keycode="19" hw_keycode="0x32"/>
+    <key user_keycode="10" hw_keycode="0x12"/>
+
+    <key user_keycode="21" hw_keycode="0x10"/>
+    <key user_keycode="22" hw_keycode="0x30"/>
+    <key user_keycode="23" hw_keycode="0x70"/>
+    <key user_keycode="24" hw_keycode="0xc0"/>
+    <key user_keycode="25" hw_keycode="0x80"/>
+    <key user_keycode="26" hw_keycode="0x87"/>
+    <key user_keycode="27" hw_keycode="0xc7"/>
+    <key user_keycode="28" hw_keycode="0x77"/>
+    <key user_keycode="29" hw_keycode="0x37"/>
+    <key user_keycode="20" hw_keycode="0x17"/>
+
+    <key user_keycode="31" hw_keycode="0x11"/>
+    <key user_keycode="32" hw_keycode="0x31"/>
+    <key user_keycode="33" hw_keycode="0x71"/>
+    <key user_keycode="34" hw_keycode="0xc1"/>
+    <key user_keycode="35" hw_keycode="0x81"/>
+    <key user_keycode="36" hw_keycode="0x84"/>
+    <key user_keycode="37" hw_keycode="0xc4"/>
+    <key user_keycode="38" hw_keycode="0x74"/>
+    <key user_keycode="39" hw_keycode="0x34"/>
+    <key user_keycode="30" hw_keycode="0x14"/>
+
+    <key user_keycode="41" hw_keycode="0x18"/>
+    <key user_keycode="42" hw_keycode="0x38"/>
+    <key user_keycode="43" hw_keycode="0x78"/>
+    <key user_keycode="44" hw_keycode="0xc8"/>
+    <key user_keycode="45" hw_keycode="0x88"/>
+    <key user_keycode="47" hw_keycode="0xc5"/>
+    <key user_keycode="48" hw_keycode="0x75"/>
+    <key user_keycode="49" hw_keycode="0x35"/>
+    <key user_keycode="40" hw_keycode="0x15"/>
+  </keyboard>
+
+  <obj_file addr_space="inst"
+            copyright="Copyright 2004, 2005, 2008 Eric Smith &lt;eric@brouhaha.com&gt;"
+            license="CC-BY-NC-ND-3.0">
+    10c.rom
+  </obj_file>
+
+</calcdef>
