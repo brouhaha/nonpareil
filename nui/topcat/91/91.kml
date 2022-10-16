@@ -1,0 +1,132 @@
+# Copyright 2022 Eric Smith <spacewar@gmail.com>
+
+# Nonpareil is free software; you can redistribute it and/or modify it
+# under the terms of the GNU General Public License version 2 as
+# published by the Free Software Foundation.  Note that I am not
+# granting permission to redistribute or modify Nonpareil under the
+# terms of any later version of the General Public License.
+
+# Nonpareil is distributed in the hope that they will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# General Public License for more details.
+
+# You should have received a copy of the GNU General Public License
+# along with this program (in the file "COPYING"); if not, write to
+# the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+# Boston, MA 02111, USA.
+
+global
+	title "91 Printing Scientific Calculator"
+	author "Eric Smith <spacewar@gmail.com>"
+	model "91"
+	image "topcat-background.png"
+	overlay default image "91-overlay.png"
+	image credit "Eric Smith"
+	color 0 81 21 109	  # background color, used when transparency is off
+#	transparency 128
+end
+
+display
+	offset 91 13
+	size 251 49
+
+	color 0 60 0 0   # background
+	color 1 60 0 0   # unlit segments
+	color 2 255 17 17  # lit segments
+
+	digits 15
+		size 16 24
+		offset 5 15
+	end
+
+	segments
+		image "led_segments.png" offset 2 2 size 126 188
+		segment 'a' color 255   0   0  end       # red
+		segment 'b' color   0 255   0  end       # green
+		segment 'c' color   0   0 255  end       # blue
+		segment 'd' color 255 255   0  end       # yellow
+		segment 'e' color 255   0 255  end       # purple
+		segment 'f' color   0 255 255  end       # bluegreen
+		segment 'g' color 255 128   0  end       # orange
+		segment 'h' color 255   0 128  end       # pink (inside dp)
+		#segment 'h' color 128   0   0  end       # dark red (outside dp)
+		segment 'i'  color  64  64  64  end       # dark grey
+	end # segments
+end
+
+#switch 0
+#  size 25 9
+#  default 1
+#  position 0  image "switch-off.png"  end  # off
+#  position 1  image "switch-on.png"   end  # on
+#end
+
+switch 1
+  offset 165 74
+  default 2
+  position 0  image "switch-left.png"   end  # man
+  position 1  image "switch-mid.png"    end  # all
+  position 2  image "switch-right.png"  end  # norm
+end
+
+switch 2
+  offset 165 94
+  default 0
+  position 0  image "switch-left.png"   end  # deg
+  position 1  image "switch-mid.png"    end  # grd
+  position 2  image "switch-right.png"  end  # rad
+end
+
+                                                      # unshifed  shifted
+button  11  image "key_11.png"   offset  15 164  end  # sqrt      H.MS+
+button  12  image "key_12.png"   offset  75 164  end  # x^2       H.MS-
+button  13  image "key_13.png"   offset 135 164  end  # y^x       ->H.MS
+button  14  image "key_14.png"   offset 195 164  end  # 1/x       H.MS->
+
+button  21  image "key_21.png"   offset  15 209  end  # SIN       SIN^-1
+button  22  image "key_22.png"   offset  75 209  end  # COS       COS^-1
+button  23  image "key_23.png"   offset 135 209  end  # TAN       TAN^-1
+button  24  image "key_24.png"   offset 195 209  end  # P->R      s
+
+button  31  image "key_31.png"   offset  15 254  end  # %         Delta%
+button  32  image "key_32.png"   offset  75 254  end  # %Sigma    n!
+button  33  image "key_33.png"   offset 135 254  end  # lin est   L.R.
+button  34  image "key_34.png"   offset 195 254  end  # R->P      mean
+
+button  41  image "key_41.png"   offset  15 299  end  # e^x       10^x
+button  42  image "key_42.png"   offset  75 299  end  # ln        log
+button  43  image "key_43.png"   offset 135 299  end  # Sigma+    Sigma-
+button  44  image "key_44.png"   offset 195 299  end  # f
+
+button -11  image "key_-11.png"  offset 260  74  end  # x<>y
+button -12  image "key_-12.png"  offset 320  74  end  # Rdn
+button -13  image "key_-13.png"  offset 380  74  end  # Rup
+button -14  image "key_-14.png"  offset 440  74  end  # PRINTx               (double-wide)
+
+button -21  image "key_-21.png"  offset 260 119  end  # ENTER^    LIST STK   (double-wide)
+button -22  image "key_-22.png"  offset 380 119  end  # CHS       LIST REG
+button -23  image "key_-23.png"  offset 440 119  end  # EEX       LIST Sigma
+button -24  image "key_-24.png"  offset 500 119  end  # divide    CL REG
+
+button -31  image "key_-31.png"  offset 260 164  end  # STO       pi
+button -32  image "key_-32.png"  offset 320 164  end  # 7
+button -33  image "key_-33.png"  offset 380 164  end  # 8
+button -34  image "key_-34.png"  offset 440 164  end  # 9
+button -35  image "key_-35.png"  offset 500 164  end  # multiply  CL Sigma
+
+button -41  image "key_-41.png"  offset 260 209  end  # RCL       LASTx
+button -42  image "key_-42.png"  offset 320 209  end  # 4
+button -43  image "key_-43.png"  offset 380 209  end  # 5
+button -44  image "key_-44.png"  offset 440 209  end  # 6
+button -45  image "key_-45.png"  offset 500 209  end  # subtract
+
+button -51  image "key_-51.png"  offset 260 254  end  # CLx       CLEAR
+button -52  image "key_-52.png"  offset 320 254  end  # 1
+button -53  image "key_-53.png"  offset 380 254  end  # 2
+button -54  image "key_-54.png"  offset 440 254  end  # 3
+button -55  image "key_-55.png"  offset 500 254  end  # add (double-tall)
+
+button -61  image "key_-61.png"  offset 260 299  end  # zero (double-wide)
+button -62  image "key_-62.png"  offset 380 299  end  # .         ENG
+button -63  image "key_-63.png"  offset 440 299  end  # FIX       SCI

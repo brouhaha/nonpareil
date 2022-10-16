@@ -1,0 +1,19 @@
+# Nonpareil
+# Copyright 2022 Eric smith <spacewar@gmail.com>
+
+Import('env')
+
+ncd_names = ['92']
+
+source_names = ['92']
+
+object_files = []
+listing_files = []
+for sn in source_names:
+    o, l = env.UASM(target = sn)
+    object_files.append(o)
+    listing_files.append(l)
+
+ncd_files = [env.NCD(target = nn)[0] for nn in ncd_names]
+
+Return('ncd_files')

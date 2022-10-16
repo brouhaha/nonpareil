@@ -1,0 +1,935 @@
+<?xml version="1.0"?>
+<!--
+Copyright 2022 Eric Smith <spacewar@gmail.com>
+-->
+
+<!DOCTYPE calcdef SYSTEM "http://nonpareil.brouhaha.com/dtd/calcdef-1.0.dtd">
+
+<calcdef version="1.0"
+         arch="Woodstock"
+         platform="Topcat"
+         model="92"
+         copyright="Copyright 2022 Eric Smith &lt;spacewar@gmail.com&gt;"
+         license="GPL-3.0">
+
+  <chip id="act" type="woodstock_act">
+    <part_info>
+      <vendor_name>HP</vendor_name>
+      <part_number>1820-1596</part_number>
+    </part_info>
+    <part_info>
+      <vendor_name>Mostek</vendor_name>
+      <part_number>MK6216N</part_number>
+    </part_info>
+    <inst_clock osc_type="LC" freq="185000"/>
+    <key_scanner as_flags="1"/>
+  </chip>
+
+  <chip id="cathode_driver" type="woodstock_cathode_driver_14">
+    <part_info>
+      <vendor_name>HP</vendor_name>
+      <part_number>1820-1629</part_number>
+    </part_info>
+  </chip>
+
+  <chip id="rom_0_anode_driver" type="woodstock_rom_anode_driver">
+    <part_info>
+      <vendor_name>HP</vendor_name>
+      <part_number>1818-0345</part_number>
+    </part_info>
+    <memory addr_space="inst" banks="0" base_addr="00000" size="02000">
+    </memory>
+    <chargen type="segment" count="8">
+      <char id="0x00">abcdef..</char>
+      <char id="0x01">.bc.....</char>
+      <char id="0x02">ab.de.g.</char>
+      <char id="0x03">abcd..g.</char>
+      <char id="0x04">.bc..fg.</char>
+      <char id="0x05">a.cd.fg.</char>
+      <char id="0x06">a.cdefg.</char>
+      <char id="0x07">abc.....</char>
+      <char id="0x08">abcdefg.</char>
+      <char id="0x09">abcd.fg.</char>
+      <char id="0x0a">....e.g.</char>  <!-- r -->
+      <char id="0x0b">a..def..</char>  <!-- C -->
+      <char id="0x0c">..cde.g.</char>  <!-- o -->
+      <char id="0x0d">.bcde.g.</char>  <!-- d -->
+      <char id="0x0e">a..defg.</char>  <!-- E -->
+      <char id="0x0f">........</char>  <!-- space -->
+      <char id="' '" >........</char>
+      <char id="'-'" >......g.</char>
+      <char id="'.'" >.......h</char>
+    </chargen>
+  </chip>
+
+  <chip id="rom_ram_1" type="woodstock_rom_ram">
+    <part_info>
+      <vendor_name>HP</vendor_name>
+      <part_number>1818-0346</part_number>
+    </part_info>
+    <memory addr_space="inst" banks="0" base_addr="02000" size="02000">
+    </memory>
+    <memory addr_space="data" base_addr="0x00" size="0x10">
+    </memory>
+  </chip>
+
+  <chip id="rom_ram_2" type="woodstock_rom_ram">
+    <part_info>
+      <vendor_name>HP</vendor_name>
+      <part_number>1818-0347</part_number>
+    </part_info>
+    <memory addr_space="inst" banks="0" base_addr="04000" size="02000">
+    </memory>
+    <memory addr_space="data" base_addr="0x10" size="0x10">
+    </memory>
+  </chip>
+
+  <chip id="rom_3" type="woodstock_rom">
+    <part_info>
+      <vendor_name>HP</vendor_name>
+1      <part_number>1818-0350</part_number>
+    </part_info>
+    <memory addr_space="inst" banks="0" base_addr="06000" size="02000">
+    </memory>
+  </chip>
+
+  <chip id="rom_ram_5" type="woodstock_rom_ram">
+    <part_info>
+      <vendor_name>HP</vendor_name>
+      <part_number>1818-0349</part_number>
+    </part_info>
+    <memory addr_space="inst" banks="1" base_addr="02000" size="02000">
+    </memory>
+    <memory addr_space="data" base_addr="0x20" size="0x10">
+    </memory>
+  </chip>
+
+  <chip id="rom_ram_6" type="woodstock_rom_ram">
+    <part_info>
+      <vendor_name>HP</vendor_name>
+      <part_number>1818-0351</part_number>
+    </part_info>
+    <memory addr_space="inst" banks="1" base_addr="04000" size="02000">
+    </memory>
+    <memory addr_space="data" base_addr="0x30" size="0x10">
+    </memory>
+  </chip>
+
+  <chip id="pick" type="woodstock_pick" flags="1">  
+    <!-- config flag 1 enables paper advance button in GUI -->
+    <!-- XXX CHARACTER SET WAS COPIED FROM 97, IS WRONG FOR 92 -->
+    <part_info>
+      <vendor_name>HP</vendor_name>
+      <part_number>1820-1896</part_number>
+    </part_info>
+    <chargen type="bitmap" count="35">
+      <!-- UNKNOWN -->
+      <char id="0x00">
+	.....
+        .....
+        .....
+        .....
+        .....
+        .....
+	.....
+      </char>
+
+      <!-- UC Sigma -->
+      <char id="0x01">
+	*****
+        *...*
+        .*...
+        ..*..
+        .*...
+        *...*
+        *****
+      </char>
+
+      <!-- percent -->
+      <char id="0x02">
+	**...
+        **..*
+        ...*.
+        ..*..
+        .*...
+        *..**
+        ...**
+      </char>
+ 
+      <!-- UC N -->
+      <char id="0x03">
+	*...*
+        *...*
+        **..*
+        *.*.*
+        *..**
+        *...*
+        *...*
+      </char>
+
+      <!-- asterisk -->
+      <char id="0x04">
+	.....
+        ..*..
+        *.*.*
+        .***.
+        *.*.*
+        ..*..
+        .....
+      </char>
+
+      <!-- UC T -->
+      <char id="0x05">
+	*****
+        ..*..
+        ..*..
+        ..*..
+        ..*..
+        ..*..
+        ..*..
+      </char>
+
+      <!-- UC Z -->
+      <char id="0x06">
+	*****
+        ....*
+        ...*.
+        ..*..
+        .*...
+        *....
+        *****
+      </char>
+
+      <!-- UC Y -->
+      <char id="0x07">
+	*...*
+        *...*
+        .*.*.
+        ..*..
+        ..*..
+        ..*..
+        ..*..
+      </char>
+
+      <!-- UC X -->
+      <char id="0x08">
+	*...*
+        *...*
+        .*.*.
+        ..*..
+        .*.*.
+        *...*
+	*...*
+      </char>
+
+      <!-- UC C -->
+      <char id="0x09">
+	.***.
+        *...*
+        *....
+        *....
+        *....
+        *...*
+        .***.
+      </char>
+
+      <!-- UC E -->
+      <char id="0x0a">
+	*****
+        *....
+        *....
+        ****.
+        *....
+        *....
+        *****
+      </char>
+                      
+      <!-- UN S -->
+      <char id="0x0b">
+	.***.
+        *...*
+        *....
+        .***.
+        ....*
+        *...*
+        .***.
+      </char>
+                      
+      <!-- UNKNOWN -->
+      <char id="0x0c">
+	.***.
+        ....*
+        .....
+        .***.
+        ....*
+        *...*
+        .***.
+      </char>
+
+      <!-- LC n -->
+      <char id="0x0d">
+	.....
+        .....
+        *.***
+        **..*
+        **..*
+        **..*
+        **..*
+      </char>
+                      
+      <!-- LC i $$$ should be bold -->
+      <char id="0x0e">
+	.**..
+        .**..
+        .....
+        .**..
+        .**..
+        .**..
+        .**..
+      </char>
+                      
+      <!-- LC e -->
+      <char id="0x0f">
+	.....
+        .....
+        .***.
+        *...*
+        ****.
+        *....
+        .***.
+      </char>
+                      
+      <!-- UC delta -->
+      <char id="0x10">
+        .....
+        ..*..
+        ..*..
+        .*.*.
+        .*.*.
+	*...*
+        *****
+      </char>
+
+      <!-- down arrow -->
+      <char id="0x11">
+	..*..
+        ..*..
+        ..*..
+        ..*..
+        *****
+        .***.
+        ..*..
+      </char> 
+
+      <!-- up arrow -->
+      <char id="0x12">
+	..*..
+        .***.
+        *.*.*
+        ..*..
+        ..*..
+        ..*..
+        ..*..
+      </char>
+
+      <!-- UC A -->
+      <char id="0x13">
+	..*..
+        .*.*.
+        *...*
+        *...*
+        *****
+        *...*
+        *...*
+      </char>
+
+      <!-- UNKNOWN -->
+      <char id="0x14">
+	...*.
+        *****
+        ...*.
+        .....
+        .*...
+        *****
+        .*...
+      </char>
+
+      <!-- slash -->
+      <char id="0x15">
+	.....
+        ....*
+        ...*.
+        ..*..
+        .*...
+        *....
+        .....
+      </char>
+                      
+      <!-- exchange, right arrow over left arrow -->
+      <char id="0x16">
+	...*.
+        *****
+        ...*.
+        .....
+        .*...
+        *****
+        .*...
+      </char>
+                      
+      <!-- right arrow -->
+      <char id="0x17">
+	.....
+        ..*..
+        ...*.
+        *****
+        ...*.
+        ..*..
+        .....
+      </char> 
+                      
+      <!-- UNKNOWN -->
+      <char id="0x18">
+	****.
+        *...*
+        *...*
+        ****.
+        *....
+        *....
+	*....
+      </char>
+
+      <!-- UC B -->
+      <char id="0x19">
+	****.
+        *...*
+        *...*
+        ****.
+        *...*
+        *...*
+        ****.
+      </char>
+
+      <!-- UN D -->
+      <char id="0x1a">
+	****.
+        .*..*
+        .*..*
+        .*..*
+        .*..*
+        .*..*
+        ****.
+      </char>
+
+      <!-- UC F -->
+      <char id="0x1b">
+	*****
+        *....
+        *....
+        ****.
+        *....
+        *....
+        *....
+      </char>
+
+      <!-- UNKNOWN -->
+      <char id="0x1c">
+	..*..
+        .***.
+        *.*.*
+        ..*..
+        ..*..
+        ..*..
+        ..*..
+      </char>
+
+      <!-- UNKNOWN -->
+      <char id="0x1d">
+	..*..
+        ..*..
+        ..*..
+        ..*..
+        *****
+        .***.
+        ..*..
+      </char>
+
+      <!-- UNKNOWN -->
+      <char id="0x1e">
+	.....
+        .....
+        .***.
+        *...*
+        ****.
+        *....
+        .***.
+      </char>
+
+      <!-- UC I -->
+      <char id="0x1f">
+	.***.
+        ..*..
+        ..*..
+        ..*..
+        ..*..
+        ..*..
+        .***.
+      </char>
+
+      <!-- UNKNOWN -->
+      <char id="0x20">
+	.....
+        .....
+        .....
+        .....
+        .....
+        .....
+        .....
+      </char>
+
+      <!-- UNKNOWN -->
+      <char id="0x21">
+	.....
+        ..*..
+        *.*.*
+        .***.
+        *.*.*
+        ..*..
+        .....
+      </char>
+
+      <!-- UC K -->
+      <char id="0x22">
+	*...*
+        *..*.
+        *.*..
+        **...
+        *.*..
+        *..*.
+        *...*
+      </char>
+
+      <!-- UC L -->
+      <char id="0x23">
+	*....
+        *....
+        *....
+        *....
+        *....
+        *....
+        *****
+      </char>
+
+      <!-- superscript x -->
+      <char id="0x24">
+	*..*.
+        .**..
+        .**..
+        *..*.
+        .....
+        .....
+	.....
+      </char>
+
+      <!-- UC M -->
+      <char id="0x25">
+	*...*
+        **.**
+        *.*.*
+        *.*.*
+        *...*
+        *...*
+        *...*
+      </char>
+
+      <!-- UC P -->
+      <char id="0x26">
+	****.
+        *...*
+        *...*
+        ****.
+        *....
+        *....
+	*....
+      </char>
+
+      <!-- UNKNOWN -->
+      <char id="0x27">
+	*....
+        *...*
+        *...*
+        ****.
+        *.*..
+        *..*.
+        *...*
+      </char>
+
+      <!-- UNKNOWN -->
+      <char id="0x28">
+	*.*.*
+	*.*.*
+        *...*
+        .*.*.
+        .*.*.
+        ..*..
+        ..*..
+      </char>
+
+      <!-- UC R -->
+      <char id="0x29">
+	****.
+        *...*
+        *...*
+        ****.
+        *.*..
+        *..*.
+        *...*
+      </char>
+
+      <!-- UNKNOWN -->
+      <char id="0x2a">
+	..*..
+        ..*..
+        ..*..
+        ..*..
+        ..*..
+        .....
+	..*..
+      </char>
+
+      <!-- UC V -->
+      <char id="0x2b">
+	*...*
+	*...*
+        *...*
+        .*.*.
+        .*.*.
+        ..*..
+        ..*..
+      </char> 
+
+      <!-- UNKNOWN -->
+      <char id="0x2c">
+	*..*.
+        .**..
+        .**..
+        *..*.
+        .....
+        .....
+	.....
+      </char>
+
+      <!-- UNKNOWN -->
+      <char id="0x2d">
+	.***.
+        *...*
+        ..**.
+        .*...
+        .****
+        .....
+        .....
+      </char>
+
+      <!-- division symbol -->
+      <char id="0x2e">
+	.....
+        .**..
+        .....
+        *****
+        .....
+        ..**.
+        .....
+      </char>
+
+      <!-- multiplication symbol -->
+      <char id="0x2f">
+	.....
+        *...*
+        .*.*.
+        ..*..
+        .*.*.
+        *...*
+	.....
+      </char>
+
+      <!-- zero and O -->
+      <char id="0x30">
+	.***.
+        *...*
+        *...*
+        *...*
+        *...*
+        *...*
+        .***.
+      </char>
+
+      <!-- one -->
+      <char id="0x31">
+	..*..
+        .**..
+        ..*..
+        ..*..
+        ..*..
+        ..*..
+        .***.
+      </char>
+
+      <!-- two -->
+      <char id="0x32">
+	.***.
+        *...*
+        ....*
+        ..**.
+        **...
+        *....
+        *****
+      </char>
+
+      <!-- three -->
+      <char id="0x33">
+	*****
+        ....*
+        ...*.
+        ..**.
+        ....*
+        *...*
+        .***.</char>
+
+	<!-- four -->
+      <char id="0x34">
+	...*.
+        ..**.
+        .*.*.
+        *..*.
+        *****
+        ...*.
+        ...*.
+      </char>
+
+      <!-- five -->
+      <char id="0x35">
+	*****
+        *....
+        ****.
+        ....*
+        ....*
+        *...*
+        .***.
+      </char>
+
+      <!-- six -->
+      <char id="0x36">
+	..***
+        .*...
+        *....
+        ****.
+        *...*
+        *...*
+        .***.
+      </char>
+
+      <!-- seven -->
+      <char id="0x37">
+	*****
+        ....*
+        ...*.
+        ..*..
+        .*...
+        .*...
+        .*...
+      </char>
+
+      <!-- eight -->
+      <char id="0x38">
+	.***.
+        *...*
+        *...*
+        .***.
+        *...*
+        *...*
+        .***.
+      </char>
+
+      <!-- nine -->
+      <char id="0x39">
+	.***.
+        *...*
+        *...*
+        .****
+        ....*
+        ...*.
+	***..
+      </char>
+
+      <!-- period -->
+      <char id="0x3a">
+	.....
+        .....
+        .....
+        .....
+        .....
+        .**..
+	.**..
+      </char>
+
+      <!-- plus -->
+      <char id="0x3b">
+	.....
+        ..*..
+        ..*..
+        *****
+        ..*..
+        ..*..
+        .....
+      </char>
+
+      <!-- hyphen -->
+      <char id="0x3c">
+	.....
+        .....
+        .....
+        *****
+        .....
+        .....
+	.....
+      </char>
+
+      <!--- left arrow -->
+      <char id="0x3d">
+	.....
+        ..*..
+        .*...
+        *****
+        .*...
+        ..*..
+	.....
+      </char>
+
+      <!-- space -->
+      <char id="0x3e">
+	.....
+        .....
+        .....
+        .....
+        .....
+        .....
+	.....
+      </char>
+
+      <!-- end -->
+      <char id="0x3f">
+	.....
+        .....
+        .....
+        .....
+        .....
+        .....
+	.....
+      </char>
+    </chargen>
+  </chip>
+
+  <keyboard>
+
+    <!-- power switch, top left -->
+    <!--
+    <switch number="0">
+      <switch_pos position="0" flag="power" value="0"/>
+      <switch_pos position="1" flag="power" value="1"/>
+    </switch>
+    -->
+
+    <!-- printer mode, top right -->
+    <switch number="1">
+      <switch_pos position="0">  <!-- MAN -->
+        <flag chip_id="act" number="kc" value="1"/>
+        <flag chip_id="act" number="kd" value="0"/>
+      </switch_pos>
+      <switch_pos position="1">  <!-- ALL -->
+        <flag chip_id="act" number="kc" value="0"/>
+        <flag chip_id="act" number="kd" value="0"/>
+      </switch_pos>
+      <switch_pos position="2">  <!-- NORM -->
+        <flag chip_id="act" number="kc" value="0"/>
+        <flag chip_id="act" number="kd" value="1"/>
+      </switch_pos>
+    </switch>
+
+    <!-- begin/end, bottom right -->
+    <switch number="2">
+      <switch_pos position="0">  <!-- BEGIN -->
+        <flag chip_id="act" number="f1-cond-s0" value="0"/>
+      </switch_pos>
+      <switch_pos position="1">  <!-- END -->
+        <flag chip_id="act" number="f1-cond-s0" value="1"/>
+      </switch_pos>
+    </switch>
+                                                               <!-- unshifed  f shift   g shift -->
+    <!-- days/year, bottom left -->
+    <switch number="3">
+      <switch_pos position="0">  <!-- 360 -->
+        <flag chip_id="act" number="ka" value="0"/>
+      </switch_pos>
+      <switch_pos position="1">  <!-- 365 -->
+        <flag chip_id="act" number="ka" value="1"/>
+      </switch_pos>
+    </switch>
+
+    <key user_keycode="11"  chip_id="pick" hw_keycode="0xe8"/> <!-- n         12x               -->
+    <key user_keycode="12"  chip_id="pick" hw_keycode="0xd8"/> <!-- i         12/               -->
+    <key user_keycode="13"  chip_id="pick" hw_keycode="0xc8"/> <!-- PV        NPV               -->
+    <key user_keycode="14"  chip_id="pick" hw_keycode="0xb8"/> <!-- FV        IRR               -->
+						           
+    <key user_keycode="21"  chip_id="pick" hw_keycode="0xe0"/> <!-- PMT       1/x       RND     -->
+    <key user_keycode="22"  chip_id="pick" hw_keycode="0xd0"/> <!-- AMORT     P1        P2      -->
+    <key user_keycode="23"  chip_id="pick" hw_keycode="0xc0"/> <!-- PRICE     IS.ST     MT      -->
+    <key user_keycode="24"  chip_id="pick" hw_keycode="0xb0"/> <!-- YIELD     CALL      CPN     -->
+						           
+    <key user_keycode="31"  chip_id="pick" hw_keycode="0xa0"/> <!-- CL FIN                      -->
+    <key user_keycode="32"  chip_id="pick" hw_keycode="0x34"/> <!-- SL        LIFE      N1      -->
+    <key user_keycode="33"  chip_id="pick" hw_keycode="0x30"/> <!-- SOYD      BOOK      N2      -->
+    <key user_keycode="34"  chip_id="pick" hw_keycode="0x44"/> <!-- DB        SAL       FACT    -->
+						           
+    <key user_keycode="41"  chip_id="pick" hw_keycode="0x24"/> <!-- f -->
+    <key user_keycode="42"  chip_id="pick" hw_keycode="0x20"/> <!-- g -->
+    <key user_keycode="43"  chip_id="pick" hw_keycode="0x10"/> <!-- lin est   L.R.      r       -->
+    <key user_keycode="44"  chip_id="pick" hw_keycode="0x14"/> <!-- %Sigma    mean      std dev -->
+						           
+    <key user_keycode="-11" chip_id="pick" hw_keycode="0x90"/> <!-- x<>y      LIST STK          -->
+    <key user_keycode="-12" chip_id="pick" hw_keycode="0x70"/> <!-- RDN       LIST REG          -->
+    <key user_keycode="-13" chip_id="pick" hw_keycode="0x60"/> <!-- RUP       LIST Sigma        -->
+    <key user_keycode="-14" chip_id="pick" hw_keycode="0x50"/> <!-- PRINT x   LIST FIN          -->
+						           
+    <key user_keycode="-21" chip_id="pick" hw_keycode="0x78"/> <!-- ENTER^    LASTx             -->
+    <key user_keycode="-22" chip_id="pick" hw_keycode="0x68"/> <!-- CHS       EEX               -->
+    <key user_keycode="-23" chip_id="pick" hw_keycode="0x58"/> <!-- %         Delta%            -->
+    <key user_keycode="-24" chip_id="pick" hw_keycode="0x48"/> <!-- divide    y^x               -->
+						           
+    <key user_keycode="-31" chip_id="pick" hw_keycode="0x98"/> <!-- STO       CL REG            -->
+    <key user_keycode="-32" chip_id="pick" hw_keycode="0x74"/> <!-- 7                           -->
+    <key user_keycode="-33" chip_id="pick" hw_keycode="0x64"/> <!-- 8                           -->
+    <key user_keycode="-34" chip_id="pick" hw_keycode="0x54"/> <!-- 9                           -->
+    <key user_keycode="-35" chip_id="pick" hw_keycode="0x38"/> <!-- multiply  sqrt              -->
+						           
+    <key user_keycode="-41" chip_id="pick" hw_keycode="0xa8"/> <!-- RCL       CL Sigma          -->
+    <key user_keycode="-42" chip_id="pick" hw_keycode="0xa4"/> <!-- 4                           -->
+    <key user_keycode="-43" chip_id="pick" hw_keycode="0x94"/> <!-- 5                           -->
+    <key user_keycode="-44" chip_id="pick" hw_keycode="0x84"/> <!-- 6                           -->
+    <key user_keycode="-45" chip_id="pick" hw_keycode="0x28"/> <!-- minus     e^x               -->
+						           
+    <key user_keycode="-51" chip_id="pick" hw_keycode="0x40"/> <!-- CLx       CLEAR             -->
+    <key user_keycode="-52" chip_id="pick" hw_keycode="0xd4"/> <!-- 1                           -->
+    <key user_keycode="-53" chip_id="pick" hw_keycode="0xc4"/> <!-- 2                           -->
+    <key user_keycode="-54" chip_id="pick" hw_keycode="0xb4"/> <!-- 3                           -->
+    <key user_keycode="-55" chip_id="pick" hw_keycode="0x18"/> <!-- add       LN                -->
+						           
+    <key user_keycode="-61" chip_id="pick" hw_keycode="0xe4"/> <!-- 0         DATE+DAYS         -->
+    <key user_keycode="-62" chip_id="pick" hw_keycode="0x80"/> <!-- .         DeltaDAYS         -->
+    <key user_keycode="-63" chip_id="pick" hw_keycode="0x88"/> <!-- Sigma+    Sigma-            -->
+
+  </keyboard>
+
+  <obj_file addr_space="inst"
+            copyright="Copyright 2022 Eric Smith &lt;spacewar@gmail.com&gt;"
+            license="GPL-3.0">92.obj</obj_file>
+
+</calcdef>
