@@ -97,6 +97,16 @@ sim_core_srcs = Split ("""calcdef.c
 			  hepax.c
                           voyager_lcd.c
                           mod1_file.c""")
+
+
+if ming:
+    sim_core_srcs.append("elapsed_time_us_windows.c")
+else:
+    print("*****************************")
+    print(sim_core_srcs)
+    sim_core_srcs.append("elapsed_time_us_posix.c")
+    print(sim_core_srcs)
+
 sim_core_objs = [build_env.Object(src) for src in sim_core_srcs];
 
 common_dis_srcs = Split ("""dis_woodstock.c dis_nut.c""")

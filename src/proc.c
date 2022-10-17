@@ -1,6 +1,5 @@
 /*
-$Id$
-Copyright 1995, 2004-2008, 2010 Eric Smith <eric@brouhaha.com>
+Copyright 1995, 2004-2008, 2010, 2022 Eric Smith <spacewar@gmail.com>
 
 Nonpareil is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License version 2 as
@@ -43,6 +42,7 @@ MA 02111, USA.
 #include "mod1_file.h"
 #include "proc_int.h"
 #include "glib_async_queue_source.h"
+#include "elapsed_time_us.h"
 #include "helios.h"
 #include "phineas.h"
 #include "printer.h"
@@ -179,11 +179,7 @@ struct sim_thread_vars_t
 
   GAsyncQueueSource *gui_cmd_q_source;
 
-  GTimeVal last_run_time;
-  GTimeVal next_run_time;
-
-  GTimeVal tv;
-  GTimeVal prev_tv;
+  uint64_t last_run_time_us;
 };
 
 
@@ -903,8 +899,7 @@ static void handle_sim_cmd (sim_t *sim, sim_msg_t *msg)
       break;
     case CMD_SET_IO_PAUSE_FLAG:
       sim->io_pause_flag = msg->b;
-      g_get_current_time (& sim->thread_vars->last_run_time);
-      g_get_current_time (& sim->thread_vars->next_run_time);
+      sim->thread_vars->last_run_time_us = get_elapsed_time_us();
       msg->reply = OK;
       break;
     case CMD_GET_IO_PAUSE_FLAG:
@@ -945,8 +940,7 @@ static void handle_sim_cmd (sim_t *sim, sim_msg_t *msg)
       break;
     case CMD_SET_RUN_FLAG:
       sim->run_flag = msg->b;
-      g_get_current_time (& sim->thread_vars->last_run_time);
-      g_get_current_time (& sim->thread_vars->next_run_time);
+      sim->thread_vars->last_run_time_us = get_elapsed_time_us();
       msg->reply = OK;
       break;
     case CMD_GET_RUN_FLAG:
@@ -992,29 +986,16 @@ static void handle_sim_cmd (sim_t *sim, sim_msg_t *msg)
 
 void sim_run (sim_t *sim)
 {
-  GTimeVal now;
   int inst_count;
-  long usec;
-
-  g_get_current_time (& now);
 
   /* compute how many microinstructions we want to execute */
-  usec = now.tv_usec - sim->thread_vars->last_run_time.tv_usec;
-  switch (now.tv_sec - sim->thread_vars->last_run_time.tv_sec)
-    {
-    case 0: break;
-    case 1: usec += 1000000; break;
-    default: usec = 1000000;
-    }
+  uint64_t now_us = get_elapsed_time_us();
+  uint64_t usec = now_us - sim->thread_vars->last_run_time_us;
   inst_count = usec * sim->words_per_usec;
   if (inst_count > MAX_INST_BURST)
     inst_count = MAX_INST_BURST;
 #if 0
-  printf ("tv %d.%06d, usec %d, inst_count %d\n",
-	  sim->thread_vars->tv.tv_sec,
-	  sim->thread_vars->tv.tv_usec,
-	  usec,
-	  inst_count);
+  printf ("usec %" PRIu64 ", inst_count %d\n", used, inst_count);
 #endif
 
   /* execute the microinstructions */
@@ -1024,11 +1005,8 @@ void sim_run (sim_t *sim)
 	break;
     }
 
-  // Remember when we ran, and figure out when to run next.
-  memcpy (& sim->thread_vars->last_run_time, & now, sizeof (GTimeVal));
-
-  memcpy (& sim->thread_vars->next_run_time, & now, sizeof (GTimeVal));
-  g_time_val_add (& sim->thread_vars->next_run_time, JIFFY_USEC);
+  // Remember when we ran
+  sim->thread_vars->last_run_time_us = now_us;
 }
 
 
@@ -1040,8 +1018,8 @@ gpointer sim_thread_func (gpointer data)
   while (! sim->quit_flag)
     {
       if ((! sim->io_pause_flag) && sim->run_flag)
-	msg = g_async_queue_timed_pop (sim->thread_vars->cmd_q,
-				       & sim->thread_vars->next_run_time);
+	msg = g_async_queue_timeout_pop (sim->thread_vars->cmd_q,
+					 JIFFY_USEC);
       else
 	msg = g_async_queue_pop (sim->thread_vars->cmd_q);
 
@@ -1125,6 +1103,8 @@ sim_t *sim_init  (char *ncd_fn,
 {
   sim_t *sim;
   arch_info_t *arch_info;
+
+  elapsed_time_us_init();
 
   sim = alloc (sizeof (sim_t));
   sim->thread_vars = alloc (sizeof (sim_thread_vars_t));

@@ -1,7 +1,10 @@
+// Copyright 2022 Eric Smith <spacewar@gmail.com>
+
 #ifndef ENDIAN_H
 #define ENDIAN_H
 
-// Copyright 2022 Eric Smith <spacewar@gmail.com>
+#include <stdbool.h>
+#include <stdint.h>
 
 bool host_is_big_endian(void);
 

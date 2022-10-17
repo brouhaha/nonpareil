@@ -1,6 +1,5 @@
 /*
-$Id$
-Copyright 1995, 2004, 2005, 2006, 2008 Eric Smith <eric@brouhaha.com>
+Copyright 1995, 2004, 2005, 2006, 2008, 2022 Eric Smith <spacewar@gmail.h>
 
 Nonpareil is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License version 2 as
@@ -19,6 +18,12 @@ Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
 MA 02111, USA.
 */
 
+#ifndef UTIL_H
+#define UTIL_H
+
+#include <stdbool.h>
+#include <stdint.h>
+#include <stdio.h>
 
 #define UNUSED __attribute__ ((unused))
 
@@ -158,3 +163,4 @@ void hex_dump (FILE *f, void *p, size_t count);
 
 int buf_printf (char **buf, int *len, const char *fmt, ...);
 
+#endif // UTIL_H
