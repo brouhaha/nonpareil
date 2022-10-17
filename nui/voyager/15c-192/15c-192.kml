@@ -1,0 +1,158 @@
+# Copyright 2004, 2005, 2006, 2008, 2022 Eric Smith <spacewar@gmail.com>
+
+# Nonpareil is free software; you can redistribute it and/or modify it
+# under the terms of the GNU General Public License version 2 as
+# published by the Free Software Foundation.  Note that I am not
+# granting permission to redistribute or modify Nonpareil under the
+# terms of any later version of the General Public License.
+
+# Nonpareil is distributed in the hope that they will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# General Public License for more details.
+
+# You should have received a copy of the GNU General Public License
+# along with this program (in the file "COPYING"); if not, write to
+# the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+# Boston, MA 02111, USA.
+
+global
+	title "Extended Memory 15C Advanced Scientific Calculator"
+	author "Eric Smith <eric@brouhaha.com>"
+	model "15c-192"
+	image "voyager-background.png"
+	image credit "Maciej Bartosiak"
+	overlay default image "15c-overlay.png"
+	color 0 137 0 6	  # background color, used when transparency is off
+	transparency 128
+end
+
+display
+	offset 73 29
+	size 305 55
+
+	color 0  165 175 145  # background
+	color 1  165 175 145  # unlit segments
+	color 2    0   0   0  # lit segments
+
+	annunciators
+		image "voyager-annunciators.png"
+
+		annunciator  1  size  5  7 offset  13 42  end  # * (battery low)
+		annunciator  2  size 23  7 offset  45 42  end  # USER
+		annunciator  3  size  5  7 offset  88 42  end  # f
+		annunciator  4  size  6  8 offset 105 44  end  # g
+		annunciator  5  size 27  7 offset 124 42  end  # BEGIN
+		annunciator  6  size  5  7 offset 181 42  end  # G
+		annunciator  7  size 17  7 offset 187 42  end  # RAD
+		annunciator  8  size 20  7 offset 211 42  end  # D.MY
+		annunciator  9  size  5  7 offset 244 42  end  # C
+		annunciator 10  size 23  7 offset 271 42  end  # PRGM
+	end
+
+	digits 11
+		size 27 31
+		offset 5 4
+	end
+
+	segments
+		image "voyager-segments.png" offset 2 2 size 157 182
+
+		segment 'a' color 255   0   0  end       # red
+		segment 'b' color   0 255   0  end       # green
+		segment 'c' color   0   0 255  end       # blue
+		segment 'd' color 255 255   0  end       # yellow
+		segment 'e' color 255   0 255  end       # purple
+		segment 'f' color   0 255 255  end       # bluegreen
+		segment 'g' color 255 128   0  end       # orange
+		segment 'h' color 255   0 128  end       # pink
+		segment 'i' color 128   0   0  end       # dark red
+	end # segments
+
+end # display
+
+button 11  image "key_11.png"  offset  16 130  end
+button 12  image "key_12.png"  offset  70 130  end
+button 13  image "key_13.png"  offset 124 130  end
+button 14  image "key_14.png"  offset 178 130  end
+button 15  image "key_15.png"  offset 232 130  end
+button 16  image "key_16.png"  offset 286 130  end
+button 17  image "key_17.png"  offset 340 130  end
+button 18  image "key_18.png"  offset 394 130  end
+button 19  image "key_19.png"  offset 448 130  end
+button 10  image "key_10.png"  offset 502 130  end
+
+button 21  image "key_21.png"  offset  16 186  end
+button 22  image "key_22.png"  offset  70 186  end
+button 23  image "key_23.png"  offset 124 186  end
+button 24  image "key_24.png"  offset 178 186  end
+button 25  image "key_25.png"  offset 232 186  end
+button 26  image "key_26.png"  offset 286 186  end
+button 27  image "key_27.png"  offset 340 186  end
+button 28  image "key_28.png"  offset 394 186  end
+button 29  image "key_29.png"  offset 448 186  end
+button 20  image "key_20.png"  offset 502 186  end
+
+button 31  image "key_31.png"  offset  16 242  end
+button 32  image "key_32.png"  offset  70 242  end
+button 33  image "key_33.png"  offset 124 242  end
+button 34  image "key_34.png"  offset 178 242  end
+button 35  image "key_35.png"  offset 232 242  end
+button 36  image "key_36.png"  offset 286 242  end
+button 37  image "key_37.png"  offset 340 242  end
+button 38  image "key_38.png"  offset 394 242  end
+button 39  image "key_39.png"  offset 448 242  end
+button 30  image "key_30.png"  offset 502 242  end
+
+button 41  image "key_41.png"  offset  16 298  end
+button 42  image "key_42.png"  offset  70 298  end
+button 43  image "key_43.png"  offset 124 298  end
+button 44  image "key_44.png"  offset 178 298  end
+button 45  image "key_45.png"  offset 232 298  end
+button 47  image "key_47.png"  offset 340 298  end
+button 48  image "key_48.png"  offset 394 298  end
+button 49  image "key_49.png"  offset 448 298  end
+button 40  image "key_40.png"  offset 502 298  end
+
+# main keyboard:
+scancode "0"            map 0 47 end  # 0
+scancode "1"            map 0 37 end  # 1
+scancode "2"            map 0 38 end  # 2
+scancode "3"            map 0 39 end  # 3
+scancode "4"            map 0 27 end  # 4
+scancode "5"            map 0 28 end  # 5
+scancode "6"            map 0 29 end  # 6
+scancode "7"            map 0 17 end  # 7
+scancode "8"            map 0 18 end  # 8
+scancode "9"            map 0 19 end  # 9
+scancode "a"            map 0 11 end  # a
+scancode "b"            map 0 12 end  # b
+scancode "c"            map 0 13 end  # c
+scancode "d"            map 0 14 end  # d
+scancode "e"            map 0 15 end  # e
+scancode "period"       map 0 48 end  # .
+scancode "plus"         map 0 40 end  # +
+scancode "minus"        map 0 30 end  # -
+scancode "asterisk"     map 0 20 end  # *
+scancode "slash"        map 0 10 end  # /
+scancode "BackSpace"    map 0 35 end  # backspace 
+scancode "Return"       map 0 36 end  # ENTER
+
+# keypad:
+scancode "KP_0"         map 0 47 end  # 0
+scancode "KP_1"         map 0 37 end  # 1
+scancode "KP_2"         map 0 38 end  # 2
+scancode "KP_3"         map 0 39 end  # 3
+scancode "KP_4"         map 0 27 end  # 4
+scancode "KP_5"         map 0 28 end  # 5
+scancode "KP_6"         map 0 29 end  # 6
+scancode "KP_7"         map 0 17 end  # 7
+scancode "KP_8"         map 0 18 end  # 8
+scancode "KP_9"         map 0 19 end  # 9
+scancode "KP_Decimal"   map 0 48 end  # .
+scancode "KP_Separator" map 0 48 end  # ,
+scancode "KP_Add"       map 0 40 end  # +
+scancode "KP_Subtract"  map 0 30 end  # -
+scancode "KP_Multiply"  map 0 20 end  # *
+scancode "KP_Divide"    map 0 10 end  # /
+scancode "KP_Enter"     map 0 36 end  # ENTER
