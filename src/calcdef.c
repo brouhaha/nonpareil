@@ -39,6 +39,8 @@ MA 02111, USA.
 #include "proc_int.h"
 #include "digit_ops.h"
 #include "proc_woodstock.h"
+#include "pick.h"
+#include "crc.h"
 
 
 static xmlSAXHandler sax_handler;
@@ -102,11 +104,23 @@ typedef struct calcdef_switch_t
 } calcdef_switch_t;
 
 
-typedef struct calcdef_key_t
+typedef struct
 {
   char *chip_id;
-  struct chip_t *chip;
+  char *name;
+  int number;
+} calcdef_flag_info_t;
+
+
+typedef struct calcdef_key_t
+{
   hw_keycode_t hw_keycode;
+
+  struct chip_t *chip;
+  const calcdef_flag_info_t *ret_line;
+
+  struct chip_t *extra_chip;
+  const calcdef_flag_info_t *extra_ret_line;
 } calcdef_key_t;
 
 
@@ -141,6 +155,59 @@ struct calcdef_t
   bool key_scanner_as_flags;
   calcdef_lcd_map_t *lcd_map;
 };
+
+
+#define MAX_FLAG_NAME_LEN 20
+
+static const calcdef_flag_info_t flag_info[] =
+{
+  { "act",  "f1",         EXT_FLAG_ACT_F1 },
+  { "act",  "f1-cond-s0", EXT_FLAG_ACT_F1_COND_S0 },
+
+  { "act",  "f2",         EXT_FLAG_ACT_F2 },
+  { "act",  "f2-cond-s0", EXT_FLAG_ACT_F2_COND_S0 },
+
+  { "act",  "ka",         EXT_FLAG_ACT_KA },
+  { "act",  "kb",         EXT_FLAG_ACT_KB },
+  { "act",  "kc",         EXT_FLAG_ACT_KC },
+  { "act",  "kd",         EXT_FLAG_ACT_KD },
+  { "act",  "ke",         EXT_FLAG_ACT_KE },
+
+  { "act",  "ka-cond-s0", EXT_FLAG_ACT_KA_COND_S0 },
+  { "act",  "kb-cond-s0", EXT_FLAG_ACT_KB_COND_S0 },
+  { "act",  "kc-cond-s0", EXT_FLAG_ACT_KC_COND_S0 },
+  { "act",  "kd-cond-s0", EXT_FLAG_ACT_KD_COND_S0 },
+  { "act",  "ke-cond-s0", EXT_FLAG_ACT_KE_COND_S0 },
+
+  { "pick", "pka",        PICK_KEY_RET_LINE_KA },
+  { "pick", "pkc",        PICK_KEY_RET_LINE_KC },
+  { "pick", "pkd",        PICK_KEY_RET_LINE_KD },
+  { "pick", "pke",        PICK_KEY_RET_LINE_KE },
+
+  { "crc",  "cf1",        CRC_EXT_FLAG_F1 },
+  { "crc",  "cf2",        CRC_EXT_FLAG_F2 },
+  { "crc",  "cf3",        CRC_EXT_FLAG_F3 },
+  { "crc",  "cf4",        CRC_EXT_FLAG_F4 },
+
+  { NULL,  NULL,          0 },
+};
+
+static const calcdef_flag_info_t *get_flag_by_name(const char *chip_id, const char *s)
+{
+  for (const calcdef_flag_info_t *fi = flag_info; fi->name; fi++)
+  {
+    if (chip_id && (strcasecmp(chip_id, fi->chip_id) != 0))
+    {
+      continue;
+    }
+    if (strcasecmp(s, fi->name) == 0)
+    {
+      return fi;
+    }
+  }
+
+  return NULL;
+}
 
 
 static bank_mask_t parse_bank_mask (const char *s)
@@ -366,7 +433,7 @@ static void parse_keyboard (calcdef_t *calcdef UNUSED,
 			    const xmlChar **attrs UNUSED)
 {
   if (calcdef->keyboard_map)
-    fatal (3, "only one keyboard element allowed per nui file\n");
+    fatal (3, "only one keyboard element allowed per ncd file\n");
 
   calcdef->keyboard_map = alloc (sizeof (calcdef_key_t *) *
 				 (2 * MAX_KEYCODE + 1));
@@ -377,22 +444,67 @@ static void parse_keyboard (calcdef_t *calcdef UNUSED,
 }
 
 
+static bool parse_key_attr_ret_line(const char *attr_val,
+				    const calcdef_flag_info_t **ret_line,
+				    const calcdef_flag_info_t **extra_ret_line)
+{
+  // split flag names at commas (can't use strtok because str is const)
+  char name_buf[MAX_FLAG_NAME_LEN+1];  // include a final char for trailing NULL
+
+  *ret_line = NULL;
+  *extra_ret_line = NULL;
+
+  const char *begin = attr_val;
+  while (true)
+  {
+    const char *end = strchr(begin, ',');
+    size_t len;
+    if (end)
+      len = end - begin;
+    else
+      len = strlen(begin);
+    if (len > MAX_FLAG_NAME_LEN)
+      return false;
+    memcpy(name_buf, begin, len);
+    name_buf[len] = 0;
+    const calcdef_flag_info_t *flag_info = get_flag_by_name(NULL, name_buf);
+    if (! flag_info)
+      return false;
+    if (! *ret_line)
+    {
+      *ret_line = flag_info;
+    }
+    else if (! *extra_ret_line)
+    {
+      *extra_ret_line = flag_info;
+    }
+    else
+    {
+      fatal (3, "key element maximum of two ret_lines are supported\n");
+    }
+    if (! end)
+      return true;
+    begin += len + 1;  // skip flag name and comma
+  }
+}
+
+
 static void parse_key (calcdef_t *calcdef UNUSED,
 		       const xmlChar **attrs UNUSED)
 {
-  int i;
-  long user_keycode;
-  unsigned long hw_keycode;
   bool got_user_keycode = false;
-  bool got_hw_keycode = false;
-  char *chip_id = NULL;
-  char *endptr = NULL;
-  calcdef_key_t *key;
+  long user_keycode;
 
-  for (i = 0; attrs && attrs [i]; i += 2)
+  bool got_hw_keycode = false;
+  unsigned long hw_keycode;
+
+  calcdef_key_t *key = alloc (sizeof (calcdef_key_t));
+
+  for (int i = 0; attrs && attrs [i]; i += 2)
     {
       if (strcmp ((char *) attrs [i], "user_keycode") == 0)
 	{
+	  char *endptr;
 	  user_keycode = strtol ((char *) attrs [i + 1], & endptr, 0);
 	  if ((user_keycode < -MAX_KEYCODE) || (user_keycode > MAX_KEYCODE))
 	    fatal (3, "user keycode %d out of range\n");
@@ -400,12 +512,22 @@ static void parse_key (calcdef_t *calcdef UNUSED,
 	    fatal (3, "invalid character '%c' in user_keycode\n", *endptr);
 	  got_user_keycode = true;
 	}
-      else if (strcmp ((char *) attrs [i], "chip_id") == 0)
+      else if (strcmp ((char *) attrs [i], "scan_line") == 0)
 	{
-	  chip_id = newstr ((char *) attrs [i + 1]);
+	  // XXX ignore for now
+	}
+      else if (strcmp ((char *) attrs [i], "ret_line") == 0)
+	{
+	  if (! parse_key_attr_ret_line((const char *) attrs[i+1],
+					& key->ret_line,
+					& key->extra_ret_line))
+	  {
+	    fatal(3, "key has invalid ret_line attribute \"%s\"\n", attrs[i+1]);
+	  }
 	}
       else if (strcmp ((char *) attrs [i], "hw_keycode") == 0)
 	{
+	  char *endptr;
 	  hw_keycode = strtoul ((char *) attrs [i + 1], & endptr, 0);
 	  if (endptr && (*endptr != '\0'))
 	    fatal (3, "invalid character '%c' in hw_keycode\n", *endptr);
@@ -423,53 +545,9 @@ static void parse_key (calcdef_t *calcdef UNUSED,
   if (calcdef->keyboard_map [user_keycode])
     warning ("duplicate key element\n");
 
-  key = alloc (sizeof (calcdef_key_t));
-
   key->hw_keycode = (hw_keycode_t) hw_keycode;
-  key->chip_id = chip_id;
 
   calcdef->keyboard_map [user_keycode] = key;
-}
-
-
-typedef struct {
-  char *chip_id;
-  char *name;
-  int value;
-} flag_info_t;
-
-static const flag_info_t flag_info[] =
-{
-  { "act", "f1",         EXT_FLAG_ACT_F1 },
-  { "act", "f1-cond-s0", EXT_FLAG_ACT_F1_COND_S0 },
-  { "act", "f2",         EXT_FLAG_ACT_F2 },
-  { "act", "f2-cond-s0", EXT_FLAG_ACT_F2_COND_S0 },
-  { "act", "ka",         EXT_FLAG_ACT_KA },
-  { "act", "kb",         EXT_FLAG_ACT_KB },
-  { "act", "kc",         EXT_FLAG_ACT_KC },
-  { "act", "kd",         EXT_FLAG_ACT_KD },
-  { "act", "ke",         EXT_FLAG_ACT_KE },
-  { NULL,  NULL,         0 },
-};
-
-static int flag_name_to_number(const char *chip_id, const char *s)
-{
-  // numeric values always accepted
-  if (isdigit(*s))
-    return atoi(s);
-  
-  if (chip_id)
-  {
-    for (const flag_info_t *fi = flag_info; fi->name; fi++)
-    {
-      if (strcasecmp(s, fi->name) == 0)
-      {
-	return fi->value;
-      }
-    }
-  }
-
-  return 0;
 }
 
 
@@ -492,9 +570,14 @@ static void parse_flag (calcdef_t *calcdef UNUSED,
 	}
       else if (strcmp ((char *) attrs [i], "number") == 0)
 	{
-	  flag->number = flag_name_to_number(flag->chip_id, (char *) attrs [i + 1]);
-	  if (flag->number)
-	    got_number = true;
+	  const calcdef_flag_info_t *flag_info = get_flag_by_name(flag->chip_id,
+								  (const char *) attrs[i+1]);
+	  if (! flag_info)
+	    {
+	      fatal(3, "unrecognized flag %s\n", (const char *) attrs [i + 1]);
+	    }
+	  flag->number = flag_info->number;
+	  got_number = true;
 	}
       else if (strcmp ((char *) attrs [i], "value") == 0)
 	{
@@ -506,13 +589,11 @@ static void parse_flag (calcdef_t *calcdef UNUSED,
     }
   if (! got_number)
     {
-      warning ("flag element doesn't have number attribute\n");
-      return;
+      fatal (3, "flag element doesn't have number attribute\n");
     }
   if (! got_value)
     {
-      warning ("flag element doesn't have value attribute\n");
-      return;
+      fatal (3, "flag element doesn't have value attribute\n");
     }
 
   calcdef->sw->position->flag = flag;
@@ -795,7 +876,11 @@ static void parse_char (calcdef_t *calcdef,
 	  id = parse_id ((char *) attrs [i + 1]);
 	  got_id = true;
 	}
-      else if (strcmp ((char *) attrs [i], "print") == 0)
+      else if (strcmp ((char *) attrs [i], "text") == 0)
+	{
+	  // ignored for now
+	}
+      else if (strcmp ((char *) attrs [i], "end") == 0)
 	{
 	  // ignored for now
 	}
@@ -1070,7 +1155,9 @@ static struct calcdef_chip_t *find_chip_by_id (calcdef_t *calcdef,
   for (chip = calcdef->chip; chip; chip = chip->next)
     {
       if (chip->id && strcmp (chip->id, chip_id) == 0)
+      {
 	return chip;
+      }
     }
   return NULL;
 }
@@ -1220,8 +1307,11 @@ static calcdef_switch_position_t *calcdef_get_switch_position (calcdef_t *calcde
 
 bool calcdef_get_key (calcdef_t *calcdef,
 		      int user_keycode,
+		      hw_keycode_t *hw_keycode,
 		      struct chip_t **chip,
-		      hw_keycode_t *hw_keycode)
+		      int *ret_line,
+		      struct chip_t **extra_chip,
+		      int *extra_ret_line)
 {
   calcdef_key_t *key;
   calcdef_chip_t *calcdef_chip;
@@ -1233,15 +1323,31 @@ bool calcdef_get_key (calcdef_t *calcdef,
   if (! key)
     return false;
 
-  if ((key->chip_id) && (! key->chip))
-    {
-      calcdef_chip = find_chip_by_id (calcdef, key->chip_id);
-      if (calcdef_chip)
-	key->chip = calcdef_chip->chip;
-    }
+  if (key->ret_line && (! key->chip))
+  {
+    calcdef_chip_t *calcdef_chip = find_chip_by_id(calcdef, key->ret_line->chip_id);
+    key->chip = calcdef_chip ? calcdef_chip->chip : NULL;
+  }
 
-  *chip = key->chip;
+  if (key->extra_ret_line && (! key->extra_chip))
+  {
+    calcdef_chip_t *calcdef_chip = find_chip_by_id(calcdef, key->extra_ret_line->chip_id);
+    key->extra_chip = calcdef_chip ? calcdef_chip->chip : NULL;
+  }
+
   *hw_keycode = key->hw_keycode;
+
+  if (key->ret_line)
+  {
+    *chip = key->chip;
+    *ret_line = key->ret_line->number;
+  }
+
+  if (key->extra_ret_line)
+  {
+    *extra_chip = key->extra_chip;
+    *extra_ret_line = key->extra_ret_line->number;
+  }
   return true;
 }
 

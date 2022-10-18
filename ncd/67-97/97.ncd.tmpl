@@ -9,7 +9,7 @@ Copyright 2007, 2008, 2022 Eric Smith <spacewar@gmail.com>
          arch="Woodstock"
          platform="Topcat"
          model="97"
-         copyright="Copyright 2007, 2008 Eric Smith &lt;eric@brouhaha.com&gt;"
+         copyright="Copyright 2007, 2008, 2022 Eric Smith &lt;spacewar@gmail.com&gt;"
          license="GPL-3.0">
 
   <chip id="act" type="woodstock_act">
@@ -852,94 +852,94 @@ Copyright 2007, 2008, 2022 Eric Smith <spacewar@gmail.com>
     <switch number="1"> <!-- top right -->
       <!-- printer mode --> 
       <switch_pos position="0">  <!-- MAN -->
-        <flag chip_id="crc" number="2" value="1"/>
-        <flag chip_id="crc" number="3" value="0"/>
+        <flag chip_id="crc" number="cf2" value="1"/>
+        <flag chip_id="crc" number="cf3" value="0"/>
       </switch_pos>
       <switch_pos position="1">  <!-- TRACE -->
-        <flag chip_id="crc" number="2" value="0"/>
-        <flag chip_id="crc" number="3" value="0"/>
+        <flag chip_id="crc" number="cf2" value="0"/>
+        <flag chip_id="crc" number="cf3" value="0"/>
       </switch_pos>
       <switch_pos position="2">  <!-- NORM -->
-        <flag chip_id="crc" number="2" value="0"/>
-        <flag chip_id="crc" number="3" value="1"/>
+        <flag chip_id="crc" number="cf2" value="0"/>
+        <flag chip_id="crc" number="cf3" value="1"/>
       </switch_pos>
     </switch>
 
     <switch number="2"> <!-- bottom right -->
       <switch_pos position="0">  <!-- PRGM -->
-        <flag chip_id="crc" number="1" value="1"/>
+        <flag chip_id="crc" number="cf1" value="1"/>
       </switch_pos>
       <switch_pos position="1">  <!-- RUN -->
-        <flag chip_id="crc" number="1" value="0"/>
+        <flag chip_id="crc" number="cf1" value="0"/>
       </switch_pos>
     </switch>
 
-    <key user_keycode="11"  chip_id="pick" hw_keycode="0xe4"/> <!-- A -->
-    <key user_keycode="12"  chip_id="pick" hw_keycode="0xd4"/> <!-- B -->
-    <key user_keycode="13"  chip_id="pick" hw_keycode="0xc4"/> <!-- C -->
-    <key user_keycode="14"  chip_id="pick" hw_keycode="0xb4"/> <!-- D -->
-    <key user_keycode="15"  chip_id="pick" hw_keycode="0xa4"/> <!-- E -->
-    <key user_keycode="16"  chip_id="pick" hw_keycode="0x94"/> <!-- f -->
+    <key user_keycode="11"  scan_line="12" ret_line="pka"     hw_keycode="0xe4"/> <!-- A -->
+    <key user_keycode="12"  scan_line="9"  ret_line="pka"     hw_keycode="0xd4"/> <!-- B -->
+    <key user_keycode="13"  scan_line="13" ret_line="pka"     hw_keycode="0xc4"/> <!-- C -->
+    <key user_keycode="14"  scan_line="10" ret_line="pka"     hw_keycode="0xb4"/> <!-- D -->
+    <key user_keycode="15"  scan_line="4"  ret_line="pka"     hw_keycode="0xa4"/> <!-- E -->
+    <key user_keycode="16"  scan_line="6"  ret_line="pka"     hw_keycode="0x94"/> <!-- f -->
 						           
-    <key user_keycode="21"  chip_id="pick" hw_keycode="0xb8"/> <!-- LBL -->
-    <key user_keycode="22"  chip_id="pick" hw_keycode="0xd8"/> <!-- GTO -->
-    <key user_keycode="23"  chip_id="pick" hw_keycode="0xc8"/> <!-- GSB -->
-    <key user_keycode="24"  chip_id="pick" hw_keycode="0xe8"/> <!-- RTN -->
-    <key user_keycode="25"  chip_id="pick" hw_keycode="0x60"/> <!-- BST -->
-    <key user_keycode="26"  chip_id="pick" hw_keycode="0x80"/> <!-- SST -->
+    <key user_keycode="21"  scan_line="10" ret_line="pkd"     hw_keycode="0xb8"/> <!-- LBL -->
+    <key user_keycode="22"  scan_line="9"  ret_line="pkd"     hw_keycode="0xd8"/> <!-- GTO -->
+    <key user_keycode="23"  scan_line="13" ret_line="pkd"     hw_keycode="0xc8"/> <!-- GSB -->
+    <key user_keycode="24"  scan_line="12" ret_line="pkd"     hw_keycode="0xe8"/> <!-- RTN -->
+    <key user_keycode="25"  scan_line="8"  ret_line="pke,cf4" hw_keycode="0x60"/> <!-- BST -->
+    <key user_keycode="26"  scan_line="14" ret_line="pke,cf4" hw_keycode="0x80"/> <!-- SST -->
 						           
-    <key user_keycode="31"  chip_id="pick" hw_keycode="0xe1"/> <!-- y^x -->
-    <key user_keycode="32"  chip_id="pick" hw_keycode="0xd1"/> <!-- LN -->
-    <key user_keycode="33"  chip_id="pick" hw_keycode="0xc1"/> <!-- e^x -->
-    <key user_keycode="34"  chip_id="pick" hw_keycode="0xb1"/> <!-- ->P -->
-    <key user_keycode="35"  chip_id="pick" hw_keycode="0x98"/> <!-- STO -->
-    <key user_keycode="36"  chip_id="pick" hw_keycode="0x74"/> <!-- RCL -->
+    <key user_keycode="31"  scan_line="12" ret_line="pkc"     hw_keycode="0xe1"/> <!-- y^x -->
+    <key user_keycode="32"  scan_line="9"  ret_line="pkc"     hw_keycode="0xd1"/> <!-- LN -->
+    <key user_keycode="33"  scan_line="13" ret_line="pkc"     hw_keycode="0xc1"/> <!-- e^x -->
+    <key user_keycode="34"  scan_line="10" ret_line="pkc"     hw_keycode="0xb1"/> <!-- ->P -->
+    <key user_keycode="35"  scan_line="6"  ret_line="pkd"     hw_keycode="0x98"/> <!-- STO -->
+    <key user_keycode="36"  scan_line="11" ret_line="pka"     hw_keycode="0x74"/> <!-- RCL -->
 						           
-    <key user_keycode="41"  chip_id="pick" hw_keycode="0xa1"/> <!-- SIN -->
-    <key user_keycode="42"  chip_id="pick" hw_keycode="0x91"/> <!-- COS -->
-    <key user_keycode="43"  chip_id="pick" hw_keycode="0x81"/> <!-- TAN -->
-    <key user_keycode="44"  chip_id="pick" hw_keycode="0x71"/> <!-- ->R -->
-    <key user_keycode="45"  chip_id="pick" hw_keycode="0x88"/> <!-- (i) -->
-    <key user_keycode="46"  chip_id="pick" hw_keycode="0xa8"/> <!-- I -->
+    <key user_keycode="41"  scan_line="4"  ret_line="pkc"     hw_keycode="0xa1"/> <!-- SIN -->
+    <key user_keycode="42"  scan_line="6"  ret_line="pkc"     hw_keycode="0x91"/> <!-- COS -->
+    <key user_keycode="43"  scan_line="14" ret_line="pkc"     hw_keycode="0x81"/> <!-- TAN -->
+    <key user_keycode="44"  scan_line="11" ret_line="pkc"     hw_keycode="0x71"/> <!-- ->R -->
+    <key user_keycode="45"  scan_line="14" ret_line="pkd"     hw_keycode="0x88"/> <!-- (i) -->
+    <key user_keycode="46"  scan_line="4"  ret_line="pkd"     hw_keycode="0xa8"/> <!-- I -->
 						           
-    <key user_keycode="51"  chip_id="pick" hw_keycode="0xe0"/> <!-- R/S -->
-    <key user_keycode="52"  chip_id="pick" hw_keycode="0xd0"/> <!-- 1/x -->
-    <key user_keycode="53"  chip_id="pick" hw_keycode="0xc0"/> <!-- x^2 -->
-    <key user_keycode="54"  chip_id="pick" hw_keycode="0xb0"/> <!-- sqrt(x) -->
-    <key user_keycode="55"  chip_id="pick" hw_keycode="0xa0"/> <!-- % -->
-    <key user_keycode="56"  chip_id="pick" hw_keycode="0x90"/> <!-- Sigma+ -->
+    <key user_keycode="51"  scan_line="12" ret_line="pke,cf4" hw_keycode="0xe0"/> <!-- R/S -->
+    <key user_keycode="52"  scan_line="9"  ret_line="pke,cf4" hw_keycode="0xd0"/> <!-- 1/x -->
+    <key user_keycode="53"  scan_line="13" ret_line="pke,cf4" hw_keycode="0xc0"/> <!-- x^2 -->
+    <key user_keycode="54"  scan_line="10" ret_line="pke,cf4" hw_keycode="0xb0"/> <!-- sqrt(x) -->
+    <key user_keycode="55"  scan_line="4"  ret_line="pke,cf4" hw_keycode="0xa0"/> <!-- % -->
+    <key user_keycode="56"  scan_line="6"  ret_line="pke,cf4" hw_keycode="0x90"/> <!-- Sigma+ -->
 						           
-    <key user_keycode="-11" chip_id="pick" hw_keycode="0x28"/> <!-- FIX -->
-    <key user_keycode="-12" chip_id="pick" hw_keycode="0x78"/> <!-- SCI -->
-    <key user_keycode="-13" chip_id="pick" hw_keycode="0x38"/> <!-- ENG -->
-    <key user_keycode="-14" chip_id="pick" hw_keycode="0x18"/> <!-- PRINT x -->
+    <key user_keycode="-11" scan_line="2"  ret_line="pkd"     hw_keycode="0x28"/> <!-- FIX -->
+    <key user_keycode="-12" scan_line="11" ret_line="pkd"     hw_keycode="0x78"/> <!-- SCI -->
+    <key user_keycode="-13" scan_line="7"  ret_line="pkd"     hw_keycode="0x38"/> <!-- ENG -->
+    <key user_keycode="-14" scan_line="1"  ret_line="pkd"     hw_keycode="0x18"/> <!-- PRINT x -->
 						           
-    <key user_keycode="-21" chip_id="pick" hw_keycode="0x34"/> <!-- ENTER^ -->
-    <key user_keycode="-22" chip_id="pick" hw_keycode="0x24"/> <!-- CHS -->
-    <key user_keycode="-23" chip_id="pick" hw_keycode="0x14"/> <!-- EEX -->
-    <key user_keycode="-24" chip_id="pick" hw_keycode="0x20"/> <!-- divide -->
+    <key user_keycode="-21" scan_line="7"  ret_line="pka"     hw_keycode="0x34"/> <!-- ENTER^ -->
+    <key user_keycode="-22" scan_line="2"  ret_line="pka"     hw_keycode="0x24"/> <!-- CHS -->
+    <key user_keycode="-23" scan_line="1"  ret_line="pka"     hw_keycode="0x14"/> <!-- EEX -->
+    <key user_keycode="-24" scan_line="2"  ret_line="pke,cf4" hw_keycode="0x20"/> <!-- divide -->
 						           
-    <key user_keycode="-31" chip_id="pick" hw_keycode="0x30"/> <!-- Rdn -->
-    <key user_keycode="-32" chip_id="pick" hw_keycode="0x68"/> <!-- 7 -->
-    <key user_keycode="-33" chip_id="pick" hw_keycode="0x58"/> <!-- 8 -->
-    <key user_keycode="-34" chip_id="pick" hw_keycode="0x48"/> <!-- 9 -->
-    <key user_keycode="-35" chip_id="pick" hw_keycode="0x11"/> <!-- multiply -->
+    <key user_keycode="-31" scan_line="7"  ret_line="pke,cf4" hw_keycode="0x30"/> <!-- Rdn -->
+    <key user_keycode="-32" scan_line="8"  ret_line="pkd"     hw_keycode="0x68"/> <!-- 7 -->
+    <key user_keycode="-33" scan_line="3"  ret_line="pkd"     hw_keycode="0x58"/> <!-- 8 -->
+    <key user_keycode="-34" scan_line="5"  ret_line="pkd"     hw_keycode="0x48"/> <!-- 9 -->
+    <key user_keycode="-35" scan_line="1"  ret_line="pkc"     hw_keycode="0x11"/> <!-- multiply -->
 						           
-    <key user_keycode="-41" chip_id="pick" hw_keycode="0x40"/> <!-- x<>y -->
-    <key user_keycode="-42" chip_id="pick" hw_keycode="0x61"/> <!-- 4 -->
-    <key user_keycode="-43" chip_id="pick" hw_keycode="0x51"/> <!-- 5 -->
-    <key user_keycode="-44" chip_id="pick" hw_keycode="0x41"/> <!-- 6 -->
-    <key user_keycode="-45" chip_id="pick" hw_keycode="0x21"/> <!-- minus -->
+    <key user_keycode="-41" scan_line="5"  ret_line="pke,cf4" hw_keycode="0x40"/> <!-- x<>y -->
+    <key user_keycode="-42" scan_line="8"  ret_line="pkc"     hw_keycode="0x61"/> <!-- 4 -->
+    <key user_keycode="-43" scan_line="3"  ret_line="pkc"     hw_keycode="0x51"/> <!-- 5 -->
+    <key user_keycode="-44" scan_line="5"  ret_line="pkc"     hw_keycode="0x41"/> <!-- 6 -->
+    <key user_keycode="-45" scan_line="2"  ret_line="pkc"     hw_keycode="0x21"/> <!-- minus -->
 						           
-    <key user_keycode="-51" chip_id="pick" hw_keycode="0x10"/> <!-- CLx -->
-    <key user_keycode="-52" chip_id="pick" hw_keycode="0x64"/> <!-- 1 -->
-    <key user_keycode="-53" chip_id="pick" hw_keycode="0x54"/> <!-- 2 -->
-    <key user_keycode="-54" chip_id="pick" hw_keycode="0x44"/> <!-- 3 -->
-    <key user_keycode="-55" chip_id="pick" hw_keycode="0x31"/> <!-- add -->
+    <key user_keycode="-51" scan_line="1"  ret_line="pke,cf4" hw_keycode="0x10"/> <!-- CLx -->
+    <key user_keycode="-52" scan_line="8"  ret_line="pka"     hw_keycode="0x64"/> <!-- 1 -->
+    <key user_keycode="-53" scan_line="3"  ret_line="pka"     hw_keycode="0x54"/> <!-- 2 -->
+    <key user_keycode="-54" scan_line="6"  ret_line="pka"     hw_keycode="0x44"/> <!-- 3 -->
+    <key user_keycode="-55" scan_line="7"  ret_line="pkc"     hw_keycode="0x31"/> <!-- add -->
 						           
-    <key user_keycode="-61" chip_id="pick" hw_keycode="0x70"/> <!-- 0 -->
-    <key user_keycode="-62" chip_id="pick" hw_keycode="0x50"/> <!-- . -->
-    <key user_keycode="-63" chip_id="pick" hw_keycode="0x84"/> <!-- DSP -->
+    <key user_keycode="-61" scan_line="11" ret_line="pke,cf4" hw_keycode="0x70"/> <!-- 0 -->
+    <key user_keycode="-62" scan_line="3"  ret_line="pke,cf4" hw_keycode="0x50"/> <!-- . -->
+    <key user_keycode="-63" scan_line="14" ret_line="pka"     hw_keycode="0x84"/> <!-- DSP -->
 
   </keyboard>
 

@@ -70,7 +70,7 @@ bool elapsed_time_us_init()
     return true;
   }
 
-#if 1
+#if 0
   struct timespec clock_res;
 
   if (clock_getres(CLOCK_MONOTONIC, & clock_res) != 0)

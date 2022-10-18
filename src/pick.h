@@ -1,6 +1,5 @@
 /*
-$Id$
-Copyright 2007-2009 Eric Smith <eric@brouhaha.com>
+Copyright 2007-2009, 2022 Eric Smith <spacewar@gmail.com>
 
 Nonpareil is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License version 2 as
@@ -32,6 +31,15 @@ MA 02111, USA.
 
 #define PICK_PRINTER_CHARACTER_HEIGHT_PIXELS 7
 #define PICK_PRINTER_LINE_HEIGHT_PIXELS 12
+
+
+typedef enum
+{
+  PICK_KEY_RET_LINE_KA = 4,
+  PICK_KEY_RET_LINE_KC = 1,
+  PICK_KEY_RET_LINE_KD = 8,
+  PICK_KEY_RET_LINE_KE = 0,
+} pick_key_ret_line_t;
 
 
 chip_t *pick_install (sim_t           *sim,

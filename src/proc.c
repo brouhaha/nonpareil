@@ -1641,12 +1641,20 @@ bool sim_write_ram (sim_t   *sim,
 void sim_key (sim_t *sim, int keycode, bool state)
 {
   hw_keycode_t hw_keycode;
-  chip_t *chip;
+
+  chip_t *chip = NULL;
+  int ret_line;
+
+  chip_t *extra_chip = NULL;
+  int extra_ret_line;
 
   calcdef_get_key (sim->calcdef,
 		   keycode,
+		   & hw_keycode,
 		   & chip,
-		   & hw_keycode);
+		   & ret_line,
+		   & extra_chip,
+		   & extra_ret_line);
 
   sim_event (sim,
 	     chip ? chip : sim->first_chip,  // if NULL, first chip only
@@ -1654,6 +1662,16 @@ void sim_key (sim_t *sim, int keycode, bool state)
 	     hw_keycode,
 	     state,
 	     NULL);
+
+  if (extra_chip)
+    {
+      sim_event(sim,
+		extra_chip,
+		event_set_flag,
+		extra_ret_line,
+		state,
+		NULL);
+    }
 }
 
 

@@ -1,6 +1,5 @@
 /*
-$Id$
-Copyright 2008 Eric Smith <eric@brouhaha.com>
+Copyright 2008, 2022 Eric Smith <spacewar@gmail.com>
 
 Nonpareil is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License version 2 as
@@ -21,6 +20,13 @@ MA 02111, USA.
 
 
 // Public definitions, for both sim and GUI threads:
+
+
+#define CRC_EXT_FLAG_F1 1
+#define CRC_EXT_FLAG_F2 2
+#define CRC_EXT_FLAG_F3 3
+#define CRC_EXT_FLAG_F4 4
+
 
 #define CRC_WORD_SIZE 28  // size of a card word in bits
 

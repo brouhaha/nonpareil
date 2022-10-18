@@ -1,5 +1,5 @@
 /*
-Copyright 1995, 2003-2009 Eric Smith <spacewar@gmail.com>
+Copyright 1995, 2003-2009, 2022 Eric Smith <spacewar@gmail.com>
 
 Nonpareil is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License version 2 as
@@ -63,11 +63,19 @@ typedef enum
   EXT_FLAG_ACT_F2_COND_S0,  //   F2, but only while S0 is true
   EXT_FLAG_ACT_F2_PULSE,    //   F2, but pulsed for a single cycle
 
+  // EXT_FLAG_ACT_KA through _KE should be consecutive
   EXT_FLAG_ACT_KA,          // ACT pin 5
   EXT_FLAG_ACT_KB,          // ACT pin 6
   EXT_FLAG_ACT_KC,          // ACT pin 7
   EXT_FLAG_ACT_KD,          // ACT pin 8
   EXT_FLAG_ACT_KE,          // ACT pin 9
+
+  // EXT_FLAG_ACT_KA_COND_S0 through _KE_ should be consecutive
+  EXT_FLAG_ACT_KA_COND_S0,  //   KA, but only while S0 is true
+  EXT_FLAG_ACT_KB_COND_S0,  //   KB, but only while S0 is true
+  EXT_FLAG_ACT_KC_COND_S0,  //   KC, but only while S0 is true
+  EXT_FLAG_ACT_KD_COND_S0,  //   KD, but only while S0 is true
+  EXT_FLAG_ACT_KE_COND_S0,  //   KE, but only while S0 is true
 
   EXT_FLAG_SIZE             // not an actual flag
 } ext_flag_num_t;
@@ -118,6 +126,7 @@ typedef struct
 
   bool key_scanner_as_flags;   // true if keyboards scanner is used as flags instead of keyboard (19C, 91, 92, 95C)
   uint8_t key_scanner_inputs;
+  uint8_t key_scanner_cond_s0_inputs;
 
   bool key_flag;      /* true if a key is down */
   int key_buf;        /* most recently pressed key */
@@ -153,7 +162,8 @@ typedef struct
   bool (* ram_rd_fcn [256])(struct sim_t *sim);
   bool (* ram_wr_fcn [256])(struct sim_t *sim);
 
-  // Other chips:
+  // chips:
+  chip_t *act_chip;
   chip_t *crc_chip;
   chip_t *pick_chip;
 } act_reg_t;

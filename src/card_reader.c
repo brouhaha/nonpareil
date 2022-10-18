@@ -1,6 +1,5 @@
 /*
-$Id$
-Copyright 2008, 2010 Eric Smith <eric@brouhaha.com>
+Copyright 2008, 2010, 2022 Eric Smith <spacewar@gmail.com>
 
 Nonpareil is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License version 2 as
@@ -102,7 +101,7 @@ static void write_card (char *fn, crc_card_side_t *side)
 
   xml_end_element (writer);  // magcard
 
-  if (! xmlTextWriterEndDocument (writer) < 0)
+  if (! (xmlTextWriterEndDocument (writer) < 0))
     fatal (2, "can't end document\n");
 
   xmlFreeTextWriter (writer);

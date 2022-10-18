@@ -626,9 +626,24 @@ static void set_ext_flag (sim_t *sim, int ext_flag, bool value)
   case EXT_FLAG_ACT_KE:
     uint8_t mask = 1 << (ext_flag - EXT_FLAG_ACT_KA);
     if (value)
+    {
       act_reg->key_scanner_inputs |= mask;
+    }
     else
+    {
       act_reg->key_scanner_inputs &= ~mask;
+    }
+    break;
+  case EXT_FLAG_ACT_KA_COND_S0:
+  case EXT_FLAG_ACT_KB_COND_S0:
+  case EXT_FLAG_ACT_KC_COND_S0:
+  case EXT_FLAG_ACT_KD_COND_S0:
+  case EXT_FLAG_ACT_KE_COND_S0:
+    uint8_t mask2 = 1 << (ext_flag - EXT_FLAG_ACT_KA_COND_S0);
+    if (value)
+      act_reg->key_scanner_cond_s0_inputs |= mask2;
+    else
+      act_reg->key_scanner_cond_s0_inputs &= ~mask2;
     break;
   default:
     printf("ACT unknown ext flag %d\n", ext_flag);
@@ -1311,13 +1326,8 @@ static void key_scan_flag(sim_t *sim)
 {
   act_reg_t *act_reg = get_chip_data (sim->first_chip);
   
-  if (! act_reg->s[0])
-  {
-    act_reg->key_flag = false;
-    return;
-  }
-
   int keycode = 0;
+
   if (act_reg->key_scanner_inputs & 0x01) // KA
     keycode |= 0x04;
   if (act_reg->key_scanner_inputs & 0x02) // KB
@@ -1329,8 +1339,23 @@ static void key_scan_flag(sim_t *sim)
   if (act_reg->key_scanner_inputs & 0x10) // KE
     keycode |= 0x00;
 
+  if (act_reg->s[0])
+  {
+    if (act_reg->key_scanner_cond_s0_inputs & 0x01) // KA
+      keycode |= 0x04;
+    if (act_reg->key_scanner_cond_s0_inputs & 0x02) // KB
+      keycode |= 0x03;
+    if (act_reg->key_scanner_cond_s0_inputs & 0x04) // KC
+      keycode |= 0x02;
+    if (act_reg->key_scanner_cond_s0_inputs & 0x08) // KD
+      keycode |= 0x01;
+    if (act_reg->key_scanner_cond_s0_inputs & 0x10) // KE
+      keycode |= 0x00;
+  }
+
   act_reg->key_buf = keycode;
-  act_reg->key_flag = true;
+  act_reg->key_flag = ((act_reg->key_scanner_inputs != 0) ||
+		       (act_reg->s[0] && (act_reg->key_scanner_cond_s0_inputs != 0)));
 }
 
 
@@ -1851,12 +1876,8 @@ static void woodstock_reset (sim_t *sim)
   for (i = 0; i < SSIZE; i++)
     act_reg->s [i] = 0;
 
-#if 0
-  // resetting the CPU doesn't clear the external flags,
-  // since they're external!
-  for (i = 0; i < EXT_FLAG_SIZE; i++)
-    act_reg->ext_flag [i] = 0;
-#endif
+  if (sim->platform == PLATFORM_WOODSTOCK)
+    act_reg->ext_flag [EXT_FLAG_ACT_F1] = 0;  // force battery ok
 
   act_reg->p = 0;
   memset (act_reg->p_change, 0, sizeof (act_reg->p_change));
@@ -1867,9 +1888,6 @@ static void woodstock_reset (sim_t *sim)
 
   act_reg->key_buf = -1;  // no key has been pressed
   act_reg->key_flag = 0;
-
-  if (sim->platform == PLATFORM_WOODSTOCK)  // but not PLATFORM_TOPCAT
-    act_reg->ext_flag [EXT_FLAG_ACT_F1] = 1;  // force battery ok
 }
 
 
@@ -1915,6 +1933,7 @@ static void display_setup (sim_t *sim)
   switch (sim->platform)
     {
     case PLATFORM_WOODSTOCK:
+    case PLATFORM_HAWKEYE:
     case PLATFORM_TOPCAT:
       sim->display_char_gen = calcdef_get_char_gen (sim->calcdef,
 						    "rom_0_anode_driver");
@@ -1954,10 +1973,10 @@ static void woodstock_new_processor (sim_t *sim)
 
   act_reg->arch_variant = calcdef_get_arch_variant(sim->calcdef);
 
-  install_chip (sim,
-		NULL,  // module
-		& woodstock_cpu_chip_detail,
-		act_reg);
+  act_reg->act_chip = install_chip (sim,
+				    NULL,  // module
+				    & woodstock_cpu_chip_detail,
+				    act_reg);
 
   act_reg->key_scanner_as_flags = calcdef_get_key_scanner_as_flags(sim->calcdef);
 
@@ -2047,3 +2066,14 @@ processor_dispatch_t woodstock_processor =
     .disassemble         = woodstock_disassemble,
     .print_state         = woodstock_print_state
   };
+
+
+chip_t *woodstock_act_install (sim_t           *sim,
+			       plugin_module_t *module,
+			       chip_type_t     type  UNUSED,
+			       int32_t         index UNUSED,
+			       int32_t         flags UNUSED)
+{
+  act_reg_t *act_reg = get_chip_data (sim->first_chip);
+  return act_reg->act_chip;
+}

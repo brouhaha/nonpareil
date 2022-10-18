@@ -1,6 +1,5 @@
 /*
-$Id$
-Copyright 2004, 2005, 2006 Eric L. Smith <eric@brouhaha.com>
+Copyright 2004, 2005, 2006, 2022 Eric Smith <spacewar@gmail.com>
 
 Nonpareil is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License version 2 as
@@ -25,38 +24,19 @@ MA 02111, USA.
 
 
 char *platform_name [PLATFORM_MAX] =
-  {
-    [PLATFORM_UNKNOWN]    = "unknown",
-    [PLATFORM_CLASSIC]    = "classic",
-    [PLATFORM_CLASSIC_PR] = "classic_pr",
-    [PLATFORM_WOODSTOCK]  = "woodstock",
-    [PLATFORM_TOPCAT]     = "topcat",
-    [PLATFORM_KISS]       = "kiss",
-    [PLATFORM_CRICKET]    = "cricket",
-    [PLATFORM_SPICE]      = "spice",
-    [PLATFORM_COCONUT]    = "coconut",
-    [PLATFORM_VOYAGER]    = "voyager",
-    [PLATFORM_CAPRICORN]  = "capricorn",
-    [PLATFORM_KANGAROO]   = "kangaroo",
-    [PLATFORM_TITAN]      = "titan",
-    [PLATFORM_INTEGRAL]   = "titan",
-    [PLATFORM_CLAMSHELL]  = "clamshell",
-    [PLATFORM_CLAMSHELL2] = "clamshell2",
-    [PLATFORM_LEWIS]      = "lewis",
-    [PLATFORM_SACAJAWEA]  = "sacajawea",
-    [PLATFORM_BERT]       = "bert",
-    [PLATFORM_CLARKE]     = "clarke",
-    [PLATFORM_APPLE]      = "apple",
-
-    [PLATFORM_T_DATAMATH]     = "t_datamath",
-    [PLATFORM_T_2C12D]        = "t_2c12d",
-    [PLATFORM_T_CLASSIC]      = "t_classic",
-    [PLATFORM_T_CARDREADER]   = "t_cardreader",
-    [PLATFORM_T_MAJESTIC]     = "t_majestic",
-    [PLATFORM_T_MAJESTIC_2]   = "t_majestic_2",
-    [PLATFORM_T_CARDREADER_2] = "t_cardreader_2",
-    [PLATFORM_T_BIGDESK]      = "t_bigdesk"
-  };
+{
+  [PLATFORM_UNKNOWN]    = "unknown",
+  [PLATFORM_CLASSIC]    = "classic",
+  [PLATFORM_CLASSIC_PR] = "classic_pr",
+  [PLATFORM_WOODSTOCK]  = "woodstock",
+  [PLATFORM_HAWKEYE]    = "hawkeye",
+  [PLATFORM_TOPCAT]     = "topcat",
+  [PLATFORM_KISS]       = "kiss",
+  [PLATFORM_CRICKET]    = "cricket",
+  [PLATFORM_SPICE]      = "spice",
+  [PLATFORM_COCONUT]    = "coconut",
+  [PLATFORM_VOYAGER]    = "voyager",
+};
 
 int find_platform_by_name (char *s)
 {

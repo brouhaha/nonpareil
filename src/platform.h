@@ -1,6 +1,5 @@
 /*
-$Id$
-Copyright 2004, 2005, 2006 Eric L. Smith <eric@brouhaha.com>
+Copyright 2004, 2005, 2006, 2022 Eric Smith <spacewar@gmail.com>
 
 Nonpareil is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License version 2 as
@@ -22,38 +21,33 @@ MA 02111, USA.
 
 /* hardware platforms */
 
-#define PLATFORM_UNKNOWN     0
-#define PLATFORM_CLASSIC     1  // 35 45 55 65 70 80
-#define PLATFORM_CLASSIC_PR  2  // 46 81 9805
-#define PLATFORM_WOODSTOCK   3  // 21 22 25 25C 27 29C 67
-#define PLATFORM_TOPCAT      4  // 91 92 95C 97 97S 19C
-#define PLATFORM_KISS        5  // 10
-#define PLATFORM_CRICKET     6  // 01
-#define PLATFORM_SPICE       7  // 31E 32E 33C 33E 34C 37E 38C 38E
-#define PLATFORM_COCONUT     8  // 41C 41CV 41CX
-#define PLATFORM_VOYAGER     9  // 10C 11C 12C 15C 16C
-#define PLATFORM_CAPRICORN  10  // 83 85 86 87 9915
-#define PLATFORM_KANGAROO   11  // 75C, 75D
-#define PLATFORM_TITAN      12  // 71B
-#define PLATFORM_INTEGRAL   13  // 9807
-#define PLATFORM_CLAMSHELL  14  // 18C 28C
-#define PLATFORM_CLAMSHELL2 15  // 19B 19BII 28S (uses Lewis)
-#define PLATFORM_LEWIS      16  // Pioneer graphic 17B 17BII 27S 42S
-#define PLATFORM_SACAJAWEA  17  // Pioneer character 14B 22S 32S 32SII
-#define PLATFORM_BERT       18  // Pioneer 7-segment, 10B 20S 21S
-#define PLATFORM_CLARKE     19  // 38G 39G 40G 48S 48SX 48G 48GX 49G
-#define PLATFORM_APPLE      20  // 39G+ 48GII 49G+
+typedef enum
+{
+  PLATFORM_UNKNOWN,
+  PLATFORM_CLASSIC,        // 35 45 55 65 70 80
+  PLATFORM_CLASSIC_PR,     // 46 81 9805
+  PLATFORM_WOODSTOCK,      // 21 22 25 25C 27 29C
+  PLATFORM_HAWKEYE,        // 67
+  PLATFORM_TOPCAT,         // 19C 91 92 95C 97 97S
+  PLATFORM_KISS,           // 10
+  PLATFORM_CRICKET,        // 01
+  PLATFORM_SPICE,          // 31E 32E 33C 33E 34C 37E 38C 38E
+  PLATFORM_COCONUT,        // 41C 41CV 41CX
+  PLATFORM_VOYAGER,        // 10C 11C 12C 15C 16C
+//PLATFORM_CAPRICORN,      // 83 85 86 87 9915
+//PLATFORM_KANGAROO,       // 75C, 75D
+//PLATFORM_TITAN,          // 71B
+//PLATFORM_INTEGRAL,       // 9807
+//PLATFORM_CLAMSHELL,      // 18C 28C
+//PLATFORM_CLAMSHELL2,     // 19B 19BII 28S (uses Lewis)
+//PLATFORM_LEWIS,          // Pioneer graphic 17B 17BII 27S 42S
+//PLATFORM_SACAJAWEA,      // Pioneer character 14B 22S 32S 32SII
+//PLATFORM_BERT,           // Pioneer 7-segment, 10B 20S 21S
+//PLATFORM_CLARKE,         // 38G 39G 40G 48S 48SX 48G 48GX 49G
+//PLATFORM_APPLE,          // 39G+ 48GII 49G+
 
-#define PLATFORM_T_DATAMATH     21  // TMS1802
-#define PLATFORM_T_2C12D        22  // TMS0200
-#define PLATFORM_T_CLASSIC      23  // TMC0501
-#define PLATFORM_T_CARDREADER   24  // TMC0501 w/ TMC0595
-#define PLATFORM_T_MAJESTIC     25  // TMC0980
-#define PLATFORM_T_MAJESTIC_2   26  // TMC1500
-#define PLATFORM_T_CARDREADER_2 27  // TMC0501 w/ TMC0594
-#define PLATFORM_T_BIGDESK      28  // TMC0501 w/ TMC0596
-
-#define PLATFORM_MAX            29
+  PLATFORM_MAX
+} platform_t;
 
 extern char *platform_name [PLATFORM_MAX];
 

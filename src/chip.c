@@ -1,6 +1,5 @@
 /*
-$Id$
-Copyright 2004, 2005, 2006, 2008 Eric Smith <eric@brouhaha.com>
+Copyright 2004, 2005, 2006, 2008, 2022 Eric Smith <spacewar@gmail.com>
 
 Nonpareil is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License version 2 as
@@ -29,6 +28,7 @@ chip_install_fn_t gui_printer_install;
 chip_install_fn_t gui_card_reader_install;
 
 // chip install functions:
+chip_install_fn_t woodstock_act_install;
 chip_install_fn_t crc_install;
 chip_install_fn_t pick_install;
 
@@ -54,7 +54,7 @@ static chip_type_info_t chip_type_info [] =
   [CHIP_CLASSIC_PROGRAM_MEMORY]      = { "classic_program_memory", NULL, NULL },
 
   // woodstock (and topcat, sting)
-  [CHIP_WOODSTOCK_ACT]               = { "woodstock_act", NULL, NULL },
+  [CHIP_WOODSTOCK_ACT]               = { "woodstock_act", NULL, woodstock_act_install },
   [CHIP_WOODSTOCK_CATHODE_DRIVER_12] = { "woodstock_cathode_driver_12", NULL, NULL },
   [CHIP_WOODSTOCK_CATHODE_DRIVER_14] = { "woodstock_cathode_driver_14", NULL, NULL },
   [CHIP_WOODSTOCK_ROM_ANODE_DRIVER]  = { "woodstock_anode_driver", NULL, NULL },

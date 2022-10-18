@@ -29,14 +29,14 @@ global
 end
 
 display
-	offset  22 29
-	size   247 44
+	offset  12 29
+	size   277 44
 
 	color 0  70  0  0  # background
 	color 1  80  0  0  # unlit segments
 	color 2 255 17 17  # lit segments
 
-	digits 12
+	digits 15
 		size   17 30
 		offset 21  7
 	end
@@ -50,8 +50,8 @@ display
 		segment 'e' color 255   0 255  end       # purple
 		segment 'f' color   0 255 255  end       # bluegreen
 		segment 'g' color 255 128   0  end       # orange
-		#segment 'h' color 255   0 128  end       # pink (inside dp)
-		segment 'h' color 128   0   0  end       # dark red (outside dp)
+		segment 'h' color 255   0 128  end       # pink (inside dp)
+		#segment 'h' color 128   0   0  end       # dark red (outside dp)
 		segment 'i'  color  64  64  64  end       # dark grey
 	end # segments
 end # display

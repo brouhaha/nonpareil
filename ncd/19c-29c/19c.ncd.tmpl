@@ -685,55 +685,58 @@ Copyright 2007, 2008, 2022 Eric Smith <spacewar@gmail.com>
 
     <switch number="2">  <!-- printer mode -->
       <switch_pos position="0">  <!-- MAN -->
-        <flag chip_id="act" number="ka" value="1"/>
-        <flag chip_id="act" number="kc" value="0"/>
+        <flag chip_id="act" number="ka-cond-s0" value="1"/>
+        <flag chip_id="act" number="kc-cond-s0" value="0"/>
       </switch_pos>
       <switch_pos position="1">  <!-- TRACE -->
-        <flag chip_id="act" number="ka" value="0"/>
-        <flag chip_id="act" number="kc" value="0"/>
+        <flag chip_id="act" number="ka-cond-s0" value="0"/>
+        <flag chip_id="act" number="kc-cond-s0" value="0"/>
       </switch_pos>
       <switch_pos position="2">  <!-- NORM -->
-        <flag chip_id="act" number="ka" value="0"/>
-        <flag chip_id="act" number="kc" value="1"/>
+        <flag chip_id="act" number="ka-cond-s0" value="0"/>
+        <flag chip_id="act" number="kc-cond-s0" value="1"/>
       </switch_pos>
     </switch>
 
-    <key user_keycode="11" chip_id="pick" hw_keycode="0x14"/>  <!-- x<>y -->
-    <key user_keycode="12" chip_id="pick" hw_keycode="0x24"/>  <!-- Rv -->
-    <key user_keycode="13" chip_id="pick" hw_keycode="0x44"/>  <!-- GSB -->
-    <key user_keycode="14" chip_id="pick" hw_keycode="0x11"/>  <!-- GTO -->
-    <key user_keycode="15" chip_id="pick" hw_keycode="0x21"/>  <!-- SST -->
-    <key user_keycode="16" chip_id="pick" hw_keycode="0x41"/>  <!-- f -->
-
-    <key user_keycode="21" chip_id="pick" hw_keycode="0x18"/>  <!-- ENTER^ -->
-    <key user_keycode="22" chip_id="pick" hw_keycode="0x48"/>  <!-- CHS -->
-    <key user_keycode="23" chip_id="pick" hw_keycode="0x10"/>  <!-- EEX -->
-    <key user_keycode="24" chip_id="pick" hw_keycode="0x20"/>  <!-- CLx -->
-    <key user_keycode="25" chip_id="pick" hw_keycode="0x40"/>  <!-- g -->
-
-    <key user_keycode="31" chip_id="pick" hw_keycode="0x30"/>  <!-- minus -->
-    <key user_keycode="32" chip_id="pick" hw_keycode="0x60"/>  <!-- 7 -->
-    <key user_keycode="33" chip_id="pick" hw_keycode="0x70"/>  <!-- 8 -->
-    <key user_keycode="34" chip_id="pick" hw_keycode="0x80"/>  <!-- 9 -->
-    <key user_keycode="35" chip_id="pick" hw_keycode="0x50"/>  <!-- Sigma+ -->
-
-    <key user_keycode="41" chip_id="pick" hw_keycode="0x38"/>  <!-- plus -->
-    <key user_keycode="42" chip_id="pick" hw_keycode="0x68"/>  <!-- 4 -->
-    <key user_keycode="43" chip_id="pick" hw_keycode="0x78"/>  <!-- 5 -->
-    <key user_keycode="44" chip_id="pick" hw_keycode="0x88"/>  <!-- 6 -->
-    <key user_keycode="45" chip_id="pick" hw_keycode="0x58"/>  <!-- STO -->
-
-    <key user_keycode="51" chip_id="pick" hw_keycode="0x34"/>  <!-- multiply -->
-    <key user_keycode="52" chip_id="pick" hw_keycode="0x64"/>  <!-- 1 -->
-    <key user_keycode="53" chip_id="pick" hw_keycode="0x74"/>  <!-- 2 -->
-    <key user_keycode="54" chip_id="pick" hw_keycode="0x84"/>  <!-- 3 -->
-    <key user_keycode="55" chip_id="pick" hw_keycode="0x54"/>  <!-- RCL -->
-
-    <key user_keycode="61" chip_id="pick" hw_keycode="0x28"/>  <!-- divide -->
-    <key user_keycode="62" chip_id="pick" hw_keycode="0x61"/>  <!-- 0 -->
-    <key user_keycode="63" chip_id="pick" hw_keycode="0x71"/>  <!-- . -->
-    <key user_keycode="64" chip_id="pick" hw_keycode="0x81"/>  <!-- R/S -->
-    <key user_keycode="65" chip_id="pick" hw_keycode="0x51"/>  <!-- PRx -->
+    <!-- return lines k[abcde] go to ACT key scanner,
+                      pk[acde] go to PICK keys scanner -->
+                                                                                             <!-- unshifed  f-shfited  g-shifted  -->
+    <key user_keycode="11" scan_line="1"  ret_line="pka"    hw_keycode="0x14"/>  <!-- x<>y      mean       %          -->
+    <key user_keycode="12" scan_line="2"  ret_line="pka"    hw_keycode="0x24"/>  <!-- Rv        std dev    i          -->
+    <key user_keycode="13" scan_line="5"  ret_line="pka"    hw_keycode="0x44"/>  <!-- GSB       FIX        RTN        -->
+    <key user_keycode="14" scan_line="1"  ret_line="pkc,kd" hw_keycode="0x11"/>  <!-- GTO       SCI        LBL        -->
+    <key user_keycode="15" scan_line="2"  ret_line="pkc,kd" hw_keycode="0x21"/>  <!-- SST       ENG        BST        -->
+    <key user_keycode="16" scan_line="5"  ret_line="pkc,kd" hw_keycode="0x41"/>  <!-- f                               -->
+			               
+    <key user_keycode="21" scan_line="1"  ret_line="pkd"    hw_keycode="0x18"/>  <!-- ENTER^    CLR PFX    PRT PRGM   -->
+    <key user_keycode="22" scan_line="5"  ret_line="pkd"    hw_keycode="0x48"/>  <!-- CHS       CLR PRGM   GRD        -->
+    <key user_keycode="23" scan_line="1"  ret_line="pke"    hw_keycode="0x10"/>  <!-- EEX       CLR REG    RAD        -->
+    <key user_keycode="24" scan_line="2"  ret_line="pke"    hw_keycode="0x20"/>  <!-- CLx       CLR Sigma  DEG        -->
+    <key user_keycode="25" scan_line="5"  ret_line="pke"    hw_keycode="0x40"/>  <!-- g                               -->
+			               
+    <key user_keycode="31" scan_line="7"  ret_line="pke"    hw_keycode="0x30"/>  <!-- minus     x<=y       x<0        -->
+    <key user_keycode="32" scan_line="8"  ret_line="pke"    hw_keycode="0x60"/>  <!-- 7         ln         e^x        -->
+    <key user_keycode="33" scan_line="11" ret_line="pke"    hw_keycode="0x70"/>  <!-- 8         log        10^x       -->
+    <key user_keycode="34" scan_line="14" ret_line="pke"    hw_keycode="0x80"/>  <!-- 9         ->R        ->P        -->
+    <key user_keycode="35" scan_line="3"  ret_line="pke"    hw_keycode="0x50"/>  <!-- Sigma+    Sigma-     DEL        -->
+			               
+    <key user_keycode="41" scan_line="7"  ret_line="pkd"    hw_keycode="0x38"/>  <!-- plus      x>y        x>0        -->
+    <key user_keycode="42" scan_line="8"  ret_line="pkd"    hw_keycode="0x68"/>  <!-- 4         sin        sin-1      -->
+    <key user_keycode="43" scan_line="11" ret_line="pkd"    hw_keycode="0x78"/>  <!-- 5         cos        cos-1      -->
+    <key user_keycode="44" scan_line="14" ret_line="pkd"    hw_keycode="0x88"/>  <!-- 6         tan        tan-1      -->
+    <key user_keycode="45" scan_line="3"  ret_line="pkd"    hw_keycode="0x58"/>  <!-- STO       PRT Sigma  DSZ        -->
+			               
+    <key user_keycode="51" scan_line="7"  ret_line="pka"    hw_keycode="0x34"/>  <!-- multiply  x/=y       x/=0       -->
+    <key user_keycode="52" scan_line="8"  ret_line="pka"    hw_keycode="0x64"/>  <!-- 1         INT        FRAC       -->
+    <key user_keycode="53" scan_line="11" ret_line="pka"    hw_keycode="0x74"/>  <!-- 2         sqrt       x^2        -->
+    <key user_keycode="54" scan_line="14" ret_line="pka"    hw_keycode="0x84"/>  <!-- 3         y^x        ABS        -->
+    <key user_keycode="55" scan_line="3"  ret_line="pka"    hw_keycode="0x54"/>  <!-- RCL       PRT REG    ISZ        -->
+			               
+    <key user_keycode="61" scan_line="2"  ret_line="pkd"    hw_keycode="0x28"/>  <!-- divide    x=y        x=0        -->
+    <key user_keycode="62" scan_line="8"  ret_line="pkc,kd" hw_keycode="0x61"/>  <!-- 0         ->H.MS     ->H        -->
+    <key user_keycode="63" scan_line="11" ret_line="pkc,kd" hw_keycode="0x71"/>  <!-- .         LASTx      Pi         -->
+    <key user_keycode="64" scan_line="14" ret_line="pkc,kd" hw_keycode="0x81"/>  <!-- R/S       PAUSE      1/x        -->
+    <key user_keycode="65" scan_line="3"  ret_line="pkc,kd" hw_keycode="0x51"/>  <!-- PRx       PRT STK    SPC        -->
   </keyboard>
 
   <obj_file addr_space="inst"

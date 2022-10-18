@@ -51,8 +51,11 @@ bool calcdef_get_key_scanner_as_flags(calcdef_t *calcdef);
 
 bool calcdef_get_key (calcdef_t *calcdef,
 		      int user_keycode,
+		      hw_keycode_t *hw_keycode,
 		      struct chip_t **chip,
-		      hw_keycode_t *hw_keycode);
+		      int *ret_line,
+		      struct chip_t **extra_chip,
+		      int *extra_ret_line);
 
 bool calcdef_get_switch_position_flag  (calcdef_t *calcdef,
 					int sw,
