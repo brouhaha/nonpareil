@@ -1,5 +1,4 @@
-# $Id$
-# Copyright 2004, 2005, 2006, 2008 Eric Smith <eric@brouhaha.com>
+# Copyright 2004, 2005, 2006, 2008, 2022 Eric Smith <spacewar@gmail.com>
 
 # Nonpareil is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License version 2 as
@@ -25,7 +24,7 @@ global
 	image credit "Maciej Bartosiak"
 	overlay default image "11c-overlay.png"
 	color 0 137 0 6	  # background color, used when transparency is off
-	transparency 128
+#	transparency 128
 end
 
 background
