@@ -1399,7 +1399,9 @@ static void woodstock_display_scan (sim_t *sim)
 	}
       else
 	segs = sim->display_char_gen [a];
-      if (act_reg->display_14_digit && (act_reg->display_digit_position == 12))
+      if ((sim->platform != PLATFORM_CLYDE) &&
+	  act_reg->display_14_digit &&
+	  (act_reg->display_digit_position == 12))
 	{
 	  // mantissa sign comes from E segment of exponent sign digit
 	  if (segs & (1 << 4))
@@ -1409,10 +1411,14 @@ static void woodstock_display_scan (sim_t *sim)
 	}
       if (b & 1)
 	segs |= sim->display_char_gen ['.'];
+      if ((sim->platform == PLATFORM_CLYDE) &&
+	  (act_reg->display_digit_position == 14))
+	segs = 0;
     }
 
-  sim->display_segments [act_reg->display_digit_position++] = segs;
-
+  if ((act_reg->display_digit_position != 0) || (sim->platform != PLATFORM_CLYDE))
+    sim->display_segments [act_reg->display_digit_position] = segs;
+  act_reg->display_digit_position++;
   display_scan_advance (sim);
 }
 
@@ -1579,7 +1585,7 @@ static bool woodstock_execute_cycle (sim_t *sim)
   if ((sim->debug_flags & (1 << SIM_DEBUG_KEY_TRACE)) &&
       (act_reg->inst_state == inst_normal))
     {
-      if (sim->platform == PLATFORM_TOPCAT)
+      if ((sim->platform == PLATFORM_TOPCAT) || (sim->platform = PLATFORM_CLYDE))
 	{
 	  if (opcode == 01320)
 	    {
@@ -1935,6 +1941,7 @@ static void display_setup (sim_t *sim)
     case PLATFORM_WOODSTOCK:
     case PLATFORM_HAWKEYE:
     case PLATFORM_TOPCAT:
+    case PLATFORM_CLYDE:
       sim->display_char_gen = calcdef_get_char_gen (sim->calcdef,
 						    "rom_0_anode_driver");
       // default to twelve digits, but RESET TWF instruction switches to

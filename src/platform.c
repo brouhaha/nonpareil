@@ -31,6 +31,7 @@ char *platform_name [PLATFORM_MAX] =
   [PLATFORM_WOODSTOCK]  = "woodstock",
   [PLATFORM_HAWKEYE]    = "hawkeye",
   [PLATFORM_TOPCAT]     = "topcat",
+  [PLATFORM_CLYDE]      = "clyde",
   [PLATFORM_KISS]       = "kiss",
   [PLATFORM_CRICKET]    = "cricket",
   [PLATFORM_SPICE]      = "spice",

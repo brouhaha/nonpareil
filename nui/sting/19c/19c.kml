@@ -36,7 +36,7 @@ display
 	color 1  80  0  0  # unlit segments
 	color 2 255 17 17  # lit segments
 
-	digits 15
+	digits 13
 		size   17 30
 		offset 21  7
 	end
