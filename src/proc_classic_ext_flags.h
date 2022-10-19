@@ -1,5 +1,5 @@
 /*
-Copyright 2004, 2005, 2006, 2010, 2022 Eric Smith <eric@spacewar@gmail.com>
+Copyright 1995, 2003, 2004, 2005, 2008, 2022 Eric Smith spacewar@gmail.com>
 
 Nonpareil is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License version 2 as
@@ -18,35 +18,11 @@ Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
 MA 02111, USA.
 */
 
-#ifndef ARCH_H
-#define ARCH_H
+#ifndef PROC_CLASSIC_EXT_FLAGS_H
+#define PROC_CLASSIC_EXT_FLAGS_H
 
-/* CPU architectures: */
+// External flag inputs
+#define EXT_FLAG_CTC_F1 0
+#define EXT_FLAG_CTC_F2 1
 
-typedef enum
-{
-  ARCH_UNKNOWN,
-
-  ARCH_CLASSIC,
-  ARCH_WOODSTOCK,
-  ARCH_CRICKET,
-  ARCH_NUT,
-  ARCH_CAPRICORN,
-  ARCH_SATURN,
-
-  ARCH_MAX  // not an architecture - must be last
-} arch_t;
-
-
-typedef struct
-{
-  char *name;
-  int word_length;
-} arch_info_t;
-
-
-int find_arch_by_name (char *s);
-
-arch_info_t *get_arch_info (arch_t arch);
-
-#endif // ARCH_H
+#endif // PROC_CLASSIC_EXT_FLAGS_H

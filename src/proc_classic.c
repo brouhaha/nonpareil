@@ -1,6 +1,5 @@
 /*
-$Id$
-Copyright 2004-2006, 2008, 2010 Eric Smith <eric@brouhaha.com>
+Copyright 2004-2006, 2008, 2010, 2022 Eric Smith <spacewar@gmail.com>
 
 Nonpareil is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License version 2 as
@@ -931,9 +930,9 @@ bool classic_execute_instruction (sim_t *sim)
 
   if (cpu_reg->key_flag)
     cpu_reg->s [0] = 1;
-  if (cpu_reg->ext_flag [EXT_FLAG_F1])
+  if (cpu_reg->ext_flag [EXT_FLAG_CTC_F1])
     cpu_reg->s [3] = 1;
-  if (cpu_reg->ext_flag [EXT_FLAG_F2])
+  if (cpu_reg->ext_flag [EXT_FLAG_CTC_F2])
     cpu_reg->s [11] = 1;
 
   cpu_reg->pc++;

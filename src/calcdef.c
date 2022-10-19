@@ -38,6 +38,7 @@ MA 02111, USA.
 #include "platform.h"
 #include "proc_int.h"
 #include "digit_ops.h"
+#include "proc_classic_ext_flags.h"
 #include "proc_woodstock.h"
 #include "pick.h"
 #include "crc.h"
@@ -106,6 +107,7 @@ typedef struct calcdef_switch_t
 
 typedef struct
 {
+  arch_t arch;
   char *chip_id;
   char *name;
   int number;
@@ -114,13 +116,15 @@ typedef struct
 
 typedef struct calcdef_key_t
 {
-  hw_keycode_t hw_keycode;
+  int scan_line;
 
   struct chip_t *chip;
   const calcdef_flag_info_t *ret_line;
 
   struct chip_t *extra_chip;
   const calcdef_flag_info_t *extra_ret_line;
+
+  hw_keycode_t hw_keycode;
 } calcdef_key_t;
 
 
@@ -161,41 +165,48 @@ struct calcdef_t
 
 static const calcdef_flag_info_t flag_info[] =
 {
-  { "act",  "f1",         EXT_FLAG_ACT_F1 },
-  { "act",  "f1-cond-s0", EXT_FLAG_ACT_F1_COND_S0 },
+  { ARCH_CLASSIC,   "ctc",  "f1",         EXT_FLAG_CTC_F1 },
+  { ARCH_CLASSIC,   "ctc",  "f2",         EXT_FLAG_CTC_F2 },
 
-  { "act",  "f2",         EXT_FLAG_ACT_F2 },
-  { "act",  "f2-cond-s0", EXT_FLAG_ACT_F2_COND_S0 },
+  { ARCH_WOODSTOCK, "act",  "f1",         EXT_FLAG_ACT_F1 },
+  { ARCH_WOODSTOCK, "act",  "f1-cond-s0", EXT_FLAG_ACT_F1_COND_S0 },
 
-  { "act",  "ka",         EXT_FLAG_ACT_KA },
-  { "act",  "kb",         EXT_FLAG_ACT_KB },
-  { "act",  "kc",         EXT_FLAG_ACT_KC },
-  { "act",  "kd",         EXT_FLAG_ACT_KD },
-  { "act",  "ke",         EXT_FLAG_ACT_KE },
+  { ARCH_WOODSTOCK, "act",  "f2",         EXT_FLAG_ACT_F2 },
+  { ARCH_WOODSTOCK, "act",  "f2-cond-s0", EXT_FLAG_ACT_F2_COND_S0 },
 
-  { "act",  "ka-cond-s0", EXT_FLAG_ACT_KA_COND_S0 },
-  { "act",  "kb-cond-s0", EXT_FLAG_ACT_KB_COND_S0 },
-  { "act",  "kc-cond-s0", EXT_FLAG_ACT_KC_COND_S0 },
-  { "act",  "kd-cond-s0", EXT_FLAG_ACT_KD_COND_S0 },
-  { "act",  "ke-cond-s0", EXT_FLAG_ACT_KE_COND_S0 },
+  { ARCH_WOODSTOCK, "act",  "ka",         EXT_FLAG_ACT_KA },
+  { ARCH_WOODSTOCK, "act",  "kb",         EXT_FLAG_ACT_KB },
+  { ARCH_WOODSTOCK, "act",  "kc",         EXT_FLAG_ACT_KC },
+  { ARCH_WOODSTOCK, "act",  "kd",         EXT_FLAG_ACT_KD },
+  { ARCH_WOODSTOCK, "act",  "ke",         EXT_FLAG_ACT_KE },
 
-  { "pick", "pka",        PICK_KEY_RET_LINE_KA },
-  { "pick", "pkc",        PICK_KEY_RET_LINE_KC },
-  { "pick", "pkd",        PICK_KEY_RET_LINE_KD },
-  { "pick", "pke",        PICK_KEY_RET_LINE_KE },
+  { ARCH_WOODSTOCK, "act",  "ka-cond-s0", EXT_FLAG_ACT_KA_COND_S0 },
+  { ARCH_WOODSTOCK, "act",  "kb-cond-s0", EXT_FLAG_ACT_KB_COND_S0 },
+  { ARCH_WOODSTOCK, "act",  "kc-cond-s0", EXT_FLAG_ACT_KC_COND_S0 },
+  { ARCH_WOODSTOCK, "act",  "kd-cond-s0", EXT_FLAG_ACT_KD_COND_S0 },
+  { ARCH_WOODSTOCK, "act",  "ke-cond-s0", EXT_FLAG_ACT_KE_COND_S0 },
 
-  { "crc",  "cf1",        CRC_EXT_FLAG_F1 },
-  { "crc",  "cf2",        CRC_EXT_FLAG_F2 },
-  { "crc",  "cf3",        CRC_EXT_FLAG_F3 },
-  { "crc",  "cf4",        CRC_EXT_FLAG_F4 },
+  { ARCH_WOODSTOCK, "pick", "pka",        PICK_KEY_RET_LINE_KA },
+  { ARCH_WOODSTOCK, "pick", "pkc",        PICK_KEY_RET_LINE_KC },
+  { ARCH_WOODSTOCK, "pick", "pkd",        PICK_KEY_RET_LINE_KD },
+  { ARCH_WOODSTOCK, "pick", "pke",        PICK_KEY_RET_LINE_KE },
 
-  { NULL,  NULL,          0 },
+  { ARCH_WOODSTOCK, "crc",  "cf1",        CRC_EXT_FLAG_F1 },
+  { ARCH_WOODSTOCK, "crc",  "cf2",        CRC_EXT_FLAG_F2 },
+  { ARCH_WOODSTOCK, "crc",  "cf3",        CRC_EXT_FLAG_F3 },
+  { ARCH_WOODSTOCK, "crc",  "cf4",        CRC_EXT_FLAG_F4 },
+
+  { ARCH_UNKNOWN,   NULL,  NULL,          0 },
 };
 
-static const calcdef_flag_info_t *get_flag_by_name(const char *chip_id, const char *s)
+static const calcdef_flag_info_t *get_flag_by_name(arch_t arch, const char *chip_id, const char *s)
 {
   for (const calcdef_flag_info_t *fi = flag_info; fi->name; fi++)
   {
+    if (arch != fi->arch)
+    {
+      continue;
+    }
     if (chip_id && (strcasecmp(chip_id, fi->chip_id) != 0))
     {
       continue;
@@ -444,7 +455,8 @@ static void parse_keyboard (calcdef_t *calcdef UNUSED,
 }
 
 
-static bool parse_key_attr_ret_line(const char *attr_val,
+static bool parse_key_attr_ret_line(calcdef_t *calcdef,
+				    const char *attr_val,
 				    const calcdef_flag_info_t **ret_line,
 				    const calcdef_flag_info_t **extra_ret_line)
 {
@@ -467,7 +479,7 @@ static bool parse_key_attr_ret_line(const char *attr_val,
       return false;
     memcpy(name_buf, begin, len);
     name_buf[len] = 0;
-    const calcdef_flag_info_t *flag_info = get_flag_by_name(NULL, name_buf);
+    const calcdef_flag_info_t *flag_info = get_flag_by_name(calcdef->arch, NULL, name_buf);
     if (! flag_info)
       return false;
     if (! *ret_line)
@@ -489,8 +501,8 @@ static bool parse_key_attr_ret_line(const char *attr_val,
 }
 
 
-static void parse_key (calcdef_t *calcdef UNUSED,
-		       const xmlChar **attrs UNUSED)
+static void parse_key (calcdef_t *calcdef,
+		       const xmlChar **attrs)
 {
   bool got_user_keycode = false;
   long user_keycode;
@@ -514,11 +526,12 @@ static void parse_key (calcdef_t *calcdef UNUSED,
 	}
       else if (strcmp ((char *) attrs [i], "scan_line") == 0)
 	{
-	  // XXX ignore for now
+	  key->scan_line = atoi((const char *) attrs[i+1]);
 	}
       else if (strcmp ((char *) attrs [i], "ret_line") == 0)
 	{
-	  if (! parse_key_attr_ret_line((const char *) attrs[i+1],
+	  if (! parse_key_attr_ret_line(calcdef,
+					(const char *) attrs[i+1],
 					& key->ret_line,
 					& key->extra_ret_line))
 	  {
@@ -551,8 +564,8 @@ static void parse_key (calcdef_t *calcdef UNUSED,
 }
 
 
-static void parse_flag (calcdef_t *calcdef UNUSED,
-			const xmlChar **attrs UNUSED)
+static void parse_flag (calcdef_t *calcdef,
+			const xmlChar **attrs)
 {
   int i;
   calcdef_flag_t *flag;
@@ -570,7 +583,8 @@ static void parse_flag (calcdef_t *calcdef UNUSED,
 	}
       else if (strcmp ((char *) attrs [i], "number") == 0)
 	{
-	  const calcdef_flag_info_t *flag_info = get_flag_by_name(flag->chip_id,
+	  const calcdef_flag_info_t *flag_info = get_flag_by_name(calcdef->arch,
+								  flag->chip_id,
 								  (const char *) attrs[i+1]);
 	  if (! flag_info)
 	    {
@@ -1308,13 +1322,13 @@ static calcdef_switch_position_t *calcdef_get_switch_position (calcdef_t *calcde
 bool calcdef_get_key (calcdef_t *calcdef,
 		      int user_keycode,
 		      hw_keycode_t *hw_keycode,
+		      //int *scan_line,
 		      struct chip_t **chip,
 		      int *ret_line,
 		      struct chip_t **extra_chip,
 		      int *extra_ret_line)
 {
   calcdef_key_t *key;
-  calcdef_chip_t *calcdef_chip;
 
   if ((user_keycode < -MAX_KEYCODE) || (user_keycode > MAX_KEYCODE))
     return false;
@@ -1322,6 +1336,10 @@ bool calcdef_get_key (calcdef_t *calcdef,
   key = calcdef->keyboard_map [user_keycode];
   if (! key)
     return false;
+
+  //*scan_line = key->scan_line;
+
+  *hw_keycode = key->hw_keycode;
 
   if (key->ret_line && (! key->chip))
   {
@@ -1334,8 +1352,6 @@ bool calcdef_get_key (calcdef_t *calcdef,
     calcdef_chip_t *calcdef_chip = find_chip_by_id(calcdef, key->extra_ret_line->chip_id);
     key->extra_chip = calcdef_chip ? calcdef_chip->chip : NULL;
   }
-
-  *hw_keycode = key->hw_keycode;
 
   if (key->ret_line)
   {

@@ -1,6 +1,5 @@
 /*
-$Id$
-Copyright 1995, 2003, 2004, 2005, 2008 Eric Smith <eric@brouhaha.com>
+Copyright 1995, 2003, 2004, 2005, 2008, 2022 Eric Smith <spacewar@gmail.com>
 
 Nonpareil is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License version 2 as
@@ -19,6 +18,10 @@ Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
 MA 02111, USA.
 */
 
+#ifndef PROC_CLASSIC_H
+#define PROC_CLASSIC_H
+
+#include "proc_classic_ext_flags.h"
 
 #define WSIZE 14
 #define EXPSIZE 3  // two exponent and one exponent sign digit
@@ -30,10 +33,6 @@ typedef digit_t reg_t [WSIZE];
 
 
 #define EXT_FLAG_SIZE 2
-
-// External flag inputs
-#define EXT_FLAG_F1 0
-#define EXT_FLAG_F2 1
 
 
 #define MAX_GROUP 2
@@ -112,3 +111,5 @@ typedef struct
   bool *ram_exists;
   reg_t *ram;
 } classic_cpu_reg_t;
+
+#endif // PROC_CLASSIC_H
