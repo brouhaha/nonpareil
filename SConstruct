@@ -221,7 +221,7 @@ Default (ncd_files)
 
 SConscript ('scons/nui.py')
 
-all_calcs = {'classic':    ['35', '45', '67'],  # 55, 80
+all_calcs = {'classic':    ['35', '45', '55', '67'],  # 80
              'woodstock':  ['21', '22', '25', '27', '29c'],
              'sting':      ['19c'],
              'topcat':     ['91', '92', '97'],
@@ -232,7 +232,6 @@ all_calcs = {'classic':    ['35', '45', '67'],  # 55, 80
 
 nui_dir_sub = {'41cv': '41c',
                '41cx': '41c',
-               '55':   None,
                '80':   None}
 
 nui_files = []
@@ -247,7 +246,7 @@ for family in all_calcs:
         else:
             nui_dir += model;
         kml = FindFile (model + '.kml', nui_dir)
-        nui_files += env.NUI (target = 'build/calc/' + model + '.nui',
+        nui_files += env.NUI (target = 'build/nui/' + model + '.nui',
                               source = nui_dir + '/' + model + '.kml')
 
 Default(nui_files)
