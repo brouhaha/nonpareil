@@ -1,5 +1,4 @@
-# $Id$
-# Copyright 2004, 2005, 2008 Eric Smith <eric@brouhaha.com>
+# Copyright 2004, 2005, 2008, 2022 Eric Smith <spacewar@gmail.com>
 
 # Nonpareil is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License version 2 as
@@ -18,30 +17,26 @@
 # Boston, MA 02111, USA.
 
 global
-	title "80 Business Calculator"
-	author "Eric Smith <eric@brouhaha.com>"
+	title "80 Financial Calculator"
+	author "Eric Smith <spacewar@gmail.com>"
 	model "80"
-	image "80.png"
-	color 0 67 33 119	  # background color, used when transparency is off
-	transparency 128
-end
-
-background
-	offset 12 7
-	size 263 505
+	image "classic-background.png"
+	overlay default image "80-overlay.png"
+	color 0 137 0 6	  # background color, used when transparency is off
+#	transparency 128
 end
 
 display
-	offset 46 43
-	size 192 35
+	offset 16 29
+	size 258 42
 
 	color 0 35 17 17   # background
 	color 1 35 17 17   # unlit segments
 	color 2 255 17 17  # lit segments
 
 	digits 15
-		size 12 30
-		offset 8 5
+		size 14 30
+		offset 25 8
 	end
 
 	segments
@@ -59,48 +54,55 @@ display
 	end # segments
 end # display
 
-button 11  type 0  size 26 20  offset  46 147  down 2 8  keycode 036  end
-button 12  type 0  size 26 20  offset  86 147  down 2 8  keycode 034  end
-button 13  type 0  size 26 20  offset 127 147  down 2 8  keycode 033  end
-button 14  type 0  size 26 20  offset 169 147  down 2 8  keycode 032  end
-button 15  type 0  size 26 20  offset 210 147  down 2 8  keycode 030  end
+#switch 0
+#  size 25 9
+#  default 1
+#  position 0  image "switch-off.png"  end  # off
+#  position 1  image "switch-on.png"   end  # on
+#end
 
-button 21  type 0  size 26 20  offset  46 190  down 2 8  keycode 056  end
-button 22  type 0  size 26 20  offset  86 190  down 2 8  keycode 054  end
-button 23  type 0  size 26 20  offset 127 190  down 2 8  keycode 053  end
-button 24  type 0  size 26 20  offset 169 190  down 2 8  keycode 052  end
-button 25  type 0  size 26 20  offset 210 190  down 2 8  keycode 050  end
+button 11  image "key_11.png"  offset  25 150  end
+button 12  image "key_12.png"  offset  75 150  end
+button 13  image "key_13.png"  offset 125 150  end
+button 14  image "key_14.png"  offset 175 150  end
+button 15  image "key_15.png"  offset 225 150  end
 
-button 31  type 0  size 26 20  offset  46 233  down 2 8  keycode 016  end
-button 32  type 0  size 26 20  offset  86 233  down 2 8  keycode 014  end
-button 33  type 0  size 26 20  offset 127 233  down 2 8  keycode 013  end
-button 34  type 0  size 26 20  offset 169 233  down 2 8  keycode 012  end
-button 35  type 0  size 26 20  offset 210 233  down 2 8  keycode 010  end
+button 21  image "key_21.png"  offset  25 200  end
+button 22  image "key_22.png"  offset  75 200  end
+button 23  image "key_23.png"  offset 125 200  end
+button 24  image "key_24.png"  offset 175 200  end
+button 25  image "key_25.png"  offset 225 200  end
 
-button 41  type 0  size 68 20  offset  44 276  down 2 8  keycode 076  end
-button 42  type 0  size 26 20  offset 127 276  down 2 8  keycode 073  end
-button 43  type 0  size 26 20  offset 169 276  down 2 8  keycode 072  end
-button 44  type 0  size 26 20  offset 210 276  down 2 8  keycode 070  end
+button 31  image "key_31.png"  offset  25 250  end
+button 32  image "key_32.png"  offset  75 250  end
+button 33  image "key_33.png"  offset 125 250  end
+button 34  image "key_34.png"  offset 175 250  end
+button 35  image "key_35.png"  offset 225 250  end
 
-button 51  type 0  size 20 20  offset  44 318  down 2 8  keycode 066  end
-button 52  type 0  size 32 20  offset  86 318  down 2 8  keycode 064  end
-button 53  type 0  size 32 20  offset 145 318  down 2 8  keycode 063  end
-button 54  type 0  size 32 20  offset 203 318  down 2 8  keycode 062  end
+button 41  image "key_41.png"  offset  25 300  end
+button 42  image "key_42.png"  offset 125 300  end
+button 43  image "key_43.png"  offset 175 300  end
+button 44  image "key_44.png"  offset 225 300  end
 
-button 61  type 0  size 20 20  offset  44 361  down 2 8  keycode 026  end
-button 62  type 0  size 32 20  offset  86 361  down 2 8  keycode 024  end
-button 63  type 0  size 32 20  offset 145 361  down 2 8  keycode 023  end
-button 64  type 0  size 32 20  offset 203 361  down 2 8  keycode 022  end
+button 51  image "key_51.png"  offset  25 350  end
+button 52  image "key_52.png"  offset  75 350  end
+button 53  image "key_53.png"  offset 146 350  end
+button 54  image "key_54.png"  offset 217 350  end
 
-button 71  type 0  size 20 20  offset  44 405  down 2 8  keycode 006  end
-button 72  type 0  size 32 20  offset  86 405  down 2 8  keycode 004  end
-button 73  type 0  size 32 20  offset 145 405  down 2 8  keycode 003  end
-button 74  type 0  size 32 20  offset 203 405  down 2 8  keycode 002  end
+button 61  image "key_61.png"  offset  25 400  end
+button 62  image "key_62.png"  offset  75 400  end
+button 63  image "key_63.png"  offset 146 400  end
+button 64  image "key_64.png"  offset 217 400  end
 
-button 81  type 0  size 20 20  offset  44 446  down 2 8  keycode 046  end
-button 82  type 0  size 32 20  offset  86 446  down 2 8  keycode 044  end
-button 83  type 0  size 32 20  offset 145 446  down 2 8  keycode 043  end
-button 84  type 0  size 32 20  offset 203 446  down 2 8  keycode 042  end
+button 71  image "key_71.png"  offset  25 450  end
+button 72  image "key_72.png"  offset  75 450  end
+button 73  image "key_73.png"  offset 146 450  end
+button 74  image "key_74.png"  offset 217 450  end
+
+button 81  image "key_81.png"  offset  25 500  end
+button 82  image "key_82.png"  offset  75 500  end
+button 83  image "key_83.png"  offset 146 500  end
+button 84  image "key_84.png"  offset 217 500  end
 
 # main keyboard:
 scancode "0"            map 0 82 end  # 0
@@ -118,16 +120,10 @@ scancode "plus"         map 0 61 end  # +
 scancode "minus"        map 0 51 end  # -
 scancode "asterisk"     map 0 71 end  # *
 scancode "slash"        map 0 81 end  # /
-scancode "percent"      map 0 22 end  # %
-scancode "Return"       map 0 41 end  # SAVE^
-scancode "c"            map 0 43 end  # c - CHS
-
-# suggested bindings (John R. Hogerhuis)
-scancode "n"            map 0 11 end  # 'n' is n
-scancode "i"            map 0 12 end  # 'i' is i
-scancode "p"            map 0 13 end  # 'p' is PMT
-scancode "bracketleft"  map 0 14 end  # '[' is PV (present-value)
-scancode "bracketright" map 0 15 end  # ']' is FV (future-value)
+scancode "percent"      map 0 35 end  # %
+scancode "Return"       map 0 41 end  # ENTER
+scancode "c"            map 0 42 end  # c - CHS
+scancode "e"            map 0 43 end  # e - EEX
 
 # keypad:
 scancode "KP_0"         map 0 82 end  # 0
