@@ -86,28 +86,28 @@ static reg_detail_t woodstock_cpu_reg_detail [] =
   WRD ("m1",    m1,    WSIZE),
   WRD ("m2",    m2,    WSIZE),
 
-  //   name       field    bits   radix get        set        arg
-  WR  ("p",       p,       4,     16,   NULL,      NULL,      0),
-  WR  ("f",       f,       4,     16,   NULL,      NULL,      0),
-  WR  ("decimal", decimal, 1,      2,   NULL,      NULL,      0),
-  WR  ("carry",   carry,   1,      2,   NULL,      NULL,      0),
+  //   name              field               bits           radix get        set        arg
+  WR  ("p",                p,                4,             16,   NULL,      NULL,      0),
+  WR  ("f",                f,                4,             16,   NULL,      NULL,      0),
+  WR  ("decimal",          decimal,          1,             2,    NULL,      NULL,      0),
+  WR  ("carry",            carry,            1,             2,    NULL,      NULL,      0),
   // prev_carry
 
-  WR  ("s",        s,        SSIZE,         2, get_bools, set_bools, SSIZE),
-  WR  ("ext_flag", ext_flag, EXT_FLAG_SIZE, 2, get_bools, set_bools, EXT_FLAG_SIZE),
+  WR  ("s",                s,                SSIZE,         2,    get_bools, set_bools, SSIZE),
+  WR  ("ext_flag",         ext_flag,         EXT_FLAG_SIZE, 2,    get_bools, set_bools, EXT_FLAG_SIZE),
 
-  WR  ("bank",    bank,    1,     2,   NULL,      NULL,      0),
-  WR  ("pc",      pc,      12,    8,   NULL,      NULL,      0),
+  WR  ("bank",             bank,             1,             2,    NULL,      NULL,      0),
+  WR  ("pc",               pc,               12,            8,    NULL,      NULL,      0),
   // prev_pc
-  WRA ("stack",   stack,   12,    8, NULL,      NULL,        0, STACK_SIZE),
-  WR  ("del_rom_flag", del_rom_flag,   1,     2,   NULL,      NULL,      0),
-  WR  ("del_rom", del_rom, 4,     8,   NULL,      NULL,      0),
+  WRA ("stack",            stack,            12,            8,    NULL,      NULL,      0,     STACK_SIZE),
+  WR  ("del_rom_flag",     del_rom_flag,     1,             2,    NULL,      NULL,      0),
+  WR  ("del_rom",          del_rom,          4,             8,    NULL,      NULL,      0),
 
-  WR  ("display_enable", display_enable,   1,     2,   NULL,      NULL,      0),
-  WR  ("display_14_digit", display_14_digit,   1,     2,   NULL,      NULL,      0),
+  WR  ("display_enable",   display_enable,   1,             2,    NULL,      NULL,      0),
+  WR  ("display_14_digit", display_14_digit, 1,             2,    NULL,      NULL,      0),
   // key_flag
   // key_buf
-  WR  ("ram_addr", ram_addr, 8, 16, NULL, NULL, 0)
+  WR  ("ram_addr",         ram_addr, 8, 16, NULL, NULL, 0)
 };
 
 
@@ -448,16 +448,6 @@ static void op_arith (sim_t *sim, int opcode)
 }
 
 
-static void handle_del_rom (act_reg_t *act_reg)
-{
-  if (act_reg->del_rom_flag)
-    {
-      act_reg->pc = (act_reg->del_rom << 8) + (act_reg->pc & 0377);
-      act_reg->del_rom_flag = 0;
-    }
-}
-
-
 static void op_goto (sim_t *sim, int opcode)
 {
   act_reg_t *act_reg = get_chip_data (sim->first_chip);
@@ -465,7 +455,6 @@ static void op_goto (sim_t *sim, int opcode)
   if (! act_reg->prev_carry)
     {
       act_reg->pc = (act_reg->pc & ~0377) | (opcode >> 2);
-      handle_del_rom (act_reg);
     }
 }
 
@@ -484,7 +473,6 @@ static void op_jsb (sim_t *sim, int opcode)
       act_reg->sp = 0;
     }
   act_reg->pc = (act_reg->pc & ~0377) | (opcode >> 2);
-  handle_del_rom (act_reg);
 }
 
 
@@ -1167,7 +1155,6 @@ static void op_keys_to_rom_addr (sim_t *sim,
   act_reg_t *act_reg = get_chip_data (sim->first_chip);
 
   act_reg->pc = act_reg->pc & ~0377;
-  handle_del_rom (act_reg);
   if (act_reg->key_buf < 0)
     {
       printf ("keys->rom address with no key pressed, pc = %05o\n", act_reg->prev_pc);
@@ -1200,7 +1187,6 @@ static void op_a_to_rom_addr (sim_t *sim,
   act_reg_t *act_reg = get_chip_data (sim->first_chip);
 
   act_reg->pc = act_reg->pc & ~0377;
-  handle_del_rom (act_reg);
   act_reg->pc += ((act_reg->a [2] << 4) + act_reg->a [1]);
 }
 
@@ -1618,6 +1604,10 @@ static bool woodstock_execute_cycle (sim_t *sim)
   act_reg->prev_carry = act_reg->carry;
   act_reg->carry = 0;
 
+  bool prev_del_rom_flag = act_reg->del_rom_flag;
+  uint8_t prev_del_rom = act_reg->del_rom;
+  act_reg->del_rom_flag = false;
+
   act_reg->pc = (act_reg->pc + 1) & 07777;
 
   switch (prev_inst_state)
@@ -1641,6 +1631,11 @@ static bool woodstock_execute_cycle (sim_t *sim)
       act_reg->inst_state = inst_normal;
       break;
     }
+
+  if (prev_del_rom_flag)
+  {
+    act_reg->pc = (prev_del_rom << 8) + (act_reg->pc & 0377);
+  }
 
   sim->cycle_count++;
 
@@ -1872,6 +1867,7 @@ static void woodstock_reset (sim_t *sim)
 
   act_reg->pc = 0;
   act_reg->del_rom_flag = 0;
+  act_reg->del_rom = 0;
 
   act_reg->inst_state = inst_normal;
 
