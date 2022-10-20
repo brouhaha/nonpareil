@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <!--
-Copyright 2006, 2008, 2022 Eric Smith <spacewar@gmail.com>
+Copyright 2006, 2008, 2022 Eric Smith <eric@spacewar@gmail.com>
 -->
 
 <!DOCTYPE calcdef SYSTEM "http://nonpareil.brouhaha.com/dtd/calcdef-1.0.dtd">
@@ -8,7 +8,7 @@ Copyright 2006, 2008, 2022 Eric Smith <spacewar@gmail.com>
 <calcdef version="1.0"
 	 arch="Classic"
 	 platform="Classic"
-	 model="80"
+	 model="70"
          copyright="Copyright 2006, 2008, 2022 Eric Smith &lt;spacewar@gmail.com&gt;"
          license="GPL-3.0">
 
@@ -71,48 +71,20 @@ Copyright 2006, 2008, 2022 Eric Smith <spacewar@gmail.com>
     </chargen>
   </chip>
 
-  <hybrid>
-    <part_info>
-      <vendor_name>HP</vendor_name>
-      <part_number>00080-60106</part_number>
-    </part_info>
+  <chip id="rom_0" type="classic_rom">
+    <memory addr_space="inst" banks="0" base_addr="00000" size="02000">
+    </memory>
+  </chip>
 
-    <chip id="rom_0" type="classic_rom">
-      <memory addr_space="inst" banks="0" base_addr="00000" size="00400">
-      </memory>
-    </chip>
+  <chip id="rom_1" type="classic_rom">
+    <memory addr_space="inst" banks="0" base_addr="02000" size="02000">
+    </memory>
+  </chip>
 
-   <chip id="rom_1" type="classic_rom">
-      <memory addr_space="inst" banks="0" base_addr="00400" size="00400">
-      </memory>
-    </chip>
-
-    <chip id="rom_2" type="classic_rom">
-      <memory addr_space="inst" banks="0" base_addr="01000" size="00400">
-      </memory>
-    </chip>
-
-    <chip id="rom_3" type="classic_rom">
-      <memory addr_space="inst" banks="0" base_addr="01400" size="00400">
-      </memory>
-    </chip>
-
-    <chip id="rom_4" type="classic_rom">
-      <memory addr_space="inst" banks="0" base_addr="02000" size="00400">
-      </memory>
-    </chip>
-
-    <chip id="rom_5" type="classic_rom">
-      <memory addr_space="inst" banks="0" base_addr="02400" size="00400">
-      </memory>
-    </chip>
-
-    <chip id="rom_6" type="classic_rom">
-      <memory addr_space="inst" banks="0" base_addr="03000" size="00400">
-      </memory>
-    </chip>
-
-  </hybrid>
+  <chip id="ram_0" type="classic_ram">
+    <memory addr_space="data" base_addr="0" size="10">
+    </memory>
+  </chip>
 
   <keyboard>
 
@@ -126,11 +98,11 @@ Copyright 2006, 2008, 2022 Eric Smith <spacewar@gmail.com>
     </switch>
     -->
 
-    <key user_keycode="11" hw_keycode="036"/>
-    <key user_keycode="12" hw_keycode="034"/>
-    <key user_keycode="13" hw_keycode="033"/>
-    <key user_keycode="14" hw_keycode="032"/>
-    <key user_keycode="15" hw_keycode="030"/>
+    <key user_keycode="11" hw_keycode="006"/>
+    <key user_keycode="12" hw_keycode="004"/>
+    <key user_keycode="13" hw_keycode="003"/>
+    <key user_keycode="14" hw_keycode="002"/>
+    <key user_keycode="15" hw_keycode="000"/>
 
     <key user_keycode="21" hw_keycode="056"/>
     <key user_keycode="22" hw_keycode="054"/>
@@ -159,10 +131,10 @@ Copyright 2006, 2008, 2022 Eric Smith <spacewar@gmail.com>
     <key user_keycode="63" hw_keycode="023"/>
     <key user_keycode="64" hw_keycode="022"/>
 
-    <key user_keycode="71" hw_keycode="006"/>
-    <key user_keycode="72" hw_keycode="004"/>
-    <key user_keycode="73" hw_keycode="003"/>
-    <key user_keycode="74" hw_keycode="002"/>
+    <key user_keycode="71" hw_keycode="036"/>
+    <key user_keycode="72" hw_keycode="034"/>
+    <key user_keycode="73" hw_keycode="033"/>
+    <key user_keycode="74" hw_keycode="032"/>
 
     <key user_keycode="81" hw_keycode="046"/>
     <key user_keycode="82" hw_keycode="044"/>
@@ -172,6 +144,6 @@ Copyright 2006, 2008, 2022 Eric Smith <spacewar@gmail.com>
 
   <obj_file addr_space="inst"
             copyright="Copyright 2004, 2008 Eric Smith &lt;eric@brouhaha.com&gt;"
-            license="GPL-3.0">80.obj</obj_file>
+            license="GPL-3.0">70.rom</obj_file>
 
 </calcdef>

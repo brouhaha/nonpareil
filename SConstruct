@@ -195,7 +195,7 @@ SConscript ('src/SConscript',
 SConscript ('scons/uasm.py')
 SConscript ('scons/ncd.py')
 
-ncd_dirs = ['35', '45', '55', '80',
+ncd_dirs = ['35', '45', '55', '70', '80',
             '21', '22', '25-25c', '27',
             '91', '92',
             '67-97',
@@ -221,7 +221,7 @@ Default (ncd_files)
 
 SConscript ('scons/nui.py')
 
-all_calcs = {'classic':    ['35', '45', '55', '80', '67'],
+all_calcs = {'classic':    ['35', '45', '55', '70', '80', '67'],
              'woodstock':  ['21', '22', '25', '27', '29c'],
              'sting':      ['19c'],
              'topcat':     ['91', '92', '97'],
