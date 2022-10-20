@@ -1858,8 +1858,8 @@ static void nut_print_state (sim_t *sim)
 				   nut_reg->prev_pc,  // addr
 				   nut_reg->inst_state,
 				   nut_reg->carry,
-				   false,             // del_rom_flag
-				   0,                 // del_rom
+				   0,                 // delayed_select_mask
+				   0,                 // delayed_select_addr
 				   buf,
 				   sizeof (buf)))
 	log_printf (sim, "pc=%04x: %s", nut_reg->prev_pc, buf);

@@ -2111,15 +2111,13 @@ bool sim_disassemble_runtime (sim_t        *sim,
 			      addr_t       addr,
 			      inst_state_t inst_state,
 			      bool         carry,
-			      bool         del_rom_flag,
-			      uint8_t      del_rom,
+			      addr_t       delayed_select_mask,
+			      addr_t       delayed_select_addr,
 			      char         *buf,
 			      int          len)
 {
   bool stat;
   bool carry_known_clear = ! carry;
-  addr_t delayed_select_mask = del_rom_flag ? 07400 : 00000;
-  addr_t delayed_select_addr = del_rom << 8;
   bank_t target_bank;
   addr_t target_addr;
   flow_type_t flow_type;

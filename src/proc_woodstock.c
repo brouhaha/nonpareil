@@ -1516,14 +1516,15 @@ static void woodstock_print_state (sim_t *sim)
   else
     {
       char buf [80];
+
       if (sim_disassemble_runtime (sim,
-				   0,                 // flags
+				   0,                      // flags
 				   bank,
-				   act_reg->prev_pc,  // addr
+				   act_reg->prev_pc,       // addr
 				   act_reg->inst_state,
 				   act_reg->carry,
-				   act_reg->del_rom_flag,
-				   act_reg->del_rom,
+				   act_reg->del_rom_flag ? 03400 : 0,  // delayed_select_mask
+				   act_reg->del_rom << 8,              // delayed_select_addr
 				   buf,
 				   sizeof (buf)))
 	log_printf (sim, "%s", buf);
