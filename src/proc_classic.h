@@ -73,8 +73,11 @@ typedef struct
   uint8_t rom;
   uint8_t group;
 
+  bool del_rom_flag;
   uint8_t del_rom;
-  uint8_t del_grp;
+
+  bool del_group_flag;
+  uint8_t del_group;
 
   uint8_t ret_pc;
 
@@ -111,5 +114,23 @@ typedef struct
   bool *ram_exists;
   reg_t *ram;
 } classic_cpu_reg_t;
+
+
+// defined in dis_classic.c:
+bool classic_disassemble (sim_t        *sim,
+			  uint32_t     flags,
+			  // input and output:
+			  bank_t       *bank,
+			  addr_t       *addr,
+			  inst_state_t *inst_state,
+			  bool         *carry_known_clear,
+			  addr_t       *delayed_select_mask,
+			  addr_t       *delayed_select_addr,
+			  // output:
+			  flow_type_t  *flow_type,
+			  bank_t       *target_bank,
+			  addr_t       *target_addr,
+			  char         *buf,
+			  int          len);
 
 #endif // PROC_CLASSIC_H

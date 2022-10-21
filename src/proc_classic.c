@@ -62,20 +62,25 @@ static reg_detail_t classic_cpu_reg_detail [] =
   CRD ("f",     f,     WSIZE),
   CRD ("m",     m,     WSIZE),
 
-  //   name     field    bits   radix get        set        arg
-  CR  ("p",      p,      4,     16,   NULL,      NULL,      0),
-  CR  ("carry",  carry,  1,      2,   NULL,      NULL,      0),
+  //   name              field           bits           radix get        set        arg
+  CR  ("p",              p,              4,             16,   NULL,      NULL,      0),
+  CR  ("carry",          carry,          1,             2,    NULL,      NULL,      0),
   //    prev_carry
-  CR  ("s",     s,     SSIZE,    2,   get_bools, set_bools, SSIZE),
-  CR  ("ext_flag", ext_flag, EXT_FLAG_SIZE, 2, get_bools, set_bools, EXT_FLAG_SIZE),
+  CR  ("s",              s,              SSIZE,         2,    get_bools, set_bools, SSIZE),
+  CR  ("ext_flag",       ext_flag,       EXT_FLAG_SIZE, 2,    get_bools, set_bools, EXT_FLAG_SIZE),
 
-  CR  ("group",  group,  1,     2,   NULL,      NULL,      0),
-  CR  ("rom",    rom,    3,     8,   NULL,      NULL,      0),
-  CR  ("pc",     pc,     8,     8,   NULL,      NULL,      0),
-  CR  ("ret_pc", ret_pc, 8,     8,   NULL,      NULL,      0),
+  CR  ("group",          group,          1,             2,    NULL,      NULL,      0),
+  CR  ("rom",            rom,            3,             8,    NULL,      NULL,      0),
+  CR  ("pc",             pc,             8,             8,    NULL,      NULL,      0),
+  CR  ("ret_pc",         ret_pc,         8,             8,    NULL,      NULL,      0),
   //    prev_pc
 
-  CR  ("display_enable", display_enable, 1, 2, NULL, NULL, 0),
+  CR  ("del_group_flag", del_group_flag, 1,             2,    NULL,      NULL,      0),
+  CR  ("del_group",      del_group,      1,             2,    NULL,      NULL,      0),
+  CR  ("del_rom_flag",   del_rom_flag,   1,             2,    NULL,      NULL,      0),
+  CR  ("del_rom",        del_rom,        3,             8,    NULL,      NULL,      0),
+
+  CR  ("display_enable", display_enable, 1,             2,    NULL,      NULL,      0),
   // key_flag
   // key_buf
 };
@@ -365,8 +370,6 @@ static void op_goto (sim_t *sim, int opcode)
   if (! cpu_reg->prev_carry)
     {
       cpu_reg->pc = opcode >> 2;
-      cpu_reg->rom = cpu_reg->del_rom;
-      cpu_reg->group = cpu_reg->del_grp;
     }
 }
 
@@ -377,8 +380,6 @@ static void op_jsb (sim_t *sim, int opcode)
 
   cpu_reg->ret_pc = cpu_reg->pc;
   cpu_reg->pc = opcode >> 2;
-  cpu_reg->rom = cpu_reg->del_rom;
-  cpu_reg->group = cpu_reg->del_grp;
 }
 
 
@@ -643,9 +644,6 @@ static void op_sel_rom (sim_t *sim, int opcode)
   classic_cpu_reg_t *cpu_reg = get_chip_data (sim->first_chip);
 
   cpu_reg->rom = opcode >> 7;
-  cpu_reg->group = cpu_reg->del_grp;
-
-  cpu_reg->del_rom = cpu_reg->rom;
 }
 
 
@@ -654,6 +652,7 @@ static void op_del_sel_rom (sim_t *sim, int opcode)
   classic_cpu_reg_t *cpu_reg = get_chip_data (sim->first_chip);
 
   cpu_reg->del_rom = opcode >> 7;
+  cpu_reg->del_rom_flag = true;
 }
 
 
@@ -661,7 +660,8 @@ static void op_del_sel_grp (sim_t *sim, int opcode)
 {
   classic_cpu_reg_t *cpu_reg = get_chip_data (sim->first_chip);
 
-  cpu_reg->del_grp = (opcode >> 7) & 1;
+  cpu_reg->del_group = (opcode >> 7) & 1;
+  cpu_reg->del_group_flag = true;
 }
 
 
@@ -795,27 +795,6 @@ static void init_ops (classic_cpu_reg_t *cpu_reg)
 }
 
 
-static void classic_disassemble (sim_t *sim, int addr, char *buf, int len)
-{
-  classic_cpu_reg_t *cpu_reg = get_chip_data (sim->first_chip);
-  int l;
-
-  l = snprintf (buf, len, "%02o%03o: ", addr >> 8, addr & 0377);
-  buf += l;
-  len -= l;
-  if (len <= 0)
-    return;
-
-  l = snprintf (buf, len, "%04o", cpu_reg->ucode [addr]);
-  buf += l;
-  len -= l;
-  if (len <= 0)
-    return;
-
-  return;
-}
-
-
 static void classic_display_scan (sim_t *sim)
 {
   classic_cpu_reg_t *cpu_reg = get_chip_data (sim->first_chip);
@@ -894,7 +873,31 @@ static void classic_print_state (sim_t *sim)
   else
     {
       char buf [80];
-      classic_disassemble (sim, cpu_reg->prev_pc, buf, sizeof (buf));
+
+      addr_t delayed_select_mask = 0;
+      addr_t delayed_select_addr = 0;
+      if (cpu_reg->del_rom_flag)
+      {
+	delayed_select_mask |= 03400;
+	delayed_select_addr |= cpu_reg->del_rom << 8;
+      }
+
+      if (cpu_reg->del_group_flag)
+      {
+	delayed_select_mask |= 04000;
+	delayed_select_addr |= cpu_reg->del_group << 11;
+      }
+
+      sim_disassemble_runtime(sim,
+			      0,                  // flags
+			      0,                  // bank
+			      cpu_reg->prev_pc,   // addr
+			      inst_normal,        // inst_state
+			      cpu_reg->carry,
+			      delayed_select_mask,
+			      delayed_select_addr,
+			      buf,
+			      sizeof (buf));
       log_printf (sim, "%s\n", buf);
     }
   log_printf (sim, "\n");
@@ -928,6 +931,14 @@ bool classic_execute_instruction (sim_t *sim)
   cpu_reg->prev_carry = cpu_reg->carry;
   cpu_reg->carry = 0;
 
+  bool prev_del_group_flag = cpu_reg->del_group_flag;
+  uint8_t prev_del_group = cpu_reg->del_group;
+  cpu_reg->del_group_flag = false;
+
+  bool prev_del_rom_flag = cpu_reg->del_rom_flag;
+  uint8_t prev_del_rom = cpu_reg->del_rom;
+  cpu_reg->del_rom_flag = false;
+
   if (cpu_reg->key_flag)
     cpu_reg->s [0] = 1;
   if (cpu_reg->ext_flag [EXT_FLAG_CTC_F1])
@@ -938,6 +949,16 @@ bool classic_execute_instruction (sim_t *sim)
   cpu_reg->pc++;
   (* cpu_reg->op_fcn [opcode]) (sim, opcode);
   sim->cycle_count++;
+
+  if (prev_del_group_flag)
+  {
+    cpu_reg->group = prev_del_group;
+  }
+
+  if (prev_del_rom_flag)
+  {
+    cpu_reg->rom = prev_del_rom;
+  }
 
   cpu_reg->display_scan_fn (sim);
 
@@ -1081,8 +1102,10 @@ static void classic_reset (sim_t *sim)
   cpu_reg->pc = 0;
   cpu_reg->rom = 0;
   cpu_reg->group = 0;
+  cpu_reg->del_rom_flag = 0;
   cpu_reg->del_rom = 0;
-  cpu_reg->del_grp = 0;
+  cpu_reg->del_group_flag = 0;
+  cpu_reg->del_group = 0;
 
   op_clear_reg (sim, 0);
   op_clear_s (sim, 0);
@@ -1320,6 +1343,6 @@ processor_dispatch_t classic_processor =
     .read_ram            = classic_read_ram,
     .write_ram           = classic_write_ram,
 
-    .disassemble         = NULL,  // $$$
+    .disassemble         = classic_disassemble,
     .print_state         = classic_print_state
   };
