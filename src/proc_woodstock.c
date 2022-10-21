@@ -91,22 +91,19 @@ static reg_detail_t woodstock_cpu_reg_detail [] =
   WR  ("f",                f,                4,             16,   NULL,      NULL,      0),
   WR  ("decimal",          decimal,          1,             2,    NULL,      NULL,      0),
   WR  ("carry",            carry,            1,             2,    NULL,      NULL,      0),
-  // prev_carry
 
   WR  ("s",                s,                SSIZE,         2,    get_bools, set_bools, SSIZE),
   WR  ("ext_flag",         ext_flag,         EXT_FLAG_SIZE, 2,    get_bools, set_bools, EXT_FLAG_SIZE),
 
   WR  ("bank",             bank,             1,             2,    NULL,      NULL,      0),
   WR  ("pc",               pc,               12,            8,    NULL,      NULL,      0),
-  // prev_pc
   WRA ("stack",            stack,            12,            8,    NULL,      NULL,      0,     STACK_SIZE),
   WR  ("del_rom_flag",     del_rom_flag,     1,             2,    NULL,      NULL,      0),
   WR  ("del_rom",          del_rom,          4,             8,    NULL,      NULL,      0),
 
   WR  ("display_enable",   display_enable,   1,             2,    NULL,      NULL,      0),
   WR  ("display_14_digit", display_14_digit, 1,             2,    NULL,      NULL,      0),
-  // key_flag
-  // key_buf
+
   WR  ("ram_addr",         ram_addr, 8, 16, NULL, NULL, 0)
 };
 
