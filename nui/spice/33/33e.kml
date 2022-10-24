@@ -1,5 +1,5 @@
 # $Id$
-# Copyright 2004, 2005, 2008 Eric Smith <eric@brouhaha.com>
+# Copyright 2004, 2005, 2008, 2022 Eric Smith <spacewar@gmail.com>
 
 # Nonpareil is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License version 2 as
@@ -18,12 +18,12 @@
 # Boston, MA 02111, USA.
 
 global
-	title "33C Programmable Scientific Calculator"
-	author "Eric Smith <eric@brouhaha.com>"
-	model "33c"
+	title "33E Programmable Scientific Calculator"
+	author "Eric Smith <spacewar@gmail.com>"
+	model "33e"
 	image "spice-background.png"
 	image credit "Maciej Bartosiak"
-	overlay default image "33c-overlay.png"
+	overlay default image "33-overlay.png"
 	color 0 87 127 152  # background color, used when transparency is off
 	transparency 128
 end

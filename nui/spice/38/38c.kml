@@ -23,7 +23,7 @@ global
 	model "38c"
 	image "spice-background.png"
 	image credit "Maciej Bartosiak"
-	overlay default image "38c-overlay.png"
+	overlay default image "38-overlay.png"
 	color 0 87 127 152  # background color, used when transparency is off
 	transparency 128
 end

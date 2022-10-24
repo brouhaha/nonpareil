@@ -1,5 +1,5 @@
 # $Id$
-# Copyright 2004, 2005, 2008 Eric Smith <eric@brouhaha.com>
+# Copyright 2004, 2005, 2008, 2022 Eric Smith <spacewar@gmail.com>
 
 # Nonpareil is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License version 2 as
@@ -18,12 +18,12 @@
 # Boston, MA 02111, USA.
 
 global
-	title "38E Programmable Financial Calculator"
-	author "Eric Smith <eric@brouhaha.com>"
-	model "38e"
+	title "33C Programmable Scientific Calculator"
+	author "Eric Smith <spacewar@gmail.com>"
+	model "33c"
 	image "spice-background.png"
 	image credit "Maciej Bartosiak"
-	overlay default image "38e-overlay.png"
+	overlay default image "33-overlay.png"
 	color 0 87 127 152  # background color, used when transparency is off
 	transparency 128
 end
@@ -63,10 +63,10 @@ end # display
 # switch 0 would be power switch
 
 switch 1
-  offset  200  127
+  offset  211  127
   default 1
-  position 0  image "switch-off.png"  end  # begin
-  position 1  image "switch-on.png"   end  # end
+  position 0  image "switch-off.png"  end  # program
+  position 1  image "switch-on.png"   end  # run
 end
 
 button 11  image "key_11.png"  offset  18 156  end
@@ -124,13 +124,7 @@ scancode "asterisk"     map 0 61 end  # *
 scancode "slash"        map 0 71 end  # /
 scancode "Return"       map 0 31 end  # ENTER
 scancode "c"            map 0 32 end  # c - CHS
-
-# suggested bindings (John R. Hogerhuis)
-scancode "n"            map 0 11 end  # 'n' is n
-scancode "i"            map 0 12 end  # 'i' is i
-scancode "bracketleft"  map 0 13 end  # '[' is PV (present-value)
-scancode "p"            map 0 14 end  # 'p' is PMT
-scancode "bracketright" map 0 15 end  # ']' is FV (future-value)
+scancode "e"            map 0 33 end  # e - EEX
 
 # keypad:
 scancode "KP_0"         map 0 72 end  # 0
