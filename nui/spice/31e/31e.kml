@@ -1,0 +1,137 @@
+# Copyright 2004, 2005, 2022 Eric Smith <spacewar@gmail.com>
+
+# Nonpareil is free software; you can redistribute it and/or modify it
+# under the terms of the GNU General Public License version 2 as
+# published by the Free Software Foundation.  Note that I am not
+# granting permission to redistribute or modify Nonpareil under the
+# terms of any later version of the General Public License.
+
+# Nonpareil is distributed in the hope that they will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# General Public License for more details.
+
+# You should have received a copy of the GNU General Public License
+# along with this program (in the file "COPYING"); if not, write to
+# the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+# Boston, MA 02111, USA.
+
+global
+	title "31E Scientific Calculator"
+	author "Eric Smith <spacewar@gmail.com>"
+	model "31e"
+	image "spice-background.png"
+	image credit "Maciej Bartosiak"
+	overlay default image "31e-overlay.png"
+	color 0 87 127 152  # background color, used when transparency is off
+	transparency 128
+end
+
+background
+	size 290 550
+end
+
+display
+	offset 9 66
+	size 272 43
+
+	color 0 60 0 0   # background
+	color 1 60 0 0   # unlit segments
+	color 2 255 17 17  # lit segments
+
+	digits 12
+		size 17 30
+		offset 35 10
+	end
+
+	segments
+		image "led_segments.png" offset 2 2 size 126 188
+		segment 'a' color 255   0   0  end       # red
+		segment 'b' color   0 255   0  end       # green
+		segment 'c' color   0   0 255  end       # blue
+		segment 'd' color 255 255   0  end       # yellow
+		segment 'e' color 255   0 255  end       # purple
+		segment 'f' color   0 255 255  end       # bluegreen
+		segment 'g' color 255 128   0  end       # orange
+		#segment 'h' color 255   0 128  end       # pink (inside dp)
+		segment 'h' color 128   0   0  end       # dark red (outside dp)
+		segment 'i'  color  64  64  64  end       # dark grey
+	end # segments
+end # display
+
+                                                    # unshifted  f-shifted
+button 11  image "key_11.png"  offset  18 156  end  # sqrt       FIX
+button 12  image "key_12.png"  offset  72 156  end  # 1/x        SCI
+button 13  image "key_13.png"  offset 126 156  end  # y^x        pi
+button 14  image "key_14.png"  offset 180 156  end  # e^x        10^x
+button 15  image "key_15.png"  offset 234 156  end  # ln         log
+
+button 21  image "key_21.png"  offset  18 212  end  # x<>y       DEG
+button 22  image "key_22.png"  offset  72 212  end  # Rdn        RAD
+button 23  image "key_23.png"  offset 126 212  end  # STO        GRD
+button 24  image "key_24.png"  offset 180 212  end  # RCL        LST x
+button 25  image "key_25.png"  offset 234 212  end  # f
+
+button 31  image "key_31.png"  offset  18 268  end  # ENTER^     MANT/CLEAR PREFIX
+button 32  image "key_32.png"  offset 126 268  end  # CHS        CLEAR ALL
+button 33  image "key_33.png"  offset 180 268  end  # EEX        CLEAR REG
+button 34  image "key_34.png"  offset 234 268  end  # CLx        CLEAR STK
+
+button 41  image "key_41.png"  offset  18 324  end  # -          ->R
+button 42  image "key_42.png"  offset  82 324  end  # 7          SIN        
+button 43  image "key_43.png"  offset 154 324  end  # 8          COS
+button 44  image "key_44.png"  offset 226 324  end  # 9          TAN
+
+button 51  image "key_51.png"  offset  18 380  end  # +          ->P
+button 52  image "key_52.png"  offset  82 380  end  # 4          SIN-1
+button 53  image "key_53.png"  offset 154 380  end  # 5          COS-1
+button 54  image "key_54.png"  offset 226 380  end  # 6          TAN-1
+
+button 61  image "key_61.png"  offset  18 436  end  # x          ->DEG
+button 62  image "key_62.png"  offset  82 436  end  # 1          ->in
+button 63  image "key_63.png"  offset 154 436  end  # 2          ->degF
+button 64  image "key_64.png"  offset 226 436  end  # 3          ->lbm
+
+button 71  image "key_71.png"  offset  18 492  end  # div        ->RAD
+button 72  image "key_72.png"  offset  82 492  end  # 0          ->mm
+button 73  image "key_73.png"  offset 154 492  end  # .          ->degC
+button 74  image "key_74.png"  offset 226 492  end  # %          ->kg
+
+# main keyboard:
+scancode "0"            map 0 72 end  # 0
+scancode "1"            map 0 62 end  # 1
+scancode "2"            map 0 63 end  # 2
+scancode "3"            map 0 64 end  # 3
+scancode "4"            map 0 52 end  # 4
+scancode "5"            map 0 53 end  # 5
+scancode "6"            map 0 54 end  # 6
+scancode "7"            map 0 42 end  # 7
+scancode "8"            map 0 43 end  # 8
+scancode "9"            map 0 44 end  # 9
+scancode "period"       map 0 73 end  # .
+scancode "plus"         map 0 51 end  # +
+scancode "minus"        map 0 41 end  # -
+scancode "asterisk"     map 0 61 end  # *
+scancode "slash"        map 0 71 end  # /
+scancode "Return"       map 0 31 end  # ENTER
+scancode "c"            map 0 32 end  # c - CHS
+scancode "e"            map 0 33 end  # e - EEX
+
+# keypad:
+scancode "KP_0"         map 0 72 end  # 0
+scancode "KP_1"         map 0 62 end  # 1
+scancode "KP_2"         map 0 63 end  # 2
+scancode "KP_3"         map 0 64 end  # 3
+scancode "KP_4"         map 0 52 end  # 4
+scancode "KP_5"         map 0 53 end  # 5
+scancode "KP_6"         map 0 54 end  # 6
+scancode "KP_7"         map 0 42 end  # 7
+scancode "KP_8"         map 0 43 end  # 8
+scancode "KP_9"         map 0 44 end  # 9
+scancode "KP_Decimal"   map 0 73 end  # .
+scancode "KP_Separator" map 0 73 end  # ,
+scancode "KP_Add"       map 0 51 end  # +
+scancode "KP_Subtract"  map 0 41 end  # -
+scancode "KP_Multiply"  map 0 61 end  # *
+scancode "KP_Divide"    map 0 71 end  # /
+scancode "KP_Enter"     map 0 31 end  # ENTER

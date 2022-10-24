@@ -1,6 +1,5 @@
 <?xml version="1.0"?>
 <!--
-$Id$
 Copyright 2006, 2008, 2022 Eric Smith <spacewar@gmail.com>
 
 This work is licensed under the Creative Commons
@@ -19,14 +18,14 @@ To view the actual license, visit
 <calcdef version="1.0"
          arch="Woodstock"
          platform="Spice"
-         model="32e"
+         model="31e"
          copyright="Copyright 2006, 2008, 2022 Eric Smith &lt;spacewar@gmail.com&gt;"
          license="CC-BY-SA-3.0">
 
   <chip id="act" type="spice_act">
     <part_info>
       <vendor_name>HP</vendor_name>
-      <part_number>1820-2162</part_number>
+      <part_number>1820-2105</part_number>
     </part_info>
     <part_info>
       <vendor_name>AMI</vendor_name>
@@ -58,7 +57,7 @@ To view the actual license, visit
   </chip>
 
   <chip id="rom_ram_1" type="woodstock_rom_ram">
-    <memory addr_space="inst" banks="0" base_addr="02000" size="05000">
+    <memory addr_space="inst" banks="0" base_addr="02000" size="02000">
     </memory>
     <memory addr_space="data" base_addr="000" size="040">
     </memory>
@@ -115,7 +114,7 @@ To view the actual license, visit
   </keyboard>
 
   <obj_file addr_space="inst">
-    32e.rom
+    31e.rom
   </obj_file>
 
 </calcdef>
