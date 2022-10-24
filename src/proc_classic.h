@@ -116,6 +116,8 @@ typedef struct
 } classic_cpu_reg_t;
 
 
+#define FAKE_CLASSIC_DISASSEMBLER
+#ifndef FAKE_CLASSIC_DISASSEMBLER
 // defined in dis_classic.c:
 bool classic_disassemble (sim_t        *sim,
 			  uint32_t     flags,
@@ -132,5 +134,6 @@ bool classic_disassemble (sim_t        *sim,
 			  addr_t       *target_addr,
 			  char         *buf,
 			  int          len);
+#endif
 
 #endif // PROC_CLASSIC_H

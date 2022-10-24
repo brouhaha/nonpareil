@@ -795,6 +795,30 @@ static void init_ops (classic_cpu_reg_t *cpu_reg)
 }
 
 
+#define FAKE_CLASSIC_DISASSEMBLER
+#ifdef FAKE_CLASSIC_DISASSEMBLER
+static void classic_disassemble (sim_t *sim, int addr, char *buf, int len)
+{
+  classic_cpu_reg_t *cpu_reg = get_chip_data (sim->first_chip);
+  int l;
+
+  l = snprintf (buf, len, "%02o%03o: ", addr >> 8, addr & 0377);
+  buf += l;
+  len -= l;
+  if (len <= 0)
+    return;
+
+  l = snprintf (buf, len, "%04o", cpu_reg->ucode [addr]);
+  buf += l;
+  len -= l;
+  if (len <= 0)
+    return;
+
+  return;
+}
+#endif // FAKE_CLASSIC_DISASSEMBLER
+
+
 static void classic_display_scan (sim_t *sim)
 {
   classic_cpu_reg_t *cpu_reg = get_chip_data (sim->first_chip);
@@ -874,6 +898,9 @@ static void classic_print_state (sim_t *sim)
     {
       char buf [80];
 
+#ifdef FAKE_CLASSIC_DISASSEMBLER
+      classic_disassemble (sim, cpu_reg->prev_pc, buf, sizeof (buf));
+#else
       addr_t delayed_select_mask = 0;
       addr_t delayed_select_addr = 0;
       if (cpu_reg->del_rom_flag)
@@ -898,6 +925,7 @@ static void classic_print_state (sim_t *sim)
 			      delayed_select_addr,
 			      buf,
 			      sizeof (buf));
+#endif // FAKE_CLASSIC_DISASSEMBLER
       log_printf (sim, "%s\n", buf);
     }
   log_printf (sim, "\n");
@@ -1343,6 +1371,10 @@ processor_dispatch_t classic_processor =
     .read_ram            = classic_read_ram,
     .write_ram           = classic_write_ram,
 
+#ifdef FAKE_CLASSIC_DISASSEMBLER
+    .disassemble         = NULL,
+#else
     .disassemble         = classic_disassemble,
+#endif // FAKE_CLASSIC_DISASSEMBLER
     .print_state         = classic_print_state
   };
