@@ -1,0 +1,129 @@
+<?xml version="1.0"?>
+<!--
+Copyright 2006, 2008, 2022 Eric Smith <spacewar@gmail.com>
+
+This work is licensed under the Creative Commons
+Attribution-ShareAlike 3.0 License. To view a simplified description
+of this license, visit
+
+    http://creativecommons.org/licenses/by-sa/3.0/
+
+To view the actual license, visit
+
+    http://creativecommons.org/licenses/by-sa/3.0/legalcode
+-->
+
+<!DOCTYPE calcdef SYSTEM "http://nonpareil.brouhaha.com/dtd/calcdef-1.0.dtd">
+
+<calcdef version="1.0"
+         arch="Woodstock"
+         platform="Spice"
+         model="31e"
+         copyright="Copyright 2006, 2008, 2022 Eric Smith &lt;spacewar@gmail.com&gt;"
+         license="CC-BY-SA-3.0">
+
+  <chip id="act" type="spice_act">
+    <part_info>
+      <vendor_name>HP</vendor_name>
+      <part_number>1820-2105</part_number>
+    </part_info>
+    <part_info>
+      <vendor_name>AMI</vendor_name>
+    </part_info>
+    <inst_clock osc_type="LC" freq="140000"/>
+    <memory addr_space="inst" banks="0" base_addr="00000" size="02000">
+    </memory>
+    <chargen type="segment" count="8">
+      <char id="0x00">abcdef..</char>
+      <char id="0x01">.bc.....</char>
+      <char id="0x02">ab.de.g.</char>
+      <char id="0x03">abcd..g.</char>
+      <char id="0x04">.bc..fg.</char>
+      <char id="0x05">a.cd.fg.</char>
+      <char id="0x06">a.cdefg.</char>
+      <char id="0x07">abc.....</char>
+      <char id="0x08">abcdefg.</char>
+      <char id="0x09">abcd.fg.</char>
+      <char id="0x0a">....e.g.</char>  <!-- r -->
+      <char id="0x0b">.bc.efg.</char>  <!-- H -->
+      <char id="0x0c">..cde.g.</char>  <!-- o -->
+      <char id="0x0d">ab..efg.</char>  <!-- P -->
+      <char id="0x0e">a..defg.</char>  <!-- E -->
+      <char id="0x0f">........</char>  <!-- space -->
+      <char id="' '" >........</char>
+      <char id="'-'" >......g.</char>
+      <char id="'.'" >.......h</char>
+    </chargen>
+  </chip>
+
+  <chip id="rom_ram_1" type="woodstock_rom_ram">
+    <memory addr_space="inst" banks="0" base_addr="02000" size="02000">
+    </memory>
+    <memory addr_space="data" base_addr="000" size="040">
+    </memory>
+  </chip>
+
+  <keyboard>
+
+    <!-- power switch -->
+    <!--
+    <switch number="0">
+      <switch_pos position="0">
+      </switch_pos>
+      <switch_pos position="1">
+      </switch_pos>
+    </switch>
+    -->
+
+                                               <!-- unshifted  f-shifted -->
+    <key user_keycode="11" hw_keycode="0064"/> <!-- sqrt       FIX       -->
+    <key user_keycode="12" hw_keycode="0063"/> <!-- 1/x        SCI       -->
+    <key user_keycode="13" hw_keycode="0062"/> <!-- y^x        pi        -->
+    <key user_keycode="14" hw_keycode="0061"/> <!-- e^x        10^x      -->
+    <key user_keycode="15" hw_keycode="0060"/> <!-- ln         log       -->
+
+    <key user_keycode="21" hw_keycode="0224"/> <!-- x<>y       DEG       -->
+    <key user_keycode="22" hw_keycode="0223"/> <!-- Rdn        RAD       -->
+    <key user_keycode="23" hw_keycode="0222"/> <!-- STO        GRD       -->
+    <key user_keycode="24" hw_keycode="0221"/> <!-- RCL        LSTx      -->
+    <key user_keycode="25" hw_keycode="0220"/> <!-- f                    -->
+
+    <key user_keycode="31" hw_keycode="0163"/> <!-- ENTER^     MANT/CLEAR PREFIX -->
+    <key user_keycode="32" hw_keycode="0162"/> <!-- CHS        CLEAR ALL         -->
+    <key user_keycode="33" hw_keycode="0161"/> <!-- EEX        CLEAR REG         -->
+    <key user_keycode="34" hw_keycode="0160"/> <!-- CLx        CLEAR STK         -->
+
+    <key user_keycode="41" hw_keycode="0243"/> <!-- minus      ->R               -->
+    <key user_keycode="42" hw_keycode="0242"/> <!-- 7          SIN               -->
+    <key user_keycode="43" hw_keycode="0241"/> <!-- 8          COS               -->
+    <key user_keycode="44" hw_keycode="0240"/> <!-- 9          TAN               -->
+
+    <key user_keycode="51" hw_keycode="0143"/> <!-- plus        ->P              -->
+    <key user_keycode="52" hw_keycode="0142"/> <!-- 4           SIN-1            -->
+    <key user_keycode="53" hw_keycode="0141"/> <!-- 5           COS-1            -->
+    <key user_keycode="54" hw_keycode="0140"/> <!-- 6           TAN-1            -->
+
+    <key user_keycode="61" hw_keycode="0323"/> <!-- times       ->DEG            -->
+    <key user_keycode="62" hw_keycode="0322"/> <!-- 1           ->in             -->
+    <key user_keycode="63" hw_keycode="0321"/> <!-- 2           ->degF           -->
+    <key user_keycode="64" hw_keycode="0320"/> <!-- 3           ->lbm            -->
+
+    <key user_keycode="71" hw_keycode="0103"/> <!-- divide      ->RAD            -->
+    <key user_keycode="72" hw_keycode="0102"/> <!-- 0           ->mm             -->
+    <key user_keycode="73" hw_keycode="0101"/> <!-- .           ->degC           -->
+    <key user_keycode="74" hw_keycode="0100"/> <!-- %           ->kg             -->
+  </keyboard>
+
+  <obj_file addr_space="inst"
+            copyright="Copyright 2004, 2008, 2022 Eric Smith &lt;spacewar@gmail.com&gt;"
+            license="GPLv3">
+    1820-2105.obj
+  </obj_file>
+
+  <obj_file addr_space="inst"
+            copyright="Copyright 2004, 2008, 2022 Eric Smith &lt;spacewar@gmail.com&gt;"
+            license="GPLv3">
+    31e.obj
+  </obj_file>
+
+</calcdef>

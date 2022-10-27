@@ -1,0 +1,21 @@
+# Nonpareil
+# Copyright 2022 Eric smith <spacewar@gmail.com>
+
+Import('env')
+
+ncd_names = ['31e', '33e', '33c']
+
+source_names = ['1820-2105.asm', '31e.asm', '33e.asm', '33c.asm']
+
+source_files = [env.File(sn + '.asm') for sn in source_names]
+
+object_files = []
+listing_files = []
+for sn in source_names:
+    o, l = env.UASM(target = sn)
+    object_files.append(o)
+    listing_files.append(l)
+
+ncd_files = [env.NCD(target = nn)[0] for nn in ncd_names]
+
+Return('ncd_files')
