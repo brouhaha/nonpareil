@@ -1,6 +1,5 @@
 /*
-$Id$
-Copyright 1995, 2006, 2008 Eric L. Smith <eric@brouhaha.com>
+Copyright 1995, 2006, 2008, 2022 Eric Smith <spacewar@gmail.com>
 
 Nonpareil is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License version 2 as
@@ -19,7 +18,7 @@ Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
 MA 02111, USA.
 */
 
-%name-prefix="asm_"
+%define api.prefix {asm_}
 
 %{
 #include <stdbool.h>
@@ -28,6 +27,7 @@ MA 02111, USA.
 
 #include "symtab.h"
 #include "arch.h"
+#include "util.h"
 #include "asm.h"
 
 void asm_error (char *s);
@@ -39,7 +39,9 @@ void asm_error (char *s);
   }
 
 %token ARCH
+%token COPYRIGHT
 %token INCLUDE
+%token LICENSE
 
 %token <string> IDENT
 %token <string> STRING
@@ -53,6 +55,8 @@ line		: '.' pseudo_op
 
 pseudo_op	: ps_arch
 		| ps_include
+                | ps_copyright
+                | ps_license
 		;
 
 ps_arch		: ARCH IDENT
@@ -69,6 +73,10 @@ ps_include	: INCLUDE STRING {
                                    if (get_cond_state ())
                                      pseudo_include ($2);
                                  };
+
+ps_copyright    : COPYRIGHT STRING { copyright_string = newstr($2); };
+
+ps_license      : LICENSE STRING { license_string = newstr($2); };
 
 %%
 

@@ -1,6 +1,5 @@
 /*
-$Id$
-Copyright 1995, 2003, 2004, 2008 Eric L. Smith <eric@brouhaha.com>
+Copyright 1995, 2003, 2004, 2008, 2022 Eric Smith <spacewar@gmail.com>
 
 Nonpareil is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License version 2 as
@@ -36,7 +35,9 @@ MA 02111, USA.
 static keyword_t asm_keywords [] =
 {
   { "arch",      ARCH },
+  { "copyright", COPYRIGHT },
   { "include",   INCLUDE },
+  { "license",   LICENSE },
   { NULL,        0 }
 };
 

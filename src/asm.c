@@ -1,6 +1,5 @@
 /*
-$Id$
-Copyright 1995, 2004, 2005, 2006, 2007, 2008 Eric L. Smith <eric@brouhaha.com>
+Copyright 1995, 2004, 2005, 2006, 2007, 2008, 2022 Eric Smith <spacewar@gmail.com>
 
 Nonpareil is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License version 2 as
@@ -119,6 +118,10 @@ static FILE *list_file = NULL;
 
 symtab_t *global_symtab;
 symtab_t *symtab [MAXROM];  /* separate symbol tables for each '.rom' directive */
+
+
+const char *copyright_string = NULL;
+const char *license_string = NULL;
 
 
 static void open_source (char *fn)
@@ -504,6 +507,18 @@ static void parse_define_option (char *opt)
 }
 
 
+static void write_object_file_metadata(void)
+{
+  if (! obj_file)
+    return;
+
+  if (copyright_string)
+    fprintf(obj_file, "# COPYRIGHT: %s\n", copyright_string);
+  if (license_string)
+    fprintf(obj_file, "# LICENSE: %s\n", license_string);
+}
+
+
 int main (int argc, char *argv[])
 {
   char *src_fn = NULL;
@@ -580,6 +595,7 @@ int main (int argc, char *argv[])
   do_pass (1);
 
   open_source (src_fn);
+  write_object_file_metadata();
   do_pass (2);
 
   err_printf ("%d errors detected, %d warnings\n", errors, warnings);

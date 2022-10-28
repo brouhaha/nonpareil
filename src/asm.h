@@ -1,6 +1,5 @@
 /*
-$Id$
-Copyright 1995, 2004, 2005, 2006, 2007, 2008 Eric L. Smith <eric@brouhaha.com>
+Copyright 1995, 2004, 2005, 2006, 2007, 2008, 2022 Eric Smith <spacewar@gmail.com>
 
 Nonpareil is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License version 2 as
@@ -51,6 +50,9 @@ extern int last_instruction_type;
 #define MAX_LINE 256
 extern char linebuf [MAX_LINE];
 extern char *lineptr;
+
+extern const char *copyright_string;
+extern const char *license_string;
 
 
 #define MAXROM 16     /* classic and woodstock */
