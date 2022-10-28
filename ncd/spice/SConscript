@@ -3,7 +3,7 @@
 
 Import('env')
 
-ncd_names = ['31e', '33e', '33e', '33c', '34c', '37e', '38e', '38c']
+ncd_names = ['31e', '32e', '33e', '33e', '33c', '34c', '37e', '38e', '38c']
 
 source_names = ['1820-2105.asm', '31e.asm', '33e.asm', '33c.asm',
                 '1820-2122.asm', '37e.asm', '38e.asm',
