@@ -1,4 +1,4 @@
-; 1820-2105 CPU ROM disassembly - quad 0 (@0000-@1777)
+; 1820-2105, 1MA4-0001 CPU ROM disassembly - quad 0 (@0000-@1777)
 ; used in 31E, 33E, 33C
 ; Copyright 2022 Eric Smith <spacewar@gmail.com>
 
@@ -1129,4 +1129,4 @@ S01756:  p <- 12
          p <- 12
          return
 
-	 .dw @1653
+	 .dw @1653			; CRC, quad 0 (@0000..@1777)

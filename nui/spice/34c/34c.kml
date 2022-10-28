@@ -69,42 +69,43 @@ switch 1
   position 1  image "switch-on.png"   end  # run
 end
 
-button 11  image "key_11.png"  offset  18 156  end
-button 12  image "key_12.png"  offset  72 156  end
-button 13  image "key_13.png"  offset 126 156  end
-button 14  image "key_14.png"  offset 180 156  end
-button 15  image "key_15.png"  offset 234 156  end
-
-button 21  image "key_21.png"  offset  18 212  end
-button 22  image "key_22.png"  offset  72 212  end
-button 23  image "key_23.png"  offset 126 212  end
-button 24  image "key_24.png"  offset 180 212  end
-button 25  image "key_25.png"  offset 234 212  end
-
-button 31  image "key_31.png"  offset  18 268  end
-button 32  image "key_32.png"  offset 126 268  end
-button 33  image "key_33.png"  offset 180 268  end
-button 34  image "key_34.png"  offset 234 268  end
-
-button 41  image "key_41.png"  offset  18 324  end
-button 42  image "key_42.png"  offset  82 324  end
-button 43  image "key_43.png"  offset 154 324  end
-button 44  image "key_44.png"  offset 226 324  end
-
-button 51  image "key_51.png"  offset  18 380  end
-button 52  image "key_52.png"  offset  82 380  end
-button 53  image "key_53.png"  offset 154 380  end
-button 54  image "key_54.png"  offset 226 380  end
-
-button 61  image "key_61.png"  offset  18 436  end
-button 62  image "key_62.png"  offset  82 436  end
-button 63  image "key_63.png"  offset 154 436  end
-button 64  image "key_64.png"  offset 226 436  end
-
-button 71  image "key_71.png"  offset  18 492  end
-button 72  image "key_72.png"  offset  82 492  end
-button 73  image "key_73.png"  offset 154 492  end
-button 74  image "key_74.png"  offset 226 492  end
+                                                   # unshifted  f-shifted  g-shifted  h-shifted
+button 11  image "key_11.png"  offset  18 156  end # A          FIX        DEG        DSP I
+button 12  image "key_12.png"  offset  72 156  end # B          SCI        RAD        RTN
+button 13  image "key_13.png"  offset 126 156  end # GSB        ENG        GRD        LBL
+button 14  image "key_14.png"  offset 180 156  end # f
+button 15  image "key_15.png"  offset 234 156  end # g
+						                                                      
+button 21  image "key_21.png"  offset  18 212  end # x<>y       x<>I                  x<>(i)
+button 22  image "key_22.png"  offset  72 212  end # GTO        Rup        Rdn        DEL
+button 23  image "key_23.png"  offset 126 212  end # STO        I          DSE        BST
+button 24  image "key_24.png"  offset 180 212  end # RCL        (i)        ISG        SST
+button 25  image "key_25.png"  offset 234 212  end # h
+						                                                      
+button 31  image "key_31.png"  offset  18 268  end # ENTER^     CLR PREFIX MEM        MANT
+button 32  image "key_32.png"  offset 126 268  end # CHS        CLR PRGM              INT
+button 33  image "key_33.png"  offset 180 268  end # EEX        CLR REG               FRAC
+button 34  image "key_34.png"  offset 234 268  end # CLx        CLR SIGMA             ABS
+						                                                      
+button 41  image "key_41.png"  offset  18 324  end # minus      x<=y       x<0        %
+button 42  image "key_42.png"  offset  82 324  end # 7          SIN        SIN-1      Delta%
+button 43  image "key_43.png"  offset 154 324  end # 8          COS        COS-1      mean
+button 44  image "key_44.png"  offset 226 324  end # 9          TAN        TAN-1      std dev
+						                                                      
+button 51  image "key_51.png"  offset  18 380  end # plus       x>y        x>0        SF
+button 52  image "key_52.png"  offset  82 380  end # 4          ->R        ->P        lin est
+button 53  image "key_53.png"  offset 154 380  end # 5          ->DEG      ->RAD      r
+button 54  image "key_54.png"  offset 226 380  end # 6          ->H.MS     ->H        L.R.
+						                                                      
+button 61  image "key_61.png"  offset  18 436  end # times      x#y        x#0        CF
+button 62  image "key_62.png"  offset  82 436  end # 1          LN         e^x        x!
+button 63  image "key_63.png"  offset 154 436  end # 2          LOG        10^x       1/x
+button 64  image "key_64.png"  offset 226 436  end # 3          sqrt       x^2        y^x
+						                                                      
+button 71  image "key_71.png"  offset  18 492  end # divide     x=y        x=0        F?
+button 72  image "key_72.png"  offset  82 492  end # 0          integrate             LSTx
+button 73  image "key_73.png"  offset 154 492  end # .          solve                 pi
+button 74  image "key_74.png"  offset 226 492  end # R/S        Sigma+     Sigma-     PSE
 
 # main keyboard:
 scancode "0"            map 0 72 end  # 0

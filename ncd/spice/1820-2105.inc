@@ -1,4 +1,7 @@
-; entry points:
+; 1820-2105, 1MA4-0001 CPU ROM entry points - quad 0 (@0000-@1777)
+; used in 31E, 33E, 33C
+; Copyright 2022 Eric Smith <spacewar@gmail.com>
+
 S00002	.equ @00002
 L00003  .equ @00003
 S00006	.equ @00006

@@ -1,9 +1,13 @@
-	.arch woodstock
+	 .arch woodstock
 
-	.include "1820-2105.inc"
+	 .include "1820-2105.inc"
 
-	.bank 0
-	.org @2000
+; flags:
+; f  s4=1 s6=1
+; g  s4=1 s6=0
+
+	 .bank 0
+	 .org @2000
 
 L02000:  1 -> s 13
          1 -> s 6
@@ -252,7 +256,7 @@ L02323:  if b[w] = 0
            then go to L02402
          m2 -> c
          a exchange c[w]
-L02352:  delayed rom @00
+         delayed rom @00
          jsb S00152
          a exchange c[w]
          m1 exchange c
@@ -664,7 +668,7 @@ L03131:  jsb S03076
 L03132:  0 -> s 2
          go to L03341
 
-L03134:  jsb S03362
+fn_bst:  jsb S03362
          if c[x] = 0
            then go to L03164
          decimal
@@ -680,7 +684,7 @@ L03150:  c -> register 8
          jsb S03362
          go to L03164
 
-L03153:  1 -> s 1
+fn_sst:  1 -> s 1
          jsb S03362
          if c[x] = 0
            then go to L03162
@@ -865,7 +869,7 @@ S03412:  0 -> s 4
          0 -> s 14
          return
 
-L03422:  load constant 10
+key_74:  load constant 10		; key 74 (@100): unshifted R/S,    f-shifted PAUSE, g-shifted %
          load constant 11
 L03424:  p <- 1
          if 0 = s 4
@@ -881,10 +885,10 @@ L03433:  jsb S03412
          delayed rom @06
          go to L03311
 
-L03441:  jsb S03412
+key_15:  jsb S03412			; key 15 (@060): g
          go to L03445
 
-L03443:  jsb S03412
+key_14:  jsb S03412			; key 14 (@061): f
          1 -> s 6
 L03445:  1 -> s 4
 L03446:  0 -> c[wp]
@@ -899,19 +903,17 @@ L03453:  jsb S03412
          go to L03446
 
          nop
-         go to L03441
 
-         go to L03443
+         go to key_15			; key 15 (@060): g
+         go to key_14			; key 14 (@061): f
+         go to key_13			; key 13 (@062): unshifted GTO, f-shifted ENG, g-shifted NOP
+         go to key_12			; key 12 (@063): unshifted GSB, f-shifted SCI, g-shifted ENG
 
-         go to L03524
-
-         go to L03513
-
-         if 0 = s 4
-           then go to L03153
+         if 0 = s 4			; key 11 (@064): unshifted SST, f-shifted FIX, g-shifted BST
+           then go to fn_sst
          if 0 = s 6
-           then go to L03134
-         load constant 15
+           then go to fn_bst
+         load constant 15		; FIX
 L03471:  jsb S03412
          1 -> s 6
          load constant 0
@@ -921,13 +923,11 @@ L03475:  load constant 5
          load constant 0
          go to L03433
 
-         go to L03422
+         go to key_74			; key 74 (@100): unshifted R/S,    f-shifted PAUSE, g-shifted %
+         go to key_73			; key 73 (@101): unshfited .,      f-shifted LSTx,  g-shfited pi
+         go to key_72			; key 72 (@102): unshifted 0,      f-shifted sqrt,  g-shfited x^2
 
-         go to L03664
-
-         go to L03726
-
-         jsb S03645
+         jsb S03645			; key 71 (@103): unshifted divide, f-shifted x=y,   g-shifted x=0
          c + 1 -> c[x]
 L03505:  c + 1 -> c[x]
 L03506:  c + 1 -> c[x]
@@ -936,7 +936,7 @@ L03507:  c + 1 -> c[x]
            then go to L03424
          go to L03742
 
-L03513:  if 0 = s 4
+key_12:  if 0 = s 4			; key 12 (@063): unshifted GSB, f-shifted SCI, g-shifted ENG
            then go to L03521
          if 0 = s 6
            then go to L03475
@@ -947,7 +947,7 @@ L03521:  jsb S03412
          1 -> s 10
          go to L03446
 
-L03524:  if 0 = s 4
+key_13:  if 0 = s 4			; key 13 (@062): unshifted GTO, f-shifted ENG, g-shifted NOP
            then go to L03453
          if 0 = s 6
            then go to L03532
@@ -961,34 +961,32 @@ L03532:  load constant 15
 L03535:  c + 1 -> c[x]
          1 -> s 14
 L03537:  c + 1 -> c[x]
-         c + 1 -> c[x]
-         if n/c go to L03715
-         go to L03717
+         c + 1 -> c[x]			; key 54 (@0140): unshifted 6,      f-shifted ->H.MS,     g-shifted ->H
+         if n/c go to L03715		; key 53 (@0141): unshifted 5,      f-shifted ->RAD,      g-shifted ->DEG
+         go to L03717			; key 52 (@0142): unshifted 4,      f-shifted ->R,        g-shifted ->P
 
-         jsb S03645
+         jsb S03645			; key 51 (@0143): unshifted minus,  f-shifted x<=y,       g-shifted x<0
          go to L03506
 
-L03545:  load constant 13
+key_34:  load constant 13		; key 34 (@0160): unshifted CLx,    f-shifted CLR STK,    g-shifted ABS
          load constant 15
          go to L03424
 
-L03550:  load constant 13
+key_33:  load constant 13		; key 33 (@0161): unshifted EEX,    f-shifted CLR REG,    g-shifted FRAC
          go to L03771
 
-L03552:  if 0 = s 4
+key_32:  if 0 = s 4			; key 32 (@0162): unshifted CHS,    f-shifted CLR PRGM,   g-shifted INT
            then go to L03556
          if s 6 = 1
            then go to L02644
 L03556:  load constant 13
          go to L03634
 
-         go to L03545
+         go to key_34			; key 34 (@0160): unshifted CLx,    f-shifted CLR STK,    g-shifted ABS
+         go to key_33			; key 33 (@0161): unshifted EEX,    f-shifted CLR REG,    g-shifted FRAC
+         go to key_32			; key 32 (@0162): unshifted CHS,    f-shifted CLR PRGM,   g-shifted INT
 
-         go to L03550
-
-         go to L03552
-
-         if s 4 = 1
+         if s 4 = 1			; key 31 (@0163): unshifted ENTER^, f-shifted CLR PREFIX, g-shifted MANT
            then go to L03576
          if 0 = s 6
            then go to L03573
@@ -1005,7 +1003,7 @@ L03576:  if 0 = s 6
          jsb S03412
          go to L03446
 
-L03602:  if s 4 = 1
+key_25:  if s 4 = 1			; key 25 (@220): unshifted Sigma+, f-shifted Sigma-,    g-shifted std dev		
            then go to L03613
          if 0 = s 6
            then go to L03613
@@ -1022,19 +1020,16 @@ L03613:  load constant 13
 L03616:  load constant 10
          go to L03424
 
-         go to L03602
+         go to key_25			; key 25 (@220): unshifted Sigma+, f-shifted Sigma-,    g-shifted std dev		
+         go to key_24			; key 24 (@221): unshifted RCL,    f-shifted L.R.,      g-shifted mean
+         go to key_23			; key 23 (@222): unshifted STO,    f-shifted r,         g-shfited GRD
+         go to key_22			; key 22 (@223): unshifted Rdn,    f-shifted lin est y, g-shifted RAD
 
-         go to L03730
-
-         go to L03747
-
-         go to L03762
-
-         if 0 = s 4
+         if 0 = s 4			; key 21 (@224): unshifted x<>y,   f-shifted lin est x, g-shifted DEG
            then go to L03633
          if s 6 = 1
            then go to L03633
-         load constant 15
+         load constant 15		; DEG
 L03631:  load constant 10
          go to L03433
 
@@ -1045,11 +1040,11 @@ L03634:  load constant 13
 L03636:  load constant 13
          go to L03631
 
-         c + 1 -> c[x]
-         if n/c go to L03535
-         go to L03537
+         c + 1 -> c[x]			; key 44 (@240): unshifted 9, f-shifted TAN, g-shifted TAN-1
+         if n/c go to L03535		; key 43 (@241): unshifted 8, f-shifted COS, g-shifted COS-1
+         go to L03537			; key 42 (@242): unshifted 7, f-shifted SIN, g-shifted SIN-1
 
-         jsb S03645
+         jsb S03645			; key 41 (@243): unshifted minus, f-shifted x<=y, g-shifted x<0
          go to L03507
 
 S03645:  if s 4 = 1
@@ -1069,7 +1064,7 @@ L03660:  jsb S03412
          shift right c[wp]
          return
 
-L03664:  if s 4 = 1
+key_73:  if s 4 = 1			; key 73 (@101): unshfited .,      f-shifted LSTx,  g-shfited pi
            then go to L03701
          if s 6 = 1
            then go to L03701
@@ -1101,17 +1096,18 @@ L03712:  if c[wp] = 0
 L03715:  c + 1 -> c[x]
          1 -> s 13
 L03717:  c + 1 -> c[x]
-         c + 1 -> c[x]
-         c + 1 -> c[x]
-         if n/c go to L03725
-         jsb S03645
+         c + 1 -> c[x]			; key 64 (@320): unshifted 3,      f-shfited y^x,       g-shifted 1/x
+         c + 1 -> c[x]			; key 63 (@321): unshifted 2,      f-shifted LOG,       g-shifted 10^x
+         if n/c go to L03725		; key 62 (@322): unshifted 1,      f-shifted LN,        g-shifted e^x
+
+         jsb S03645			; key 61 (@0323): unshifted times, f-shifted x#y,       g-shifted x#0
          go to L03505
 
 L03725:  c + 1 -> c[x]
-L03726:  delayed rom @05
+key_72:  delayed rom @05		; key 72 (@102): unshifted 0,      f-shifted sqrt,  g-shfited x^2
          go to L02707
 
-L03730:  if 0 = s 4
+key_24:  if 0 = s 4			; key 24 (@221): unshifted RCL,    f-shifted L.R.,      g-shifted mean
            then go to L03735
          load constant 12
          load constant 11
@@ -1128,11 +1124,11 @@ L03742:  p <- 1
          a exchange c[wp]
          go to L03447
 
-L03747:  if 0 = s 4
+key_23:  if 0 = s 4			; key 23 (@222): unshifted STO,    f-shifted r,         g-shfited GRD
            then go to L03755
          if 0 = s 6
            then go to L03636
-         load constant 8
+         load constant 8		; GRD
          go to L03611
 
 L03755:  jsb S03412
@@ -1141,11 +1137,11 @@ L03755:  jsb S03412
          1 -> s 8
          go to L03741
 
-L03762:  if 0 = s 4
+key_22:  if 0 = s 4			; key 22 (@223): unshifted Rdn,    f-shifted lin est y, g-shifted RAD
            then go to L03770
          if s 6 = 1
            then go to L03770
-         load constant 14
+         load constant 14		; RAD
          go to L03631
 
 L03770:  load constant 8
@@ -1157,7 +1153,7 @@ L03773:  a exchange c[p]
          delayed rom @06
          go to L03356
 
-	 .dw @0724			; CRC
+	 .dw @0724			; CRC, quad 1 (@2000..@3777)
 
          go to L04024
 
@@ -2333,7 +2329,8 @@ L05772:  c -> data address
          nop
          nop
          nop
-         .dw @0074		; CRC
+
+         .dw @0074			; CRC, quad 2 (@4000..@5777)
 
          go to L06110
 
@@ -3511,4 +3508,4 @@ S07200:  rom checksum
          nop
          nop
 
-	 .dw @0572		; CRC
+	 .dw @0572			; CRC, quad 3 (@06000..@07777)

@@ -1,0 +1,23 @@
+# SConscript for Nonpareil
+# Copyright 2022 Eric Smith <spacewar@gmail.com>
+
+Import('ncd_build_dir')
+
+ncd_dirs = ['35', '45', '55', '70', '80',
+            '21', '22', '25-25c', '27',
+            '91', '92',
+            '67-97',
+            '19c-29c',
+            'spice',
+            '41c',
+            '10c', '11c', '12c', '15c', '16c']
+
+ncd_files = []
+
+for ncd_dir in ncd_dirs:
+    n = SConscript(ncd_dir + '/SConscript',
+                   variant_dir = str(ncd_build_dir) + '/' + ncd_dir,
+                   duplicate = False)
+    ncd_files += n
+
+Return('ncd_files')

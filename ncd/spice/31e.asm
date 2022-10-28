@@ -1167,5 +1167,5 @@ key_13:  if s shft = 1			; key 13 (@062): unshifted y^x,    shifted pi
          jsb S03634
          go to L03575
 
-	 .dw @0547			; CRC
+	 .dw @0547			; CRC, quad 1 (@2000..@3777)
 

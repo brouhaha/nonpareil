@@ -135,11 +135,6 @@ if not env ['libdir']:
 # Prepare for SConscription
 #-----------------------------------------------------------------------------
 
-source_release_dir = 'foo'  # $$$ get rid of this!
-snapshot_dir = 'foo'  # $$$ get rid of this!
-
-Export ('source_release_dir snapshot_dir')
-
 host_build_dir = 'build/' + env ['PLATFORM']
 target_build_dir = 'build/' + env ['target']
 
@@ -192,28 +187,15 @@ SConscript ('src/SConscript',
 # .ncd calculator definitions
 #-----------------------------------------------------------------------------
 
-SConscript ('scons/uasm.py')
-SConscript ('scons/ncd.py')
+SConscript('scons/uasm.py')
+SConscript('scons/ncd.py')
 
-ncd_dirs = ['35', '45', '55', '70', '80',
-            '21', '22', '25-25c', '27',
-            '91', '92',
-            '67-97',
-            '19c-29c',
-            '31e', '32e', '33e', '37e', '38e',
-            '33c', '34c', '38c',
-            '41c',
-            '10c', '11c', '12c', '15c', '16c']
+ncd_build_dir = Dir('build/ncd')
+Export('ncd_build_dir')
 
-ncd_files = []
+ncd_files = SConscript('ncd/SConscript')
 
-for ncd_dir in ncd_dirs:
-    n = SConscript('ncd/' + ncd_dir + '/SConscript',
-                   variant_dir = 'build/ncd/' + ncd_dir,
-                   duplicate = False)
-    ncd_files += n
-
-Default (ncd_files)
+Default(ncd_files)
 
 #-----------------------------------------------------------------------------
 # .nui calculator user interfaces

@@ -1,13 +1,13 @@
-	.arch woodstock
+	 .arch woodstock
 
-	.include "1820-2105.inc"
+	 .include "1820-2105.inc"
 
 ; flags:
 ; f  s4=1 s6=1
 ; g  s4=1 s6=0
 
-	.bank 0
-	.org @2000
+	 .bank 0
+	 .org @2000
 
 L02000:  1 -> s 13
          1 -> s 6
@@ -256,7 +256,7 @@ L02323:  if b[w] = 0
            then go to L02402
          m2 -> c
          a exchange c[w]
-	 delayed rom @00
+         delayed rom @00
          jsb S00152
          a exchange c[w]
          m1 exchange c
@@ -849,6 +849,7 @@ L03370:  delayed rom @15
          nop
          nop
          nop
+
 L03400:  display off
          register -> c 8
          p <- 1
@@ -1153,7 +1154,7 @@ L03773:  a exchange c[p]
          delayed rom @06
          go to L03356
 
-         go to L04212
+         .dw @1053			; CRC, quad 1 (@2000..@3777)
 
          go to L04024
 
@@ -1319,7 +1320,7 @@ S04206:  p <- 6
 
 S04210:  p <- 7
 S04211:  load constant 1
-L04212:  load constant 4
+         load constant 4
 L04213:  p - 1 -> p
          return
 
@@ -2328,7 +2329,9 @@ L05772:  c -> data address
          nop
          nop
          nop
-         jsb S06055
+
+	 .dw @0265			; CRC, quad 2 (@4000..@5777)
+
          go to L06110
 
          go to L06116
@@ -2337,6 +2340,7 @@ L05772:  c -> data address
 
          nop
          nop
+
          p <- 0
          if a >= c[p]
            then go to L06421
@@ -2413,7 +2417,7 @@ L05772:  c -> data address
 
          go to L06273
 
-S06055:  go to L06274
+         go to L06274
 
          go to L06253
 
@@ -2990,4 +2994,4 @@ S06774:  m2 exchange c
          m2 -> c
          return
 
-         .dw @0053
+         .dw @0053			; CRC, half of quad 3 (@6000..@6777)

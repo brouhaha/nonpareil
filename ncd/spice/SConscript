@@ -3,9 +3,11 @@
 
 Import('env')
 
-ncd_names = ['31e', '33e', '33c']
+ncd_names = ['31e', '33e', '33e', '33c', '34c', '37e', '38e', '38c']
 
-source_names = ['1820-2105.asm', '31e.asm', '33e.asm', '33c.asm']
+source_names = ['1820-2105.asm', '31e.asm', '33e.asm', '33c.asm',
+                '1820-2122.asm', '37e.asm', '38e.asm',
+                '1820-2162.asm', '32e.asm', '34c.asm', '38c.asm']
 
 source_files = [env.File(sn + '.asm') for sn in source_names]
 
