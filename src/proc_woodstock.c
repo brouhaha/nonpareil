@@ -767,7 +767,7 @@ static void rom_selftest_done (sim_t *sim)
   printf ("ROM CRC done, crc = %03x: %s\n", act_reg->crc,
 	  act_reg->crc == 0x078 ? "good" : "bad");
   if (act_reg->crc != 0x078)
-    set_s_bit (sim, 5, 1);  // indicate error
+    act_reg->s[5] = true;  // indicate fail
   act_reg->inst_state = inst_normal;
   op_return (sim, 0);
 }
@@ -1642,11 +1642,14 @@ static bool woodstock_execute_cycle (sim_t *sim)
 
   act_reg->display_scan_fn (sim);
 
-  bool f1_state = (act_reg->ext_flag[EXT_FLAG_ACT_F1] |
-		   act_reg->ext_flag[EXT_FLAG_ACT_F1_PULSE] |
-		   (act_reg->s[0] && act_reg->ext_flag[EXT_FLAG_ACT_F1_COND_S0]));
-  act_reg->s[5] |= (f1_state == 0);
-  act_reg->ext_flag[EXT_FLAG_ACT_F1_PULSE] = 0;
+  if (sim->platform != PLATFORM_SPICE)
+  {
+    bool f1_state = (act_reg->ext_flag[EXT_FLAG_ACT_F1] |
+		     act_reg->ext_flag[EXT_FLAG_ACT_F1_PULSE] |
+		     (act_reg->s[0] && act_reg->ext_flag[EXT_FLAG_ACT_F1_COND_S0]));
+    act_reg->s[5] |= (f1_state == 0);
+    act_reg->ext_flag[EXT_FLAG_ACT_F1_PULSE] = 0;
+  }
 
   bool f2_state = (act_reg->ext_flag[EXT_FLAG_ACT_F2] |
 		   act_reg->ext_flag[EXT_FLAG_ACT_F2_PULSE] |
