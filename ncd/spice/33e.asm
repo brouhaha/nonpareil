@@ -1,3 +1,10 @@
+; 33E model-specific firmware, uses 1820-2105 CPU ROM
+; Copyright 2022 Eric Smith <spacewar@gmail.com>
+; SPDX-License-Identifier: GPL-3.0-only
+
+	 .copyright "Copyright 2022 Eric Smith <spacewar@gmail.com>"
+	 .license "GPL-v3.0-only"
+
 	 .arch woodstock
 
 	 .include "1820-2105.inc"
@@ -6,7 +13,6 @@
 ; f  s4=1 s6=1
 ; g  s4=1 s6=0
 
-	 .bank 0
 	 .org @2000
 
 L02000:  1 -> s 13

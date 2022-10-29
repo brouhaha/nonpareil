@@ -1,17 +1,20 @@
 ; 31E model-specific firmware, uses 1820-2105 CPU ROM
 ; Copyright 2022 Eric Smith <spacewar@gmail.com>
+; SPDX-License-Identifier: GPL-3.0-only
 
-	.arch woodstock
+	 .copyright "Copyright 2022 Eric Smith <spacewar@gmail.com>"
+	 .license "GPL-v3.0-only"
 
-	.include "1820-2105.inc"
+	 .arch woodstock
+
+	 .include "1820-2105.inc"
 
 ; flags:
-shft    .equ 6
-rad     .equ 12
-grad    .equ 14		; with s12 = 0
+shft     .equ 6
+rad      .equ 12
+grad     .equ 14	; with s12 = 0
 
-	.bank 0
-	.org @2000
+	 .org @2000
 
          jsb S02062
          jsb S02262

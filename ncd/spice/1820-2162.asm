@@ -1,6 +1,10 @@
 ; 1820-2162, 1MA4-0003 CPU ROM disassembly - quad 0 (@0000-@1777)
 ; used in 32E, 34C, 38C
 ; Copyright 2022 Eric Smith <spacewar@gmail.com>
+; SPDX-License-Identifier: GPL-3.0-only
+
+	 .copyright "Copyright 2022 Eric Smith <spacewar@gmail.com>"
+	 .license "GPL-v3.0-only"
 
          .arch woodstock
 
@@ -11,7 +15,6 @@ L02002   .equ @02002
 L02004   .equ @02004
 L02005   .equ @02005
 
-	 .bank 0
 	 .org @0000
 
 L00000:  select rom go to L02001

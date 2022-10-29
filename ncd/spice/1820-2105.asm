@@ -1,6 +1,10 @@
 ; 1820-2105, 1MA4-0001 CPU ROM disassembly - quad 0 (@0000-@1777)
 ; used in 31E, 33E, 33C
 ; Copyright 2022 Eric Smith <spacewar@gmail.com>
+; SPDX-License-Identifier: GPL-3.0-only
+
+	 .copyright "Copyright 2022 Eric Smith <spacewar@gmail.com>"
+	 .license "GPL-v3.0-only"
 
 	.arch woodstock
 
@@ -10,7 +14,6 @@ L03000	.equ @03000
 L03001	.equ @03001
 L03002	.equ @03002
 
-	.bank 0
 	.org @0000
 
          delayed rom @06

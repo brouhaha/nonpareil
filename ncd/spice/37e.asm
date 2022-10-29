@@ -1,11 +1,14 @@
 ; 37E model-specific firmware, uses 1820-2162 CPU ROM
 ; Copyright 2022 Eric Smith <spacewar@gmail.com>
+; SPDX-License-Identifier: GPL-3.0-only
+
+	 .copyright "Copyright 2022 Eric Smith <spacewar@gmail.com>"
+	 .license "GPL-v3.0-only"
 
          .arch woodstock
 
          .include "1820-2122.inc"
 
-	 .bank 0
 	 .org @2000
 
 ; Note that code from @02000 through @02777 is nearly identical between 37E and 38E

@@ -1,6 +1,10 @@
 ; 1820-2122, 1MA4-0002 CPU ROM disassembly - quad 0 (@0000-@1777)
 ; used in 37E, 38E
 ; Copyright 2022 Eric Smith <spacewar@gmail.com>
+; SPDX-License-Identifier: GPL-3.0-only
+
+	 .copyright "Copyright 2022 Eric Smith <spacewar@gmail.com>"
+	 .license "GPL-v3.0-only"
 
 	 .arch woodstock
 
@@ -9,7 +13,6 @@ L04000   .equ @04000
 L05176   .equ @05176
 L05350   .equ @05350
 
-	 .bank 0
 	 .org @0000
 
          display off

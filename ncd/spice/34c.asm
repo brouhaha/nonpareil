@@ -1,5 +1,9 @@
 ; 34C model-specific firmware, uses 1820-2162 CPU ROM
 ; Copyright 2022 Eric Smith <spacewar@gmail.com>
+; SPDX-License-Identifier: GPL-3.0-only
+
+	 .copyright "Copyright 2022 Eric Smith <spacewar@gmail.com>"
+	 .license "GPL-v3.0-only"
 
          .arch woodstock
 
