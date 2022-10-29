@@ -815,7 +815,8 @@ L03301:  jsb S03071
 
 S03312:  rom checksum		; computes checksum of quad 1 (@2000-@3777) and returns
 
-L03313:  clear regs
+self_test:
+         clear regs
          c + 1 -> c[w]
          m1 exchange c
          0 -> c[w]
@@ -879,7 +880,7 @@ L03402:  0 -> c[x]
          p <- 5
          go to L03412
 
-key_25:  jsb S03612                   ; key 25 (@220): f
+key_25:  jsb S03612			; key 25 (@220): f
          1 -> s shft
          go to L03763
 
@@ -893,11 +894,11 @@ L03416:  p + 1 -> p
          if p # 1
            then go to L03416
          p <- 8
-         load constant 14
-         load constant 10
-         load constant 10
-         load constant 12
-         load constant 10
+         load constant 14		; E
+         load constant 10		; r
+         load constant 10		; r
+         load constant 12		; o
+         load constant 10		; r
          a exchange c[w]
          shift left a[w]
          shift left a[w]
@@ -1012,8 +1013,8 @@ key_15:  if s shft = 1			; key 15 (@060): unshifted ln,     shifted log
            then go to fn_mant_clr_prefix
          if 0 = s 7			; ENTER^
            then go to L03571
-         if p = 12
-           then go to L03313
+         if p = 12			; STO prefix?
+           then go to self_test
 L03571:  c -> stack
 L03572:  delayed rom @06
          go to L03012
