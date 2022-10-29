@@ -1,6 +1,5 @@
 /*
-$Id$
-Copyright 1995, 2004, 2005, 2006, 2008 Eric Smith <eric@brouhaha.com>
+Copyright 1995, 2004, 2005, 2006, 2008, 2022 Eric Smith <spacewar@gmail.com>
 
 Nonpareil is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License version 2 as
@@ -88,7 +87,7 @@ void *alloc (size_t size)
 }
 
 
-char *newstr (char *orig)
+char *newstr (const char *orig)
 {
   int len;
   char *r;

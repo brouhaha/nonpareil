@@ -1,6 +1,5 @@
 /*
-$Id$
-Copyright 2006, 2007, 2008 Eric Smith <eric@brouhaha.com>
+Copyright 2006, 2007, 2008, 2022 Eric Smith <spacewar@gmail.com>
 
 Nonpareil is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License version 2 as
@@ -56,6 +55,19 @@ typedef uint16_t rom_word_t;
 rom_word_t rom [MAX_BANK] [MAX_ADDR];
 
 
+// The copyright and license string tracking should really keep track of
+// the applicable address ranges, and only attach the copyright and license
+// attributes to the memory elements they apply to.
+typedef struct str_node_t
+{
+  struct str_node_t *next;
+  const char *s;
+} str_node_t;
+
+static str_node_t *copyright_list_head = NULL;
+static str_node_t *license_list_head = NULL;
+
+
 struct element_info
 {
   struct element_info *next;
@@ -63,6 +75,30 @@ struct element_info
 };
 
 static struct element_info *deferred_unlink_list = NULL;
+
+
+static bool str_in_list(const char *s, str_node_t *list)
+{
+  while (list)
+  {
+    if (strcmp(s, list->s) == 0)
+      return true;
+    list = list->next;
+  }
+  return false;
+}
+
+// DO NOT USE THIS IF THE LIST WILL CONTAIN MANY STRINGS
+// It has quadratic performance. A better data structure should be used.
+static void add_str_to_list(const char *s, str_node_t **list_head)
+{
+  if (str_in_list(s, *list_head))
+    return;
+  str_node_t *new_node = alloc(sizeof(str_node_t));
+  new_node->next = *list_head;
+  new_node->s = newstr(s);
+  *list_head = new_node;
+}
 
 
 static void defer_unlink_element (xmlNode *element)
@@ -89,7 +125,7 @@ void usage (FILE *f)
 {
   fprintf (f, "%s:  Microcode-level calculator simulator\n",
 	   nonpareil_release);
-  fprintf (f, "Copyright 2006 Eric L. Smith\n");
+  fprintf (f, "Copyright 2006-2022 Eric Smith <spacewar@gmail.com>\n");
   fprintf (f, "http://nonpareil.brouhaha.com/\n");
   fprintf (f, "\n");
   fprintf (f, "usage: %s xml-template [options]\n", progname);
@@ -171,6 +207,25 @@ static bool parse_hex (char *hex, int digits, int *val)
 }
 
 
+static const char* copyright_tag = "# COPYRIGHT: ";
+static const char* license_tag = "# SPDX-License-Identifier: ";
+
+static void parse_comment(char *buf)
+{
+  size_t copyright_tag_len = strlen(copyright_tag);
+  size_t license_tag_len = strlen(license_tag);
+
+  if (strncmp((const char *) buf, copyright_tag, copyright_tag_len) == 0)
+  {
+    add_str_to_list(buf + copyright_tag_len, & copyright_list_head);
+  }
+  else if (strncmp((const char *) buf, license_tag, strlen(license_tag)) == 0)
+  {
+    add_str_to_list(buf + license_tag_len, & license_list_head);
+  }
+}
+
+
 static bool classic_parse_object_line (char        *buf,
 				       bank_mask_t *bank_mask,
 				       addr_t      *addr,
@@ -179,7 +234,10 @@ static bool classic_parse_object_line (char        *buf,
   int a, o;
 
   if (buf [0] == '#')  /* comment? */
+  {
+    parse_comment(buf);
     return (false);
+  }
 
   if (strlen (buf) != 9)
     return (false);
@@ -217,7 +275,10 @@ static bool woodstock_parse_object_line (char        *buf,
   int a, b, o;
 
   if (buf [0] == '#')  /* comment? */
+  {
+    parse_comment(buf);
     return (false);
+  }
 
   if (buf [0] == '[')  // banks?
     {
@@ -273,7 +334,10 @@ static bool nut_parse_object_line (char        *buf,
   int a, b, o;
 
   if (buf [0] == '#')  /* comment? */
+  {
+    parse_comment(buf);
     return (false);
+  }
 
   if (buf [0] == '[')  // banks?
     {
@@ -461,6 +525,16 @@ void handle_memory_element (xmlNode *element)
       addr_attr = xmlNewProp (loc_node, (xmlChar *) "addr", (xmlChar *) addr_str);
       data_attr = xmlNewProp (loc_node, (xmlChar *) "data", (xmlChar *) data_str);
     }
+
+  for (str_node_t *c_node = copyright_list_head; c_node; c_node = c_node->next)
+  {
+    xmlAttr *copyright_attr = xmlNewProp (element, (xmlChar *) "copyright", (xmlChar *) c_node->s);
+  }
+
+  for (str_node_t *l_node = license_list_head; l_node; l_node = l_node->next)
+  {
+    xmlAttr *license_attr = xmlNewProp (element, (xmlChar *) "license", (xmlChar *) l_node->s);
+  }
 }
 
 

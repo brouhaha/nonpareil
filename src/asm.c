@@ -38,7 +38,7 @@ int arch;
 void usage (FILE *f)
 {
   fprintf (f, "uasm microassembler - %s\n", nonpareil_release);
-  fprintf (f, "Copyright 1995, 2003, 2004 Eric L. Smith\n");
+  fprintf (f, "Copyright 1995-2022 Eric Smith <spacewar@gmail.com>\n");
   fprintf (f, "http://nonpareil.brouhaha.com/\n");
   fprintf (f, "\n");
   fprintf (f, "usage: %s [options...] sourcefile\n", progname);
@@ -515,7 +515,7 @@ static void write_object_file_metadata(void)
   if (copyright_string)
     fprintf(obj_file, "# COPYRIGHT: %s\n", copyright_string);
   if (license_string)
-    fprintf(obj_file, "# LICENSE: %s\n", license_string);
+    fprintf(obj_file, "# SPDX-License-Identifier: %s\n", license_string);
 }
 
 

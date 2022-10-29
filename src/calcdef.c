@@ -755,7 +755,13 @@ static void parse_memory (calcdef_t *calcdef,
 
   for (i = 0; attrs && attrs [i]; i += 2)
     {
-      if (strcmp ((char *) attrs [i], "addr_space") == 0)
+      if (strcmp ((char *) attrs [i], "copyright") == 0)
+	{
+	}
+      else if (strcmp ((char *) attrs [i], "license") == 0)
+	{
+	}
+      else if (strcmp ((char *) attrs [i], "addr_space") == 0)
 	{
 	  mem->addr_space = newstr ((char *) attrs [i + 1]);
 	  got_addr_space = true;

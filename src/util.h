@@ -57,7 +57,7 @@ void fatal (int ret, char *format, ...) __attribute__ ((noreturn));
 
 void *alloc (size_t size);
 
-char *newstr (char *orig);
+char *newstr (const char *orig);
 
 char *newstrcat (char *orig1, char *orig2);
 
