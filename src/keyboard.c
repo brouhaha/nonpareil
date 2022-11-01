@@ -1,6 +1,5 @@
 /*
-$Id$
-Copyright 1995, 2004-2006, 2008, 2010 Eric Smith <eric@brouhaha.com>
+Copyright 1995, 2004-2006, 2008, 2010, 0222 Eric Smith <spacewar@gmail.com>
 
 Nonpareil is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License version 2 as
@@ -40,9 +39,6 @@ MA 02111, USA.
 #include "csim.h"
 
 #include "cbutton.h"
-
-
-#undef KEYBOARD_DEBUG
 
 
 struct button_info_t
@@ -116,7 +112,7 @@ static void button_widget_released (GtkWidget *widget UNUSED,
     case 0:
       // Released the last (or only) key that was pressed.
 #ifdef KEYBOARD_DEBUG
-      printf ("last key release, keycode=%d\n", button->kml_button->keycode);
+      printf ("last key release, keycode=%d\n", button->kml_button->user_keycode);
 #endif
       i = csim->button_pressed_first;
       sim_key (csim->sim, i, false);
@@ -127,7 +123,7 @@ static void button_widget_released (GtkWidget *widget UNUSED,
       // but if it's a different one, release the first one and press then
       // last remaining one.
 #ifdef KEYBOARD_DEBUG
-      printf ("next-to-last key release, keycode=%d\n", button->kml_button->keycode);
+      printf ("next-to-last key release, keycode=%d\n", button->kml_button->user_keycode);
 #endif
       i = find_pressed_button (csim);
       if (i != csim->button_pressed_first)

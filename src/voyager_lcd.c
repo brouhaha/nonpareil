@@ -288,14 +288,19 @@ static void voyager_display_bitmap_read (nut_reg_t *nut_reg UNUSED,
     (*reg) [i] = nut_reg->ram [addr] [i];
 
   // The least significant 6 bits of the register (bits 5..0) don't really
-  // exist, and read back as the complement of bit 7.
+  // exist
   (*reg) [1] &= 0xc;
   (*reg) [0] =  0x0;
+#if 0
+  // Someone said back in 2005 that the low 6 bits read back as the
+  // complement of bit 7, but I don't think that is correct, as it makes
+  // the Voyager on-divide display test yield incorrect displays.
   if (! ((* reg) [1] & 0x8))
     {
       (*reg) [1] |= 0x3;
       (*reg) [0] =  0xf;
     }
+#endif
 }
 
 

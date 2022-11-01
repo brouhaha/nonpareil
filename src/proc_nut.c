@@ -1,6 +1,5 @@
 /*
-$Id$
-Copyright 1995, 2003-2008, 2010 Eric Smith <eric@brouhaha.com>
+Copyright 1995, 2003-2008, 2010, 2022 Eric Smith <spacewar@gmail.com>
 
 Nonpareil is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License version 2 as
@@ -40,6 +39,8 @@ MA 02111, USA.
 #include "proc_nut.h"
 #include "sound.h"
 
+
+#undef WARNING_G
 
 #define MAX_RAM 1024  // possibly only 256 for Voyagers?
 
@@ -1353,61 +1354,83 @@ static void op_c_to_g (sim_t *sim,
 		       int opcode UNUSED)
 {
   nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
+  int low_digit_index = *pt (nut_reg);
 
-  nut_reg->g [0] = nut_reg->c [*pt (nut_reg)];
-  if ((*pt (nut_reg)) == (WSIZE - 1))
-    {
-      nut_reg->g [1] = 0;
-#ifdef WARNING_G
-      fprintf (stderr, "warning: c to g transfer with pt=13\n");
-#endif
-    }
+  if (low_digit_index < (WSIZE - 1))
+  {
+    nut_reg->g [0] = nut_reg->c [low_digit_index];
+    nut_reg->g [1] = nut_reg->c [low_digit_index + 1];
+  }
   else
-    nut_reg->g [1] = nut_reg->c [(*pt (nut_reg)) + 1];
+  {
+#ifdef WARNING_G
+    fprintf (stderr, "warning: c to g transfer with pt=13, pc=%04x\n", nut_reg->prev_pc);
+#endif
+    // If the pointer register only just changed to WSIZE - 1 by the
+    // previous instruction, the following is not correct.
+    // See the David Assembler Manual, Appendix F for details.
+    nut_reg->g [0] = nut_reg->c [0];
+    nut_reg->g [1] = nut_reg->c [WSIZE - 1];
+  }
 }
 
 static void op_g_to_c (sim_t *sim,
 		       int opcode UNUSED)
 {
   nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
+  int low_digit_index = *pt (nut_reg);
 
-  nut_reg->c [(*pt (nut_reg))] = nut_reg->g [0];
-  if ((*pt (nut_reg)) == (WSIZE - 1))
-    {
-      ;
-#ifdef WARNING_G
-      fprintf (stderr, "warning: g to c transfer with pt=13\n");
-#endif
-    }
+  if (low_digit_index < (WSIZE - 1))
+  {
+    nut_reg->c [low_digit_index] = nut_reg->g [0];
+    nut_reg->c [low_digit_index + 1] = nut_reg->g [1];
+  }
   else
-    {
-      nut_reg->c [(*pt (nut_reg)) + 1] = nut_reg->g [1];
-    }
+  {
+#ifdef WARNING_G
+    fprintf (stderr, "warning: g to c transfer with pt=13, pc=%04x\n", nut_reg->prev_pc);
+#endif
+    // If the pointer register only just changed to WSIZE - 1 by the
+    // previous instruction, the following is not correct.
+    // See the David Assembler Manual, Appendix F for details.
+    nut_reg->c [0] = nut_reg->g [0];
+    nut_reg->c [WSIZE - 1] = nut_reg->g [1];
+  }
     
+}
+
+
+static void swap_digit(digit_t *a, digit_t *b)
+{
+  digit_t t;
+
+  t = *a;
+  *a = *b;
+  *b = t;
 }
 
 static void op_c_exch_g (sim_t *sim,
 			 int opcode UNUSED)
 {
   nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
-  int t;
+  int low_digit_index = *pt (nut_reg);
 
-  t = nut_reg->g [0];
-  nut_reg->g [0] = nut_reg->c [*pt (nut_reg)];
-  nut_reg->c [*pt (nut_reg)] = t;
-  if ((*pt (nut_reg)) == (WSIZE - 1))
-    {
-      nut_reg->g [1] = 0;
-#ifdef WARNING_G
-      fprintf (stderr, "warning: c exchange g with pt=13\n");
-#endif
-    }
+  if (low_digit_index < (WSIZE - 1))
+  {
+    swap_digit(& nut_reg->g[0], & nut_reg->c[low_digit_index]);
+    swap_digit(& nut_reg->g[1], & nut_reg->c[low_digit_index + 1]);
+  }
   else
-    {
-      t = nut_reg->g [1];
-      nut_reg->g [1] = nut_reg->c [(*pt (nut_reg)) + 1];
-      nut_reg->c [(*pt (nut_reg)) + 1] = t;
-    }
+  {
+#ifdef WARNING_G
+    fprintf (stderr, "warning: c exchange g with pt=13\n, pc=%04x\n", nut_reg->prev_pc);
+#endif
+    // If the pointer register only just changed to WSIZE - 1 by the
+    // previous instruction, the following is not correct.
+    // See the David Assembler Manual, Appendix F for details.
+    swap_digit(& nut_reg->g[0], & nut_reg->c[0]);
+    swap_digit(& nut_reg->g[1], & nut_reg->c[WSIZE - 1]);
+  }
 }
 
 
