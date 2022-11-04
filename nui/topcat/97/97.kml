@@ -38,7 +38,7 @@ display
 
 	digits 15
 		size 16 24
-		offset 5 15
+		offset 5 11
 	end
 
 	segments
@@ -57,14 +57,14 @@ display
 end
 
 #switch 0
-#  size 25 9
+#  size 25 86
 #  default 1
 #  position 0  image "switch-off.png"  end  # off
 #  position 1  image "switch-on.png"   end  # on
 #end
 
 switch 1
-  offset 165 74
+  offset 165 86
   default 2
   position 0  image "switch-left.png"   end  # man
   position 1  image "switch-mid.png"    end  # trace
@@ -72,75 +72,75 @@ switch 1
 end
 
 switch 2
-  offset 170 94
+  offset 170 106
   default 1
   position 0  image "switch-off.png"  end  # program
   position 1  image "switch-on.png"   end  # run
 end
 
-button  11  image "key_11.png"   offset  15 146  end  # A
-button  12  image "key_12.png"   offset  54 146  end  # B
-button  13  image "key_13.png"   offset  93 146  end  # C
-button  14  image "key_14.png"   offset 132 146  end  # D
-button  15  image "key_15.png"   offset 171 146  end  # E
-button  16  image "key_16.png"   offset 210 146  end  # f
+button  11  image "key_11.png"   offset  15 161  end  # A
+button  12  image "key_12.png"   offset  54 161  end  # B
+button  13  image "key_13.png"   offset  93 161  end  # C
+button  14  image "key_14.png"   offset 132 161  end  # D
+button  15  image "key_15.png"   offset 171 161  end  # E
+button  16  image "key_16.png"   offset 210 161  end  # f
 
-button  21  image "key_21.png"   offset  15 185  end  # LBL
-button  22  image "key_22.png"   offset  54 185  end  # GTO
-button  23  image "key_23.png"   offset  93 185  end  # GSB
-button  24  image "key_24.png"   offset 132 185  end  # RTN
-button  25  image "key_25.png"   offset 171 185  end  # BST
-button  26  image "key_26.png"   offset 210 185  end  # SST
+button  21  image "key_21.png"   offset  15 197  end  # LBL
+button  22  image "key_22.png"   offset  54 197  end  # GTO
+button  23  image "key_23.png"   offset  93 197  end  # GSB
+button  24  image "key_24.png"   offset 132 197  end  # RTN
+button  25  image "key_25.png"   offset 171 197  end  # BST
+button  26  image "key_26.png"   offset 210 197  end  # SST
 
-button  31  image "key_31.png"   offset  15 224  end  # y^x
-button  32  image "key_32.png"   offset  54 224  end  # LN
-button  33  image "key_33.png"   offset  93 224  end  # e^x
-button  34  image "key_34.png"   offset 132 224  end  # ->P
-button  35  image "key_35.png"   offset 171 224  end  # STO
-button  36  image "key_36.png"   offset 210 224  end  # RCL
+button  31  image "key_31.png"   offset  15 233  end  # y^x
+button  32  image "key_32.png"   offset  54 233  end  # LN
+button  33  image "key_33.png"   offset  93 233  end  # e^x
+button  34  image "key_34.png"   offset 132 233  end  # ->P
+button  35  image "key_35.png"   offset 171 233  end  # STO
+button  36  image "key_36.png"   offset 210 233  end  # RCL
 
-button  41  image "key_41.png"   offset  15 263  end  # SIN
-button  42  image "key_42.png"   offset  54 263  end  # COS
-button  43  image "key_43.png"   offset  93 263  end  # TAN
-button  44  image "key_44.png"   offset 132 263  end  # ->R
-button  45  image "key_45.png"   offset 171 263  end  # (i)
-button  46  image "key_46.png"   offset 210 263  end  # I
+button  41  image "key_41.png"   offset  15 269  end  # SIN
+button  42  image "key_42.png"   offset  54 269  end  # COS
+button  43  image "key_43.png"   offset  93 269  end  # TAN
+button  44  image "key_44.png"   offset 132 269  end  # ->R
+button  45  image "key_45.png"   offset 171 269  end  # (i)
+button  46  image "key_46.png"   offset 210 269  end  # I
 
-button  51  image "key_51.png"   offset  15 302  end  # R/S
-button  52  image "key_52.png"   offset  54 302  end  # 1/x
-button  53  image "key_53.png"   offset  93 302  end  # x^2
-button  54  image "key_54.png"   offset 132 302  end  # sqrt(x)
-button  55  image "key_55.png"   offset 171 302  end  # %
-button  56  image "key_56.png"   offset 210 302  end  # Sigma+
+button  51  image "key_51.png"   offset  15 305  end  # R/S
+button  52  image "key_52.png"   offset  54 305  end  # 1/x
+button  53  image "key_53.png"   offset  93 305  end  # x^2
+button  54  image "key_54.png"   offset 132 305  end  # sqrt(x)
+button  55  image "key_55.png"   offset 171 305  end  # %
+button  56  image "key_56.png"   offset 210 305  end  # Sigma+
 
-button -11  image "key_-11.png"  offset 260  74  end  # FIX
-button -12  image "key_-12.png"  offset 320  74  end  # SCI
-button -13  image "key_-13.png"  offset 380  74  end  # ENG
-button -14  image "key_-14.png"  offset 440  74  end  # PRINTx (double-wide)
+button -11  image "key_-11.png"  offset 284  70  end  # FIX
+button -12  image "key_-12.png"  offset 344  70  end  # SCI
+button -13  image "key_-13.png"  offset 404  70  end  # ENG
+button -14  image "key_-14.png"  offset 464  70  end  # PRINTx (double-wide)
 
-button -21  image "key_-21.png"  offset 260 119  end  # ENTER^ (double-wide)
-button -22  image "key_-22.png"  offset 380 119  end  # CHS
-button -23  image "key_-23.png"  offset 440 119  end  # EEX
-button -24  image "key_-24.png"  offset 500 119  end  # divide
+button -21  image "key_-21.png"  offset 284 115  end  # ENTER^ (double-wide)
+button -22  image "key_-22.png"  offset 404 115  end  # CHS
+button -23  image "key_-23.png"  offset 464 115  end  # EEX
+button -24  image "key_-24.png"  offset 524 115  end  # divide
 
-button -31  image "key_-31.png"  offset 260 164  end  # Rv
-button -32  image "key_-32.png"  offset 320 164  end  # 7
-button -33  image "key_-33.png"  offset 380 164  end  # 8
-button -34  image "key_-34.png"  offset 440 164  end  # 9
-button -35  image "key_-35.png"  offset 500 164  end  # multiply
+button -31  image "key_-31.png"  offset 284 160  end  # Rv
+button -32  image "key_-32.png"  offset 344 160  end  # 7
+button -33  image "key_-33.png"  offset 404 160  end  # 8
+button -34  image "key_-34.png"  offset 464 160  end  # 9
+button -35  image "key_-35.png"  offset 524 160  end  # multiply
 
-button -41  image "key_-41.png"  offset 260 209  end  # x<>y
-button -42  image "key_-42.png"  offset 320 209  end  # 4
-button -43  image "key_-43.png"  offset 380 209  end  # 5
-button -44  image "key_-44.png"  offset 440 209  end  # 6
-button -45  image "key_-45.png"  offset 500 209  end  # subtract
+button -41  image "key_-41.png"  offset 284 205  end  # x<>y
+button -42  image "key_-42.png"  offset 344 205  end  # 4
+button -43  image "key_-43.png"  offset 404 205  end  # 5
+button -44  image "key_-44.png"  offset 464 205  end  # 6
+button -45  image "key_-45.png"  offset 524 205  end  # subtract
 
-button -51  image "key_-51.png"  offset 260 254  end  # CLx
-button -52  image "key_-52.png"  offset 320 254  end  # 1
-button -53  image "key_-53.png"  offset 380 254  end  # 2
-button -54  image "key_-54.png"  offset 440 254  end  # 3
-button -55  image "key_-55.png"  offset 500 254  end  # add (double-tall)
+button -51  image "key_-51.png"  offset 284 250  end  # CLx
+button -52  image "key_-52.png"  offset 344 250  end  # 1
+button -53  image "key_-53.png"  offset 404 250  end  # 2
+button -54  image "key_-54.png"  offset 464 250  end  # 3
+button -55  image "key_-55.png"  offset 524 250  end  # add (double-tall)
 
-button -61  image "key_-61.png"  offset 260 299  end  # zero (double-wide)
-button -62  image "key_-62.png"  offset 380 299  end  # .
-button -63  image "key_-63.png"  offset 440 299  end  # DSP
+button -61  image "key_-61.png"  offset 284 295  end  # zero (double-wide)
+button -62  image "key_-62.png"  offset 404 295  end  # .
+button -63  image "key_-63.png"  offset 464 295  end  # DSP
