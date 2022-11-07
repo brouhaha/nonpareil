@@ -339,6 +339,8 @@ nonpareil_env.ParseConfig (sdl_pkg_config_cmd)
 nonpareil_env.Append (LIBS = 'm')
 
 csim_env = nonpareil_env.Clone ()
+csim_env.Append (CPPDEFINES = [('GSEAL_ENABLE')])
+
 if not ming:
     csim_env.Append (CPPDEFINES = [('DEFAULT_PATH', build_env ['libdir'])])
 
