@@ -1993,6 +1993,9 @@ static void woodstock_new_processor (sim_t *sim)
 
   init_ops (act_reg);
 
+  if (act_reg->key_scanner_as_flags)
+    set_ext_flag(sim, EXT_FLAG_ACT_KE_COND_S0, true);
+
   chip_event (sim,
 	      NULL,
 	      event_reset,
