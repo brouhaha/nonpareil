@@ -557,7 +557,7 @@ static void configure_unload_module (gpointer callback_data,
 					GTK_RESPONSE_OK,
 					NULL);
 
-#if 1
+#if 0
   content_area = GTK_WIDGET (GTK_DIALOG (dialog)->vbox);
 #else
   content_area = gtk_dialog_get_content_area (GTK_DIALOG (dialog));
