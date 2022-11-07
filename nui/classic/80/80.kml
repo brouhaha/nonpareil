@@ -23,7 +23,7 @@ global
 	image "classic-background.png"
 	overlay default image "80-overlay.png"
 	color 0 137 0 6	  # background color, used when transparency is off
-#	transparency 128
+	transparency 128
 end
 
 display

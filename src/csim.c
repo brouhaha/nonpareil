@@ -61,7 +61,7 @@ MA 02111, USA.
 #endif
 
 #ifndef SHAPE_DEFAULT
-#define SHAPE_DEFAULT true
+#define SHAPE_DEFAULT false
 #endif
 
 #ifndef SOUND_DEFAULT

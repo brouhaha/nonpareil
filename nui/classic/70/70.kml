@@ -22,7 +22,7 @@ global
 	model "70"
 	image "70-background.png"
 	color 0 137 0 6	  # background color, used when transparency is off
-#	transparency 128
+	transparency 128
 end
 
 display
