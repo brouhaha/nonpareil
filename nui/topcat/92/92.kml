@@ -56,7 +56,7 @@ display
 end
 
 #switch 0
-#  size 25 9
+#  offset ? 94
 #  default 1
 #  position 0  image "switch-off.png"  end  # off
 #  position 1  image "switch-on.png"   end  # on
@@ -64,7 +64,7 @@ end
 
 # printer mode
 switch 1
-  offset 165 74
+  offset 165 94
   default 2
   position 0  image "switch-left.png"   end  # man
   position 1  image "switch-mid.png"    end  # all
@@ -73,7 +73,7 @@ end
 
 # begin/end
 switch 2
-  offset 170 94
+  offset 170 122
   default 1
   position 0  image "switch-off.png"  end  # begin
   position 1  image "switch-on.png"   end  # end
@@ -81,61 +81,61 @@ end
 
 # 360/365
 switch 3
-  offset 55 94
-  default 1
+  offset 55 122
+  default 0
   position 0  image "switch-off.png"  end  # 360
   position 1  image "switch-on.png"   end  # 365
 end
 
-                                                      # unshifed  shifted
-button  11  image "key_11.png"   offset  15 164  end  # sqrt      H.MS+
-button  12  image "key_12.png"   offset  75 164  end  # x^2       H.MS-
-button  13  image "key_13.png"   offset 135 164  end  # y^x       ->H.MS
-button  14  image "key_14.png"   offset 195 164  end  # 1/x       H.MS->
+                                                      # unshifed  f shift  g shift
+button  11  image "key_11.png"   offset  20 168  end  # n         12x
+button  12  image "key_12.png"   offset  80 168  end  # i         12/
+button  13  image "key_13.png"   offset 140 168  end  # PV        NPV
+button  14  image "key_14.png"   offset 200 168  end  # FV        IRR
 
-button  21  image "key_21.png"   offset  15 209  end  # SIN       SIN^-1
-button  22  image "key_22.png"   offset  75 209  end  # COS       COS^-1
-button  23  image "key_23.png"   offset 135 209  end  # TAN       TAN^-1
-button  24  image "key_24.png"   offset 195 209  end  # P->R      s
+button  21  image "key_21.png"   offset  20 213  end  # PMT       1/x       RND   
+button  22  image "key_22.png"   offset  80 213  end  # AMORT     P1        P2
+button  23  image "key_23.png"   offset 140 213  end  # PRICE     IS.ST     MT
+button  24  image "key_24.png"   offset 200 213  end  # YIELD     CALL      CPN
 
-button  31  image "key_31.png"   offset  15 254  end  # %         Delta%
-button  32  image "key_32.png"   offset  75 254  end  # %Sigma    n!
-button  33  image "key_33.png"   offset 135 254  end  # lin est   L.R.
-button  34  image "key_34.png"   offset 195 254  end  # R->P      mean
+button  31  image "key_31.png"   offset  20 258  end  # CL FIN
+button  32  image "key_32.png"   offset  80 258  end  # SL        LIFE     N1
+button  33  image "key_33.png"   offset 140 258  end  # SOYD      BOOK     N2
+button  34  image "key_34.png"   offset 200 258  end  # DB        SAL      FACT
 
-button  41  image "key_41.png"   offset  15 299  end  # e^x       10^x
-button  42  image "key_42.png"   offset  75 299  end  # ln        log
-button  43  image "key_43.png"   offset 135 299  end  # Sigma+    Sigma-
-button  44  image "key_44.png"   offset 195 299  end  # f
+button  41  image "key_41.png"   offset  20 303  end  # f
+button  42  image "key_42.png"   offset  80 303  end  # g
+button  43  image "key_43.png"   offset 140 303  end  # lin est   L.R.     r
+button  44  image "key_44.png"   offset 200 303  end  # %Sigma    mean     std dev
 
-button -11  image "key_-11.png"  offset 260  74  end  # x<>y
-button -12  image "key_-12.png"  offset 320  74  end  # Rdn
-button -13  image "key_-13.png"  offset 380  74  end  # Rup
-button -14  image "key_-14.png"  offset 440  74  end  # PRINTx               (double-wide)
+button -11  image "key_-11.png"  offset 284  78  end  # x<>y      LIST SK
+button -12  image "key_-12.png"  offset 344  78  end  # RDN       LIST REG
+button -13  image "key_-13.png"  offset 404  78  end  # Rup       LIST Sigma
+button -14  image "key_-14.png"  offset 464  78  end  # PRINTx    LIST FIN
 
-button -21  image "key_-21.png"  offset 260 119  end  # ENTER^    LIST STK   (double-wide)
-button -22  image "key_-22.png"  offset 380 119  end  # CHS       LIST REG
-button -23  image "key_-23.png"  offset 440 119  end  # EEX       LIST Sigma
-button -24  image "key_-24.png"  offset 500 119  end  # divide    CL REG
+button -21  image "key_-21.png"  offset 284 123  end  # ENTER^    LASTx
+button -22  image "key_-22.png"  offset 404 123  end  # CHS       EEX
+button -23  image "key_-23.png"  offset 464 123  end  # %         Delta%
+button -24  image "key_-24.png"  offset 524 123  end  # divide    y^x
 
-button -31  image "key_-31.png"  offset 260 164  end  # STO       pi
-button -32  image "key_-32.png"  offset 320 164  end  # 7
-button -33  image "key_-33.png"  offset 380 164  end  # 8
-button -34  image "key_-34.png"  offset 440 164  end  # 9
-button -35  image "key_-35.png"  offset 500 164  end  # multiply  CL Sigma
+button -31  image "key_-31.png"  offset 284 168  end  # STO       CL REG
+button -32  image "key_-32.png"  offset 344 168  end  # 7
+button -33  image "key_-33.png"  offset 404 168  end  # 8
+button -34  image "key_-34.png"  offset 464 168  end  # 9
+button -35  image "key_-35.png"  offset 524 168  end  # multiply  sqrt
 
-button -41  image "key_-41.png"  offset 260 209  end  # RCL       LASTx
-button -42  image "key_-42.png"  offset 320 209  end  # 4
-button -43  image "key_-43.png"  offset 380 209  end  # 5
-button -44  image "key_-44.png"  offset 440 209  end  # 6
-button -45  image "key_-45.png"  offset 500 209  end  # subtract
+button -41  image "key_-41.png"  offset 284 213  end  # RCL       CL Sigma
+button -42  image "key_-42.png"  offset 344 213  end  # 4
+button -43  image "key_-43.png"  offset 404 213  end  # 5
+button -44  image "key_-44.png"  offset 464 213  end  # 6
+button -45  image "key_-45.png"  offset 524 213  end  # subtract  e^x
 
-button -51  image "key_-51.png"  offset 260 254  end  # CLx       CLEAR
-button -52  image "key_-52.png"  offset 320 254  end  # 1
-button -53  image "key_-53.png"  offset 380 254  end  # 2
-button -54  image "key_-54.png"  offset 440 254  end  # 3
-button -55  image "key_-55.png"  offset 500 254  end  # add (double-tall)
+button -51  image "key_-51.png"  offset 284 258  end  # CLx       CLEAR
+button -52  image "key_-52.png"  offset 344 258  end  # 1
+button -53  image "key_-53.png"  offset 404 258  end  # 2
+button -54  image "key_-54.png"  offset 464 258  end  # 3
+button -55  image "key_-55.png"  offset 524 258  end  # add       LN
 
-button -61  image "key_-61.png"  offset 260 299  end  # zero (double-wide)
-button -62  image "key_-62.png"  offset 380 299  end  # .         ENG
-button -63  image "key_-63.png"  offset 440 299  end  # FIX       SCI
+button -61  image "key_-61.png"  offset 284 303  end  # zero      DATE+DAYS
+button -62  image "key_-62.png"  offset 404 303  end  # .         DeltaDAYS
+button -63  image "key_-63.png"  offset 464 303  end  # Sigma+    Sigma-
