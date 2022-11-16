@@ -102,7 +102,6 @@ sim_core_srcs = Split ("""calcdef.c
 if ming:
     sim_core_srcs.append("elapsed_time_us_windows.c")
 else:
-    print(sim_core_srcs)
     sim_core_srcs.append("elapsed_time_us_posix.c")
 
 sim_core_objs = [build_env.Object(src) for src in sim_core_srcs];
