@@ -72,42 +72,42 @@ switch 2
   position 2  image "switch-right.png"   end  # NORM
 end
 
-button 11  image "key_11.png"  offset  17 130  end
-button 12  image "key_12.png"  offset  71 130  end
-button 13  image "key_13.png"  offset 125 130  end
-button 14  image "key_14.png"  offset 179 130  end
-button 15  image "key_15.png"  offset 233 130  end
-button 16  image "key_16.png"  offset 287 130  end
+button 11  image "key_11.png"  offset  17 146  end
+button 12  image "key_12.png"  offset  71 146  end
+button 13  image "key_13.png"  offset 125 146  end
+button 14  image "key_14.png"  offset 179 146  end
+button 15  image "key_15.png"  offset 233 146  end
+button 16  image "key_16.png"  offset 287 146  end
 
-button 21  image "key_21.png"  offset  17 186  end
-button 22  image "key_22.png"  offset 125 186  end
-button 23  image "key_23.png"  offset 179 186  end
-button 24  image "key_24.png"  offset 233 186  end
-button 25  image "key_25.png"  offset 287 186  end
+button 21  image "key_21.png"  offset  17 202  end
+button 22  image "key_22.png"  offset 125 202  end
+button 23  image "key_23.png"  offset 179 202  end
+button 24  image "key_24.png"  offset 233 202  end
+button 25  image "key_25.png"  offset 287 202  end
 
-button 31  image "key_31.png"  offset  17 242  end
-button 32  image "key_32.png"  offset  82 242  end
-button 33  image "key_33.png"  offset 153 242  end
-button 34  image "key_34.png"  offset 225 242  end
-button 35  image "key_35.png"  offset 287 242  end
+button 31  image "key_31.png"  offset  17 258  end
+button 32  image "key_32.png"  offset  82 258  end
+button 33  image "key_33.png"  offset 153 258  end
+button 34  image "key_34.png"  offset 225 258  end
+button 35  image "key_35.png"  offset 287 258  end
 
-button 41  image "key_41.png"  offset  17 298  end
-button 42  image "key_42.png"  offset  82 298  end
-button 43  image "key_43.png"  offset 153 298  end
-button 44  image "key_44.png"  offset 225 298  end
-button 45  image "key_45.png"  offset 287 298  end
+button 41  image "key_41.png"  offset  17 314  end
+button 42  image "key_42.png"  offset  82 314  end
+button 43  image "key_43.png"  offset 153 314  end
+button 44  image "key_44.png"  offset 225 314  end
+button 45  image "key_45.png"  offset 287 314  end
 
-button 51  image "key_51.png"  offset  17 354  end
-button 52  image "key_52.png"  offset  82 354  end
-button 53  image "key_53.png"  offset 153 354  end
-button 54  image "key_54.png"  offset 225 354  end
-button 55  image "key_55.png"  offset 287 354  end
+button 51  image "key_51.png"  offset  17 370  end
+button 52  image "key_52.png"  offset  82 370  end
+button 53  image "key_53.png"  offset 153 370  end
+button 54  image "key_54.png"  offset 225 370  end
+button 55  image "key_55.png"  offset 287 370  end
 
-button 61  image "key_61.png"  offset  17 411  end
-button 62  image "key_62.png"  offset  82 411  end
-button 63  image "key_63.png"  offset 153 411  end
-button 64  image "key_64.png"  offset 225 411  end
-button 65  image "key_65.png"  offset 287 411  end
+button 61  image "key_61.png"  offset  17 426  end
+button 62  image "key_62.png"  offset  82 426  end
+button 63  image "key_63.png"  offset 153 426  end
+button 64  image "key_64.png"  offset 225 426  end
+button 65  image "key_65.png"  offset 287 426  end
 
 # main keyboard:
 scancode 48 map 0 62 end  # 0
