@@ -31,8 +31,8 @@ MA 02111, USA.
 #define USEC_PER_SEC 1000000
 
 
-bool time_initialized = false;
-struct timespec start_time;
+static bool time_initialized = false;
+static struct timespec start_time;
 
 
 uint64_t get_elapsed_time_us(void)
@@ -62,7 +62,7 @@ uint64_t get_elapsed_time_us(void)
   return sec_diff * USEC_PER_SEC + ns_diff / NSEC_PER_USEC;
 }
 
-bool elapsed_time_us_init()
+bool elapsed_time_us_init(void)
 {
   if (time_initialized)
   {
