@@ -1,6 +1,5 @@
 /*
-$Id$
-Copyright 1995, 2004, 2005, 2006, 2008, 2010 Eric Smith <eric@brouhaha.com>
+Copyright 1995-2022 Eric Smith <spacewar@gmail.com>
 
 Nonpareil is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License version 2 as
@@ -614,19 +613,20 @@ static GtkItemFactoryEntry menu_items [] =
     { "/_Debug",        NULL,         NULL,          0, "<Branch>", 0 },
 #endif
 #ifdef HAS_DEBUGGER_GUI
-    { "/Debug/Show Reg", NULL,        debug_show_reg, 1, "<Item>", 0 },
+    { "/Debug/Show reg", NULL,        debug_show_reg, 1, "<Item>", 0 },
     { "/Debug/Show RAM", NULL,        debug_show_ram, 1, "<Item>", 0 },
     { "/Debug/Run",     NULL,         debug_run,     1, "<Item>", 0 },
     { "/Debug/Step",    NULL,         debug_step,    1, "<Item>", 0 },
+    { "/Debug/Reset cycle count", NULL, debug_reset_cycle_count, 1, "<Item>", 0 },
     { "/Debug/sep1",     NULL,         NULL,          0, "<Separator>", 0 },
-    { "/Debug/Log File", NULL,        debug_log,     2, "<ToggleItem>", 0 },
+    { "/Debug/Log file", NULL,        debug_log,     2, "<ToggleItem>", 0 },
     { "/Debug/Trace",   NULL,         debug_trace,   1, "<ToggleItem>", 0 },
-    { "/Debug/Key Trace", NULL,     debug_key_trace, 1, "<ToggleItem>", 0 },
-    { "/Debug/RAM Trace", NULL,     debug_ram_trace, 1, "<ToggleItem>", 0 },
+    { "/Debug/Key trace", NULL,     debug_key_trace, 1, "<ToggleItem>", 0 },
+    { "/Debug/RAM trace", NULL,     debug_ram_trace, 1, "<ToggleItem>", 0 },
     { "/Debug/Dump ROM", NULL,      debug_dump_rom,  1, "<Item>", 0 },
 #endif // HAS_DEBUGGER
 #ifdef HAS_DEBUGGER_CLI
-    { "/Debug/Command Window", NULL,     debug_cli_window, 1, "<ToggleItem>", 0 },
+    { "/Debug/Command window", NULL,     debug_cli_window, 1, "<ToggleItem>", 0 },
 #endif // HAS_DEBUGGER_CLI
     { "/_Help",         NULL,         NULL,          0, "<Branch>", 0 },
     { "/_Help/About",   NULL,         help_about,    1, "<Item>", 0 }

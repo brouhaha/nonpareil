@@ -1,6 +1,5 @@
 /*
-$Id$
-Copyright 1995, 2004-2006, 2008-2010 Eric Smith <eric@brouhaha.com>
+Copyright 1995-2022 Eric Smith <spacewar@gmail.com>
 
 Nonpareil is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License version 2 as
@@ -39,6 +38,8 @@ MA 02111, USA.
 #include "chip.h"
 #include "calcdef.h"
 #include "proc.h"
+#include "arch.h"
+#include "proc_int.h"  // ugly, needed to reset cycle count, should have an API
 #include "csim.h"
 
 
@@ -442,6 +443,14 @@ void debug_step      (gpointer callback_data,
 		      GtkWidget *widget)
 {
   sim_single_inst (dg_csim->sim);
+}
+
+
+void debug_reset_cycle_count(gpointer callback_data,
+			     guint callback_action,
+			     GtkWidget *widget)
+{
+  dg_csim->sim->cycle_count = 0;
 }
 
 
