@@ -1,6 +1,5 @@
 /*
-$Id$
-Copyright 2004, 2005, 2006, 2008 Eric Smith <eric@brouhaha.com>
+Copyright 2004-2022 Eric Smith <spacewar@gmail.com>
 
 Nonpareil is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License version 2 as
@@ -186,6 +185,8 @@ void free_kml (kml_t *kml);
 
 void print_kml (FILE *f, kml_t *kml);
 
+void rescale_kml_file (kml_t *kml, int factor);
+
 
 // for use in kml.c, kmll.l, and kmly.y only:
 
@@ -210,4 +211,4 @@ void range_check_char (int val, int min, int max);
 void kml_include (char *fn);
 //int kml_include_end (void);
 
-int kml_yyinput (unsigned char *buf, size_t max_size);
+int kml_yyinput (char *buf, size_t max_size);

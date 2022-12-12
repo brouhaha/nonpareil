@@ -1,6 +1,5 @@
 /*
-$Id$
-Copyright 2004, 2005, 2006, 2008 Eric Smith <eric@brouhaha.com>
+Copyright 2004-2022 Eric Smith <spacewar@gmail.com>
 
 Nonpareil is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License version 2 as
@@ -77,7 +76,7 @@ void range_check_char (int val, int min, int max)
 }
 
 
-int kml_yyinput (unsigned char *buf, size_t max_size)
+int kml_yyinput (char *buf, size_t max_size)
 {
   size_t size;
   unsigned char const * rp;
@@ -91,7 +90,7 @@ int kml_yyinput (unsigned char *buf, size_t max_size)
 
       if (size > max_size)
 	size = max_size;
-      rp = gsf_input_read (kml_gsfinput, size, buf);
+      rp = gsf_input_read (kml_gsfinput, size, (unsigned char *) buf);
       if (rp)
 	return size;
       else
@@ -352,3 +351,48 @@ void print_kml (FILE *f, kml_t *kml)
 }
 
 
+static void rescale_kml_size (kml_size_t *size, int factor) {
+  size->width *= factor;
+  size->height *= factor;
+}
+
+static void rescale_kml_offset (kml_offset_t *offset, int factor) {
+  offset->x *= factor;
+  offset->y *= factor;
+}
+
+
+void rescale_kml_file (kml_t *kml, int factor) {
+  int i, p;
+
+  rescale_kml_offset(&kml->background_offset, factor);
+  rescale_kml_size(&kml->background_size, factor);
+
+  rescale_kml_size(&kml->display_size, factor);
+  rescale_kml_offset(&kml->display_offset, factor);
+
+  rescale_kml_size(&kml->digit_size, factor);
+  rescale_kml_offset(&kml->digit_offset, factor);
+
+  for (i = 0; i < KML_MAX_ANNUNCIATOR; i++)
+    if (kml->annunciator [i])
+    {
+      rescale_kml_size(&kml->annunciator [i]->size, factor);
+      rescale_kml_offset(&kml->annunciator [i]->offset, factor);
+    }
+
+  for (i = 0; i < KML_MAX_SWITCH; i++)
+    if (kml->kswitch [i])
+    {
+      rescale_kml_size(&kml->kswitch [i]->size, factor);
+      rescale_kml_offset(&kml->kswitch [i]->offset, factor);
+    }
+
+  for (i = 0; i < KML_MAX_BUTTON; i++)
+    if (kml->button [i])
+    {
+      rescale_kml_size(&kml->button [i]->size, factor);
+      rescale_kml_offset(&kml->button [i]->offset, factor);
+      rescale_kml_offset(&kml->button [i]->down, factor);
+    }
+}

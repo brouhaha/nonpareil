@@ -1,6 +1,5 @@
 /*
-$Id$
-Copyright 1995, 2004-2008, 2010 Eric Smith <eric@brouhaha.com>
+Copyright 1995-2022 Eric Smith <spacewar@gmail.com>
 
 Nonpareil is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License version 2 as
@@ -95,8 +94,8 @@ static void add_slide_switch (gui_switches_t *switches, int i)
 	si->max_position = pos;
 
 	// should handle case with no image_fn (use subpixbuf of base image)
-	si->pixbuf [pos] = load_pixbuf (switches->csim,
-				      ks->position [pos]->image_fn);
+	si->pixbuf [pos] = load_pixbuf_scaled (switches->csim,
+					       ks->position [pos]->image_fn);
 
 	cbutton_set_pixbuf (CBUTTON (si->widget),
 			    pos,

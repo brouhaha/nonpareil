@@ -1,5 +1,5 @@
 /*
-Copyright 1995, 2004-2006, 2008, 2010, 0222 Eric Smith <spacewar@gmail.com>
+Copyright 1995-2022 Eric Smith <spacewar@gmail.com>
 
 Nonpareil is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License version 2 as
@@ -159,7 +159,7 @@ static void add_key (csim_t *csim,
   button_info->number = number;
 
   if (kml_button->image_fn)
-    button_pixbuf = load_pixbuf (csim, kml_button->image_fn);
+    button_pixbuf = load_pixbuf_scaled (csim, kml_button->image_fn);
   else
     button_pixbuf = gdk_pixbuf_new_subpixbuf (csim->background_pixbuf,
 					      kml_button->offset.x - csim->kml->background_offset.x,

@@ -1,6 +1,5 @@
 /*
-$Id$
-Copyright 1995, 2004, 2005, 2006 Eric L. Smith <eric@brouhaha.com>
+Copyright 1995-2022 Eric Smith <spacewar@gmail.com>
 
 Nonpareil is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License version 2 as
@@ -59,6 +58,8 @@ typedef struct
 // General utility functions in csim.c:
 
 GdkPixbuf *load_pixbuf (csim_t *csim, char *image_name);
+
+GdkPixbuf *load_pixbuf_scaled (csim_t *csim, char *image_name);
 
 
 // Display:

@@ -75,6 +75,10 @@ char *default_path = NULL;
 #endif
 
 
+#define MAX_GUI_SCALE 4
+static int gui_scale = 1;
+
+
 void print_usage_toggle_option (FILE *f, char *name, bool default_setting)
 {
   fprintf (f, "   --%s", name);
@@ -102,6 +106,7 @@ void usage (FILE *f)
   fprintf (f, "   --kmldebug\n");
   fprintf (f, "   --kmldump\n");
   fprintf (f, "   --scancodedebug\n");
+  fprintf (f, "   --scale <n>\n");
 #ifdef HAS_DEBUGGER
   fprintf (f, "   --stop\n");
 #endif
@@ -786,16 +791,38 @@ GdkPixbuf *load_pixbuf_from_nui (GsfInfile *nui, char *image_name)
 
 GdkPixbuf *load_pixbuf (csim_t *csim, char *image_name)
 {
-  GdkPixbuf *pixbuf;
+  GdkPixbuf *pixbuf = NULL;
 
   if (csim->nui)
-    {
-      pixbuf = load_pixbuf_from_nui (csim->nui, image_name);
-      if (pixbuf)
-	return pixbuf;
-    }
+    pixbuf = load_pixbuf_from_nui (csim->nui, image_name);
 
-  pixbuf = load_pixbuf_from_file (image_name);
+  if (! pixbuf)
+    pixbuf = load_pixbuf_from_file (image_name);
+
+  if (! pixbuf)
+    fatal (2, "Can't load image '%s'\n", image_name);
+
+  return pixbuf;
+}
+
+
+
+GdkPixbuf *load_pixbuf_scaled (csim_t *csim, char *image_name)
+{
+  GdkPixbuf *pixbuf = NULL;
+
+  pixbuf = load_pixbuf (csim, image_name);
+
+  if (gui_scale != 1)
+    {
+      pixbuf = gdk_pixbuf_scale_simple (pixbuf,
+					gdk_pixbuf_get_width (pixbuf) * gui_scale,
+					gdk_pixbuf_get_height (pixbuf) * gui_scale,
+					GDK_INTERP_NEAREST);
+      if (! pixbuf)
+	fatal (2, "can't scale image '%s'\n", image_name);
+    }
+    
   return pixbuf;
 }
 
@@ -875,6 +902,15 @@ int main (int argc, char *argv[])
 	    sound_enabled = false;
 	  else if (strcasecmp (argv [0], "--kmldump") == 0)
 	    kml_dump = 1;
+	  else if (strcasecmp (argv [0], "--scale") == 0)
+	    {
+	      if (! --argc)
+		  fatal (1, "--scale argument needs argument\n");
+	      argv++;
+	      gui_scale = atoi(argv [0]);
+	      if ((gui_scale < 1) || (gui_scale > MAX_GUI_SCALE))
+		fatal (1, "--scale needs integer argument between 1 and %d\n", MAX_GUI_SCALE);
+	    }
 	  else if (strcasecmp (argv [0], "--scancodedebug") == 0)
 	    csim->scancode_debug = 1;
 #ifdef HAS_DEBUGGER
@@ -932,6 +968,11 @@ int main (int argc, char *argv[])
       fatal (1, "no KML file\n");
     }
 
+  if (gui_scale != 1)
+    {
+      rescale_kml_file(csim->kml, gui_scale);
+    }
+
   if (kml_dump)
     {
       print_kml (stdout, csim->kml);
@@ -941,7 +982,7 @@ int main (int argc, char *argv[])
   if (! csim->kml->image_fn)
     fatal (2, "No image file spsecified in KML\n");
 
-  csim->file_pixbuf = load_pixbuf (csim, csim->kml->image_fn);
+  csim->file_pixbuf = load_pixbuf_scaled (csim, csim->kml->image_fn);
 
   if (! csim->kml->has_background_size)
     {
@@ -1007,8 +1048,8 @@ int main (int argc, char *argv[])
     }
 
   if (csim->kml->default_overlay_image_fn)
-    csim->overlay_pixbuf = load_pixbuf (csim,
-					csim->kml->default_overlay_image_fn);
+    csim->overlay_pixbuf = load_pixbuf_scaled (csim,
+					       csim->kml->default_overlay_image_fn);
 
   if (csim->overlay_pixbuf != NULL)
     {

@@ -1,5 +1,5 @@
 /*
-Copyright 2004, 2005, 2006, 2022 Eric Smith <spacewar@gmail.com>
+Copyright 2004-2022 Eric Smith <spacewar@gmail.com>
 
 Nonpareil is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License version 2 as
@@ -58,6 +58,7 @@ static char *credits_people [] =
   "John Hogerhuis",
   "Joe Horn",
   "HrastProgrammer",
+  "Iván Izaguirre",
   "David Jedelsky",
   "Thomas Klemm",
   "Steven Knight",

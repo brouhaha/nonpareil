@@ -1,6 +1,5 @@
 /*
-$Id: csim.c 417 2004-06-15 07:34:30Z eric $
-Copyright 1995, 2004-2006, 2008, 2010 Eric Smith <eric@brouhaha.com>
+Copyright 1995-2022 Eric Smith <spacewar@gmail.com>
 
 Nonpareil is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License version 2 as
@@ -404,8 +403,8 @@ static void init_annunciators (gui_display_t *d)
   kml_t *kml = d->csim->kml;
 
   if (kml->annunciator_image_fn)
-    d->annunciator_image_pixbuf = load_pixbuf (d->csim,
-					       kml->annunciator_image_fn);
+    d->annunciator_image_pixbuf = load_pixbuf_scaled (d->csim,
+						      kml->annunciator_image_fn);
   else
     d->annunciator_image_pixbuf = gdk_pixbuf_new_subpixbuf (d->csim->file_pixbuf,
 							    kml->display_offset.x,
