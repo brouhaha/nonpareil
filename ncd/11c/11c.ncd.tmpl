@@ -172,49 +172,49 @@ Copyright 2007, 2008, 2022 Eric Smith <spacewawr@gmail.com>
   </chip>
 
   <keyboard>
-
-    <key user_keycode="11" hw_keycode="0x13"/>
-    <key user_keycode="12" hw_keycode="0x33"/>
-    <key user_keycode="13" hw_keycode="0x73"/>
-    <key user_keycode="14" hw_keycode="0xc3"/>
-    <key user_keycode="15" hw_keycode="0x83"/>
-    <key user_keycode="16" hw_keycode="0x82"/>
-    <key user_keycode="17" hw_keycode="0xc2"/>
-    <key user_keycode="18" hw_keycode="0x72"/>
-    <key user_keycode="19" hw_keycode="0x32"/>
-    <key user_keycode="10" hw_keycode="0x12"/>
-
-    <key user_keycode="21" hw_keycode="0x10"/>
-    <key user_keycode="22" hw_keycode="0x30"/>
-    <key user_keycode="23" hw_keycode="0x70"/>
-    <key user_keycode="24" hw_keycode="0xc0"/>
-    <key user_keycode="25" hw_keycode="0x80"/>
-    <key user_keycode="26" hw_keycode="0x87"/>
-    <key user_keycode="27" hw_keycode="0xc7"/>
-    <key user_keycode="28" hw_keycode="0x77"/>
-    <key user_keycode="29" hw_keycode="0x37"/>
-    <key user_keycode="20" hw_keycode="0x17"/>
-
-    <key user_keycode="31" hw_keycode="0x11"/>
-    <key user_keycode="32" hw_keycode="0x31"/>
-    <key user_keycode="33" hw_keycode="0x71"/>
-    <key user_keycode="34" hw_keycode="0xc1"/>
-    <key user_keycode="35" hw_keycode="0x81"/>
-    <key user_keycode="36" hw_keycode="0x84"/>
-    <key user_keycode="37" hw_keycode="0xc4"/>
-    <key user_keycode="38" hw_keycode="0x74"/>
-    <key user_keycode="39" hw_keycode="0x34"/>
-    <key user_keycode="30" hw_keycode="0x14"/>
-
-    <key user_keycode="41" hw_keycode="0x18"/>
-    <key user_keycode="42" hw_keycode="0x38"/>
-    <key user_keycode="43" hw_keycode="0x78"/>
-    <key user_keycode="44" hw_keycode="0xc8"/>
-    <key user_keycode="45" hw_keycode="0x88"/>
-    <key user_keycode="47" hw_keycode="0xc5"/>
-    <key user_keycode="48" hw_keycode="0x75"/>
-    <key user_keycode="49" hw_keycode="0x35"/>
-    <key user_keycode="40" hw_keycode="0x15"/>
+                                               <!-- unshifted  f-shifted  g-shifted -->
+    <key user_keycode="11" hw_keycode="0x13"/> <!-- sqrt       A          x^2       -->
+    <key user_keycode="12" hw_keycode="0x33"/> <!-- e^x        B          LN        -->
+    <key user_keycode="13" hw_keycode="0x73"/> <!-- 10^x       C          LOG       -->
+    <key user_keycode="14" hw_keycode="0xc3"/> <!-- y^x        D          %         -->
+    <key user_keycode="15" hw_keycode="0x83"/> <!-- 1/x        E          Delta%    -->
+    <key user_keycode="16" hw_keycode="0x82"/> <!-- CHS        pi         ABS       -->
+    <key user_keycode="17" hw_keycode="0xc2"/> <!-- 7          FIX        DEG       -->
+    <key user_keycode="18" hw_keycode="0x72"/> <!-- 8          SCI        RAD       -->
+    <key user_keycode="19" hw_keycode="0x32"/> <!-- 9          ENG        GRD       -->
+    <key user_keycode="10" hw_keycode="0x12"/> <!-- divide     x<=y       x<0       -->
+					                                               
+    <key user_keycode="21" hw_keycode="0x10"/> <!-- SST        LBL        BST       -->
+    <key user_keycode="22" hw_keycode="0x30"/> <!-- GTO        HYP        HYP-1     -->
+    <key user_keycode="23" hw_keycode="0x70"/> <!-- SIN        x<>(i)     SIN-1     -->
+    <key user_keycode="24" hw_keycode="0xc0"/> <!-- COS        (i)        COS-1     -->
+    <key user_keycode="25" hw_keycode="0x80"/> <!-- TAN        I          TAN-1     -->
+    <key user_keycode="26" hw_keycode="0x87"/> <!-- EEX        ->R        ->P       -->
+    <key user_keycode="27" hw_keycode="0xc7"/> <!-- 4          x<>I       SF        -->
+    <key user_keycode="28" hw_keycode="0x77"/> <!-- 5          DSE        CF        -->
+    <key user_keycode="29" hw_keycode="0x37"/> <!-- 6          ISG        F?        -->
+    <key user_keycode="20" hw_keycode="0x17"/> <!-- multiply   x>y        x>0       -->
+					                                               
+    <key user_keycode="31" hw_keycode="0x11"/> <!-- R/S        PSE        P/R       -->
+    <key user_keycode="32" hw_keycode="0x31"/> <!-- GSB        CL Sigma   RTN       -->
+    <key user_keycode="33" hw_keycode="0x71"/> <!-- Rdn        CL PRGM    Rup       -->
+    <key user_keycode="34" hw_keycode="0xc1"/> <!-- x<>y       CL REG     RND       -->
+    <key user_keycode="35" hw_keycode="0x81"/> <!-- backspace  CL PREFIX  CLx       -->
+    <key user_keycode="36" hw_keycode="0x84"/> <!-- ENTER      RAN#       LSTx      -->
+    <key user_keycode="37" hw_keycode="0xc4"/> <!-- 1          Py,x       Cy,x      -->
+    <key user_keycode="38" hw_keycode="0x74"/> <!-- 2          ->H.MS     ->H       -->
+    <key user_keycode="39" hw_keycode="0x34"/> <!-- 3          ->RAD      ->DEG     -->
+    <key user_keycode="30" hw_keycode="0x14"/> <!-- subtract   x/=y       x/=0      -->
+					                                               
+    <key user_keycode="41" hw_keycode="0x18"/>  <!-- ON                             -->
+    <key user_keycode="42" hw_keycode="0x38"/>  <!-- f                              -->
+    <key user_keycode="43" hw_keycode="0x78"/>  <!-- g                              -->
+    <key user_keycode="44" hw_keycode="0xc8"/>  <!-- STO       FRAC       INT       -->
+    <key user_keycode="45" hw_keycode="0x88"/>  <!-- RCL       USER       MEM       -->
+    <key user_keycode="47" hw_keycode="0xc5"/>  <!-- 0         x!         mean      -->
+    <key user_keycode="48" hw_keycode="0x75"/>  <!-- decimal   lin est,r  std dev   -->
+    <key user_keycode="49" hw_keycode="0x35"/>  <!-- Sigma+    L.R.       Sigma-    -->
+    <key user_keycode="40" hw_keycode="0x15"/>  <!-- add       x=y        x=0       -->
   </keyboard>
 
   <obj_file addr_space="inst"
