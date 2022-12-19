@@ -1,6 +1,5 @@
 ; 67/97 ROM disassembly - bank 1 card reader code
-; Copyright 2007, 2008 Eric Smith <eric@brouhaha.com>
-; $Id$
+; Copyright 2007, 2008, 2022 Eric Smith <spacewar@gmail.com>
 ;
 ; ------------------------------------------------------------------
 ; This code resides at 12644..13732 in 67,
@@ -281,8 +280,9 @@ Lcr3125: c -> data address	; get register from memory (addr in C[1:0])
         go to wait_no_card_x	; wait for card to exit, and return
 
 ; ------------------------------------------------------------------
-; select CRC
-	
+; select CRC, register address 0x99
+; works regardless of binary or decimal mod mode
+
 sel_crc:
 	p <- 1
         load constant 9
@@ -291,7 +291,6 @@ sel_crc:
         return
 
 ; ------------------------------------------------------------------
-
 ; wait for CRC buffer to be be ready, with timeout
 	
 Scr3167: 0 -> s 3
@@ -406,7 +405,6 @@ Lcr3313: 0 -> c[w]
         go to Lcr3336
 
 ; ------------------------------------------------------------------
-
 ; read one 56-bit register from CRC
 crc_read_56:
 	a exchange c[w]
@@ -431,7 +429,6 @@ Lcr3336: a exchange c[w]
         return
 
 ; ------------------------------------------------------------------
-	
 Scr3341: display off
         crc fs?c crc_f7
         crc sf motor_on
@@ -466,7 +463,6 @@ delay2: nop
         return
 
 ; ------------------------------------------------------------------
-
 Scr3370: if 1 = s 6
           then go to Lcr3405
         a exchange c[w]
@@ -587,7 +583,6 @@ Lcr3503: 0 -> c[x]
         return
 
 ; ------------------------------------------------------------------
-
 Scr3505: if 1 = s 6
           then go to Lcr3273
         p <- 1
@@ -626,7 +621,6 @@ Lcr3546: load constant 1
         return
 
 ; ------------------------------------------------------------------
-
 Scr3551: p <- 1			; get return stack
         load constant 3
         c -> data address
@@ -745,7 +739,6 @@ wait_no_card:
         return
 
 ; ------------------------------------------------------------------
-
 cr_error_wait:
 	jsb wait_no_card
 

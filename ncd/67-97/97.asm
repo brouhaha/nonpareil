@@ -1,6 +1,5 @@
 ; 97 ROM disassembly - quad 0 (@0000-@1777)
-; Copyright 2007, 2008 Eric Smith <eric@brouhaha.com>
-; $Id$
+; Copyright 2007, 2008, 2022 Eric Smith <spacewar@gmail.com>
 
 	.arch woodstock
 
@@ -501,15 +500,18 @@ L0412:  register -> c 14
         load constant 2		; FIX mode (22)
         load constant 2
         nop			; 67 doesn't have this nop
-        c -> register 14
+        c -> register 14	; writes status reg
+
 L0425:  jsb S0440
-        p <- 1
+
+        p <- 1			; clear program
         c + 1 -> c[p]
         c -> data address
         clear data registers
         c + 1 -> c[p]
         c -> data address
         clear data registers
+
         clear status
 L0436:  delayed rom @00
         go to L0074
@@ -523,10 +525,14 @@ S0440:  delayed rom @00
 clr_reg:
 	0 -> c[w]
         p <- 0
-        jsb S0451
+        jsb clr_16_reg
         go to L0436
 
-S0451:  a exchange c[w]
+
+; Clear a block of 16 registers, enter with addr 0xn0 in C,
+; will clear 0xn0..0xnf.
+clr_16_reg:
+	a exchange c[w]
         binary
         0 -> c[w]
         a - 1 -> a[p]
@@ -546,10 +552,10 @@ clr_prgm:
         0 -> c[w]
         p <- 1
         load constant 2
-        jsb S0451
+        jsb clr_16_reg
         p <- 1
         load constant 1
-        jsb S0451
+        jsb clr_16_reg
         jsb S0440
         c -> register 14
         go to L0412

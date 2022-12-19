@@ -1,6 +1,5 @@
 ; 67/97 common ROM disassembly
-; Copyright 2007, 2008 Eric Smith <eric@brouhaha.com>
-; $Id: 6797.asm 1294 2009-10-04 17:18:05Z eric $
+; Copyright 2007, 2008, 2022 Eric Smith <spacewar@gmail.com>
 
 	.arch woodstock
 
@@ -2927,7 +2926,7 @@ op_frac:
 S6671:  delayed rom @16
         go to L7036
 
-; indirect (s10=1 for GTO/GSB)
+; indirect (s10=0 for STO/RCL, s10=1 for GTO/GSB)
 S6673:  0 -> c[w]		; get I register
         c -> data address
         register -> c 15
@@ -2941,6 +2940,8 @@ L6677:  p - 1 -> p
         0 -> c[w]
 L6706:  if 1 = s 10
           then go to L6773
+
+; indirect STO/RCL
         if 1 = s 6
           then go to L6627
         shift right c[m]
