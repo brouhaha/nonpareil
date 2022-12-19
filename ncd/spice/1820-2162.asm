@@ -10,69 +10,64 @@
 
 ; externals:
 L02000   .equ @02000
-L02001   .equ @02001
+L02001   .equ @02001	; calculator-specific reset entry
 L02002   .equ @02002
 L02004   .equ @02004
 L02005   .equ @02005
 
 	 .org @0000
 
-L00000:  select rom go to L02001
+; reset entry
+         select rom go to L02001
 
-L00001:  go to S00014
 
-L00002:  go to S00016
+; fixed entry points - note that some calculators bypass these and
+; jump/call directly to the targets
+L00001:  go to ad2-10
+L00002:  go to ad1-10
+L00003:  go to ad2-13
+L00004:  go to mp2-10
+L00005:  go to mp1-10
+L00006:  go to mp2-13
+L00007:  go to dv2-10
+L00010:  go to dv1-10
+L00011:  go to dv2-13
+L00012:  go to x/y13
+L00013:  go to sqr13
 
-L00003:  go to S00021
 
-L00004:  go to S00171
-
-L00005:  go to S00173
-
-L00006:  go to S00176
-
-L00007:  go to S00222
-
-L00010:  go to S00224
-
-L00011:  go to S00227
-
-L00012:  go to S00362
-
-L00013:  go to S00275
-
-S00014:  0 -> b[w]
+ad2-10:  0 -> b[w]
          a exchange b[m]
-S00016:  m1 exchange c
+ad1-10:  m1 exchange c
          m1 -> c
          0 -> c[x]
-S00021:  0 -> b[s]
+ad2-13:  0 -> b[s]
          0 -> c[s]
          m1 exchange c
          p <- 1
-L00025:  p - 1 -> p
+add10:   p - 1 -> p
          a + 1 -> a[xs]
          c + 1 -> c[xs]
          if p # 12
-           then go to L00025
+           then go to add10
          b exchange c[w]
          if c[w] = 0
-           then go to L00075
+           then go to add60
          m1 exchange c
          a exchange b[w]
          if c[w] = 0
-           then go to L00075
-L00041:  if a >= b[x]
-           then go to L00150
-L00043:  a - b -> a[s]
+           then go to add60
+add30:   if a >= b[x]
+           then go to add90
+add65:   a - b -> a[s]
          if a[s] # 0
-           then go to L00047
-         go to L00063
+           then go to add40
+         go to add50
 
-L00047:  0 - c -> c[w]
+add40:   0 - c -> c[w]
          c -> a[s]
          if a >= b[x]
-           then go to L00063
+           then go to add50
          m1 exchange c
          a exchange c[w]
          shift left a[w]
@@ -81,157 +76,159 @@ L00047:  0 - c -> c[w]
          a exchange b[w]
          a - 1 -> a[x]
          a exchange b[w]
-L00063:  if a >= b[x]
-           then go to L00075
+add50:   if a >= b[x]
+           then go to add60
          a + 1 -> a[x]
          shift right c[w]
          a exchange c[s]
          c -> a[s]
          p - 1 -> p
          if p # 13
-           then go to L00063
+           then go to add50
          0 -> c[w]
-L00075:  a exchange c[w]
+add60:   a exchange c[w]
          m1 -> c
          b exchange c[w]
          a + b -> a[w]
          c - 1 -> c[xs]
          c - 1 -> c[xs]
          c - 1 -> c[xs]
-S00104:  a exchange c[w]
+; fall into mpy150
+
+mpy150:  a exchange c[w]
          m1 exchange c
          m1 -> c
          if c[s] = 0
-           then go to L00113
+           then go to shf40
          a + 1 -> a[x]
          shift right c[w]
-L00113:  a exchange c[w]
-S00114:  p <- 12
+shf40:   a exchange c[w]
+shf10:   p <- 12
          if a[wp] # 0
-           then go to L00143
-L00117:  b exchange c[w]
-S00120:  a exchange c[w]
+           then go to shf20
+nrm10:   b exchange c[w]
+nrm11:   a exchange c[w]
          p <- 12
          c -> a[w]
          c + c -> c[x]
-         if n/c go to L00141
+         if n/c go to nrm20
          c + 1 -> c[m]
-         if n/c go to L00141
+         if n/c go to nrm20
          b -> c[x]
          c + 1 -> c[x]
          c + 1 -> c[p]
-L00132:  b -> c[s]
+nrm30:   b -> c[s]
          a exchange b[w]
          if c[m] # 0
-           then go to L00140
+           then go to nrm40
          0 -> c[w]
          0 -> a[s]
-L00140:  return
+nrm40:   return
 
-L00141:  b -> c[x]
-         go to L00132
+nrm20:   b -> c[x]
+         go to nrm30
 
-L00143:  if a[p] # 0
-           then go to L00117
+shf20:   if a[p] # 0
+           then go to nrm10
          c - 1 -> c[x]
          shift left a[wp]
-         go to L00143
+         go to shf20
 
-L00150:  m1 exchange c
+add90:   m1 exchange c
          a exchange b[w]
          if a >= b[x]
-           then go to L00155
-         go to L00041
+           then go to add45
+         go to add30
 
-L00155:  a exchange c[w]
+add45:   a exchange c[w]
          m1 exchange c
          if a >= c[w]
-           then go to L00164
+           then go to add55
          m1 exchange c
          a exchange c[w]
-         go to L00043
+         go to add65
 
-L00164:  m1 exchange c
+add55:   m1 exchange c
          a exchange c[w]
          m1 exchange c
          a exchange b[w]
-         go to L00043
+         go to add65
 
-S00171:  0 -> b[w]
+mp2-10:  0 -> b[w]
          a exchange b[m]
-S00173:  m1 exchange c
+mp1-10:  m1 exchange c
          m1 -> c
          0 -> c[x]
-S00176:  0 -> b[s]
+mp2-13:  0 -> b[s]
          0 -> c[s]
          m1 exchange c
          a + c -> c[x]
          a - c -> c[s]
-         if n/c go to L00205
+         if n/c go to mpy110
          0 - c -> c[s]
-L00205:  0 -> a[w]
+mpy110:  0 -> a[w]
          m1 exchange c
          p <- 13
-L00210:  p + 1 -> p
+mpy120:  p + 1 -> p
          shift right a[w]
-         go to L00214
+         go to mpy140
 
-L00213:  a + b -> a[w]
-L00214:  c - 1 -> c[p]
-         if n/c go to L00213
+mpy130:  a + b -> a[w]
+mpy140:  c - 1 -> c[p]
+         if n/c go to mpy130
          if p # 12
-           then go to L00210
+           then go to mpy120
          m1 -> c
-         go to S00104
+         go to mpy150
 
-S00222:  0 -> b[w]
+dv2-10:  0 -> b[w]
          a exchange b[m]
-S00224:  m1 exchange c
+dv1-10:  m1 exchange c
          m1 -> c
          0 -> c[x]
-S00227:  0 -> b[s]
+dv2-13:  0 -> b[s]
          0 -> c[s]
          if c[m] = 0
-           then go to L00267
+           then go to err0
          m1 exchange c
          a - c -> c[x]
          a - c -> c[s]
-         if n/c go to L00240
+         if n/c go to div110
          0 - c -> c[s]
-L00240:  m1 exchange c
+div110:  m1 exchange c
          a exchange c[w]
          a exchange b[w]
-S00243:  if a >= b[w]
-           then go to S00251
+div15:   if a >= b[w]
+           then go to div120
          m1 exchange c
          shift left a[w]
          c - 1 -> c[x]
          m1 exchange c
-S00251:  p <- 12
+div120:  p <- 12
          0 -> c[w]
-         go to L00255
+         go to div140
 
-L00254:  c + 1 -> c[p]
-L00255:  a - b -> a[w]
-         if n/c go to L00254
+div130:  c + 1 -> c[p]
+div140:  a - b -> a[w]
+         if n/c go to div130
          a + b -> a[w]
          shift left a[w]
          p - 1 -> p
          if p # 13
-           then go to L00255
+           then go to div140
          a exchange c[w]
          m1 -> c
-         go to L00117
+         go to nrm10
 
-L00267:  p <- 0
+err0:    p <- 0
          delayed rom @04
          go to L02004
 
-S00272:  0 -> b[w]
+sqr10:   0 -> b[w]
          b exchange c[m]
          a exchange c[w]
-S00275:  if a[s] # 0
-           then go to L00267
+sqr13:   if a[s] # 0
+           then go to err0
          0 -> b[s]
          if b[w] = 0
            then go to L00347
@@ -249,60 +246,60 @@ S00275:  if a[s] # 0
          a + c -> c[x]
          p <- 0
          if c[p] # 0
-           then go to L00322
+           then go to sqr50
          shift right b[w]
-L00322:  shift right c[w]
+sqr50:   shift right c[w]
          a exchange c[x]
          0 -> c[w]
          a exchange b[w]
          p <- 13
          load constant 5
          shift right c[w]
-         go to L00342
+         go to sqr100
 
-L00332:  c + 1 -> c[p]
-L00333:  a - c -> a[w]
-         if n/c go to L00332
+sqr60:   c + 1 -> c[p]
+sqr70:   a - c -> a[w]
+         if n/c go to sqr60
          a + c -> a[w]
          shift left a[w]
          if p = 0
            then go to L00345
          p - 1 -> p
-L00342:  shift right c[wp]
+sqr100:  shift right c[wp]
          0 -> c[p]
-         go to L00333
+         go to sqr70
 
 L00345:  a exchange c[w]
-         go to S00120
+         go to nrm11
 
 L00347:  0 -> a[w]
          0 -> c[w]
-         go to S00120
+         go to nrm11
 
-S00352:  0 -> b[w]
+1/x10:   0 -> b[w]
          b exchange c[m]
          a exchange c[w]
-S00355:  0 -> c[w]
+1/x13:  0 -> c[w]
          m1 exchange c
          0 -> c[w]
          p <- 12
          load constant 1
-S00362:  b exchange c[w]
+x/y13:   b exchange c[w]
          a exchange c[w]
          m1 exchange c
          a exchange c[w]
-         go to S00227
+         go to dv2-13
 
-S00367:  0 -> c[w]
+subone:  0 -> c[w]
          0 - c - 1 -> c[s]
-L00371:  p <- 12
+subon1:  p <- 12
          load constant 1
-         go to S00016
+         go to ad1-10
 
-S00374:  0 -> c[w]
-         go to L00371
+addone:  0 -> c[w]
+         go to subon1
 
-L00376:  load constant 6
+lnc30:   load constant 6
          load constant 9
          load constant 3
          load constant 1
@@ -317,7 +314,7 @@ L00376:  load constant 6
          p <- 12
          return
 
-L00414:  go to S00470
+L00414:  go to stscr
 
 L00415:  go to S00535
 
@@ -340,7 +337,7 @@ S00420:  register -> c 6
          c -> register 9
          go to L00511
 
-S00436:  b exchange c[w]
+rcscr:   b exchange c[w]
          m1 exchange c
          register -> c 9
          c -> a[m]
@@ -367,7 +364,7 @@ S00436:  b exchange c[w]
          b exchange c[w]
          return
 
-S00470:  register -> c 7
+stscr:   register -> c 7
          c -> register 8
          register -> c 6
          c -> register 7
@@ -411,7 +408,7 @@ S00535:  register -> c 6
          p <- 5
          go to L00517
 
-S00540:  0 -> b[w]
+S00540:  0 -> b[w]		; possibly yxten
          b exchange c[m]
          a exchange c[w]
 S00543:  0 -> s 6
@@ -451,7 +448,7 @@ L00577:  c + 1 -> c[x]
          a + 1 -> a[p]
          a exchange b[w]
 S00604:  delayed rom @00
-         go to S00243
+         go to div15
 
 L00606:  if p = 6
            then go to L01752
@@ -460,23 +457,23 @@ L00606:  if p = 6
 L00612:  c + 1 -> c[x]
          if n/c go to L00606
          a exchange b[w]
-         go to L00676
+         go to ln300
 
 L00616:  delayed rom @00
-         jsb S00374
+         jsb addone
          go to L00651
 
 L00621:  1 -> s 8
          go to L00560
 
-L00623:  p <- 12
+ln220:   p <- 12
          b -> c[w]
          c - 1 -> c[p]
          a exchange c[w]
          if a[w] # 0
            then go to L00633
          delayed rom @02
-         go to L01006
+         go to ln560
 
 L00633:  if a[p] # 0
            then go to L00640
@@ -488,51 +485,51 @@ L00640:  m1 exchange c
          jsb S00604
          go to L00560
 
-S00643:  0 -> b[w]
+ln10:    0 -> b[w]
          b exchange c[m]
          a exchange c[w]
 S00646:  1 -> s 6
          if b[m] = 0
            then go to L01756
 L00651:  0 -> s 8
-         0 -> b[s]
+         0 -> b[s]		; ln13
          if a[s] # 0
-           then go to L00267
+           then go to err0
          if b[m] = 0
-           then go to L00267
+           then go to err0
          a exchange c[x]
          c -> a[x]
          if c[x] = 0
-           then go to L00623
+           then go to ln220
          a + c -> a[x]
-         if n/c go to L00667
+         if n/c go to ln140
          0 - c - 1 -> c[x]
          1 -> s 8
-L00667:  0 -> a[ms]
+ln140:   0 -> a[ms]
          a exchange c[ms]
          0 -> a[w]
          p <- 12
          a - b -> a[wp]
          c - 1 -> c[p]
-L00675:  c + 1 -> c[p]
-L00676:  a -> b[w]
+ln310:   c + 1 -> c[p]
+ln300:   a -> b[w]
          m1 exchange c
          m1 -> c
-         go to L00703
+         go to ln330
 
-L00702:  shift right a[w]
-L00703:  c - 1 -> c[s]
-         if n/c go to L00702
+ln320:   shift right a[w]
+ln330:   c - 1 -> c[s]
+         if n/c go to ln320
          m1 -> c
          a + b -> a[w]
          a - 1 -> a[s]
-         if n/c go to L00675
+         if n/c go to ln310
          c + 1 -> c[s]
          a exchange b[w]
          shift left a[w]
          p - 1 -> p
          if p # 5
-           then go to L00676
+           then go to ln300
          a exchange c[w]
          a -> b[w]
          shift left a[wp]
@@ -543,220 +540,220 @@ L00703:  c - 1 -> c[s]
          load constant 7
          0 - c -> c[x]
          if b[x] = 0
-           then go to L01024
+           then go to ln420
          p <- 6
-L00733:  shift right a[w]
-         b exchange c[w]
-L00735:  delayed rom @02
-         jsb S01154
+ln460:   shift right a[w]
+         b exchange c[w]	; ln430
+ln431:   delayed rom @02
+         jsb lnc20
          b exchange c[w]
          delayed rom @02
-         jsb S01033
+         jsb pmul
          if c[m] = 0
-           then go to L00777
+           then go to ln530
          if p # 13
-           then go to L00733
+           then go to ln460
          0 -> b[w]
          p <- 0
          a -> b[p]
          a + b -> a[w]
          shift right a[w]
          b exchange c[w]
-         delayed rom @03
-         jsb S01651
+         delayed rom @03	; ln500
+         jsb lnc10
          if s 8 = 1
-           then go to L00765
+           then go to ln570
          a exchange b[w]
          a - b -> a[w]
          a exchange b[w]
          a + b -> a[w]
          a exchange b[w]
-L00765:  p <- 3
-L00766:  delayed rom @02
-         jsb S01033
+ln570:   p <- 3
+ln520:   delayed rom @02
+         jsb pmul
          if c[m] = 0
-           then go to L00777
+           then go to ln530
          shift right a[w]
-         go to L00766
+         go to ln520
 
-L00774:  shift right a[w]
+ln540:   shift right a[w]
          delayed rom @02
-         go to L01002
+         go to ln550
 
-L00777:  if a[s] # 0
-           then go to L00774
+ln530:   if a[s] # 0
+           then go to ln540
          c - 1 -> c[x]
-L01002:  0 -> c[ms]
+ln550:   0 -> c[ms]
          if 0 = s 8
-           then go to L01006
+           then go to ln560
          0 - c - 1 -> c[s]
-L01006:  delayed rom @00
-         jsb S00114
+ln560:   delayed rom @00
+         jsb shf10
          if 0 = s 6
            then go to L01040
          delayed rom @01
-         jsb S00436
+         jsb rcscr
          delayed rom @00
-         jsb S00176
-L01016:  m1 -> c
-L01017:  if c[s] = 0
-           then go to S01044
+         jsb mp2-13
+ytox50:  m1 -> c
+ytox60:  if c[s] = 0
+           then go to exp13
          a - 1 -> a[x]
          b exchange c[w]
-         go to L01017
+         go to ytox60
 
-L01024:  shift right a[w]
-L01025:  jsb S01264
+ln420:   shift right a[w]
+ln400:   jsb lnap
          a exchange b[w]
          p <- 6
          delayed rom @01
-         go to L00735
+         go to ln431
 
-L01032:  a + b -> a[w]
-S01033:  c - 1 -> c[p]
-         if n/c go to L01032
+pmul1:   a + b -> a[w]
+pmul:    c - 1 -> c[p]
+         if n/c go to pmul1
          0 -> c[p]
          c + 1 -> c[x]
          p + 1 -> p
 L01040:  return
 
-S01041:  0 -> b[w]
+exp10:   0 -> b[w]
          b exchange c[m]
          a exchange c[w]
-S01044:  1 -> s 8
+exp13:   1 -> s 8
          if a[s] # 0
-           then go to L01050
+           then go to exp110
          0 -> s 8
-L01050:  0 -> a[ms]
+exp110:  0 -> a[ms]
          a exchange b[w]
          b -> c[w]
          c + c -> c[x]
-         if n/c go to L01071
+         if n/c go to exp200
          b -> c[w]
          if a[s] # 0
-           then go to L01075
+           then go to exp120
          p <- 13
-L01061:  p - 1 -> p
+exp130:  p - 1 -> p
          if p = 5
-           then go to L01213
+           then go to exp500
          c + 1 -> c[x]
-         if n/c go to L01061
-L01066:  jsb S01154
+         if n/c go to exp130
+exp400:  jsb lnc20
          b exchange c[w]
-         go to L01201
+         go to exp420
 
-L01071:  delayed rom @03
-         jsb S01651
+exp200:  delayed rom @03
+         jsb lnc10
          p <- 6
-         go to L01102
+         go to exp220
 
-L01075:  a exchange b[w]
+exp120:  a exchange b[w]
          a + 1 -> a[x]
          shift right b[w]
-         go to L01050
+         go to exp110
 
-L01101:  c + 1 -> c[m]
-L01102:  a - b -> a[w]
-         if n/c go to L01101
+exp210:  c + 1 -> c[m]
+exp220:  a - b -> a[w]
+         if n/c go to exp210
          a + b -> a[w]
          shift left a[w]
          c - 1 -> c[x]
-         if n/c go to L01121
+         if n/c go to exp230
          p <- 5
          if c[p] = 0
-           then go to L01117
+           then go to exp240
          c - 1 -> c[p]
          if c[p] # 0
-           then go to L01126
+           then go to exp300
          c + 1 -> c[p]
-L01117:  p <- 12
-         go to L01211
+exp240:  p <- 12
+         go to exp430
 
-L01121:  a exchange c[w]
+exp230:  a exchange c[w]
          shift left a[m]
          a exchange c[w]
          if c[p] = 0
-           then go to L01102
-L01126:  0 -> c[w]
+           then go to exp220
+exp300:  0 -> c[w]
          p <- 12
          c - 1 -> c[wp]
          c -> a[w]
          p <- 2
          load constant 1
          if 0 = s 8
-           then go to L01137
+           then go to exp700
          0 - c - 1 -> c[x]
-L01137:  a exchange b[w]
+exp700:  a exchange b[w]
          c -> a[w]
-L01141:  if 0 = s 4
+exp710:  if 0 = s 4
            then go to S01151
          delayed rom @01
-         jsb S00470
+         jsb stscr
          delayed rom @00
-         jsb S00367
+         jsb subone
          delayed rom @01
          jsb S00420
 S01151:  a exchange b[w]
          delayed rom @00
-         go to S00120
+         go to nrm11
 
-S01154:  0 -> c[w]
+lnc20:   0 -> c[w]
          if p = 12
-           then go to L00376
+           then go to lnc30
          c - 1 -> c[m]
          load constant 4
          c + 1 -> c[m]
          if p = 10
-           then go to L01671
+           then go to lnc40
          if p = 9
-           then go to L01706
+           then go to lnc50
          if p = 8
-           then go to L01722
+           then go to lnc60
          if p = 7
-           then go to L01734
+           then go to lnc70
          if p = 6
-           then go to L01744
+           then go to lnc80
          p <- 0
          load constant 3
          p <- 6
          return
 
-L01200:  c + 1 -> c[p]
-L01201:  a - b -> a[w]
-         if n/c go to L01200
+exp410:  c + 1 -> c[p]
+exp420:  a - b -> a[w]
+         if n/c go to exp410
          a + b -> a[w]
          if p = 6
-           then go to L01214
+           then go to exp510
          shift left a[w]
          c - 1 -> c[x]
          p - 1 -> p
-L01211:  b exchange c[w]
-         go to L01066
+exp430:  b exchange c[w]
+         go to exp400
 
-L01213:  b exchange c[w]
-L01214:  if 0 = s 4
-           then go to L01221
-         jsb S01264
+exp500:  b exchange c[w]
+exp510:  if 0 = s 4
+           then go to exp570
+         jsb lnap
          a exchange c[w]
          a exchange b[w]
-L01221:  p <- 13
+exp570:  p <- 13
          load constant 6
          p <- 5
-L01224:  if c[m] = 0
-           then go to L01312
+exp550:  if c[m] = 0
+           then go to exp600
          p + 1 -> p
-L01227:  if c[p] = 0
-           then go to L01236
+exp560:  if c[p] = 0
+           then go to exp520
          c - 1 -> c[p]
          a -> b[w]
          m1 exchange c
          m1 -> c
-         go to L01256
+         go to exp530
 
-L01236:  c + 1 -> c[x]
+exp520:  c + 1 -> c[x]
          shift right a[w]
          c - 1 -> c[s]
-         if n/c go to L01224
+         if n/c go to exp550
          shift right c[w]
          shift right c[w]
          shift right c[w]
@@ -764,20 +761,20 @@ L01236:  c + 1 -> c[x]
          a exchange b[w]
          c -> a[w]
          if 0 = s 8
-           then go to L01141
+           then go to exp710
          delayed rom @00
-         jsb S00355
-         go to L01141
+         jsb 1/x13
+         go to exp710
 
-L01255:  shift right b[w]
-L01256:  c - 1 -> c[s]
-         if n/c go to L01255
+exp540:  shift right b[w]
+exp530:  c - 1 -> c[s]
+         if n/c go to exp540
          a + b -> a[w]
          a + 1 -> a[s]
          m1 -> c
-         go to L01227
+         go to exp560
 
-S01264:  m1 exchange c
+lnap:    m1 exchange c
          m1 -> c
          a -> b[w]
          b exchange c[w]
@@ -785,71 +782,72 @@ S01264:  m1 exchange c
          c + c -> c[w]
          a + c -> c[w]
          a exchange b[w]
-L01274:  shift right c[w]
+lnap1:   shift right c[w]
          if c[w] # 0
-           then go to L01302
+           then go to lnap2
          m1 -> c
          a exchange c[w]
          return
 
-L01302:  a + 1 -> a[x]
-         if n/c go to L01274
+lnap2:   a + 1 -> a[x]
+         if n/c go to lnap1
          0 - c -> c[w]
          0 -> c[s]
          m1 exchange c
          c + 1 -> c[x]
          delayed rom @00
-         go to L00240
+         go to div110
 
-L01312:  a exchange b[w]
+exp600:  a exchange b[w]
          0 -> c[ms]
          c -> a[w]
          if 0 = s 8
-           then go to L01322
+           then go to exp740
          0 - c - 1 -> c[s]
          delayed rom @01
          jsb S00565
-L01322:  if 0 = s 4
+exp740:  if 0 = s 4
            then go to L01326
          delayed rom @01
-         jsb S00470
+         jsb stscr
 L01326:  delayed rom @00
-         jsb S00374
+         jsb addone
          go to S01151
 
-L01331:  0 -> b[w]
+xy_to_x:			; xy^x in 41C
+	 0 -> b[w]
          b exchange c[m]
          a exchange c[w]
          delayed rom @01
-         jsb S00470
+         jsb stscr
          y -> a
          m2 -> c
          if a[s] # 0
            then go to L01771
-         go to L01363
+         go to yx13
 
-L01343:  if c[x] = 0
-           then go to L00267
+yx12:    if c[x] = 0
+           then go to err0
          c - 1 -> c[x]
-L01346:  shift left a[ms]
+yx11:    shift left a[ms]
          if a[m] # 0
-           then go to L01343
+           then go to yx12
          if c[x] # 0
-           then go to L01363
+           then go to yx13
          a exchange c[s]
          c -> a[s]
          c + c -> c[s]
          c + c -> c[s]
          a + c -> c[s]
          if c[s] = 0
-           then go to L01363
+           then go to yx13
          1 -> s 7
-L01363:  y -> a
+yx13:    y -> a
          0 -> a[s]
          a exchange c[w]
          0 -> s 4
          delayed rom @01
-         jsb S00643
+         jsb ln10
          stack -> a
          if 0 = s 7
            then go to L01375
@@ -875,9 +873,9 @@ S01406:  select rom go to L00007
 
 S01407:  p <- 12
          if c[s] # 0
-           then go to L00267
+           then go to err0
          if c[xs] # 0
-           then go to L00267
+           then go to err0
          c -> a[w]
 L01415:  a -> b[w]
          shift left a[ms]
@@ -885,42 +883,42 @@ L01415:  a -> b[w]
            then go to L01426
          a + 1 -> a[x]
          if a >= c[x]
-           then go to L01432
+           then go to xft130
          c + 1 -> c[xs]
          return
 
 L01426:  a - 1 -> a[x]
          if n/c go to L01415
          delayed rom @00
-         go to L00267
+         go to err0
 
-L01432:  0 -> c[w]
+xft130:  0 -> c[w]
          c + 1 -> c[p]
          shift right c[w]
          c + 1 -> c[s]
          b exchange c[w]
-L01437:  if b[p] = 0
-           then go to L01443
+xft140:  if b[p] = 0
+           then go to xft150
          shift right b[wp]
          c + 1 -> c[x]
-L01443:  0 -> a[w]
+xft150:  0 -> a[w]
          a - c -> a[p]
-         if n/c go to L01451
+         if n/c go to xft170
          shift left a[w]
-L01447:  a + b -> a[w]
-         if n/c go to L01447
-L01451:  a - c -> a[s]
-         if n/c go to L01460
+xft160:  a + b -> a[w]
+         if n/c go to xft160
+xft170:  a - c -> a[s]
+         if n/c go to xfg190
          shift right a[wp]
          a + 1 -> a[w]
          c + 1 -> c[x]
-L01456:  a + b -> a[w]
-         if n/c go to L01456
-L01460:  a exchange b[wp]
+xft180:  a + b -> a[w]
+         if n/c go to xft180
+xfg190:  a exchange b[wp]
          c - 1 -> c[p]
-         if n/c go to L01437
+         if n/c go to xft140
          c - 1 -> c[s]
-         if n/c go to L01437
+         if n/c go to xft140
          shift left a[w]
          a -> b[x]
          0 -> c[ms]
@@ -929,10 +927,10 @@ L01460:  a exchange b[wp]
          a exchange c[ms]
          return
 
-L01474:  0 -> s 13
+L01474:  0 -> s 13		; Sigma+
          go to L01477
 
-L01476:  1 -> s 13
+L01476:  1 -> s 13		; Sigma-
 L01477:  jsb S01642
          0 -> c[w]
          p <- 12
@@ -1049,8 +1047,8 @@ S01645:  0 -> c[w]
          data -> c
          return
 
-S01651:  p <- 12
-         load constant 2
+lnc10:   p <- 12
+         load constant 2	; ln(10)
          load constant 3
          load constant 0
          load constant 2
@@ -1066,7 +1064,7 @@ S01651:  p <- 12
          b exchange c[w]
          return
 
-L01671:  load constant 3
+lnc40:   load constant 3	; part of ln(1.1), after 0.095
          load constant 1
          load constant 0
          load constant 1
@@ -1080,7 +1078,7 @@ L01671:  load constant 3
          p <- 11
          return
 
-L01706:  p <- 8
+lnc50:   p <- 8			; part of ln(1.01), after 0.009950
          load constant 3
          load constant 3
          load constant 0
@@ -1093,7 +1091,7 @@ L01706:  p <- 8
          p <- 10
          return
 
-L01722:  p <- 6
+lnc60:   p <- 6			; part of ln(1.001), after 0.000999500
          load constant 3
          load constant 3
          load constant 3
@@ -1104,7 +1102,7 @@ L01722:  p <- 6
          p <- 9
          return
 
-L01734:  p <- 4
+lnc70:   p <- 4			; part of ln(1.0001), after 0.000999500
          load constant 3
          load constant 3
          load constant 3
@@ -1113,7 +1111,7 @@ L01734:  p <- 4
          p <- 8
          return
 
-L01744:  p <- 2
+lnc80:   p <- 2			; part of ln(1.00001), after 0.000099994000
          load constant 3
          load constant 3
          load constant 3
@@ -1123,25 +1121,25 @@ L01744:  p <- 2
 L01752:  a exchange b[w]
          b exchange c[w]
          delayed rom @02
-         go to L01025
+         go to ln400
 
 L01756:  delayed rom @01
-         jsb S00436
+         jsb rcscr
          if c[m] = 0
-           then go to L00267
+           then go to err0
          m1 -> c
          if c[s] # 0
-           then go to L00267
+           then go to err0
          0 -> a[w]
          0 -> b[w]
          delayed rom @02
-         go to L01141
+         go to exp710
 
 L01771:  a exchange c[m]
          if c[xs] # 0
-           then go to L00267
+           then go to err0
          delayed rom @02
-         go to L01346
+         go to yx11
 
          nop
 
