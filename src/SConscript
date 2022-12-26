@@ -399,13 +399,22 @@ modutil = build_env.Program (target = 'modutil',
                              source = modutil_srcs + common_objs)
 
 #-----------------------------------------------------------------------------
+# sha-test
+#-----------------------------------------------------------------------------
+
+sha_test_srcs = Split ("""sha-test.c sha-256.c""")
+
+sha_test = build_env.Program (target = 'sha-test',
+	                       source = sha_test_srcs)
+
+#-----------------------------------------------------------------------------
 # default targets
 #-----------------------------------------------------------------------------
 
 default_targets = [build_ncd, uasm]
 
 if (not cross) or build_target_only:
-    default_targets += [nonpareil, udis, modutil]
+    default_targets += [nonpareil, udis, modutil, sha_test]
 
 Default (default_targets)
 
