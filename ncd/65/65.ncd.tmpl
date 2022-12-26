@@ -1,0 +1,165 @@
+<?xml version="1.0"?>
+<!--
+Copyright 2006, 2007, 2008, 2022 Eric Smith <spacewar@gmail.com>
+-->
+
+<!DOCTYPE calcdef SYSTEM "http://nonpareil.brouhaha.com/dtd/calcdef-1.0.dtd">
+
+<calcdef version="1.0"
+         arch="Classic"
+	 arch_variant="1"
+         platform="Classic"
+         model="65"
+         copyright="Copyright 2006, 2007, 2008, 2022 Eric Smith &lt;spacewar@gmail.com&gt;"
+         license="GPL-3.0">
+
+  <hybrid>
+    <part_info>
+      <vendor_name>HP</vendor_name>
+      <part_number>00065-60218</part_number>
+    </part_info>
+
+    <chip id="ctc" type="classic_ctc">
+    </chip>
+
+    <chip id="arc" type="classic_arc">
+    </chip>
+
+    <chip id="anode_driver" type="classic_anode_driver">
+      <chargen type="segment" count="8">
+	<char id="'0'">abcdef..</char>
+	<char id="'1'">.bc.....</char>
+	<char id="'2'">ab.de.g.</char>
+	<char id="'3'">abcd..g.</char>
+	<char id="'4'">.bc..fg.</char>
+	<char id="'5'">a.cd.fg.</char>
+	<char id="'6'">a.cdefg.</char>
+	<char id="'7'">abc.....</char>
+	<char id="'8'">abcdefg.</char>
+	<char id="'9'">abcd.fg.</char>
+	<char id="' '">........</char>
+	<char id="'-'">......g.</char>
+	<char id="'.'">.......h</char>
+      </chargen>
+    </chip>
+
+    <chip id="ram_0" type="classic_ram">
+      <memory addr_space="data" base_addr="0x00" size="10">
+      </memory>
+    </chip>
+
+    <chip type="classic_clock_driver">
+      <inst_clock osc_type="crystal" freq="196000"/>
+    </chip>
+  </hybrid>
+
+  <chip type="classic_cathode_driver">
+  </chip>
+
+
+  <!-- Which ROM chip contains which address range has not been verified -->
+  <chip id="rom_0" type="classic_rom">
+    <part_info>
+      <vendor_name>HP</vendor_name>
+      <part_number>1818-0073</part_number>
+    </part_info>
+    <memory addr_space="inst" banks="0" base_addr="00000" size="02000">
+    </memory>
+  </chip>
+
+  <chip id="rom_1" type="classic_rom">
+    <part_info>
+      <vendor_name>HP</vendor_name>
+      <part_number>1818-0074</part_number>
+    </part_info>
+    <memory addr_space="inst" banks="0" base_addr="02000" size="02000">
+    </memory>
+  </chip>
+
+  <chip id="rom_2" type="classic_rom">
+    <part_info>
+      <vendor_name>HP</vendor_name>
+      <part_number>1818-0075</part_number>
+    </part_info>
+    <memory addr_space="inst" banks="0" base_addr="04000" size="02000">
+    </memory>
+  </chip>
+
+  <keyboard>
+
+    <!-- power switch -->
+    <!--
+    <switch number="0">
+      <switch_pos position="0">
+      </switch_pos>
+      <switch_pos position="1">
+      </switch_pos>
+    </switch>
+    -->
+
+    <switch number="1">
+      <switch_pos position="0">  <!-- "TIMER" -->
+        <flag chip_id="ctc" number="f1" value="0"/>
+        <flag chip_id="ctc" number="f2" value="1"/>
+      </switch_pos>
+      <switch_pos position="1">  <!-- "PRGM" -->
+        <flag chip_id="ctc" number="f1" value="1"/>
+        <flag chip_id="ctc" number="f2" value="0"/>
+      </switch_pos>
+      <switch_pos position="2">  <!-- "RUN" -->
+        <flag chip_id="ctc" number="f1" value="0"/>
+        <flag chip_id="ctc" number="f2" value="0"/>
+      </switch_pos>
+    </switch>
+
+    <key user_keycode="11" hw_keycode="006"/>
+    <key user_keycode="12" hw_keycode="004"/>
+    <key user_keycode="13" hw_keycode="003"/>
+    <key user_keycode="14" hw_keycode="002"/>
+    <key user_keycode="15" hw_keycode="000"/>
+
+    <key user_keycode="21" hw_keycode="056"/>
+    <key user_keycode="22" hw_keycode="054"/>
+    <key user_keycode="23" hw_keycode="053"/>
+    <key user_keycode="24" hw_keycode="052"/>
+    <key user_keycode="25" hw_keycode="050"/>
+
+    <key user_keycode="31" hw_keycode="016"/>
+    <key user_keycode="32" hw_keycode="014"/>
+    <key user_keycode="33" hw_keycode="013"/>
+    <key user_keycode="34" hw_keycode="012"/>
+    <key user_keycode="35" hw_keycode="010"/>
+
+    <key user_keycode="41" hw_keycode="076"/>
+    <key user_keycode="42" hw_keycode="073"/>
+    <key user_keycode="43" hw_keycode="072"/>
+    <key user_keycode="44" hw_keycode="070"/>
+
+    <key user_keycode="51" hw_keycode="066"/>
+    <key user_keycode="52" hw_keycode="064"/>
+    <key user_keycode="53" hw_keycode="063"/>
+    <key user_keycode="54" hw_keycode="062"/>
+
+    <key user_keycode="61" hw_keycode="026"/>
+    <key user_keycode="62" hw_keycode="024"/>
+    <key user_keycode="63" hw_keycode="023"/>
+    <key user_keycode="64" hw_keycode="022"/>
+
+    <key user_keycode="71" hw_keycode="036"/>
+    <key user_keycode="72" hw_keycode="034"/>
+    <key user_keycode="73" hw_keycode="033"/>
+    <key user_keycode="74" hw_keycode="032"/>
+
+    <key user_keycode="81" hw_keycode="046"/>
+    <key user_keycode="82" hw_keycode="044"/>
+    <key user_keycode="83" hw_keycode="043"/>
+    <key user_keycode="84" hw_keycode="042"/>
+  </keyboard>
+
+  <obj_file addr_space="inst"
+            copyright="Copyright 2022 Eric Smith &lt;spacewar@gmail.com&gt;"
+            license="GPLv3">
+    65.obj
+  </obj_file>
+
+</calcdef>

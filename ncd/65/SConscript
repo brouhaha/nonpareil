@@ -1,0 +1,23 @@
+# Nonpareil
+# Copyright 2022 Eric Smith <spacewar@gmail.com>
+
+Import('env')
+
+ncd_names = ['65']
+source_names = ['65']
+
+ncd_template_files = [env.File(nn + '.ncd.tmpl') for nn in ncd_names]
+
+source_files = [env.File(sn + '.asm') for sn in source_names]
+
+object_files = []
+listing_files = []
+for sn in source_names:
+    o, l = env.UASM(target = sn)
+    object_files.append(o)
+    listing_files.append(l)
+
+ncd_files = [env.NCD(target = nn)[0] for nn in ncd_names]
+
+Return('ncd_files')
+
