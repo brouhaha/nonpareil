@@ -2,6 +2,9 @@
 ; Copyright 2022 Eric Smith <spacewar@gmail.com>
 ; SPDX-License-Identifier: GPL-3.0-only
 
+; HP-32E Q function reverse-engineered by mike-stgt:
+;     https://forum.hp41.org/viewtopic.php?f=10&t=427
+
 	 .copyright "Copyright 2022 Eric Smith <spacewar@gmail.com>"
 	 .license "GPL-v3.0-only"
 
@@ -69,7 +72,7 @@ L02045:  p <- 10		; unshifted key 14 - f shift
          go to L02031
 
 L02047:  delayed rom @00
-         jsb S00171
+         jsb mp2-10
          go to L02335
 
 L02052:  delayed rom @03	; Sigma+
@@ -90,7 +93,7 @@ L02056:  delayed rom @07	; unshifted key 32 - CHS
          go to L02075		; unshifted key 12 - 1/x
 
          delayed rom @00	; unhifted key 11 - sqrt
-         jsb S00272
+         jsb sqr10
 L02066:  a exchange c[w]
          m2 -> c
          c -> register 10
@@ -101,7 +104,7 @@ L02073:  p <- 11		; unshifted key 15 - g shift
          go to L02031
 
 L02075:  delayed rom @00	; unshifted key 12 - 1/x
-         jsb S00352
+         jsb 1/x10
          go to L02002
 
          go to L02123		; unshifted key 74 - percent
@@ -133,7 +136,7 @@ L02123:  y -> a			; unshifted key 74 - percent
          c - 1 -> c[x]
          c - 1 -> c[x]
 L02126:  delayed rom @00
-         jsb S00171
+         jsb mp2-10
          go to L02002
 
 L02131:  0 -> c[w]		; unshifted key 34 - CLx
@@ -160,7 +163,7 @@ L02141:  go to L02316		; unshifted key 53 - 5
 L02147:  0 - c - 1 -> c[s]	; minus
 L02150:  stack -> a
          delayed rom @00
-         jsb S00014
+         jsb ad2-10
          go to L02002
 
 L02154:  p <- 6			; unshifted key 24 - RCL
@@ -300,7 +303,7 @@ L02327:  if p = 3
          if p = 2
            then go to L02047
          delayed rom @00
-         jsb S00222
+         jsb dv2-10
 L02335:  delayed rom @03
          jsb S01572
          if p = 10
@@ -313,7 +316,7 @@ L02341:  c -> data
 
 L02346:  0 - c - 1 -> c[s]
 L02347:  delayed rom @00
-         jsb S00014
+         jsb ad2-10
          go to L02335
 
 L02352:  0 -> c[w]
@@ -435,15 +438,15 @@ L02504:  jsb S02554		; g-shifted key 71 - ->ltr
          load constant 7
          load constant 8
          load constant 4
-L02517:  if s 4 = 1
+L02517:  if s 4 = 1		; conversion direction?
            then go to L02525
          delayed rom @00
-         jsb S00171
+         jsb mp2-10
 L02523:  delayed rom @04
          go to L02002
 
 L02525:  delayed rom @00
-         jsb S00222
+         jsb dv2-10
          go to L02523
 
 L02530:  a exchange c[w]	; f-shifted key 74 - %Sigma
@@ -466,10 +469,10 @@ L02535:  delayed rom @01	; f-shifted key 72 - LN
          load constant 1
          load constant 8
          delayed rom @00
-         jsb S00171
+         jsb mp2-10
          jsb S02626
          delayed rom @00
-         jsb S00016
+         jsb ad1-10
          go to L02523
 
 S02554:  c -> a[w]
@@ -569,7 +572,7 @@ L02656:  delayed rom @01	; f-shifted key 73 - LOG
          jsb S01651
          b exchange c[w]
          delayed rom @00
-         jsb S00227
+         jsb dv2-13
          go to L02523
 
 S02671:  0 -> c[w]
@@ -654,23 +657,23 @@ L02771:  a exchange c[x]
 L02776:  delayed rom @06	; f-shifted key 53 - ->RAD
          go to L03011
 
-S03000:  select rom go to L00001
+S03000:  select rom go to x-ad2-10
 
-         select rom go to L00002
+         select rom go to x-ad1-10
 
-         select rom go to L00003
+         select rom go to x-ad2-13
 
-S03003:  select rom go to L00004
+S03003:  select rom go to x-mp2-10
 
-S03004:  select rom go to L00005
+S03004:  select rom go to x-mp1-10
 
-         select rom go to L00006
+         select rom go to x-mp2-13
 
-S03006:  select rom go to L00007
+S03006:  select rom go to x-dv2-10
 
-S03007:  select rom go to L00010
+S03007:  select rom go to x-dv1-10
 
-S03010:  select rom go to L00011
+S03010:  select rom go to x-dv2-13
 
 L03011:  0 -> a[w]		; f-shifted key 53 - ->RAD
          jsb S03022
@@ -1280,7 +1283,7 @@ L04000:  m2 -> c		; g-shifted key 52 - ->P
          1 -> s 10
          0 -> c[s]
 L04011:  delayed rom @00
-         jsb S00222
+         jsb dv2-10
          if c[m] # 0
            then go to L04016
          0 -> a[w]
@@ -1289,15 +1292,15 @@ L04016:  delayed rom @01
          delayed rom @01
          jsb S00535
          delayed rom @00
-         jsb S00176
+         jsb mp2-13
          delayed rom @00
-         jsb S00374
+         jsb addone
          delayed rom @00
-         jsb S00275
+         jsb sqr13
          m2 -> c
          0 -> c[s]
          delayed rom @00
-         jsb S00173
+         jsb mp1-10
          c -> stack
          delayed rom @01
          jsb S00535
@@ -1325,7 +1328,7 @@ L04055:  0 -> c[s]
 topol3:  0 -> a[w]
          go to brt200
 
-trc10:   jsb S04042
+L04063:  jsb S04042
          go to topol3
 
 L04065:  0 -> b[w]
@@ -1358,7 +1361,7 @@ L04110:  if a[x] # 0
          if c[w] # 0
            then go to brt170
          if s 6 = 1
-           then go to trc10
+           then go to L04063
          jsb trc10
          0 -> a[w]
          a - 1 -> a[x]
@@ -1368,7 +1371,7 @@ L04110:  if a[x] # 0
 brt170:  if s 6 = 1
            then go to L04375
 L04132:  delayed rom @00	; brt160 ?
-         jsb S00355		; 1/x13 ?
+         jsb 1/x13
          jsb S04042		; brts10 ?
 brt290:  a exchange b[w]
          b -> c[w]
@@ -1415,7 +1418,7 @@ brt340:  a -> b[w]
            then go to brt340
          b exchange c[w]
          delayed rom @00
-         jsb S00251
+         jsb div120
          a exchange b[w]
          m1 exchange c
          0 -> c[x]
@@ -1467,22 +1470,22 @@ L04261:  if 0 = s 6
          delayed rom @01
          jsb S00470
          delayed rom @00
-         jsb S00374
+         jsb addone
          delayed rom @01
          jsb S00420
          delayed rom @00
-         jsb S00367
+         jsb subone
          delayed rom @01
          jsb S00436
          delayed rom @00
-         jsb S00176
+         jsb mp2-13
          0 -> a[s]
          delayed rom @00
-         jsb S00275
+         jsb sqr13
          delayed rom @01
          jsb S00436
          delayed rom @00
-         jsb S00362
+         jsb x/y13
          0 -> a[s]
          a exchange c[x]
          c -> a[x]
@@ -1496,7 +1499,7 @@ brt190:  c - 1 -> c[x]
            then go to L04316
 brt200:  0 -> c[ms]
          delayed rom @00
-         jsb S00114		; shf10 ?
+         jsb shf10
          if 0 = s 10
            then go to brt220
          jsb S04232
@@ -1504,19 +1507,19 @@ brt200:  0 -> c[ms]
          a exchange c[s]
          0 -> c[s]
          delayed rom @00
-         jsb S00021
+         jsb ad2-13
 brt220:  if 0 = s 7
            then go to brt240
          jsb S04232
          delayed rom @00
-         jsb S00021
+         jsb ad2-13
 brt240:  if s 12 = 1
            then go to brt250
          jsb S04232
          a + 1 -> a[x]
          a + 1 -> a[x]
          delayed rom @00
-         jsb S00227
+         jsb dv2-13
          if s 14 = 1
            then go to brt250
          0 -> c[w]
@@ -1524,7 +1527,7 @@ brt240:  if s 12 = 1
          load constant 9
          c - 1 -> c[x]
          delayed rom @00
-         jsb S00173
+         jsb mp1-10
 brt250:  if 0 = s 4
            then go to brt260
          0 - c - 1 -> c[s]
@@ -1726,18 +1729,18 @@ L04635:  if c[xs] # 0
          a + b -> a[w]
 L04642:  c - 1 -> c[x]
          delayed rom @00
-         jsb S00114
+         jsb shf10
          if s 12 = 1
            then go to L04660
          m1 -> c
          c + c -> c[w]
          c - 1 -> c[x]
          delayed rom @00
-         jsb S00224
+         jsb dv1-10
          delayed rom @10
          jsb S04232
          delayed rom @00
-         jsb S00176
+         jsb mp2-13
 L04660:  m1 exchange c
          a exchange c[w]
          c -> a[w]
@@ -1812,7 +1815,7 @@ L04760:  m1 -> c
          if 0 = s 10
            then go to L05063
          delayed rom @00
-         jsb S00355
+         jsb 1/x13
          delayed rom @12
          go to L05063
 
@@ -1825,29 +1828,29 @@ L04771:  m2 -> c
 
          nop
 
-S05000:  select rom go to L00001
+S05000:  select rom go to x-ad2-10
 
-S05001:  select rom go to L00002
+S05001:  select rom go to x-ad1-10
 
-         select rom go to L00003
+         select rom go to x-ad2-13
 
-         select rom go to L00004
+         select rom go to x-mp2-10
 
-         select rom go to L00005
+         select rom go to x-mp1-10
 
-S05005:  select rom go to L00006
+S05005:  select rom go to x-mp2-13
 
-         select rom go to L00007
+         select rom go to x-dv2-10
 
-S05007:  select rom go to L00010
+S05007:  select rom go to x-dv1-10
 
-S05010:  select rom go to L00011
+S05010:  select rom go to x-dv2-13
 
-S05011:  select rom go to L00012
+S05011:  select rom go to x-x/y13
 
-S05012:  select rom go to L00013
+S05012:  select rom go to x-sqr13
 
-S05013:  select rom go to L00414
+S05013:  select rom go to x-stscr
 
 S05014:  select rom go to L00415
 
@@ -1893,7 +1896,7 @@ L05056:  if b[m] = 0
            then go to L05107
          m1 exchange c
          delayed rom @00
-         jsb S00243
+         jsb div15
 L05063:  if 0 = s 6
            then go to L05102
          jsb S05013
@@ -1903,12 +1906,12 @@ L05063:  if 0 = s 6
          b -> c[w]
          jsb S05005
          delayed rom @00
-         jsb S00374
+         jsb addone
          jsb S05012
          if s 13 = 1
            then go to L04771
          delayed rom @00
-         jsb S00355
+         jsb 1/x13
 L05102:  if 0 = s 4
            then go to L05105
          0 - c - 1 -> c[s]
@@ -1982,7 +1985,7 @@ L05177:  jsb S05210
          a + c -> a[w]
          b exchange c[w]
 L05203:  delayed rom @00
-         go to S00104
+         go to mpy150
 
 L05205:  if b[xs] = 0
            then go to L05144
@@ -2014,7 +2017,7 @@ L05226:  jsb S05014
          0 -> b[w]
          a exchange b[m]
          delayed rom @00
-         jsb S00367
+         jsb subone
          jsb S05013
          jsb S05016
 L05244:  jsb S05014
@@ -2044,7 +2047,7 @@ L05263:  jsb S05016
          delayed rom @13
          go to L05752
 
-L05274:  0 -> s 13
+L05274:  0 -> s 13		; f-shifted key 21 - Q
          c -> register 10
          c -> a[w]
          0 -> a[s]
@@ -2052,8 +2055,8 @@ L05274:  0 -> s 13
            then go to L05303
          1 -> s 13
 L05303:  0 -> c[w]
-         p <- 13
-         load constant 9
+         p <- 13		; compare to +/- 1.28 to determine which
+         load constant 9	;   approximation to use
          load constant 1
          load constant 2
          load constant 8
@@ -2082,7 +2085,7 @@ L05303:  0 -> c[w]
          delayed rom @15
          jsb S06425
          delayed rom @00
-         jsb S00374
+         jsb addone
 L05343:  delayed rom @04
          go to L02000
 
@@ -2115,29 +2118,29 @@ L05365:  load constant 2
          jsb S03330
          select rom go to L00000
 
-S05400:  select rom go to L00001
+S05400:  select rom go to x-ad2-10
 
-S05401:  select rom go to L00002
+S05401:  select rom go to x-ad1-10
 
-S05402:  select rom go to L00003
+S05402:  select rom go to x-ad2-13
 
-S05403:  select rom go to L00004
+S05403:  select rom go to x-mp2-10
 
-S05404:  select rom go to L00005
+S05404:  select rom go to x-mp1-10
 
-S05405:  select rom go to L00006
+S05405:  select rom go to x-mp2-13
 
-         select rom go to L00007
+         select rom go to x-dv2-10
 
-S05407:  select rom go to L00010
+S05407:  select rom go to x-dv1-10
 
-S05410:  select rom go to L00011
+S05410:  select rom go to x-dv2-13
 
-S05411:  select rom go to L00012
+S05411:  select rom go to x-x/y13
 
-S05412:  select rom go to L00013
+S05412:  select rom go to x-sqr13
 
-S05413:  select rom go to L00414
+S05413:  select rom go to x-stscr
 
 S05414:  select rom go to L00415
 
@@ -2199,10 +2202,10 @@ L05471:  jsb S05567		; g-shifted key 62 - SINH-1
          c -> a[w]
          jsb S05617
          delayed rom @00
-         jsb S00374
+         jsb addone
          jsb S05412
          delayed rom @00
-         jsb S00374
+         jsb addone
          jsb S05414
          jsb S05410
          m2 -> c
@@ -2248,7 +2251,7 @@ L05541:  c -> a[w]
 L05546:  jsb S05417
          jsb S05413
 L05550:  delayed rom @00
-         jsb S00355
+         jsb 1/x13
          jsb S05774
          if s 7 = 1
            then go to L05557
@@ -2420,9 +2423,9 @@ S05774:  jsb S05414
 	 .dw @1672			; CRC, quad 2 (@4000..@5777)
 
 S06000:  delayed rom @00
-         go to S00176
+         go to mp2-13
 
-S06002:  select rom go to L00003
+S06002:  select rom go to x-ad2-13
 
 S06003:  0 -> c[w]
 S06004:  m1 exchange c
@@ -2432,7 +2435,7 @@ S06005:  delayed rom @05
 S06007:  delayed rom @01
          go to S00535
 
-S06011:  select rom go to L00012
+S06011:  select rom go to x-x/y13
 
 S06012:  delayed rom @01
          go to S00515
@@ -2443,7 +2446,7 @@ S06014:  0 -> c[w]
          if n/c go to S06004
 S06020:  jsb S06007
          jsb S06003
-         load constant 5
+         load constant 5	; Q constant a7
          load constant 9
          load constant 2
          load constant 8
@@ -2459,7 +2462,7 @@ S06020:  jsb S06007
          jsb S06005
          c + 1 -> c[x]
          jsb S06004
-         load constant 4
+         load constant 4	; Q constant a6
          load constant 8
          load constant 6
          load constant 9
@@ -2475,7 +2478,7 @@ S06020:  jsb S06007
          jsb S06007
          jsb S06002
          jsb S06003
-         load constant 2
+         load constant 2	; Q constant a5
          load constant 6
          load constant 2
          load constant 4
@@ -2489,7 +2492,7 @@ S06020:  jsb S06007
          load constant 9
          jsb S06002
          jsb S06014
-         load constant 2
+         load constant 2	; Q constant a4
          load constant 9
          load constant 8
          load constant 2
@@ -2505,7 +2508,7 @@ S06020:  jsb S06007
          jsb S06007
          jsb S06002
          jsb S06003
-         load constant 5
+         load constant 5	; Q constant a3
          load constant 7
          load constant 5
          load constant 8
@@ -2524,7 +2527,7 @@ S06020:  jsb S06007
          delayed rom @15
          jsb S06474
          jsb S06004
-         load constant 3
+         load constant 3	; Q constant a2
          load constant 9
          load constant 9
          load constant 9
@@ -2539,7 +2542,7 @@ S06020:  jsb S06007
          jsb S06000
          jsb S06007
          jsb S06011
-         delayed rom @15
+         delayed rom @15	; Q constant a1 is derived from Q constant b1
          jsb S06501
          p <- 3
          load constant 4
@@ -2552,7 +2555,7 @@ S06020:  jsb S06007
 
 S06174:  jsb S06012
          jsb S06003
-         load constant 3
+         load constant 3	; Q constant bq
          load constant 9
          load constant 9
          load constant 0
@@ -2568,7 +2571,7 @@ S06174:  jsb S06012
          0 -> c[w]
          c + 1 -> c[x]
          jsb S06004
-         load constant 3
+         load constant 3	; Q constant bp
          load constant 0
          load constant 7
          load constant 8
@@ -2585,7 +2588,7 @@ S06174:  jsb S06012
          0 -> c[w]
          c - 1 -> c[x]
          jsb S06004
-         load constant 7
+         load constant 7	; Q constant b10
          load constant 4
          load constant 2
          load constant 3
@@ -2599,7 +2602,7 @@ S06174:  jsb S06012
          load constant 7
          jsb S06002
          jsb S06014
-         load constant 1
+         load constant 1	; Q cosntant b9
          load constant 5
          load constant 1
          load constant 5
@@ -2613,7 +2616,7 @@ S06174:  jsb S06012
          load constant 1
          jsb S06011
          jsb S06003
-         load constant 4
+         load constant 4	; Q constant b8
          load constant 8
          load constant 3
          load constant 8
@@ -2628,7 +2631,7 @@ S06174:  jsb S06012
          jsb S06012
          jsb S06002
          jsb S06003
-         load constant 5
+         load constant 5	; Q constant b7
          load constant 2
          load constant 9
          load constant 3
@@ -2644,7 +2647,7 @@ S06174:  jsb S06012
          delayed rom @15
          jsb S06474
          jsb S06004
-         load constant 1
+         load constant 1	; Q constant b6
          load constant 5
          load constant 1
          load constant 6
@@ -2660,7 +2663,7 @@ S06174:  jsb S06012
          jsb S06012
          jsb S06002
          jsb S06003
-         load constant 1
+         load constant 1	; Q constant b5
          load constant 9
          load constant 8
          load constant 6
@@ -2683,29 +2686,29 @@ S06174:  jsb S06012
          delayed rom @15
          go to L06431
 
-S06400:  select rom go to L00001
+S06400:  select rom go to x-ad2-10
 
-S06401:  select rom go to L00002
+S06401:  select rom go to x-ad1-10
 
-S06402:  select rom go to L00003
+S06402:  select rom go to x-ad2-13
 
-         select rom go to L00004
+         select rom go to x-mp2-10
 
-S06404:  select rom go to L00005
+S06404:  select rom go to x-mp1-10
 
-S06405:  select rom go to L00006
+S06405:  select rom go to x-mp2-13
 
-         select rom go to L00007
+         select rom go to x-dv2-10
 
-         select rom go to L00010
+         select rom go to x-dv1-10
 
-S06410:  select rom go to L00011
+S06410:  select rom go to x-dv2-13
 
-S06411:  select rom go to L00012
+S06411:  select rom go to x-x/y13
 
-S06412:  select rom go to L00013
+S06412:  select rom go to x-sqr13
 
-S06413:  select rom go to L00414
+S06413:  select rom go to x-stscr
 
 S06414:  select rom go to L00415
 
@@ -2727,7 +2730,7 @@ S06425:  a exchange c[s]
          a exchange c[s]
          return
 
-L06431:  load constant 3
+L06431:  load constant 3	; Q constant b4
          load constant 9
          load constant 8
          load constant 0
@@ -2738,7 +2741,7 @@ L06431:  load constant 3
          load constant 4
          jsb S06402
          jsb S06422
-         load constant 1
+         load constant 1	; Q constant b3
          p <- 6
          load constant 6
          load constant 1
@@ -2751,7 +2754,7 @@ L06431:  load constant 3
          jsb S06402
          0 -> c[w]
          0 - c - 1 -> c[s]
-         p <- 0
+         p <- 0			; Q constant b2
          load constant 8
          0 - c -> c[x]
          jsb S06423
@@ -2774,7 +2777,7 @@ S06501:  0 -> c[w]
          m1 exchange c
          0 -> c[w]
          p <- 12
-         load constant 3
+         load constant 3	; Q constant b1
          load constant 9
          load constant 8
          load constant 9
@@ -2912,7 +2915,7 @@ L06635:  m2 -> c
 L06710:  delayed rom @14
          jsb S06174
          delayed rom @00
-         jsb S00355
+         jsb 1/x13
          jsb S06425
          jsb S06413
          jsb S06415
@@ -2926,7 +2929,7 @@ L06710:  delayed rom @14
          jsb S06405
          jsb S06413
          delayed rom @00
-         jsb S00374
+         jsb addone
          jsb S06416
          jsb S06410
          jsb S06413
@@ -2959,7 +2962,7 @@ L06763:  display off
          jsb S06415
          a exchange b[w]
          delayed rom @00
-         jsb S00120
+         jsb nrm11
          if 0 = s 13
            then go to L06773
          0 - c - 1 -> c[s]

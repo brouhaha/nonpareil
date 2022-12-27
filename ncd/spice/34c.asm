@@ -216,7 +216,7 @@ L02242:  a exchange b[x]
          c -> register 7
          0 - c - 1 -> c[s]
          delayed rom @00
-         jsb S00014
+         jsb ad2-10
          0 -> c[w]
          c -> register 12
          c -> register 11
@@ -225,10 +225,10 @@ L02242:  a exchange b[x]
          load constant 5
          c - 1 -> c[x]
          delayed rom @00
-         jsb S00173
+         jsb mp1-10
          register -> c 7
          delayed rom @00
-         jsb S00016
+         jsb ad1-10
          m2 exchange c
          0 -> a[x]
 L02306:  a + 1 -> a[x]
@@ -294,28 +294,28 @@ S02371:  0 -> c[w]
 L02376:  0 -> c[w]
          return
 
-S02400:  select rom @00 (L00001)
+S02400:  select rom @00 (x-ad2-10)
 
-S02401:  select rom @00 (L00002)
+S02401:  select rom @00 (x-ad1-10)
 
-S02402:  select rom @00 (L00003)
+S02402:  select rom @00 (x-ad2-13)
 
-S02403:  select rom @00 (L00004)
+S02403:  select rom @00 (x-mp2-10)
 
-S02404:  select rom @00 (L00005)
+S02404:  select rom @00 (x-mp1-10)
 
-S02405:  select rom @00 (L00006)
+S02405:  select rom @00 (x-mp2-13)
 
-         select rom @00 (L00007)
+         select rom @00 (x-dv2-10)
 
-S02407:  select rom @00 (L00010)
+S02407:  select rom @00 (x-dv1-10)
 
-         select rom @00 (L00011)
+         select rom @00 (x-dv2-13)
 
 S02411:  delayed rom @17
          go to S07402
 
-S02413:  select rom @01 (L00414)
+S02413:  select rom @01 (x-stscr)
 
 S02414:  select rom @01 (L00415)
 
@@ -572,21 +572,21 @@ L02775:  p <- 8
          delayed rom @04
          go to L02004
 
-S03000:  select rom @00 (L00001)
+S03000:  select rom @00 (x-ad2-10)
 
-S03001:  select rom @00 (L00002)
+S03001:  select rom @00 (x-ad1-10)
 
-S03002:  select rom @00 (L00003)
+S03002:  select rom @00 (x-ad2-13)
 
-S03003:  select rom @00 (L00004)
+S03003:  select rom @00 (x-mp2-10)
 
-S03004:  select rom @00 (L00005)
+S03004:  select rom @00 (x-mp1-10)
 
-S03005:  select rom @00 (L00006)
+S03005:  select rom @00 (x-mp2-13)
 
-S03006:  select rom @00 (L00007)
+S03006:  select rom @00 (x-dv2-10)
 
-S03007:  select rom @00 (L00010)
+S03007:  select rom @00 (x-dv1-10)
 
 S03010:  delayed rom @01
          go to S00470
@@ -675,7 +675,7 @@ L03124:  c -> a[w]
          0 - c - 1 -> c[s]
          c -> register 15
          delayed rom @00
-         jsb S00374
+         jsb addone
          0 - c - 1 -> c[s]
          c -> stack
          m2 -> c
@@ -693,7 +693,7 @@ L03124:  c -> a[w]
          a exchange b[m]
          jsb S03014
          delayed rom @00
-         jsb S00227
+         jsb dv2-13
          jsb S03014
          jsb S03002
          m2 exchange c
@@ -870,18 +870,18 @@ L03372:  register -> c 14
          c -> data address
          data -> c
          delayed rom @00
-         jsb S00014
+         jsb ad2-10
          register -> c 9
          delayed rom @00
-         jsb S00173
+         jsb mp1-10
          register -> c 14
          delayed rom @00
-         jsb S00224
+         jsb dv1-10
          0 -> c[w]
          load constant 2
          0 - c - 1 -> c[s]
          delayed rom @00
-         jsb S00016
+         jsb ad1-10
          if c[s] = 0
            then go to L03440
 L03436:  1 -> s 7
@@ -896,10 +896,10 @@ L03440:  y -> a
          c -> a[w]
          register -> c 9
          delayed rom @00
-         jsb S00222
+         jsb dv2-10
          register -> c 11
          delayed rom @00
-         jsb S00016
+         jsb ad1-10
          c -> register 11
          stack -> a
          if 0 = s 8
@@ -935,7 +935,7 @@ L03511:  register -> c 7
          register -> c 8
          c -> stack
          delayed rom @00
-         jsb S00014
+         jsb ad2-10
          register -> c 13
          m2 exchange c
          register -> c 11
@@ -948,18 +948,18 @@ L03511:  register -> c 7
          c -> a[w]
          m1 -> c
          delayed rom @00
-         jsb S00014
+         jsb ad2-10
          delayed rom @01
          jsb S00535
          delayed rom @00
-         jsb S00176
+         jsb mp2-13
          m2 exchange c
          delayed rom @01
          jsb S00535
          0 -> a[s]
          register -> c 11
          delayed rom @00
-         jsb S00173
+         jsb mp1-10
          m2 -> c
          p <- 12
          0 -> c[ms]
@@ -969,7 +969,7 @@ L03511:  register -> c 7
          if n/c go to L03561
          c - 1 -> c[xs]
 L03561:  delayed rom @00
-         jsb S00016
+         jsb ad1-10
          delayed rom @03
          jsb S01572
 L03565:  c -> stack
@@ -1109,11 +1109,11 @@ L03762:  a - b -> a[w]
 L03765:  delayed rom @01
          jsb S00515
          delayed rom @00
-         jsb S00227
+         jsb dv2-13
          delayed rom @01
          jsb S00420
          delayed rom @00
-         jsb S00367
+         jsb subone
          delayed rom @06
          go to L03344
 
@@ -1122,7 +1122,7 @@ L03765:  delayed rom @01
 S04000:  delayed rom @01
          go to S00470
 
-S04002:  select rom @00 (L00003)
+S04002:  select rom @00 (x-ad2-13)
 
 S04003:  delayed rom @01
          go to S00436
@@ -1137,13 +1137,13 @@ L04005:  if c[m] = 0
 L04014:  m2 exchange c
          c -> a[w]
          delayed rom @00
-         jsb S00171
+         jsb mp2-10
          jsb S04000
          y -> a
          a exchange c[w]
          c -> a[w]
          delayed rom @00
-         jsb S00171
+         jsb mp2-10
          jsb S04003
          jsb S04002
          delayed rom @11
@@ -1152,7 +1152,7 @@ L04014:  m2 exchange c
          c -> stack
          m2 -> c
          delayed rom @00
-         jsb S00222
+         jsb dv2-10
          if c[m] # 0
            then go to L04070
          0 -> a[w]
@@ -1219,7 +1219,7 @@ L04110:  if a[x] # 0
 L04130:  if s 6 = 1
            then go to L04367
 L04132:  delayed rom @00
-         jsb S00355
+         jsb 1/x13
          jsb S04043
 L04135:  a exchange b[w]
          b -> c[w]
@@ -1266,7 +1266,7 @@ L04173:  a -> b[w]
            then go to L04173
          b exchange c[w]
          delayed rom @00
-         jsb S00251
+         jsb div120
          a exchange b[w]
          m1 exchange c
          0 -> c[x]
@@ -1316,20 +1316,20 @@ L04261:  if 0 = s 6
          jsb S04000
          jsb S04000
          delayed rom @00
-         jsb S00374
+         jsb addone
          delayed rom @01
          jsb S00420
          delayed rom @00
-         jsb S00367
+         jsb subone
          jsb S04003
          delayed rom @00
-         jsb S00176
+         jsb mp2-13
          0 -> a[s]
          delayed rom @00
-         jsb S00275
+         jsb sqr13
          jsb S04003
          delayed rom @00
-         jsb S00362
+         jsb x/y13
          0 -> a[s]
          a exchange c[x]
          c -> a[x]
@@ -1343,7 +1343,7 @@ L04313:  c - 1 -> c[x]
            then go to L04312
 L04316:  0 -> c[ms]
          delayed rom @00
-         jsb S00114
+         jsb shf10
          if 0 = s 10
            then go to L04330
          jsb S04232
@@ -1361,7 +1361,7 @@ L04334:  if s 12 = 1
          a + 1 -> a[x]
          a + 1 -> a[x]
          delayed rom @00
-         jsb S00227
+         jsb dv2-13
          if s 14 = 1
            then go to L04353
          0 -> c[w]
@@ -1369,7 +1369,7 @@ L04334:  if s 12 = 1
          load constant 9
          c - 1 -> c[x]
          delayed rom @00
-         jsb S00173
+         jsb mp1-10
 L04353:  if 0 = s 4
            then go to L04356
          0 - c - 1 -> c[s]
@@ -1566,18 +1566,18 @@ L04627:  if c[xs] # 0
          a + b -> a[w]
 L04634:  c - 1 -> c[x]
          delayed rom @00
-         jsb S00114
+         jsb shf10
          if s 12 = 1
            then go to L04652
          m1 -> c
          c + c -> c[w]
          c - 1 -> c[x]
          delayed rom @00
-         jsb S00224
+         jsb dv1-10
          delayed rom @10
          jsb S04232
          delayed rom @00
-         jsb S00176
+         jsb mp2-13
 L04652:  m1 exchange c
          a exchange c[w]
          c -> a[w]
@@ -1652,7 +1652,7 @@ L04752:  m1 -> c
          if 0 = s 10
            then go to L05061
          delayed rom @00
-         jsb S00355
+         jsb 1/x13
          delayed rom @12
          go to L05061
 
@@ -1673,27 +1673,27 @@ L04774:  m2 -> c
          0 -> c[x]
          go to L05020
 
-S05001:  select rom @00 (L00002)
+S05001:  select rom @00 (x-ad1-10)
 
-S05002:  select rom @00 (L00003)
+S05002:  select rom @00 (x-ad2-13)
 
-S05003:  select rom @00 (L00004)
+S05003:  select rom @00 (x-mp2-10)
 
-S05004:  select rom @00 (L00005)
+S05004:  select rom @00 (x-mp1-10)
 
-S05005:  select rom @00 (L00006)
+S05005:  select rom @00 (x-mp2-13)
 
-         select rom @00 (L00007)
+         select rom @00 (x-dv2-10)
 
-S05007:  select rom @00 (L00010)
+S05007:  select rom @00 (x-dv1-10)
 
-S05010:  select rom @00 (L00011)
+S05010:  select rom @00 (x-dv2-13)
 
-S05011:  select rom @00 (L00012)
+S05011:  select rom @00 (x-x/y13)
 
-L05012:  select rom @00 (L00013)
+L05012:  select rom @00 (x-sqr13)
 
-S05013:  select rom @01 (L00414)
+S05013:  select rom @01 (x-stscr)
 
 S05014:  select rom @01 (L00415)
 
@@ -1735,20 +1735,20 @@ L05054:  if b[m] = 0
            then go to L05103
          m1 exchange c
          delayed rom @00
-         jsb S00243
+         jsb div15
 L05061:  if 0 = s 6
            then go to L05076
          jsb S05013
          jsb S05014
          jsb S05005
          delayed rom @00
-         jsb S00374
+         jsb addone
          delayed rom @11
          jsb S04763
          if s 13 = 1
            then go to L04774
          delayed rom @00
-         jsb S00355
+         jsb 1/x13
 L05076:  if 0 = s 4
            then go to L05101
          0 - c - 1 -> c[s]
@@ -1813,7 +1813,7 @@ L05164:  jsb S05176
          a + c -> a[w]
          b exchange c[w]
 L05170:  delayed rom @00
-         jsb S00104
+         jsb mpy150
          go to L05101
 
 L05173:  if b[xs] = 0
@@ -1964,27 +1964,27 @@ L05373:  a + c -> a[wp]
 
 S05400:  rom checksum
 
-S05401:  select rom @00 (L00002)
+S05401:  select rom @00 (x-ad1-10)
 
-         select rom @00 (L00003)
+         select rom @00 (x-ad2-13)
 
-S05403:  select rom @00 (L00004)
+S05403:  select rom @00 (x-mp2-10)
 
-S05404:  select rom @00 (L00005)
+S05404:  select rom @00 (x-mp1-10)
 
-S05405:  select rom @00 (L00006)
+S05405:  select rom @00 (x-mp2-13)
 
-S05406:  select rom @00 (L00007)
+S05406:  select rom @00 (x-dv2-10)
 
-S05407:  select rom @00 (L00010)
+S05407:  select rom @00 (x-dv1-10)
 
-S05410:  select rom @00 (L00011)
+S05410:  select rom @00 (x-dv2-13)
 
-S05411:  select rom @00 (L00012)
+S05411:  select rom @00 (x-x/y13)
 
-S05412:  select rom @00 (L00013)
+S05412:  select rom @00 (x-sqr13)
 
-S05413:  select rom @01 (L00414)
+S05413:  select rom @01 (x-stscr)
 
 S05414:  select rom @01 (L00415)
 
@@ -2019,7 +2019,7 @@ L05440:  if a[s] # 0
          0 -> b[w]
          a exchange b[m]
          delayed rom @00
-         jsb S00367
+         jsb subone
          jsb S05473
          jsb S05413
          jsb S05415
@@ -2108,7 +2108,7 @@ L05567:  register -> c 4
          a exchange c[w]
          jsb S05406
          delayed rom @00
-         jsb S00367
+         jsb subone
          jsb S05413
          register -> c 1
          c -> a[w]
@@ -2198,7 +2198,7 @@ S05710:  0 -> c[w]
 
 S05717:  0 - c - 1 -> c[s]
 S05720:  delayed rom @00
-         go to S00014
+         go to ad2-10
 
 L05722:  register -> c 4
          c -> register 3
@@ -2268,7 +2268,7 @@ L06007:  delayed rom @05
 L06011:  delayed rom @05
          go to L02613
 
-S06013:  select rom @01 (L00414)
+S06013:  select rom @01 (x-stscr)
 
 S06014:  select rom @01 (L00415)
 
@@ -2329,7 +2329,7 @@ L06074:  register -> c 4
          c + 1 -> c[p]
          c + 1 -> c[m]
          delayed rom @00
-         jsb S00171
+         jsb mp2-10
          jsb S06013
          register -> c 3
          c -> a[w]
@@ -2340,7 +2340,7 @@ L06074:  register -> c 4
            then go to L06265
          jsb S06014
          delayed rom @00
-         jsb S00227
+         jsb dv2-13
          jsb S06226
          c -> a[w]
          0 -> b[w]
@@ -2363,7 +2363,7 @@ L06135:  register -> c 2
          jsb S06013
          jsb S06015
          delayed rom @00
-         jsb S00176
+         jsb mp2-13
          register -> c 2
          jsb S06224
          jsb S06013
@@ -2377,7 +2377,7 @@ L06135:  register -> c 2
          c + 1 -> c[s]
          c - 1 -> c[w]
 L06162:  delayed rom @00
-         jsb S00173
+         jsb mp1-10
          jsb S06226
          c -> register 5
          c -> a[w]
@@ -2390,7 +2390,7 @@ L06162:  delayed rom @00
          p <- 12
          load constant 3
          delayed rom @00
-         jsb S00224
+         jsb dv1-10
          register -> c 2
          jsb S06224
          jsb S06226
@@ -2410,10 +2410,10 @@ L06214:  jsb S06014
          c + 1 -> c[m]
          if n/c go to L06162
 S06222:  delayed rom @00
-         go to S00014
+         go to ad2-10
 
 S06224:  delayed rom @00
-         go to S00016
+         go to ad1-10
 
 S06226:  delayed rom @03
          go to S01572
@@ -2705,19 +2705,19 @@ L06635:  delayed rom @17
          m2 -> c
          jsb S06716
          delayed rom @00
-         jsb S00374
+         jsb addone
          delayed rom @01
          jsb S00470
          delayed rom @01
          jsb S00535
          delayed rom @00
-         jsb S00176
+         jsb mp2-13
          0 -> c[w]
          load constant 1
          load constant 2
          c + 1 -> c[x]
          delayed rom @00
-         jsb S00173
+         jsb mp1-10
          delayed rom @01
          jsb S00470
          0 -> c[w]
@@ -2726,13 +2726,13 @@ L06635:  delayed rom @17
          load constant 5
          load constant 5
          delayed rom @00
-         jsb S00016
+         jsb ad1-10
          delayed rom @17
          jsb S07664
          load constant 4
          load constant 9
          delayed rom @00
-         jsb S00362
+         jsb x/y13
          delayed rom @17
          jsb S07725
          load constant 3
@@ -2744,15 +2744,15 @@ L06635:  delayed rom @17
          go to L07730
 
 L06710:  delayed rom @00
-         jsb S00171
+         jsb mp2-10
          go to L06565
 
 L06713:  delayed rom @00
-         jsb S00222
+         jsb dv2-10
          go to L06565
 
 S06716:  delayed rom @00
-         go to S00014
+         go to ad2-10
 
 L06720:  c -> data
 L06721:  m2 -> c
@@ -2778,7 +2778,7 @@ L06737:  p <- 4
 
 L06741:  stack -> a
          delayed rom @00
-         jsb S00222
+         jsb dv2-10
          go to L06610
 
 L06745:  bank toggle
@@ -2840,7 +2840,7 @@ L06775:  bank toggle
 L07005:  jsb S07041
          0 -> a[x]
          delayed rom @00
-         jsb S00114
+         jsb shf10
          c - 1 -> c[x]
 L07012:  delayed rom @04
          go to L02002
@@ -2901,7 +2901,7 @@ L07052:  data -> c
          jsb S01651
          b exchange c[w]
          delayed rom @00
-         jsb S00227
+         jsb dv2-13
          go to L07012
 
 L07071:  jsb S07160
@@ -2913,7 +2913,7 @@ L07071:  jsb S07160
          go to L07321
 
          delayed rom @00
-         jsb S00272
+         jsb sqr10
          go to L07012
 
 L07101:  y -> a
@@ -2943,7 +2943,7 @@ L07121:  y -> a
          c - 1 -> c[x]
          c - 1 -> c[x]
          delayed rom @00
-         jsb S00224
+         jsb dv1-10
          go to L07012
 
 L07130:  1 -> s 6
@@ -3004,7 +3004,7 @@ L07200:  0 -> a[w]
          jsb S01651
          m2 -> c
          delayed rom @00
-         jsb S00173
+         jsb mp1-10
          delayed rom @02
          jsb S01016
          go to L07012
@@ -3118,11 +3118,11 @@ L07323:  y -> a
          c - 1 -> c[x]
          c - 1 -> c[x]
 L07326:  delayed rom @00
-         jsb S00171
+         jsb mp2-10
          go to L07012
 
 L07331:  delayed rom @00
-         jsb S00352
+         jsb 1/x10
          go to L07012
 
          go to L07343
@@ -3140,7 +3140,7 @@ L07343:  0 -> c[s]
          go to L07012
 
 S07345:  delayed rom @00
-         go to S00014
+         go to ad2-10
 
 L07347:  delayed rom @15
          go to L06760
@@ -3179,7 +3179,7 @@ L07372:  delayed rom @15
          delayed rom @15
          go to L06762
 
-S07401:  select rom @00 (L00002)
+S07401:  select rom @00 (x-ad1-10)
 
 S07402:  0 -> c[w]
          p <- 1
@@ -3272,7 +3272,7 @@ L07524:  a exchange c[w]
 
 S07526:  0 - c - 1 -> c[s]
 S07527:  delayed rom @00
-         go to S00014
+         go to ad2-10
 
 S07531:  delayed rom @01
          go to S00535
@@ -3356,7 +3356,7 @@ S07641:  delayed rom @01
 
 S07643:  jsb S07531
 S07644:  delayed rom @00
-         go to S00021
+         go to ad2-13
 
 S07646:  delayed rom @01
          go to S00515
@@ -3367,13 +3367,13 @@ S07650:  delayed rom @01
 S07652:  jsb S07526
          jsb S07531
 S07654:  delayed rom @00
-         go to S00227
+         go to dv2-13
 
 S07656:  delayed rom @00
-         go to S00362
+         go to x/y13
 
 S07660:  delayed rom @00
-         go to S00173
+         go to mp1-10
 
 S07662:  delayed rom @16
          go to S07263
@@ -3401,7 +3401,7 @@ S07700:  m2 -> c
          if c[s] = 0
            then go to L07713
          delayed rom @00
-         jsb S00367
+         jsb subone
 L07713:  delayed rom @16
          jsb S07041
          0 -> c[wp]

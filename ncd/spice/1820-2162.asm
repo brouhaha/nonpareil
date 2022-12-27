@@ -23,17 +23,17 @@ L02005   .equ @02005
 
 ; fixed entry points - note that some calculators bypass these and
 ; jump/call directly to the targets
-L00001:  go to ad2-10
-L00002:  go to ad1-10
-L00003:  go to ad2-13
-L00004:  go to mp2-10
-L00005:  go to mp1-10
-L00006:  go to mp2-13
-L00007:  go to dv2-10
-L00010:  go to dv1-10
-L00011:  go to dv2-13
-L00012:  go to x/y13
-L00013:  go to sqr13
+x-ad2-10:  go to ad2-10
+x-ad1-10:  go to ad1-10
+x-ad2-13:  go to ad2-13
+x-mp2-10:  go to mp2-10
+x-mp1-10:  go to mp1-10
+x-mp2-13:  go to mp2-13
+x-dv2-10:  go to dv2-10
+x-dv1-10:  go to dv1-10
+x-dv2-13:  go to dv2-13
+x-x/y13:   go to x/y13
+x-sqr13:   go to sqr13
 
 
 ad2-10:  0 -> b[w]
@@ -314,12 +314,9 @@ lnc30:   load constant 6
          p <- 12
          return
 
-L00414:  go to stscr
-
+x-stscr: go to stscr
 L00415:  go to S00535
-
 L00416:  go to S00515
-
 L00417:  go to S00532
 
 S00420:  register -> c 6
@@ -857,19 +854,13 @@ L01375:  delayed rom @04
 
 S01377:  rom checksum
 
-S01400:  select rom go to L00001
-
-S01401:  select rom go to L00002
-
-         select rom go to L00003
-
-S01403:  select rom go to L00004
-
-         select rom go to L00005
-
-         select rom go to L00006
-
-S01406:  select rom go to L00007
+S01400:  select rom go to x-ad2-10
+S01401:  select rom go to x-ad1-10
+         select rom go to x-ad2-13
+S01403:  select rom go to x-mp2-10
+         select rom go to x-mp1-10
+         select rom go to x-mp2-13
+S01406:  select rom go to x-dv2-10
 
 S01407:  p <- 12
          if c[s] # 0
