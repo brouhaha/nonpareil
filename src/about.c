@@ -81,6 +81,7 @@ static char *credits_people [] =
   "Nelson Sicuro",
   "Randy Sloyer",
   "Kenneth Sumrall",
+  "Greg Sydney-Smith",
   "Teenix",
 };
 

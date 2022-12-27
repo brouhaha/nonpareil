@@ -462,8 +462,22 @@ static void op_c_to_addr (sim_t *sim,
 {
   classic_cpu_reg_t *cpu_reg = get_chip_data (sim->first_chip);
 
+  printf("c -> ram addr ");
+  for (int i = WSIZE - 1; i >= 0; i--)
+    printf ("%x", cpu_reg->c[i]);
+  printf("\n");
+
   if (sim->arch_flags & 1)
-    cpu_reg->ram_addr = cpu_reg->c [12] * 10 + cpu_reg->c [11];
+    {
+      // HP-55 uses a mix of one- and two-digit RAM addressing
+      // Greg Sydney-Smith found that C[0] at the time of C -> RAM ADDR
+      // determines whether one- or two-digit addressing is used.
+      //     https://www.sydneysmith.com/wordpress/2086/hp-55-emulator-bug/
+      if (cpu_reg->c[0])
+	cpu_reg->ram_addr = cpu_reg->c [12] * 16 + cpu_reg->c [11];
+      else
+	cpu_reg->ram_addr = cpu_reg->c [12];
+    }
   else
     cpu_reg->ram_addr = cpu_reg->c [12];
   if (cpu_reg->ram_addr >= cpu_reg->max_ram)
