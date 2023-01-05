@@ -102,14 +102,14 @@ static bool nut_disassemble_long_branch (uint32_t flags,
 	{
 	case 0x0fd9:
 	  set_hex = true;
-	  // INTENTIONAL FALLTHROUGH
+	  [[fallthrough]];
 	case 0x0fda:
 	  *target_addr = (*addr & 0xfc00) + op3;
 	  call = false;
 	  break;
 	case 0x0fdd:
 	  set_hex = true;
-	  // INTENTIONAL FALLTHROUGH
+	  [[fallthrough]];
 	case 0x0fde:
 	  *target_addr = (*addr & 0xfc00) + op3;
 	  call = true;
