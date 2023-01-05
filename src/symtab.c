@@ -191,6 +191,7 @@ static void print_references (FILE *f,
 
 static void print_symbols (FILE *f,
 			   sym_t *p,
+			   int sym_len,
 			   value_fmt_fn_t *value_fmt_fn)
 {
   char buf [80];
@@ -198,21 +199,51 @@ static void print_symbols (FILE *f,
   if (! p)
     return;
 
-  print_symbols (f, p->left, value_fmt_fn);
+  print_symbols (f, p->left, sym_len, value_fmt_fn);
 
   if (! value_fmt_fn)
     value_fmt_fn = & default_value_fmt_fn;
   value_fmt_fn (p->value, buf, sizeof (buf));
-  fprintf (f, "%s %s %d  ", buf, p->name, p->lineno);
+  fprintf(f, "%-*s", sym_len, p->name);
+  fprintf(f, "  %-6s  %7d ", buf, p->lineno);
   print_references (f, p, p->ref_root);
   fprintf (f, "\n");
 
-  print_symbols (f, p->right, value_fmt_fn);
+  print_symbols (f, p->right, sym_len, value_fmt_fn);
+}
+
+static size_t find_longest_symbol(sym_t *p)
+{
+  if (! p)
+    return 0;
+
+  size_t len = strlen(p->name);
+
+  size_t llen = find_longest_symbol(p->left);
+  if (llen > len)
+    len = llen;
+  
+  size_t rlen = find_longest_symbol(p->right);
+  if (rlen > len)
+    len = rlen;
+
+  return len;
 }
 
 void print_symbol_table (symtab_t *table,
 			 FILE *f,
 			 value_fmt_fn_t *value_fmt_fn)
 {
-  print_symbols (f, table->root, value_fmt_fn);
+  size_t sym_len = find_longest_symbol(table->root);
+  if (sym_len < 6)
+    sym_len = 6;
+  
+  fprintf(f, "symbol");
+  for (size_t i = 6; i < sym_len; i++)
+    fprintf(f, " ");
+  fprintf(f, "  value   defined  referenced\n");
+  for (size_t i = 0; i < sym_len; i++)
+    fprintf(f, "-");
+  fprintf(f, "  ------  -------  ----------\n");
+  print_symbols (f, table->root, sym_len, value_fmt_fn);
 }
