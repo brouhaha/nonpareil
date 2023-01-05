@@ -102,14 +102,14 @@ static bool nut_disassemble_long_branch (uint32_t flags,
 	{
 	case 0x0fd9:
 	  set_hex = true;
-	  // FALL
+	  // INTENTIONAL FALLTHROUGH
 	case 0x0fda:
 	  *target_addr = (*addr & 0xfc00) + op3;
 	  call = false;
 	  break;
 	case 0x0fdd:
 	  set_hex = true;
-	  // FALL
+	  // INTENTIONAL FALLTHROUGH
 	case 0x0fde:
 	  *target_addr = (*addr & 0xfc00) + op3;
 	  call = true;
@@ -167,17 +167,17 @@ static bool nut_disassemble_long_branch (uint32_t flags,
   if (special_41)
     {
       if (special_page >= 0)
-	buf_printf (& buf, & len, "x%s%d %%s", call ? "gosub" : "goto", special_page);
+	buf_printf (& buf, & len, "x%s%d %%s", call ? "gosub" : "golong", special_page);
       else if (set_hex)
-        buf_printf (& buf, & len, "x%s %%s", call ? "gosubh" : "gotoh");
+        buf_printf (& buf, & len, "x%s %%s", call ? "gosubh" : "golongh");
       else
-        buf_printf (& buf, & len, "x%s %%s", call ? "gosub" : "goto");
+        buf_printf (& buf, & len, "x%s %%s", call ? "gosub" : "golong");
     }
   else
     {
       if (! uncond)
 	buf_printf (& buf, & len, "?%s ", cond_c ? "c " : "nc");
-      buf_printf (& buf, & len, "%s %%s", call ? "gosub" : "goto");
+      buf_printf (& buf, & len, "%s %%s", call ? "gosub" : "golong");
     }
 
   return true;
