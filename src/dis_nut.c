@@ -228,21 +228,21 @@ static char *nut_op18 [16] =
     /* 0x298 */ "sb=f",
     /* 0x2d8 */ "f<>sb",
     /* 0x318 */ NULL,
-    /* 0x358 */ "s=c",
-    /* 0x398 */ "c=s",
-    /* 0x3d8 */ "c<>s"
+    /* 0x358 */ "st=c",
+    /* 0x398 */ "c=st",
+    /* 0x3d8 */ "c<>st"
   };
 
 
 static inst_info_t nut_op20 [16] =
   { 
-    { /* 0x020 */ "pop",         false, flow_no_branch },
+    { /* 0x020 */ "pop stk",     false, flow_no_branch },
     { /* 0x060 */ "powoff",      false, flow_no_branch },
     { /* 0x0a0 */ "sel p",       false, flow_no_branch },
     { /* 0x0e0 */ "sel q",       false, flow_no_branch },
     { /* 0x120 */ "? p=q",       true,  flow_no_branch  },
     { /* 0x160 */ "lld",         true,  flow_no_branch  },
-    { /* 0x1a0 */ "clear abc",   false, flow_no_branch },
+    { /* 0x1a0 */ "clr abc",     false, flow_no_branch },
     { /* 0x1e0 */ "goto c",      false, flow_no_branch },
     { /* 0x220 */ "c=keys",      false, flow_no_branch },
     { /* 0x260 */ "set hex",     false, flow_no_branch },
@@ -262,12 +262,12 @@ static char *nut_op30 [16] =
     /* 0x0b0 */ "c=n", 
     /* 0x0f0 */ "c<>n",
     /* 0x130 */ "ldi",  /* handled elsewhere */
-    /* 0x170 */ "push c",
-    /* 0x1b0 */ "pop c",
+    /* 0x170 */ "stk=c",
+    /* 0x1b0 */ "c=stk",
     /* 0x1f0 */ "wptog",  // HEPAX write protect toggle
     /* 0x230 */ "goto keys",
     /* 0x270 */ "sel ram",
-    /* 0x2b0 */ "clear regs",
+    /* 0x2b0 */ "clr regs",
     /* 0x2f0 */ "data=c",
     /* 0x330 */ "cxisa",
     /* 0x370 */ "c=c|a",
@@ -354,7 +354,7 @@ static int nut_disassemble_misc (int op1,
       buf_printf (& buf, & len, "selprf %d", arg);
       break;
     case 0x028:
-      buf_printf (& buf, & len, "wrreg %d", arg);
+      buf_printf (& buf, & len, "reg=c %d", arg);
       break;
     case 0x02c:
       buf_printf (& buf, & len, "? ext %d", tmap [arg]);
@@ -370,7 +370,10 @@ static int nut_disassemble_misc (int op1,
       buf_printf (& buf, & len, "con $%03x", op1);
       break;
     case 0x038:
-      buf_printf (& buf, & len, "rdreg %d", arg);
+      if (arg == 0)
+        buf_printf (& buf, & len, "c=data", arg);
+      else
+        buf_printf (& buf, & len, "c=reg %d", arg);
       break;
     case 0x03c:
       if (op1 == 0x3fc)
@@ -409,11 +412,11 @@ static inst_info_t nut_arith_info [32] =
     { "c=-c",    true,  flow_no_branch },
     { "c=-c-1",  true,  flow_no_branch },
     { "? b<>0",  true,  flow_no_branch },
-    { "? c<>0",  true,  flow_no_branch },
+    { "? c#0",   true,  flow_no_branch },
     { "? a<c",   true,  flow_no_branch },
     { "? a<b",   true,  flow_no_branch },
-    { "? a<>0",  true,  flow_no_branch },
-    { "? a<>c",  true,  flow_no_branch },
+    { "? a#0",   true,  flow_no_branch },
+    { "? a#c",   true,  flow_no_branch },
     { "a sr",    false, flow_no_branch },
     { "b sr",    false, flow_no_branch },
     { "c sr",    false, flow_no_branch },

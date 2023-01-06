@@ -49,4 +49,9 @@ int find_arch_by_name (char *s);
 
 arch_info_t *get_arch_info (arch_t arch);
 
+
+#define ARCH_CLASSIC_ROM_SIZE_WORDS   256
+#define ARCH_CLASSIC_MAX_ROM            8
+#define ARCH_CLASSIC_MAX_GROUP          2
+
 #endif // ARCH_H

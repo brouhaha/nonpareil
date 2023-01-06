@@ -502,8 +502,8 @@ void handle_memory_element (xmlNode *element)
       xmlNode *loc_node;
       xmlAttr *addr_attr;
       xmlAttr *data_attr;
-      char addr_str [6];
-      char data_str [6];
+      char addr_str [10];
+      char data_str [10];
 
       if (rom [bank] [addr] == 0xffff)
 	fatal (4, "uninitialized ROM at bank %d addr %04o\n", bank, addr);

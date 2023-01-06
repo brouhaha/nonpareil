@@ -1,23 +1,26 @@
 /*
-Copyright 1995, 2004, 2005, 2006, 2007, 2008, 2022 Eric Smith <spacewar@gmail.com>
+Copyright 1995-2023 Eric Smith <spacewar@gmail.com>
+SPDX-License-Identifier: GPL-3.0-only
 
-Nonpareil is free software; you can redistribute it and/or modify it
-under the terms of the GNU General Public License version 2 as
-published by the Free Software Foundation.  Note that I am not
-granting permission to redistribute or modify Nonpareil under the
-terms of any later version of the General Public License.
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License version 3 as
+published by the Free Software Foundation.
 
-Nonpareil is distributed in the hope that it will be useful, but
+Note that permission is NOT granted to redistribute and/or modify
+this porogram under the terms of any other version, earlier or
+later, of the GNU General Public License.
+
+This program is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-General Public License for more details.
+General Public License version 3 for more details.
 
 You should have received a copy of the GNU General Public License
-along with this program (in the file "COPYING"); if not, write to the
-Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
-MA 02111, USA.
+version 3 along with this program (in the file "gpl-3.0.txt"); if not,
+see <https://www.gnu.org/licenses/>.
 */
 
+#include <assert.h>
 #include <stdarg.h>
 #include <stdbool.h>
 #include <stdint.h>
@@ -33,6 +36,14 @@ MA 02111, USA.
 
 
 int arch;
+
+static uint16_t pc_mask [ARCH_MAX] =
+  {
+    [ARCH_UNKNOWN]   = 0,
+    [ARCH_CLASSIC]   = (ARCH_CLASSIC_ROM_SIZE_WORDS * ARCH_CLASSIC_MAX_ROM * ARCH_CLASSIC_MAX_GROUP) - 1,
+    [ARCH_WOODSTOCK] = 07777,
+    [ARCH_NUT]       = 0xffff
+  };
 
 
 void usage (FILE *f)
@@ -52,7 +63,8 @@ parser_t *parser [ARCH_MAX] =
   {
     [ARCH_UNKNOWN]   = NULL,
     [ARCH_CLASSIC]   = casm_parse,
-    [ARCH_WOODSTOCK] = wasm_parse
+    [ARCH_WOODSTOCK] = wasm_parse,
+    [ARCH_NUT]       = nasm_parse
   };
 
 
@@ -76,8 +88,9 @@ addr_t delayed_pc_bits [2];
 
 char flag_char;
 
-bool obj_flag;	/* used to remember args to emit() */
-int objcode;
+#define MAX_OBJ_PER_SOURCE_LINE 256
+static int obj_word_count;  // number of words emitted by source line
+static int obj_words[MAX_OBJ_PER_SOURCE_LINE];
 
 bool symtab_pseudoop_flag;  // set by parser for .symtab directive
 
@@ -88,7 +101,6 @@ bool local_label_flag;  // true if ROM-local labels are in use
 int local_label_current_rom;
 
 int last_instruction_type;
-
 
 bool target_flag;	/* used to remember args to target() */
 addr_t target_addr;
@@ -244,12 +256,6 @@ void pseudo_endif (void)
 }
 
 
-void increment_pc (void)
-{
-  pc = (pc + 1) & 07777;
-}
-
-
 void value_fmt_fn_classic (int value, char *buf, int buf_len)
 {
   snprintf (buf, buf_len, "%01o%01o%03o", (value >> 11) & 01,
@@ -257,12 +263,18 @@ void value_fmt_fn_classic (int value, char *buf, int buf_len)
 	                                  value & 0377);
 }
 
+void value_fmt_fn_nut(int value, char *buf, int buf_len)
+{
+  snprintf (buf, buf_len, "%04x", value);
+}
+
 
 static value_fmt_fn_t *value_fmt_fn [ARCH_MAX] =
 {
   [ARCH_UNKNOWN]   = NULL,
   [ARCH_CLASSIC]   = value_fmt_fn_classic,
-  [ARCH_WOODSTOCK] = NULL  // default OK
+  [ARCH_WOODSTOCK] = NULL, // default OK
+  [ARCH_NUT]       = value_fmt_fn_nut
 };
 
 
@@ -280,14 +292,15 @@ void format_listing_classic (void)
 
   listptr += sprintf (listptr, "%4d   ", lineno [include_nest]);
 
-  if (obj_flag)
+  if (obj_word_count)
     {
+      assert(obj_word_count == 1);
       listptr += sprintf (listptr, "L%1o%1o%03o:  ",
 			  pc >> 11,
 			  (pc >> 8) & 7,
 			  pc & 0377);
       for (i = 0x200; i; i >>= 1)
-	*listptr++ = (objcode & i) ? '1' : '.';
+	*listptr++ = (obj_words[0] & i) ? '1' : '.';
       *listptr = '\0';
     }
   else
@@ -312,10 +325,35 @@ void format_listing_woodstock (void)
 {
   listptr += sprintf (listptr, "%4d   ", lineno [include_nest]);
 
-  if (obj_flag)
-    listptr += sprintf (listptr, "%06o  %04o ", objcode, pc);
+  if (obj_word_count)
+    {
+      assert(obj_word_count == 1);
+      listptr += sprintf (listptr, "%04o:  %06o  ", pc, obj_words[0]);
+    }
   else
-    listptr += sprintf (listptr, "             ");
+    listptr += sprintf (listptr, "              ");
+  
+  strcat (listptr, linebuf);
+  listptr += strlen (listptr);
+}
+
+void format_listing_nut(void)
+{
+  listptr += sprintf (listptr, "%4d   ", lineno [include_nest]);
+
+  assert(obj_word_count <= 2);
+  switch (obj_word_count)
+    {
+    case 0:
+      listptr += sprintf (listptr, "               ");
+      break;
+    case 1:
+      listptr += sprintf (listptr, "%04x: %03x      ", pc, obj_words[0]);
+      break;
+    case 2:
+      listptr += sprintf (listptr, "%04x: %03x %03x  ", pc, obj_words[0], obj_words[1]);
+      break;
+    }
   
   strcat (listptr, linebuf);
   listptr += strlen (listptr);
@@ -327,7 +365,8 @@ static format_listing_t *format_listing [ARCH_MAX] =
 {
   [ARCH_UNKNOWN]   = format_listing_unknown,
   [ARCH_CLASSIC]   = format_listing_classic,
-  [ARCH_WOODSTOCK] = format_listing_woodstock
+  [ARCH_WOODSTOCK] = format_listing_woodstock,
+  [ARCH_NUT]       = format_listing_nut
 };
 
 
@@ -378,7 +417,7 @@ static void process_line (char *inbuf)
   errptr = & errbuf [0];
   errbuf [0] = '\0';
 
-  obj_flag = false;
+  obj_word_count = 0;
   target_flag = false;
   flag_char = ' ';
 
@@ -414,8 +453,7 @@ static void process_line (char *inbuf)
 	}
     }
 
-  if (obj_flag)
-    increment_pc ();
+  pc = (pc + obj_word_count) & pc_mask[arch];
 }
 
 
@@ -639,7 +677,7 @@ void do_label (char *s)
 static void write_obj_classic (FILE *f, int opcode)
 {
   if (f)
-    fprintf (f, "%04o:%04o\n", pc, opcode &01777);
+    fprintf (f, "%04o:%04o\n", pc + (obj_word_count - 1), opcode &01777);
 }
 
 
@@ -656,22 +694,28 @@ static void write_obj_woodstock (FILE *f, int opcode)
 	      fprintf (f, "%d", i);
 	  fprintf (f, "]");
 	}
-      fprintf (f, "%04o:%04o\n", pc, opcode &01777);
+      fprintf (f, "%04o:%04o\n", pc + (obj_word_count - 1), opcode &01777);
     }
+}
+
+static void write_obj_nut (FILE *f, int opcode)
+{
+  if (f)
+    fprintf (f, "%04x:%03x\n", pc + (obj_word_count - 1), opcode);
 }
 
 
 static write_obj_t *write_obj [ARCH_MAX] =
   {
     [ARCH_CLASSIC]   = write_obj_classic,
-    [ARCH_WOODSTOCK] = write_obj_woodstock
+    [ARCH_WOODSTOCK] = write_obj_woodstock,
+    [ARCH_NUT]       = write_obj_nut
   };
 
 
 static void emit_core (int op, int inst_type)
 {
-  objcode = op;
-  obj_flag = true;
+  obj_words[obj_word_count++] = op;
   last_instruction_type = inst_type;
 
   if (pass == 2)
@@ -710,7 +754,7 @@ addr_t get_next_pc (void)
 {
   addr_t next_pc;
 
-  next_pc = (pc + 1) & 07777;  // $$$ Woodstock-specific, need to fix
+  next_pc = (pc + 1) & pc_mask[arch];
   next_pc &= ~ delayed_pc_mask [1];
   next_pc |= (delayed_pc_mask [1] & delayed_pc_bits [1]);
 
@@ -721,7 +765,18 @@ int range (int val, int min, int max)
 {
   if ((val < min) || (val > max))
     {
-      error ("value out of range [%d to %d], using %d", min, max, min);
+      error ("value %d out of range [%d to %d], using %d\n", val, min, max, min);
+      return min;
+    }
+  return val;
+}
+
+int range_pass2 (int val, int min, int max)
+{
+  if ((val < min) || (val > max))
+    {
+      if (pass == 2)
+	error ("value %d out of range [%d to %d], using %d\n", val, min, max, min);
       return min;
     }
   return val;

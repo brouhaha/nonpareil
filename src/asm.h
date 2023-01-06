@@ -1,23 +1,24 @@
 /*
-Copyright 1995, 2004, 2005, 2006, 2007, 2008, 2022 Eric Smith <spacewar@gmail.com>
+Copyright 1995-2023 Eric Smith <spacewar@gmail.com>
+SPDX-License-Identifier: GPL-3.0-only
 
-Nonpareil is free software; you can redistribute it and/or modify it
-under the terms of the GNU General Public License version 2 as
-published by the Free Software Foundation.  Note that I am not
-granting permission to redistribute or modify Nonpareil under the
-terms of any later version of the General Public License.
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License version 3 as
+published by the Free Software Foundation.
 
-Nonpareil is distributed in the hope that it will be useful, but
+Note that permission is NOT granted to redistribute and/or modify
+this porogram under the terms of any other version, earlier or
+later, of the GNU General Public License.
+
+This program is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-General Public License for more details.
+General Public License version 3 for more details.
 
 You should have received a copy of the GNU General Public License
-along with this program (in the file "COPYING"); if not, write to the
-Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
-MA 02111, USA.
+version 3 along with this program (in the file "gpl-3.0.txt"); if not,
+see <https://www.gnu.org/licenses/>.
 */
-
 
 extern int arch;
 
@@ -41,9 +42,9 @@ extern bool legal_flag;	// used to suppress warnings for unconditional
 extern bool local_label_flag;  // true if ROM-local labels are in use
 extern int local_label_current_rom;
 
-#define OTHER_INST 0
-#define ARITH_INST 1
-#define TEST_INST 2
+#define OTHER_INST         0
+#define ARITH_INST         1  // instruction that may set carry
+#define TEST_INST          2
 extern int last_instruction_type;
 
 
@@ -95,6 +96,13 @@ int range (int val, int min, int max);
 
 
 /*
+ * Check that val is in the range [min, max].  If so, return val.
+ * If not, issue an error if pass 2, and return min
+ */
+int range_pass2 (int val, int min, int max);
+
+
+/*
  * Check that val is in a specified subset of [0, 63] based on a bit mask.
  * If so, return val. 
  * If not, issue an error and return min.
@@ -122,6 +130,7 @@ int asm_lex      (void);  // generic, used only to parse .arch directive
 int asm_cond_lex (void);  // used to parse conditional assembly directives
 int casm_lex     (void);  // classic
 int wasm_lex     (void);  // woodstock
+int nasm_lex     (void);  // nut
 
 
 /* parsers: */
@@ -133,6 +142,7 @@ int asm_parse      (void);  // generic, used only to parse .arch directive
 int asm_cond_parse (void);  // used to parse conditional assembly directives
 int casm_parse     (void);  // classic
 int wasm_parse     (void);  // woodstock
+int nasm_parse     (void);  // nut
 
 
 typedef struct keyword

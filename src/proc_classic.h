@@ -21,6 +21,7 @@ MA 02111, USA.
 #ifndef PROC_CLASSIC_H
 #define PROC_CLASSIC_H
 
+#include "arch.h"
 #include "proc_classic_ext_flags.h"
 
 #define WSIZE 14
@@ -35,9 +36,9 @@ typedef digit_t reg_t [WSIZE];
 #define EXT_FLAG_SIZE 2
 
 
-#define MAX_GROUP 2
-#define MAX_ROM 8
-#define ROM_SIZE 256
+#define MAX_GROUP ARCH_CLASSIC_MAX_GROUP
+#define MAX_ROM   ARCH_CLASSIC_MAX_ROM
+#define ROM_SIZE  ARCH_CLASSIC_ROM_SIZE_WORDS
 
 #if 1
   // This was the easiest way to use the existing code:
