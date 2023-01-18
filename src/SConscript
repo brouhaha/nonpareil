@@ -238,7 +238,7 @@ if not build_target_only:
 # build_ncd
 #-----------------------------------------------------------------------------
 
-build_ncd_srcs = Split ("""build_ncd.c""")
+build_ncd_srcs = Split ("""build_ncd.c sha-256.c""")
 
 build_ncd = build_env.Program (target = 'build_ncd',
                                source = build_ncd_srcs + common_objs)

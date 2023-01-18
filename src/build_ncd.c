@@ -38,6 +38,7 @@ MA 02111, USA.
 
 #include "arch.h"
 #include "util.h"
+#include "sha-256.h"
 
 
 int arch;
@@ -171,7 +172,7 @@ void init_rom (void)
 }
 
 
-static bool parse_octal (char *oct, int digits, int *val)
+static bool parse_octal (const char *oct, int digits, int *val)
 {
   *val = 0;
 
@@ -185,7 +186,7 @@ static bool parse_octal (char *oct, int digits, int *val)
 }
 
 
-static bool parse_hex (char *hex, int digits, int *val)
+static bool parse_hex (const char *hex, int digits, int *val)
 {
   *val = 0;
   int d;
@@ -204,6 +205,22 @@ static bool parse_hex (char *hex, int digits, int *val)
       hex++;
     }
   return (true);
+}
+
+
+static bool parse_hex_buffer(const char *hex, unsigned byte_count, uint8_t *buf)
+{
+  if (strlen(hex) != (2 * byte_count))
+    return false;
+  while (byte_count--)
+    {
+      int val;
+      if (! parse_hex(hex, 2, & val))
+	return false;
+      *buf++ = val;
+      hex += 2;
+    }
+  return true;
 }
 
 
@@ -385,7 +402,8 @@ static bool nut_parse_object_line (char        *buf,
 }
 
 
-void read_object_file (char *fn)
+// If expected_hash is NULL, no hash checking will occur
+void read_object_file (char *fn, uint8_t *expected_hash)
 {
   char *fn2;
   FILE *f;
@@ -395,6 +413,8 @@ void read_object_file (char *fn)
   rom_word_t opcode;
   bool ok;
   char buf [80];
+  struct Sha_256 sha_256;
+  uint8_t computed_hash[SIZE_OF_SHA_256_HASH];
 
   fn2 = find_file_in_path_list (fn, NULL, obj_path);
   if (! fn2)
@@ -403,6 +423,8 @@ void read_object_file (char *fn)
   f = fopen (fn2, "r");
   if (! f)
     fatal (2, "can't open object file '%s'\n", fn);
+
+  sha_256_init(&sha_256, computed_hash);
 
   while (fgets (buf, sizeof (buf), f))
     {
@@ -425,10 +447,26 @@ void read_object_file (char *fn)
 	}
       if (ok)
 	{
+	  if (expected_hash)
+	    {
+	      uint8_t buf[4];
+	      buf[0] = addr & 0xff;
+	      buf[1] = (addr >> 8) & 0xff;
+	      buf[2] = opcode & 0xff;
+	      buf[3] = (opcode >> 8) & 0xff;
+	      sha_256_write(&sha_256, buf, sizeof(buf)); 
+	    }
 	  for (bank = 0; bank < MAX_BANK; bank++)
 	    if (bank_mask & (1 << bank))
 	      rom [bank] [addr] = opcode;
 	}
+    }
+
+  if (expected_hash)
+    {
+      sha_256_close(&sha_256);
+      if (memcmp(computed_hash, expected_hash, SIZE_OF_SHA_256_HASH))
+	fatal(4, "object file has incorrect hash\n");
     }
 
   fclose (f);
@@ -452,11 +490,24 @@ void iterate_named_elements (xmlNode *parent_element,
 
 void handle_obj_file_element (xmlNode *element)
 {
-  xmlChar *addr_space_str;
-  xmlChar *obj_fn;
+  char *addr_space_str;
+  char *expected_hash_str;
+  char *obj_fn;
+  void *expected_hash = NULL;
 
-  addr_space_str = get_attr_str (element, "addr_space");
-  obj_fn = xmlNodeGetContent (element);
+  addr_space_str = (char *) get_attr_str (element, "addr_space");
+
+  expected_hash_str = (char *) xmlGetProp(element, (xmlChar *) "hash");    // optional
+  if (expected_hash_str)
+    {
+      expected_hash = alloc(SIZE_OF_SHA_256_HASH);
+      if (! parse_hex_buffer((char *) expected_hash_str,
+			     SIZE_OF_SHA_256_HASH,
+			     expected_hash))
+	fatal(2, "obj element hash attribute malformed\n");
+    }
+
+  obj_fn = (char *) xmlNodeGetContent (element);
   if (! obj_fn)
     fatal (2, "no content\n");
   //printf ("obj_file '%s', addr_space '%s'\n", obj_fn, addr_space_str);
@@ -464,10 +515,10 @@ void handle_obj_file_element (xmlNode *element)
   strip_whitespace (obj_fn);
 
   // $$$ check that the address space exists!
-  if (strcmp ((char *) addr_space_str, "inst") != 0)
+  if (strcmp (addr_space_str, "inst") != 0)
     fatal (2, "only 'inst' address space is supported\n");
 
-  read_object_file ((char *) obj_fn);
+  read_object_file (obj_fn, expected_hash);
 
   defer_unlink_element (element);
 }
