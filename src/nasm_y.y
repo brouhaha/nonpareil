@@ -44,6 +44,9 @@ void nasm_error (char *s);
 %token <integer> INTEGER
 %token <string> IDENT
 
+%token LSH_OP RSH_OP
+%token LE_OP GE_OP EQ_OP NE_OP
+
 %token A B C F G M N P Q S W X
 
 %token AB
@@ -98,7 +101,14 @@ void nasm_error (char *s);
 %token XS
 
 %type <integer> factor
-%type <integer> term
+%type <integer> mult_expr
+%type <integer> add_expr
+%type <integer> shift_expr
+%type <integer> relational_expr
+%type <integer> equality_expr
+%type <integer> and_expr
+%type <integer> excl_or_expr
+%type <integer> incl_or_expr
 %type <integer> expr
 %type <integer> cond
 %type <integer> field_spec
@@ -144,14 +154,47 @@ factor		: '(' expr ')'  { $$ = $2; }
 			}
 		;
 
-term            : factor          { $$ = $1; }
-                | term '*' factor { $$ = $1 * $3; }
-                | term '/' factor { $$ = $1 / $3; }
+mult_expr       : factor               { $$ = $1; }
+                | mult_expr '*' factor { $$ = $1 * $3; }
+                | mult_expr '/' factor { $$ = $1 / $3; }
+                | mult_expr '%' factor { $$ = $1 % $3; }
                 ;
 
-expr            : term          { $$ = $1; }
-                | expr '+' term { $$ = $1 + $3; }
-                | expr '-' term { $$ = $1 - $3; }
+add_expr        : mult_expr              { $$ = $1; }
+                | add_expr '+' mult_expr { $$ = $1 + $3; }
+                | add_expr '-' mult_expr { $$ = $1 - $3; }
+                ;
+
+shift_expr      : add_expr                   { $$ = $1; }
+                | shift_expr LSH_OP add_expr { $$ = $1 << $3; }
+                | shift_expr RSH_OP add_expr { $$ = $1 >> $3; }
+                ;
+
+relational_expr : shift_expr                       { $$ = $1; }
+                | relational_expr '<' shift_expr   { $$ = $1 < $3; }
+                | relational_expr '>' shift_expr   { $$ = $1 > $3; }
+                | relational_expr LE_OP shift_expr { $$ = $1 <= $3; }
+                | relational_expr GE_OP shift_expr { $$ = $1 >= $3; }
+                ;
+
+
+equality_expr   : relational_expr                     { $$ = $1; }
+                | equality_expr EQ_OP relational_expr { $$ = $1 == $3; }
+                | equality_expr NE_OP relational_expr { $$ = $1 != $3; }
+                ;
+
+and_expr        : equality_expr              { $$ = $1; }
+                | and_expr '&' equality_expr { $$ = $1 & $3; }
+
+excl_or_expr    : and_expr                  { $$ = $1; }
+                | excl_or_expr '^' and_expr { $$ = $1 ^ $3; }
+                ;
+
+incl_or_expr    : excl_or_expr                  { $$ = $1; }
+                | incl_or_expr '|' excl_or_expr { $$ = $1 | $3; }
+                ;
+
+expr            : incl_or_expr          { $$ = $1; }
                 ;
 
 pseudo_op	: ps_org
