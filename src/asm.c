@@ -280,6 +280,18 @@ void pseudo_endif (void)
 }
 
 
+void pseudo_fillto(int addr, int val)
+{
+  while (pc < addr)
+    {
+      pc = (pc + 1) & pc_mask[arch];  // XXX will this show the wrong PC in the listing for fillto?
+      if (pass == 2)
+	write_obj [arch] (obj_file, val);
+    }
+  last_instruction_type = OTHER_INST;
+}
+
+
 void value_fmt_fn_classic (int value, char *buf, int buf_len)
 {
   snprintf (buf, buf_len, "%01o%01o%03o", (value >> 11) & 01,
@@ -739,7 +751,9 @@ static write_obj_t *write_obj [ARCH_MAX] =
 
 static void emit_core (int op, int inst_type)
 {
-  obj_words[obj_word_count++] = op;
+  if (obj_word_count < MAX_OBJ_PER_SOURCE_LINE)
+    obj_words[obj_word_count++] = op;
+
   last_instruction_type = inst_type;
 
   if (pass == 2)

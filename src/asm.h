@@ -69,6 +69,7 @@ void pseudo_ifdef (char *s);
 void pseudo_ifndef (char *s);
 void pseudo_else (void);
 void pseudo_endif (void);
+void pseudo_fillto(int addr, int val);
 
 
 extern symtab_t *global_symtab;

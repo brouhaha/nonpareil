@@ -71,6 +71,7 @@ static keyword_t nasm_keywords [] =
   { "equ",       EQU },
   { "ex",        EX },
   { "ext",       EXT },
+  { "fillto",    FILLTO },
   { "golong",    GOLONG },
   { "goto",      GOTO },
   { "gosub",     GOSUB },

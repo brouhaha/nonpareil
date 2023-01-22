@@ -63,6 +63,7 @@ void nasm_error (char *s);
 %token EQU
 %token EX
 %token EXT
+%token FILLTO
 %token GOLONG
 %token GOTO
 %token GOSUB
@@ -201,7 +202,7 @@ pseudo_op	: ps_org
 		| ps_symtab
 		| ps_legal
 		| ps_dw
-
+		| ps_fillto
 		;
 
 pseudo_op_label	: ps_dw
@@ -222,6 +223,10 @@ ps_symtab	: SYMTAB { symtab_pseudoop_flag = true; }
 
 ps_legal	: LEGAL { legal_flag = true; }
 		;
+
+ps_fillto       : FILLTO expr { pseudo_fillto($2, 0); }
+                | FILLTO expr ',' expr { pseudo_fillto($2, $4); }
+                ;
 
 dw_item         : expr             { $1 = range_pass2($1, 0, 0x3ff); emit($1); }
                 ;
@@ -256,7 +261,7 @@ branch_inst           : goto_inst
                       | return_inst
                       ;
 
-goto_inst             : cond GOTO expr  { if (($1 == 0) && (last_instruction_type == ARITH_INST))
+goto_inst             : cond GOTO expr  { if (($1 == 0) && (last_instruction_type == ARITH_INST) && (! legal_flag))
 				            asm_warning ("unconditional goto after instruction that can set carry\n");
                                           else if (($1 != 0) && (last_instruction_type != ARITH_INST) && (! legal_flag))
 				            asm_warning ("conditional goto after instruction that cannot set carry\n");
@@ -271,7 +276,7 @@ goto_inst             : cond GOTO expr  { if (($1 == 0) && (last_instruction_typ
                                         }
                       ;
 
-golong_inst           : cond GOLONG expr { if (($1 == 0) && (last_instruction_type == ARITH_INST))
+golong_inst           : cond GOLONG expr { if (($1 == 0) && (last_instruction_type == ARITH_INST) && (! legal_flag))
 				             asm_warning ("unconditional golong after instruction that can set carry\n");
                                            else if (($1 != 0) && (last_instruction_type != ARITH_INST) && (! legal_flag))
 				             asm_warning ("conditional golong after instruction that cannot set carry\n");
@@ -281,10 +286,10 @@ golong_inst           : cond GOLONG expr { if (($1 == 0) && (last_instruction_ty
                                          }
                       ;
 
-gosub_inst            : cond GOSUB expr  { if (($1 == 0) && (last_instruction_type == ARITH_INST))
-				             asm_warning ("unconditional golong after instruction that can set carry\n");
+gosub_inst            : cond GOSUB expr  { if (($1 == 0) && (last_instruction_type == ARITH_INST) && (! legal_flag))
+				             asm_warning ("unconditional gosub after instruction that can set carry\n");
                                            else if (($1 != 0) && (last_instruction_type != ARITH_INST) && (! legal_flag))
-				             asm_warning ("conditional golong after instruction that cannot set carry\n");
+				             asm_warning ("conditional gosub after instruction that cannot set carry\n");
                                            emit((($3 & 0xff) << 2)+1);
                                            emit((($3 >> 8) << 2) + ($1 & 1));
                                            legal_flag = false;
