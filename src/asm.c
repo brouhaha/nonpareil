@@ -224,7 +224,31 @@ void pseudo_ifdef (char *s)
   cond_nest_level++;
   cond_state <<= 1;
   cond_else <<= 1;
-  cond_state |= lookup_symbol (table, s, & val, lineno [include_nest]);
+
+  bool cond_val = lookup_symbol (table, s, & val, lineno [include_nest]);
+  cond_state |= cond_val;
+}
+
+void pseudo_ifndef (char *s)
+{
+  symtab_t *table;
+  int val;
+
+  if (cond_nest_level >= MAX_COND_NEST_LEVEL)
+    {
+      error ("conditionals nested too deep");
+      return;
+    }
+  if (local_label_flag && (*s != '$'))
+    table = symtab [local_label_current_rom];
+  else
+    table = global_symtab;
+  cond_nest_level++;
+  cond_state <<= 1;
+  cond_else <<= 1;
+
+  bool cond_val = ! lookup_symbol (table, s, & val, lineno [include_nest]);
+  cond_state |= cond_val;
 }
 
 void pseudo_else (void)

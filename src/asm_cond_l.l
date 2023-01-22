@@ -39,6 +39,7 @@ static keyword_t asm_cond_keywords [] =
   { "endif",     ENDIF},
   { "if",        IF },
   { "ifdef",     IFDEF },
+  { "ifndef",    IFDEF },
   { NULL,        0 }
 };
 

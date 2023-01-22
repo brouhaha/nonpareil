@@ -66,6 +66,7 @@ int  get_lineno (void);
 
 void pseudo_if (int val);
 void pseudo_ifdef (char *s);
+void pseudo_ifndef (char *s);
 void pseudo_else (void);
 void pseudo_endif (void);
 
