@@ -19,7 +19,7 @@ Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
 MA 02111, USA.
 */
 
-%name-prefix="asm_cond_"
+%define api.prefix {asm_cond_}
 
 %{
 #include <stdbool.h>
@@ -38,15 +38,27 @@ void asm_cond_error (char *s);
     char *string;
   }
 
+%token <integer> INTEGER
+%token <string> IDENT
+
+%token LSH_OP RSH_OP
+%token LE_OP GE_OP EQ_OP NE_OP
+
 %token ELSE
 %token ENDIF
 %token IF
 %token IFDEF
 %token IFNDEF
 
-%token <integer> INTEGER
-%token <string> IDENT
-
+%type <integer> factor
+%type <integer> mult_expr
+%type <integer> add_expr
+%type <integer> shift_expr
+%type <integer> relational_expr
+%type <integer> equality_expr
+%type <integer> and_expr
+%type <integer> excl_or_expr
+%type <integer> incl_or_expr
 %type <integer> expr
 
 %%
@@ -73,18 +85,69 @@ ps_else		: ELSE { pseudo_else (); };
 
 ps_endif	: ENDIF { pseudo_endif (); };
 
-expr		: INTEGER { $$ = $1; }
-		| IDENT {
-		          // Note: symbols used in conditionals must be
-                          // defined before reference, so that they will
-                          // be valid during phase 1.
-		          if (! lookup_symbol (global_symtab, $1, &$$, get_lineno ()))
-		            {
-			      error ("undefined symbol '%s'\n", $1);
+factor		: '(' expr ')'  { $$ = $2; }
+		| INTEGER { $$ = $1; }
+		| IDENT { symtab_t *table;
+			  if (local_label_flag && ($1 [0] != '$'))
+			    table = symtab [local_label_current_rom];
+			  else
+			    table = global_symtab;
+			  int value;
+			  if (lookup_symbol (table, $1, &value, get_lineno ()))
+			    {
+			      $$ = value;
+			    }
+			  else
+			    {
+			      if (pass == 2)
+				error ("undefined symbol '%s'\n", $1);
 			      $$ = 0;
 			    }
 			}
 		;
+
+mult_expr       : factor               { $$ = $1; }
+                | mult_expr '*' factor { $$ = $1 * $3; }
+                | mult_expr '/' factor { $$ = $1 / $3; }
+                | mult_expr '%' factor { $$ = $1 % $3; }
+                ;
+
+add_expr        : mult_expr              { $$ = $1; }
+                | add_expr '+' mult_expr { $$ = $1 + $3; }
+                | add_expr '-' mult_expr { $$ = $1 - $3; }
+                ;
+
+shift_expr      : add_expr                   { $$ = $1; }
+                | shift_expr LSH_OP add_expr { $$ = $1 << $3; }
+                | shift_expr RSH_OP add_expr { $$ = $1 >> $3; }
+                ;
+
+relational_expr : shift_expr                       { $$ = $1; }
+                | relational_expr '<' shift_expr   { $$ = $1 < $3; }
+                | relational_expr '>' shift_expr   { $$ = $1 > $3; }
+                | relational_expr LE_OP shift_expr { $$ = $1 <= $3; }
+                | relational_expr GE_OP shift_expr { $$ = $1 >= $3; }
+                ;
+
+
+equality_expr   : relational_expr                     { $$ = $1; }
+                | equality_expr EQ_OP relational_expr { $$ = $1 == $3; }
+                | equality_expr NE_OP relational_expr { $$ = $1 != $3; }
+                ;
+
+and_expr        : equality_expr              { $$ = $1; }
+                | and_expr '&' equality_expr { $$ = $1 & $3; }
+
+excl_or_expr    : and_expr                  { $$ = $1; }
+                | excl_or_expr '^' and_expr { $$ = $1 ^ $3; }
+                ;
+
+incl_or_expr    : excl_or_expr                  { $$ = $1; }
+                | incl_or_expr '|' excl_or_expr { $$ = $1 | $3; }
+                ;
+
+expr            : incl_or_expr          { $$ = $1; }
+                ;
 
 %%
 

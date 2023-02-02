@@ -56,10 +56,20 @@ static keyword_t asm_cond_keywords [] =
 
 %}
 
+octaldig	[0-7]
+digit		[0-9]
+hexdig          [0-9a-fA-F]
+
 alpha		[a-zA-Z]
 alphanum	[a-zA-Z0-9_]
 
 %%
+
+{digit}+	{ asm_cond_lval.integer = atoi (yytext); return INTEGER; }
+
+@{octaldig}+	{ sscanf (yytext+1, "%o", &asm_cond_lval.integer); return INTEGER; }
+
+0x{hexdig}+	{ sscanf (yytext+2, "%x", &asm_cond_lval.integer); return INTEGER; }
 
 {alpha}{alphanum}*	{
                           if ((asm_cond_lval.integer = keyword (yytext, asm_cond_keywords)))
@@ -67,6 +77,13 @@ alphanum	[a-zA-Z0-9_]
                           asm_cond_lval.string = newstr (yytext);
                           return IDENT;
                         }
+
+\<\<            { return LSH_OP; }
+\>\>            { return RSH_OP; }
+\<\=            { return LE_OP; }
+\>\=            { return GE_OP; }
+\=\=            { return EQ_OP; }
+\!\=            { return NE_OP; }
 
 \;.*		;
 [ \t]+		;
