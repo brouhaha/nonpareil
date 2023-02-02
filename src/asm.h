@@ -20,6 +20,11 @@ version 3 along with this program (in the file "gpl-3.0.txt"); if not,
 see <https://www.gnu.org/licenses/>.
 */
 
+#ifndef ASM_H
+#define ASM_H
+
+#include "arch.h"
+
 extern int arch;
 
 typedef uint16_t addr_t;
@@ -59,18 +64,11 @@ extern const char *license_string;
 #define MAXROM 16     /* classic and woodstock */
 
 
-void pseudo_include (char *s);
-
-bool get_cond_state (void);
-int  get_lineno (void);
-
-void pseudo_if (int val);
-void pseudo_ifdef (char *s);
-void pseudo_ifndef (char *s);
-void pseudo_else (void);
-void pseudo_endif (void);
 void pseudo_fillto(int addr, int val);
 
+void pseudo_include (char *s);
+
+int  get_lineno (void);
 
 extern symtab_t *global_symtab;
 extern symtab_t *symtab [MAXROM];  /* separate symbol tables for each ROM */
@@ -155,4 +153,4 @@ typedef struct keyword
 
 int keyword (char *string, keyword_t *table);
 
-
+#endif // ASM_H

@@ -36,6 +36,7 @@ MA 02111, USA.
 static keyword_t asm_cond_keywords [] =
 {
   { "else",      ELSE },
+  { "elseif",    ELSEIF },
   { "endif",     ENDIF},
   { "if",        IF },
   { "ifdef",     IFDEF },

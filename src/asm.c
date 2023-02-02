@@ -33,6 +33,7 @@ see <https://www.gnu.org/licenses/>.
 #include "util.h"
 #include "arch.h"
 #include "asm.h"
+#include "asm_cond.h"
 
 
 int arch;
@@ -172,111 +173,9 @@ void pseudo_include (char *s)
 }
 
 
-#define MAX_COND_NEST_LEVEL 63
-static int cond_nest_level;
-static uint64_t cond_state;
-static uint64_t cond_else;
-
-static void cond_init (void)
-{
-  cond_nest_level = 0;
-  cond_state = 1;
-  cond_else = 0;
-}
-
-bool get_cond_state (void)
-{
-  return cond_state & 1;
-}
-
 int  get_lineno (void)
 {
   return lineno [include_nest];
-}
-
-void pseudo_if (int val)
-{
-  if (cond_nest_level >= MAX_COND_NEST_LEVEL)
-    {
-      error ("conditionals nested too deep");
-      return;
-    }
-  cond_nest_level++;
-  cond_state <<= 1;
-  cond_else <<= 1;
-  cond_state |= (val != 0);
-}
-
-void pseudo_ifdef (char *s)
-{
-  symtab_t *table;
-  int val;
-
-  if (cond_nest_level >= MAX_COND_NEST_LEVEL)
-    {
-      error ("conditionals nested too deep");
-      return;
-    }
-  if (local_label_flag && (*s != '$'))
-    table = symtab [local_label_current_rom];
-  else
-    table = global_symtab;
-  cond_nest_level++;
-  cond_state <<= 1;
-  cond_else <<= 1;
-
-  bool cond_val = lookup_symbol (table, s, & val, lineno [include_nest]);
-  cond_state |= cond_val;
-}
-
-void pseudo_ifndef (char *s)
-{
-  symtab_t *table;
-  int val;
-
-  if (cond_nest_level >= MAX_COND_NEST_LEVEL)
-    {
-      error ("conditionals nested too deep");
-      return;
-    }
-  if (local_label_flag && (*s != '$'))
-    table = symtab [local_label_current_rom];
-  else
-    table = global_symtab;
-  cond_nest_level++;
-  cond_state <<= 1;
-  cond_else <<= 1;
-
-  bool cond_val = ! lookup_symbol (table, s, & val, lineno [include_nest]);
-  cond_state |= cond_val;
-}
-
-void pseudo_else (void)
-{
-  if (! cond_nest_level)
-    {
-      error ("else without conditional");
-      return;
-    }
-  if (cond_else & 1)
-    {
-      error ("second else for same conditional");
-      return;
-    }
-  cond_else |= 1;
-  cond_state ^= 1;
-}
-
-void pseudo_endif (void)
-{
-  if (! cond_nest_level)
-    {
-      error ("endif without conditional");
-      return;
-    }
-  cond_nest_level--;
-  cond_state >>= 1;
-  cond_else >>= 1;
 }
 
 
@@ -414,7 +313,7 @@ static void parse_source_line (void)
   if (! parse_error)
     return;  // successfully parsed a conditional assembly directive
 
-  if (! (cond_state & 1))
+  if (! get_cond_state())
     return;  // conditional false, don't try to parse
 
   lineptr = & linebuf [0];
@@ -529,7 +428,7 @@ static void do_pass (int p)
       process_line (inbuf);
     }
 
-  if (cond_nest_level != 0)
+  if (get_cond_nest_level() != 0)
     error ("unterminated conditional(s)");
 
   if ((pass == 2) && list_file)
