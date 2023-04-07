@@ -314,7 +314,7 @@ static int nut_disassemble_misc (int op1,
       if (op1 == 0x3cc)
 	buf_printf (& buf, & len, "? kb");
       else
-	buf_printf (& buf, & len, "? s=0 %d", tmap [arg]);
+	buf_printf (& buf, & len, "? s=1 %d", tmap [arg]);
       *new_carry_known_clear = false;
       break;
     case 0x010:
