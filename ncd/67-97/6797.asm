@@ -1219,7 +1219,7 @@ L3775:  bank toggle
         bank toggle		; not used
 
 
-lnc2:   p <- 11			; load ln(2)
+lnc2:   p <- 11			; load ln(2) - compare lnc30 in -41
 
 	.org @4000	; from ROM/RAM p/n 1818-0551
 
