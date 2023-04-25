@@ -378,8 +378,16 @@ const_inst      : LDI expr            { $2 = range($2, 0, 0x3ff); emit(00460); e
                 | LC expr             { $2 = range($2, 0, 0xf);   emit(00020 + ($2 << 6)); }
                 ;
 
-status_inst     : S '=' expr expr     { $3 = range($3, 0, 1); $4 = range($4, 0, 13); emit(00000 + ($3 ? 00010 : 00004) + (digit_map[$4] << 6)); }
-                | '?' S '=' expr expr { $4 = range($4, 1, 1); $5 = range($5, 0, 13); emit_arith(00014 + (digit_map[$5] << 6)); }
+status_set_inst : S '=' expr expr     { $3 = range($3, 0, 1); $4 = range($4, 0, 13); emit(00000 + ($3 ? 00010 : 00004) + (digit_map[$4] << 6)); }
+                | S expr '=' expr     { $4 = range($4, 0, 1); $2 = range($2, 0, 13); emit(00000 + ($4 ? 00010 : 00004) + (digit_map[$2] << 6)); }
+                ;
+
+status_test_inst: '?' S '=' expr expr { $4 = range($4, 1, 1); $5 = range($5, 0, 13); emit_arith(00014 + (digit_map[$5] << 6)); }
+                | '?' S expr '=' expr { $5 = range($5, 1, 1); $3 = range($3, 0, 13); emit_arith(00014 + (digit_map[$3] << 6)); }
+                ;
+
+status_inst     : status_set_inst
+                | status_test_inst
                 | CLR ST              { emit(01704); }
 		| C EX ST             { emit(01730); }
 		| C '=' ST            { emit(01630); }
