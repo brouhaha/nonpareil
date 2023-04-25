@@ -3,7 +3,7 @@
 ; SPDX-License-Identifier: GPL-3.0-only
 
 ; Based in part on US patent 4,099,246, and in part
-; on the work for Jacques Laporte.
+; on the work of Jacques Laporte.
 
 	.arch classic
 
