@@ -462,7 +462,7 @@ static void op_c_to_addr (sim_t *sim,
 {
   classic_cpu_reg_t *cpu_reg = get_chip_data (sim->first_chip);
 
-  printf("c -> ram addr ");
+  log_printf(sim, "c -> ram addr ");
   for (int i = WSIZE - 1; i >= 0; i--)
     printf ("%x", cpu_reg->c[i]);
   printf("\n");
@@ -880,7 +880,7 @@ static void classic_display_scan (sim_t *sim)
 static void log_print_reg (sim_t *sim, char *label, reg_t reg)
 {
   int i;
-  printf ("%s", label);
+  log_printf (sim, "%s", label);
   for (i = WSIZE - 1; i >= 0; i--)
     log_printf (sim, "%x", reg [i]);
   log_printf (sim, "\n");
