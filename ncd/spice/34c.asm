@@ -3991,7 +3991,7 @@ S12703:  delayed rom @06
 L12705:  jsb S12435
          go to L12455
 
-L12707:  delayed rom @06
+L12707:  delayed rom @06		; key 62 (@322): unshifted 1, f-shifted ln,   g-shfited e^x,  h-shifted x!
          go to L13060
 
 L12711:  if s 7 = 1
@@ -4115,7 +4115,7 @@ L13055:  jsb S13050
 L13056:  delayed rom @05
          go to L12720
 
-L13060:  a + 1 -> a[x]
+L13060:  a + 1 -> a[x]		; key 62 (@322): unshifted 1, f-shifted ln,   g-shfited e^x,  h-shifted x!
 L13061:  if p # 6
            then go to L13070
          if c[x] = 0
