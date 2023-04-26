@@ -1,6 +1,6 @@
 /*
-$Id$
-Copyright 1995, 2003, 2004, 2005, 2007 Eric L. Smith <eric@brouhaha.com>
+Copyright 1995, 2003, 2004, 2005, 2007, 2023 Eric Smith <spacewar@gmail.com>
+SPDX-License-Identifier: GPL-3.0-only
 
 Nonpareil is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License version 2 as
@@ -19,7 +19,7 @@ Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
 MA 02111, USA.
 */
 
-%name-prefix="casm_"
+%define api.prefix {casm_}
 
 %{
 #include <stdbool.h>
@@ -347,7 +347,18 @@ inst_clr_reg    : CLEAR REGISTERS           { emit (0x3a8); } ;
 inst_sel_rom    : SELECT ROM expr           { $3 = range ($3, 0, 7);
                                               emit (($3 << 7) | 0x010);
 					      target (($3 << 8) + ((pc + 1) & 0377));
-					      flag_char = '*'; } ;
+					      flag_char = '*'; }
+                | SELECT ROM GO TO expr     { int rom = $5 >> 8;
+                                              emit ((rom << 7) | 0x010);
+					      addr_t tgt = (rom << 8) + ((pc + 1) & 0377);
+					      target(tgt);
+					      if ((pass == 2) && ($5 != tgt))
+						{
+						  error("'select rom' target value incorrect - requested %05o, actual %05o\n", $5, tgt);
+						}
+					      flag_char = '*';
+                                            }
+                ;
 
 inst_del_rom    : DELAYED SELECT ROM expr   { $4 = range ($4, 0, 7); 
                                               emit (($4 << 7) | 0x074);
