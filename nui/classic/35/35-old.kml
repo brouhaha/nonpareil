@@ -1,4 +1,4 @@
-# Copyright 2004, 2005, 2008, 2022 Eric Smith <spacewar@gmail.com>
+# Copyright 2004, 2005, 2008, 2022, 2023 Eric Smith <spacewar@gmail.com>
 
 # Nonpareil is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License version 2 as
@@ -17,9 +17,9 @@
 # Boston, MA 02111, USA.
 
 global
-	title "35 Scientific Calculator"
+	title "35 Scientific Calculator - old buggy firmware"
 	author "Eric Smith <spacewar@gmail.com>"
-	model "35"
+	model "35-old"
 	image "classic-background.png"
 	color 0 87 127 152  # background color, used when transparency is off
 	transparency 128
