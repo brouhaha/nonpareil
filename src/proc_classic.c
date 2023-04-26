@@ -746,7 +746,7 @@ static void init_ops (classic_cpu_reg_t *cpu_reg)
 
   /* New instructions in HP-55 and maybe HP-65, wedged into the unused
      port of the type 3 instruction space.  On the HP-35 and HP-80 these
-     probably cleared all status like 0x034. */
+     may have cleared all status like 0x034. */
   for (i = 0; i <= 7; i ++)
     {
       cpu_reg->op_fcn [0x074 + (i << 7)] = op_del_sel_rom;
