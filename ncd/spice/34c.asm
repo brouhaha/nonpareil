@@ -2675,7 +2675,7 @@ L06573:  if c[xs] # 0
          if a[w] # 0
            then go to L06630
          delayed rom @03
-         jsb S01407
+         jsb xft100		; factorial
 L06610:  delayed rom @04
          go to L02002
 

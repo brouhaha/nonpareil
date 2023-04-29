@@ -79,7 +79,7 @@ L02064:  0 -> c[w]
 L02067:  0 -> b[w]
          b exchange c[m]
          a exchange c[w]
-L02072:  if 0 = s 11
+L02072:  if s 11 = 0
            then go to L03506
          jsb S02124
          jsb S02126
@@ -94,7 +94,7 @@ S02103:  0 -> s 3
          0 -> s 13
          0 -> s 14
          1 -> s 11
-         if 0 = s 3
+         if s 3 = 0
            then go to L02113
          0 -> s 11
 L02113:  0 -> c[w]
@@ -158,7 +158,7 @@ L02161:  jsb S02102
            then go to L02135
 L02202:  delayed rom @02
          jsb S01062
-         if 0 = s 10
+         if s 10 = 0
            then go to L02211
          a exchange c[w]
          0 - c - 1 -> c[s]
@@ -391,10 +391,10 @@ L02516:  register -> c 7
          jsb S02661
          jsb S02716
          register -> c 6
-         if 0 = s 12
+         if s 12 = 0
            then go to L02573
          jsb S02661
-L02543:  if 0 = s 12
+L02543:  if s 12 = 0
            then go to L02574
          if c[s] # 0
            then go to L02550
@@ -456,7 +456,7 @@ S02631:  c -> register 6
 S02632:  if s 14 = 1
            then go to L02646
 L02634:  register -> c 4
-         if 0 = s 11
+         if s 11 = 0
            then go to L02651
 S02637:  c -> a[w]
          0 -> b[w]
@@ -467,7 +467,7 @@ S02643:  c -> register 5
 S02644:  if s 14 = 1
            then go to L02634
 L02646:  register -> c 2
-         if 0 = s 11
+         if s 11 = 0
            then go to S02637
 L02651:  a exchange c[w]
          register -> c 3
@@ -569,60 +569,62 @@ L02776:  jsb S02637
          1 -> s 1
          go to L03070
 
-L03001:  if c[s] # 0
+
+; factorial
+xft100: if c[s] # 0
            then go to L03063
          if c[xs] # 0
            then go to L03063
          c -> a[w]
-L03006:  a -> b[w]
+xft110:  a -> b[w]
          shift left a[ms]
          if a[wp] # 0
-           then go to L03061
+           then go to xft120
          a + 1 -> a[x]
          if a >= c[x]
-           then go to L03017
+           then go to xfgt130
          c + 1 -> c[xs]
          if n/c go to L03066
-L03017:  0 -> c[w]
+xft130:  0 -> c[w]
          c + 1 -> c[p]
          shift right c[w]
          c + 1 -> c[s]
          b exchange c[w]
-L03024:  if b[p] = 0
-           then go to L03030
+xft140:  if b[p] = 0
+           then go to xft150
          shift right b[wp]
          c + 1 -> c[x]
-L03030:  0 -> a[w]
+xft150:  0 -> a[w]
          a - c -> a[p]
-         if n/c go to L03036
+         if n/c go to xft170
          shift left a[w]
-L03034:  a + b -> a[w]
-         if n/c go to L03034
-L03036:  a - c -> a[s]
-         if n/c go to L03045
+xft160:  a + b -> a[w]
+         if n/c go to xft160
+xft170:  a - c -> a[s]
+         if n/c go to xft190
          shift right a[wp]
          a + 1 -> a[w]
          c + 1 -> c[x]
-L03043:  a + b -> a[w]
-         if n/c go to L03043
-L03045:  a exchange b[wp]
+xft180:  a + b -> a[w]
+         if n/c go to xft180
+xft190:  a exchange b[wp]
          c - 1 -> c[p]
-         if n/c go to L03024
+         if n/c go to xft140
          c - 1 -> c[s]
-         if n/c go to L03024
+         if n/c go to xft140
          shift left a[w]
          a -> b[x]
          0 -> c[ms]
          a + b -> a[wp]
          a + c -> a[w]
          a exchange c[ms]
-         go to L03066
+         go to L03066		; in some othe rmodels, return instruction
 
-L03061:  a - 1 -> a[x]
-         if n/c go to L03006
+xft120:  a - 1 -> a[x]
+         if n/c go to xft110
 L03063:  p <- 7
          delayed rom @00
-         go to L00340
+         go to L00340		; err0?
 
 L03066:  delayed rom @00
          go to L00020
@@ -690,7 +692,7 @@ L03153:  jsb S03257
          jsb S03266
          jsb S03313
          jsb S03254
-         if 0 = s 12
+         if s 12 = 0
            then go to L03174
          jsb S03264
          jsb S03262
@@ -721,9 +723,9 @@ L03211:  jsb S03310
          c + 1 -> c[xs]
          if c[xs] # 0
            then go to L03233
-L03225:  if 0 = s 8
+L03225:  if s 8 = 0
            then go to L03070
-L03227:  if 0 = s 14
+L03227:  if s 14 = 0
            then go to L03233
          delayed rom @01
          jsb S00677
@@ -1177,32 +1179,32 @@ L04046:  delayed rom @00
 L04056:  0 -> c[w]
          go to L04170
 
-         a + 1 -> a[x]
-         a + 1 -> a[x]
-         a + 1 -> a[x]
-         a + 1 -> a[x]
-         0 -> c[x]
+         a + 1 -> a[x]          ; key 15 - FV      y^x
+         a + 1 -> a[x]          ; key 14 - PMT     sqrt
+         a + 1 -> a[x]          ; key 13 - PV      1/x
+         a + 1 -> a[x]          ; key 12 - i       12/
+L04064:  0 -> c[x]		; key 11 - n       12x
          jsb S04342
          if s 11 = 1
            then go to L04202
          shift left a[x]
          if s 13 = 1
            then go to L04500
-         if 0 = s 14
+         if s 14 = 0
            then go to L04123
          if a[x] # 0
            then go to L04255
          go to L04265
 
-         go to L04330
+         go to L04330		; key 74 - Sigma+  Sigma-
 
-         go to L04347
+         go to L04347		; key 73 - .
 
-         go to L04020
+         go to L04020		; key 72 - 0
 
-         if s 13 = 1
+         if s 13 = 1		; key 71 - /       n!
            then go to L04737
-         if 0 = s 12
+         if s 12 = 0
            then go to L04431
          p - 1 -> p
 L04110:  p - 1 -> p
@@ -1218,7 +1220,7 @@ L04116:  if s 13 = 1
          go to L04420
 
 L04122:  a + 1 -> a[p]
-L04123:  if 0 = s 1
+L04123:  if s 1 = 0
            then go to L04013
          delayed rom @04
          a -> rom address
@@ -1233,16 +1235,17 @@ L04131:  if s 10 = 1
          if s 12 = 1
            then go to L04731
          a + 1 -> a[x]
-         a + 1 -> a[x]
-         a + 1 -> a[x]
-         if n/c go to L04317
-         if s 13 = 1
+         a + 1 -> a[x]		; key 54 - 6
+         a + 1 -> a[x]          ; key 53 - 5
+         if n/c go to L04317	; key 52 - 4
+
+         if s 13 = 1		; key 51 - +       std dev
            then go to L04733
-         if 0 = s 12
+         if s 12 = 0
            then go to L04511
          go to L04112
 
-L04150:  if 0 = s 13
+L04150:  if s 13 = 0
            then go to L04056
          delayed rom @00
          go to L00011
@@ -1252,16 +1255,16 @@ L04154:  if s 13 = 1
          delayed rom @11
          go to L04523
 
-         go to L04150
+         go to L04150		; key 34 - CLx     CL ALL
 
-         go to L04273
+         go to L04273		; key 33 - x<>y    Rdn
 
-         go to L04301
+         go to L04301		; key 32 - CHS     CL FIN
 
-         if s 13 = 1
+         if s 13 = 1            ; key 31 - ENTER^  AMORT
            then go to L04310
          if s 12 = 1
-           then go to L04543
+           then go to L04543	; STO ENTER^ self test
          c -> stack
 L04170:  1 -> s 0
 L04171:  delayed rom @00
@@ -1293,15 +1296,15 @@ L04215:  jsb S04173
          delayed rom @00
          go to L00250
 
-         go to L04250
+         go to L04250		; key 25 - f
 
-         go to L04154
+         go to L04154		; key 24 - %T      PRICE
 
-         go to L04116
+         go to L04116		; key 23 - %       Delta%
 
-         go to L04312
+         go to L04312		; key 22 - RCL     LN
 
-         if s 13 = 1
+         if s 13 = 1		; key 21 - STO     e^x
            then go to L04504
          0 -> s 1
          jsb S04173
@@ -1315,16 +1318,17 @@ L04232:  if p # 10
          go to L04044
 
 L04237:  a + 1 -> a[x]
-         a + 1 -> a[x]
-         a + 1 -> a[x]
-         if n/c go to L04131
-         if s 13 = 1
+         a + 1 -> a[x]		; key 44 - 9
+         a + 1 -> a[x]		; key 43 - 8
+         if n/c go to L04131	; key 42 - 7
+
+         if s 13 = 1		; key 41 - -       mean
            then go to L04436
-         if 0 = s 12
+         if s 12 = 0
            then go to L04510
          go to L04111
 
-L04250:  if s 11 = 1
+L04250:  if s 11 = 1		; key 25 - f
            then go to L04212
          jsb S04173
          1 -> s 13
@@ -1372,12 +1376,13 @@ L04312:  if s 13 = 1
          go to L04114
 
 L04317:  a + 1 -> a[x]
-         a + 1 -> a[x]
-         a + 1 -> a[x]
-         if n/c go to L04017
-         if s 13 = 1
+         a + 1 -> a[x]		; key 64 - 3
+         a + 1 -> a[x]		; key 63 - 2
+         if n/c go to L04017	; key 62 - 1
+
+         if s 13 = 1		; key 61 - /       n!
            then go to L04735
-         if 0 = s 12
+         if s 12 = 0
            then go to L04515
          go to L04110
 
@@ -1497,7 +1502,7 @@ L04464:  y -> a
          delayed rom @02
          jsb S01167
          stack -> a
-         if 0 = s 7
+         if s 7 = 0
            then go to L04476
          0 - c - 1 -> c[s]
 L04476:  delayed rom @00
@@ -1546,7 +1551,9 @@ L04534:  y -> a
          a exchange c[w]
          go to L04525
 
-L04543:  binary
+
+; STO ENTER^ self test
+         L04543:  binary
          clear regs
          c + 1 -> c[x]
          m2 exchange c
@@ -1663,7 +1670,7 @@ L04671:  c -> a[w]
          jsb S04741
          m2 exchange c
          m2 -> c
-         if 0 = s 8
+         if s 8 = 0
            then go to L04170
 L04726:  p <- 6
 L04727:  m2 exchange c
@@ -1679,11 +1686,11 @@ L04735:  delayed rom @07
          go to L03525
 
 L04737:  delayed rom @06
-         go to L03001
+         go to xft100		; factorial
 
 S04741:  0 -> b[w]
          a exchange b[m]
-S04743:  if 0 = s 13
+S04743:  if s 13 = 0
            then go to L04750
          a exchange c[w]
          0 - c - 1 -> c[s]

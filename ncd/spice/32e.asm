@@ -708,8 +708,8 @@ L03035:  0 -> a[w]		; g-shifted key 73 - 10^x
          jsb S01044
          go to L03020
 
-L03045:  delayed rom @03	; g-shifted key 25 - n!
-         jsb S01407
+L03045:  delayed rom @03	; g-shifted key 25 - factorial, n!
+         jsb xft100		; factorial
          go to L03020
 
 S03050:  0 -> a[w]
@@ -853,7 +853,7 @@ L03213:  a - c -> a[x]
 L03216:  delayed rom @13	; g-shifted key 63 - COSH-1
          go to L05424
 
-         go to L03045		; g-shifted key 25 - n!
+         go to L03045		; g-shifted key 25 - factorial, n!
 
          go to L03230		; g-shifted key 24 - std dev
 

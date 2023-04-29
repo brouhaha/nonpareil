@@ -80,42 +80,43 @@ SPDX-License-Identifier: GPL-3.0-only
       </switch_pos>
     </switch>
 
-    <key user_keycode="11" hw_keycode="0064"/>
-    <key user_keycode="12" hw_keycode="0063"/>
-    <key user_keycode="13" hw_keycode="0062"/>
-    <key user_keycode="14" hw_keycode="0061"/>
-    <key user_keycode="15" hw_keycode="0060"/>
-
-    <key user_keycode="21" hw_keycode="0224"/>
-    <key user_keycode="22" hw_keycode="0223"/>
-    <key user_keycode="23" hw_keycode="0222"/>
-    <key user_keycode="24" hw_keycode="0221"/>
-    <key user_keycode="25" hw_keycode="0220"/>
-
-    <key user_keycode="31" hw_keycode="0163"/>
-    <key user_keycode="32" hw_keycode="0162"/>
-    <key user_keycode="33" hw_keycode="0161"/>
-    <key user_keycode="34" hw_keycode="0160"/>
-
-    <key user_keycode="41" hw_keycode="0243"/>
-    <key user_keycode="42" hw_keycode="0242"/>
-    <key user_keycode="43" hw_keycode="0241"/>
-    <key user_keycode="44" hw_keycode="0240"/>
-
-    <key user_keycode="51" hw_keycode="0143"/>
-    <key user_keycode="52" hw_keycode="0142"/>
-    <key user_keycode="53" hw_keycode="0141"/>
-    <key user_keycode="54" hw_keycode="0140"/>
-
-    <key user_keycode="61" hw_keycode="0323"/>
-    <key user_keycode="62" hw_keycode="0322"/>
-    <key user_keycode="63" hw_keycode="0321"/>
-    <key user_keycode="64" hw_keycode="0320"/>
-
-    <key user_keycode="71" hw_keycode="0103"/>
-    <key user_keycode="72" hw_keycode="0102"/>
-    <key user_keycode="73" hw_keycode="0101"/>
-    <key user_keycode="74" hw_keycode="0100"/>
+                                               <!-- unshifted  f-shifted  g-shifted -->
+    <key user_keycode="11" hw_keycode="0064"/> <!-- n          AMORT      12x       -->
+    <key user_keycode="12" hw_keycode="0063"/> <!-- i          INT        12/       -->
+    <key user_keycode="13" hw_keycode="0062"/> <!-- PV         NPV        CF0       -->
+    <key user_keycode="14" hw_keycode="0061"/> <!-- PMT        RND        CFj       -->
+    <key user_keycode="15" hw_keycode="0060"/> <!-- FV         IRR        Nj        -->
+					                                    	       
+    <key user_keycode="21" hw_keycode="0224"/> <!-- STO                   y^x       -->
+    <key user_keycode="22" hw_keycode="0223"/> <!-- RCL        %T         e^x       -->
+    <key user_keycode="23" hw_keycode="0222"/> <!-- %          Delta%     LN        -->
+    <key user_keycode="24" hw_keycode="0221"/> <!-- f                               -->
+    <key user_keycode="25" hw_keycode="0220"/> <!-- g                               -->
+					                                    	       
+    <key user_keycode="31" hw_keycode="0163"/> <!-- ENTER^     CLR PREFIX LASTx     -->
+    <key user_keycode="32" hw_keycode="0162"/> <!-- CHS        CLR FIN    EEX       -->
+    <key user_keycode="33" hw_keycode="0161"/> <!-- x<>y       CLR Sigma  Rdn       -->
+    <key user_keycode="34" hw_keycode="0160"/> <!-- CLx        CLR ALL    CLP       -->
+					                                    	       
+    <key user_keycode="41" hw_keycode="0243"/> <!-- -          Delta DAYS P/R       -->
+    <key user_keycode="42" hw_keycode="0242"/> <!-- 7                     GTO       -->
+    <key user_keycode="43" hw_keycode="0241"/> <!-- 8                     BST       -->
+    <key user_keycode="44" hw_keycode="0240"/> <!-- 9                     SST       -->
+					                                    	       
+    <key user_keycode="51" hw_keycode="0143"/> <!-- +          DATE       MEM       -->
+    <key user_keycode="52" hw_keycode="0142"/> <!-- 4                     PSE       -->
+    <key user_keycode="53" hw_keycode="0141"/> <!-- 5                     x<y       -->
+    <key user_keycode="54" hw_keycode="0140"/> <!-- 6                     x=0       -->
+					                                    	       
+    <key user_keycode="61" hw_keycode="0323"/> <!-- *          INTGR      FRAC      -->
+    <key user_keycode="62" hw_keycode="0322"/> <!-- 1                     lin est x -->
+    <key user_keycode="63" hw_keycode="0321"/> <!-- 2                     lin est y -->
+    <key user_keycode="64" hw_keycode="0320"/> <!-- 3                     n!        -->
+					                                    	       
+    <key user_keycode="71" hw_keycode="0103"/> <!-- /          1/x        weighted  -->
+    <key user_keycode="72" hw_keycode="0102"/> <!-- 0                     mean      -->
+    <key user_keycode="73" hw_keycode="0101"/> <!-- .                     std dev   -->
+    <key user_keycode="74" hw_keycode="0100"/> <!-- R/S        Sigma+     Sigma-    -->
   </keyboard>
 
   <obj_file addr_space="inst">

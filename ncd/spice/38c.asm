@@ -42,7 +42,7 @@ L02013:  bank toggle
 
 S02020:  bank toggle
 
-         delayed rom @15
+         delayed rom @15	; self-test
          go to L06717
 
 L02023:  bank toggle
@@ -88,9 +88,10 @@ L02053:  p <- 2
          p <- 1
          shift left a[x]
          if a >= c[xs]
-           then go to L02076
+           then go to L02076	; high digit >9
          if a >= c[p]
-           then go to L03017
+           then go to L03017	; low digit > 9
+; 00-99: GTO
          if 0 = s 0
            then go to L03230
          p <- 9
@@ -168,8 +169,12 @@ L02164:  p <- 4
 L02171:  delayed rom @05
          a -> rom address
 
+; 0xa <= low digit <= 0xe (a[1] is at +1)
+; on entry:
+;   p=1
 L02173:  a + 1 -> a[p]
-         if n/c go to L02204
+         if n/c go to L02204	; 0xa <= low digit <= 0xd (a[1] is at +2)
+; 0x[0-9]e: RCL .[0-9]
          p <- 6
          load constant 2
          load constant 2
@@ -178,8 +183,11 @@ L02173:  a + 1 -> a[p]
          jsb S02353
          go to L02110
 
+; 0xa <= low digit <= 0xd (a[1] is at +2)
+; on entry:
+;   p=1
 L02204:  a + 1 -> a[p]
-         if n/c go to L02214
+         if n/c go to L02214	; 0xa <= low digit <= 0xc (a[1] is at +3)
          p <- 6
          load constant 2
          load constant 4
@@ -187,8 +195,11 @@ L02204:  a + 1 -> a[p]
            then go to L02565
          go to L02347
 
+; 0xa <= low digit <= 0xc (a[1] is at +3)
+; on entry:
+;   p=1
 L02214:  a + 1 -> a[p]
-         if n/c go to L02245
+         if n/c go to L02245	; 0xa <= low digit <= 0xb (a[1] is at +4)
          p <- 6
          jsb S02340
          if s 0 = 1
@@ -196,6 +207,7 @@ L02214:  a + 1 -> a[p]
          jsb S02353
          go to L02125
 
+; low digit == 0xa (a[1] is at +5)
 L02224:  p <- 2
          load constant 5
          a - c -> a[xs]
@@ -214,14 +226,18 @@ L02241:  c + 1 -> c[p]
          if n/c go to L02241
          go to L02031
 
+; 0xa <= low digit <= 0xb (a[1] is at +4)
+; on entry:
+;   p=1
 L02245:  a + 1 -> a[p]
-         if n/c go to L02224
-         a - 1 -> a[p]
+         if n/c go to L02224	; low digit == 0xa (a[1] is at +5)
+         a - 1 -> a[p]		; a[1] is at +4
          p <- 2
-         load constant 7
+         load constant 7	; is high digit >= 7?
          if a >= c[xs]
-           then go to L02164
-         p <- 6
+           then go to L02164	; yes, not a "g" prefix
+; g-shifted digits 0-7
+         p <- 6			; load "g" keycode
          load constant 2
          load constant 5
          if s 0 = 1
@@ -386,7 +402,7 @@ L02461:  0 -> c[w]
          go to L02513
 
 L02463:  delayed rom @03
-         jsb S01407
+         jsb xft100		; factorial
          go to L02601
 
 L02466:  delayed rom @06
@@ -663,9 +679,9 @@ L02740:  y -> a
 
          go to L02474
 
-         go to L02463
+         go to L02463		; 3b factorial
 
-         go to L02404
+         go to L02404		; 4b pause
 
          go to L02662
 
@@ -704,9 +720,13 @@ L03012:  clear status
          delayed rom @04
          go to L02127
 
+; high digit < 9, low digit > 9
+; on entry:
+;   p=1
 L03017:  a + 1 -> a[p]
          if a[p] # 0
-           then go to L02173
+           then go to L02173	; 0xa <= low digit <= 0xe (a[1] is at +1)
+; 0x[0-9]f: digit
          if s 0 = 1
            then go to L02347
          if 0 = s 7
@@ -2841,6 +2861,8 @@ L06714:  load constant 7
          p <- 12
          go to L06644
 
+
+; STO ENTER^ self-test
 L06717:  clear regs
          c + 1 -> c[w]
          m2 exchange c
@@ -3470,7 +3492,7 @@ L12015:  binary
 
 L12017:  return
 
-L12020:  bank toggle
+L12020:  bank toggle	; self-test
 
          jsb S12000
          go to L12006
@@ -3762,7 +3784,7 @@ L12416:  if p = 10
          go to L12633
 
 L12424:  a + 1 -> a[x]
-L12425:  if p = 5
+L12425:  if p = 5		; key 72 (@102) - 0, g mean
            then go to L12444
          if p = 1
            then go to L12660
@@ -3793,21 +3815,21 @@ L12454:  a - 1 -> a[p]
            then go to L12023
          go to L12445
 
-         go to L12472
+         go to L12472		; key 15 (@060) - FV, f IRR, Nj
 
-         go to L12664
+         go to L12664		; key 14 (@061) - PMT, f RND, g CFj
 
-         go to L12701
+         go to L12701		; key 13 (@062) - PV, f NPV, g CF0
 
-         a + 1 -> a[x]
-         nop
+         a + 1 -> a[x]		; key 12 (@063) - i, f INT, g 12/
+         nop			; key 11 (@064) - n, f AMORT, 12x
          nop
          if p # 2
            then go to L12703
          p <- 8
          go to L12534
 
-L12472:  if p # 2
+L12472:  if p # 2		; key 15 (@060) - FV, f IRR, Nj
            then go to L12677
          p <- 10
          go to L12574
@@ -3815,13 +3837,13 @@ L12472:  if p # 2
 L12476:  p <- 10
          go to L12633
 
-         go to L12752
+         go to L12752		; key 74 (@100) - R/S, f Sigma+, g Sigma-
 
-         go to L12742
+         go to L12742		; key 73 (@101) - ., g std dev
 
-         go to L12425
+         go to L12425		; key 72 (@102) - 0, g mean
 
-         if p = 8
+         if p = 8		; key 71 (@103) - /, f 1/x, g weighted
            then go to L12670
          if p = 10
            then go to L12516
@@ -3855,10 +3877,11 @@ L12534:  a + 1 -> a[x]
 L12535:  a + 1 -> a[x]
          if p = 4
            then go to L12203
-         a + 1 -> a[x]
-L12541:  a + 1 -> a[x]
-         if n/c go to L12717
-         if p = 8
+         a + 1 -> a[x]		; key 54 (@140) - 6, g x=0
+L12541:  a + 1 -> a[x]		; key 53 (@141) - 5, g x<y
+         if n/c go to L12717	; key 52 (@142) - 4, g PSE
+
+         if p = 8		; key 51 (@143) - +, f DATE, g MEM
            then go to L13670
          if p = 10
            then go to L12737
@@ -3873,14 +3896,14 @@ L12554:  p <- 1
 L12556:  load constant 8
          go to L12514
 
-         go to L12775
+         go to L12775		; key 34 (@160) - CLx, f CLR ALL, g CLP
 
-         go to L12575
+         go to L12575		; key 33 (@161) - x<>y, f CLR Sigma, g Rdn
 
-         go to L12576
+         go to L12576		; key 32 (@162) - CHS, f CLR FIN, g EEX
 
-         if p = 9
-           then go to L12020
+         if p = 9		; key 31 (@163) - ENTER^, f CLR PREFIX, g LASTx
+           then go to L12020	; self-test
          if p # 10
            then go to L12577
          if 0 = s 0
@@ -3890,8 +3913,8 @@ L12571:  p <- 12
 
 L12573:  a + 1 -> a[x]
 L12574:  a + 1 -> a[x]
-L12575:  a + 1 -> a[x]
-L12576:  a + 1 -> a[x]
+L12575:  a + 1 -> a[x]		; key 33 (@161) - x<>y, f CLR Sigma, g Rdn
+L12576:  a + 1 -> a[x]		; key 32 (@162) - CHS, f CLR FIN, g EEX
 L12577:  a + 1 -> a[x]
 L12600:  if p = 10
            then go to L12605
@@ -3960,7 +3983,8 @@ L12660:  if a[p] # 0
            then go to L12454
          a + 1 -> a[x]
          if n/c go to L12413
-L12664:  if p # 2
+
+L12664:  if p # 2		; key 14 (@061) - PMT, f RND, g CFj
            then go to L12700
          p <- 10
          go to L12577
@@ -3976,7 +4000,7 @@ L12673:  if p = 11
 
 L12677:  a + 1 -> a[x]
 L12700:  a + 1 -> a[x]
-L12701:  a + 1 -> a[x]
+L12701:  a + 1 -> a[x]		; key 13 (@062) - PV, f NPV, g CF0
          a + 1 -> a[x]
 L12703:  if p = 11
            then go to L12524
@@ -4012,7 +4036,7 @@ L12737:  p <- 1
          load constant 13
          go to L12614
 
-L12742:  if p = 9
+L12742:  if p = 9		; key 73 (@101) - ., g std dev
            then go to L12760
          if p = 4
            then go to L12203
@@ -4021,7 +4045,7 @@ L12742:  if p = 9
          p <- 5
          go to L12411
 
-L12752:  if p # 2
+L12752:  if p # 2		; key 74 (@100) - R/S, f Sigma+, g Sigma-
            then go to L12600
          if 0 = s 0
            then go to L12010
@@ -4043,7 +4067,7 @@ L12764:  load constant 8
          delayed rom @04
          go to L12227
 
-L12775:  register -> c 14
+L12775:  register -> c 14	; key 34 (@160) - CLx, f CLR ALL, g CLP
          if p = 8
            then go to L13030
          if p # 10

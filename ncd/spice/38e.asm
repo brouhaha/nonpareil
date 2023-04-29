@@ -1,4 +1,4 @@
-; 37E model-specific firmware, uses 1820-2162 CPU ROM
+; 38E model-specific firmware, uses 1820-2162 CPU ROM
 ; Copyright 2022 Eric Smith <spacewar@gmail.com>
 ; SPDX-License-Identifier: GPL-3.0-only
 
@@ -6,6 +6,16 @@
 	 .license "GPL-v3.0-only"
 
 	 .arch woodstock
+
+; S bits
+;    4: program mode
+
+; P values
+;    1: GTO
+;    8: g
+;    9: STO
+;   10: f
+;   11: RCL
 
          .include "1820-2122.inc"
 
@@ -1159,10 +1169,10 @@ L04000:  binary
          0 -> c[w]
          keys -> rom address
 
-L04003:  a - 1 -> a[x]
-L04004:  a - 1 -> a[x]
-L04005:  a - 1 -> a[x]
-L04006:  a - 1 -> a[x]
+L04003:  a - 1 -> a[x]		; STO -
+L04004:  a - 1 -> a[x]		; STO +
+L04005:  a - 1 -> a[x]		; STO *
+L04006:  a - 1 -> a[x]		; STO /
          p <- 4
 L04010:  a - 1 -> a[x]
 L04011:  a - 1 -> a[x]
@@ -1171,7 +1181,7 @@ L04013:  shift left a[x]
 L04014:  delayed rom @00
          go to L00270
 
-L04016:  if p = 10
+L04016:  if p = 10		; key 22 (@223) - RCL, f %T, g e^x
            then go to L04126
          if p = 8
            then go to L04051
@@ -1179,7 +1189,7 @@ L04016:  if p = 10
          go to L04231
 
 L04024:  a + 1 -> a[x]
-L04025:  if p = 5
+L04025:  if p = 5		; key 72 (@102) - 0, g mean
            then go to L04044
          if p = 1
            then go to L04260
@@ -1210,48 +1220,48 @@ L04054:  a - 1 -> a[p]
            then go to L05376
          go to L04045
 
-         go to L04070
+         go to L04070		; key 15 (@060) - FV, f IRR, g Nj
 
-         go to L04264
+         go to L04264		; key 14 (@061) - PMT, f RND, g CFj
 
-         go to L04301
+         go to L04301		; key 13 (@062) - PV, f NPV, g CF0
 
-         a + 1 -> a[x]
-         if p # 2
+         a + 1 -> a[x]		; key 12 (@063) - i, f INT, g 12/
+         if p # 2		; key 11 (@064) - n, f AMORT, g 12*
            then go to L04303
          p <- 8
          go to L04134
 
-L04070:  if p # 2
+L04070:  if p # 2		; key 15 (@060) - FV, f IRR, g Nj
            then go to L04277
          p <- 10
          go to L04174
 
-L04074:  p <- 10
+L04074:  p <- 10		; key 24 (@221) - f
          go to L04231
 
 L04076:  p <- 7
          go to L04025
 
-         go to L04375
+         go to L04375		; key 74 (@100) - R/S, f Sigma+, g Sigma-
 
-         go to L04342
+         go to L04342		; key 73 (@101) - ., g std dev
 
-         go to L04025
+         go to L04025		; key 72 (@102) - 0, g mean
 
-         if p = 8
-           then go to L04270
+         if p = 8		; key 71 (@103) - /, f 1/x, g weighted
+           then go to L04270	; g weighted
          if p = 10
-           then go to L04116
+           then go to L04116	; f 1/x
          if p = 9
-           then go to L04006
-         p <- 1
+           then go to L04006	; STO /
+         p <- 1			; /
          load constant 13
 L04113:  load constant 9
 L04114:  a exchange c[x]
          go to L04044
 
-L04116:  p <- 8
+L04116:  p <- 8			; f-shifted key 71; f 1/x
          go to L04135
 
 L04120:  if p # 1
@@ -1266,23 +1276,24 @@ L04126:  p <- 1
          load constant 11
          go to L04214
 
-L04131:  if p = 8
-           then go to L05247
+L04131:  if p = 8		; key 44 (@240) - 9, g SST
+           then go to L05247	; g SST
 L04133:  a + 1 -> a[x]
 L04134:  a + 1 -> a[x]
 L04135:  a + 1 -> a[x]
          if p = 4
            then go to L05125
-         a + 1 -> a[x]
-L04141:  a + 1 -> a[x]
-         if n/c go to L04317
-         if p = 8
-           then go to L04557
+         a + 1 -> a[x]		; key 54 (@140) - 3, g n!
+L04141:  a + 1 -> a[x]		; key 53 (@141) - 2, g lin est y
+         if n/c go to L04317	; key 52 (@142) - 1, g lin est x
+
+         if p = 8		; key 51 (@143) - +, f DATE, g MEM
+           then go to L04557	; g MEM
          if p = 10
-           then go to L04337
+           then go to L04337	; f DATE
          if p = 9
-           then go to L04004
-         p <- 1
+           then go to L04004	; STO +
+         p <- 1			; +
          load constant 10
          go to L04113
 
@@ -1291,14 +1302,14 @@ L04154:  p <- 1
 L04156:  load constant 8
          go to L04114
 
-         go to L04354
+         go to L04354		; key 34 (@160) - CLx, f CLR ALL, g CLP
 
-         go to L04175
+         go to L04175		; key 33 (@161) - x<>y, f CLR Sigma, g Rdn
 
-         go to L04176
+         go to L04176		; key 32 (@162) - CHS, f CLR FIN, g EEX
 
-         if p = 9
-           then go to L04401
+         if p = 9		; key 31 (@163) - ENTER^, f CLR PREFIX, g LASTx
+           then go to L04401	; self-test
          if p # 10
            then go to L04177
          if s 4 = 1
@@ -1306,10 +1317,10 @@ L04156:  load constant 8
          delayed rom @15
          go to L06405
 
-L04173:  a + 1 -> a[x]
-L04174:  a + 1 -> a[x]
-L04175:  a + 1 -> a[x]
-L04176:  a + 1 -> a[x]
+L04173:  a + 1 -> a[x]		; key 23 (@222) - %, f Delta %, g LN
+L04174:  a + 1 -> a[x]		; unshifted key 34 - CLx
+L04175:  a + 1 -> a[x]		; key 33 (@161) - x<>y, f CLR Sigma, g Rdn
+L04176:  a + 1 -> a[x]		; key 32 (@162) - CHS, f CLR FIN, g EEX
 L04177:  a + 1 -> a[x]
 L04200:  if p = 10
            then go to L04205
@@ -1319,7 +1330,7 @@ L04200:  if p = 10
 L04205:  p - 1 -> p
          go to L04315
 
-L04207:  p <- 1
+L04207:  p <- 1			; f-shifted key 61: INTGR
          load constant 12
          go to L04156
 
@@ -1331,15 +1342,15 @@ L04214:  load constant 7
 L04216:  p <- 2
          go to L04231
 
-         go to L04273
+         go to L04273		; key 25 (@220) - g
 
-         go to L04074
+         go to L04074		; key 24 (@221) - f
 
-         go to L04173
+         go to L04173		; key 23 (@222) - %, f Delta %, g LN
 
-         go to L04016
+         go to L04016		; key 22 (@223) - RCL, f %T, g e^x
 
-         if p = 10
+         if p = 10		; key 21 (@224) - STO, g y^x
            then go to L04212
          if p = 8
            then go to L04154
@@ -1347,39 +1358,40 @@ L04216:  p <- 2
 L04231:  0 -> a[x]
          go to L04012
 
-L04233:  if p = 8
-           then go to L05130
+L04233:  if p = 8		; key 43 (@241) - 8, g BST
+           then go to L05130	; BST
          go to L04134
 
 L04236:  p <- 5
          go to L04010
 
-         go to L04131
+         go to L04131		; key 44 (@240) - 9, g SST
 
-         go to L04233
+         go to L04233		; key 43 (@241) - 8, g BST
 
-         go to L04254
+         go to L04254		; key 42 (@242) - 7, g GTO
 
-         if p = 8
-           then go to L05173
+         if p = 8		; key 41 (@243) - -, f Delta DAYS, g P/R
+           then go to L05173	; P/R
          if p = 10
-           then go to L04334
+           then go to L04334	; Delta DAYS
          if p = 9
-           then go to L04003
+           then go to L04003	; STO -
          p <- 1
          load constant 11
          go to L04113
 
-L04254:  if p # 8
-           then go to L04135
-         p <- 1
+L04254:  if p # 8		; key 42 (@242) - 7, g GTO
+           then go to L04135	; 7
+         p <- 1			; GTO
          go to L04231
 
 L04260:  if a[p] # 0
            then go to L04054
          a + 1 -> a[x]
          if n/c go to L04013
-L04264:  if p # 2
+
+L04264:  if p # 2		; key 14 (@061) - PMT, f RND, g CFj
            then go to L04300
          p <- 10
          go to L04177
@@ -1388,14 +1400,14 @@ L04270:  p <- 1
          load constant 13
          go to L04156
 
-L04273:  if p = 11
+L04273:  if p = 11		; key 25 (@220) - g
            then go to L04216
          p <- 8
          go to L04231
 
 L04277:  a + 1 -> a[x]
 L04300:  a + 1 -> a[x]
-L04301:  a + 1 -> a[x]
+L04301:  a + 1 -> a[x]		; key 13 (@062) - PV, f NPV, g CF0
          a + 1 -> a[x]
 L04303:  if p = 11
            then go to L04076
@@ -1410,28 +1422,29 @@ L04310:  if p = 10
 L04315:  a + 1 -> a[x]
          if n/c go to L04133
 L04317:  a + 1 -> a[x]
-         a + 1 -> a[x]
-         a + 1 -> a[x]
-         if n/c go to L04024
-         if p = 8
-           then go to L04352
+         a + 1 -> a[x]		; key 64 (@320) - 3, g n!
+         a + 1 -> a[x]		; key 63 (@321) - 2, g lin est y
+         if n/c go to L04024	; key 62 (@322) - 1, g lin est x
+
+         if p = 8		; key 61 (@323) - *, f INTGR, g FRAC
+           then go to L04352	; g FRAC
          if p = 10
-           then go to L04207
+           then go to L04207	; f INTGR
          if p = 9
-           then go to L04005
-         p <- 1
+           then go to L04005	; STO *
+         p <- 1			; *
          load constant 12
          go to L04113
 
-L04334:  p <- 1
+L04334:  p <- 1			; f-shfited key 41 - Delta DAYS
          load constant 12
          go to L04214
 
-L04337:  p <- 1
+L04337:  p <- 1			; f-shifted key 51 - DATE
          load constant 13
          go to L04214
 
-L04342:  if p = 9
+L04342:  if p = 9		; key 73 (@101) - ., g std dev
            then go to L04236
          if p = 4
            then go to L05125
@@ -1440,16 +1453,16 @@ L04342:  if p = 9
          p <- 5
          go to L04011
 
-L04352:  p <- 8
+L04352:  p <- 8			; g-shifted key 61: FRAC
          go to L04174
 
-L04354:  register -> c 8
+L04354:  register -> c 8	; key 34 (@160) - CLx, f CLR ALL, g CLP
          if p = 8
-           then go to L04561
+           then go to L04561	; CLP
          if p # 10
-           then go to L04174
-         if s 4 = 1
-           then go to L05176
+           then go to L04174	; CLx
+         if s 4 = 1		; CLR ALL
+           then go to L05176	; if in program mode, NOP
          clear data registers
          p <- 1
          0 -> c[wp]
@@ -1461,11 +1474,13 @@ L04354:  register -> c 8
          delayed rom @06
          go to L03357
 
-L04375:  if p # 2
+L04375:  if p # 2		; key 74 (@100) - R/S, f Sigma+, g Sigma-
            then go to L04200
          delayed rom @06
          go to L03045
 
+
+; STO ENTER^ self test
 L04401:  clear regs
          c + 1 -> c[w]
          m2 exchange c
@@ -1590,11 +1605,11 @@ L04553:  jsb S04625
 L04555:  jsb S04665
          go to L04520
 
-L04557:  delayed rom @14
+L04557:  delayed rom @14	; g-shifted key 51 - MEM
          go to L06330
 
-L04561:  if 0 = s 4
-           then go to L05203
+L04561:  if 0 = s 4		; g-shifted key 34: CLP
+           then go to L05203	; not in program mode, NOP
          c -> a[x]
          shift right c[x]
          c + 1 -> c[xs]
@@ -1906,7 +1921,7 @@ L05125:  p <- 3
          delayed rom @00
          go to L00340
 
-L05130:  register -> c 8
+L05130:  register -> c 8	; g-shifted key 43 - BST
          p <- 1
          if c[wp] = 0
            then go to L05154
@@ -1945,7 +1960,7 @@ S05170:  0 -> c[x]
          c -> data address
          return
 
-L05173:  if s 4 = 1
+L05173:  if s 4 = 1		; g-shifted key 41 - P/R
            then go to L04574
          1 -> s 4
 L05176:  binary
@@ -1994,7 +2009,7 @@ L05244:  c - 1 -> c[x]
          0 -> c[p]
          go to L05221
 
-L05247:  if s 4 = 1
+L05247:  if s 4 = 1		; g-shifted key 44 - SST
            then go to L05300
          1 -> s 12
 L05252:  register -> c 8
@@ -2624,7 +2639,7 @@ S06317:  delayed rom @00
 L06326:  c -> data
          return
 
-L06330:  0 -> c[w]
+L06330:  0 -> c[w]		; g-shifted key 51 - MEM
          p <- 2
          load constant 13
          p <- 9

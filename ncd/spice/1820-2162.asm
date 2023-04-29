@@ -862,24 +862,26 @@ S01403:  select rom go to x-mp2-10
          select rom go to x-mp2-13
 S01406:  select rom go to x-dv2-10
 
-S01407:  p <- 12
+
+; factorial
+xft100:  p <- 12		; this instrunction not in 41C
          if c[s] # 0
            then go to err0
          if c[xs] # 0
            then go to err0
          c -> a[w]
-L01415:  a -> b[w]
+xft110:  a -> b[w]
          shift left a[ms]
          if a[wp] # 0
-           then go to L01426
+           then go to xft120
          a + 1 -> a[x]
          if a >= c[x]
            then go to xft130
          c + 1 -> c[xs]
          return
 
-L01426:  a - 1 -> a[x]
-         if n/c go to L01415
+xft120:  a - 1 -> a[x]
+         if n/c go to xft110
          delayed rom @00
          go to err0
 
@@ -899,13 +901,13 @@ xft150:  0 -> a[w]
 xft160:  a + b -> a[w]
          if n/c go to xft160
 xft170:  a - c -> a[s]
-         if n/c go to xfg190
+         if n/c go to xft190
          shift right a[wp]
          a + 1 -> a[w]
          c + 1 -> c[x]
 xft180:  a + b -> a[w]
          if n/c go to xft180
-xfg190:  a exchange b[wp]
+xft190:  a exchange b[wp]
          c - 1 -> c[p]
          if n/c go to xft140
          c - 1 -> c[s]
