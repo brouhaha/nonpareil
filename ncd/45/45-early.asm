@@ -1,10 +1,9 @@
-; 45 ROM source code from United States Patent 4,001,569
-; Copyright 1995, 2003, 2005 Eric L. Smith <eric@brouhaha.com>
-; $Id$
-; Keyed in by Eric Smith on 9-Mar-1995 - any errors are probably mine.
-; Typo corrected in "if" instruction in "frac" routine, on 3-Jan-2003,
-;     found by Peter Monta by OCRing the listing in the patent
-; May not match released code in actual 45 calculators.
+; 45 ROM source code, early version
+; Copyright 1995, 2003, 2005, 2023 EricSmith <spacewar@gmail.com>
+; This microcode matches early production HP-45 calculators, which
+; have STO arithmetic behavior opposite that of other HP models,
+; i.e., STO <op> <reg> replaces the contents of reg with
+; x <op> <reg>. This only matters for subtraction and division.
 
 	.arch classic
 

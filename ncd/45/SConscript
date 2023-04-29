@@ -3,8 +3,8 @@
 
 Import('env')
 
-ncd_names = ['45']
-source_names = ['45']
+ncd_names = ['45', '45-early']
+source_names = ['45', '45-early']
 
 ncd_template_files = [env.File(nn + '.ncd.tmpl') for nn in ncd_names]
 
