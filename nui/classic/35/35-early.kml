@@ -17,9 +17,9 @@
 # Boston, MA 02111, USA.
 
 global
-	title "35 Scientific Calculator - old buggy firmware"
+	title "35 Scientific Calculator - early microcode"
 	author "Eric Smith <spacewar@gmail.com>"
-	model "35-old"
+	model "35-early"
 	image "classic-background.png"
 	color 0 87 127 152  # background color, used when transparency is off
 	transparency 128
