@@ -1416,12 +1416,12 @@ exc1:	c -> stack
 amd9:	if s9 # 1
 	     then go to am12
 am10:	jsb sav1
-am11:	a exchange c[w]
-safix:	go to am13
+	a exchange c[w]
+am11:	go to am13
 
 am12:	jsb sav2
 	c -> data
-	go to safix
+	go to am11
 
 trc1:	jsb sav9
 	stack -> a
