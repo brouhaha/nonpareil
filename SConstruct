@@ -203,7 +203,8 @@ Default(ncd_files)
 
 SConscript ('scons/nui.py')
 
-all_calcs = {'classic':    ['35', '35-early', '45', '55', '70', '80', '67'],
+all_calcs = {'classic':    ['35', '35-early', '45', '45-early',
+                            '55', '70', '80', '67'],
              'woodstock':  ['21', '22', '25', '27', '29c'],
              'sting':      ['19c'],
              'topcat':     ['91', '92', '97'],
@@ -218,7 +219,8 @@ nui_dir_sub = {'35-early': '35',
                '38e':      '38',
 	       '38c':      '38',
 	       '41cv':     '41c',
-               '41cx':     '41c'}
+               '41cx':     '41c',
+               '45-early': '45'}
 
 nui_files = []
 
