@@ -582,7 +582,7 @@ xft110:  a -> b[w]
            then go to xft120
          a + 1 -> a[x]
          if a >= c[x]
-           then go to xfgt130
+           then go to xft130
          c + 1 -> c[xs]
          if n/c go to L03066
 xft130:  0 -> c[w]
