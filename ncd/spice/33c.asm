@@ -339,6 +339,7 @@ L02453:  delayed rom @04
          nop
          nop
          nop
+
 S02461:  0 -> b[w]
          b exchange c[x]
          p <- 12
@@ -855,6 +856,7 @@ L03370:  delayed rom @15
          nop
          nop
          nop
+
 L03400:  display off
          register -> c 8
          p <- 1
@@ -1009,7 +1011,7 @@ L03576:  if 0 = s 6
          jsb S03412
          go to L03446
 
-key_25:  if s 4 = 1			; key 25 (@220): unshifted Sigma+, f-shifted Sigma-,    g-shifted std dev		
+key_25:  if s 4 = 1			; key 25 (@220): unshifted Sigma+, f-shifted Sigma-,    g-shifted std dev
            then go to L03613
          if 0 = s 6
            then go to L03613
@@ -1026,7 +1028,7 @@ L03613:  load constant 13
 L03616:  load constant 10
          go to L03424
 
-         go to key_25			; key 25 (@220): unshifted Sigma+, f-shifted Sigma-,    g-shifted std dev		
+         go to key_25			; key 25 (@220): unshifted Sigma+, f-shifted Sigma-,    g-shifted std dev
          go to key_24			; key 24 (@221): unshifted RCL,    f-shifted L.R.,      g-shifted mean
          go to key_23			; key 23 (@222): unshifted STO,    f-shifted r,         g-shfited GRD
          go to key_22			; key 22 (@223): unshifted Rdn,    f-shifted lin est y, g-shifted RAD
