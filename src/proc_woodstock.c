@@ -755,7 +755,7 @@ static void op_rom_selftest (sim_t *sim,
   act_reg->crc = 01777;
   act_reg->inst_state = inst_woodstock_selftest;
   act_reg->pc &= ~ 01777;  // start from beginning of current 1K ROM bank
-  printf ("starting ROM CRC of bank %d addr %04o\n", act_reg->bank, act_reg->pc);
+  //printf ("starting ROM CRC of bank %d addr %04o\n", act_reg->bank, act_reg->pc);
 }
 
 
@@ -764,8 +764,8 @@ static void rom_selftest_done (sim_t *sim)
   act_reg_t *act_reg = get_chip_data (sim->first_chip);
 
   // ROM self-test completed, return and set S5 if error
-  printf ("ROM CRC done, crc = %03x: %s\n", act_reg->crc,
-	  act_reg->crc == 0x078 ? "good" : "bad");
+  //printf ("ROM CRC done, crc = %03x: %s\n", act_reg->crc,
+  //	  act_reg->crc == 0x078 ? "good" : "bad");
   if (act_reg->crc != 0x078)
     act_reg->s[5] = true;  // indicate fail
   act_reg->inst_state = inst_normal;
