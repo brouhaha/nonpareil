@@ -1419,8 +1419,13 @@ static void spice_display_scan (sim_t *sim)
 
   if (act_reg->display_enable)
     {
-      if ((act_reg->display_scan_position == act_reg->left_scan) && (b & 4))
+      if ((act_reg->display_scan_position == act_reg->left_scan) && ((b & 4) ||
+								     ((b == 2) && (a == 8))))
+      {
+	// b = 4 for negative
+	// b = 2, a = 8 for disp test
 	sim->display_segments [0] = sim->display_char_gen ['-'];
+      }
       if (b == 6)
 	{
 	  if (a == 9)
@@ -1428,8 +1433,19 @@ static void spice_display_scan (sim_t *sim)
 	}
       else
 	segs = sim->display_char_gen [a];
-      if (b & 1)
-	segs |= sim->display_char_gen [(b & 2) ? ',' : '.'];
+      switch (b & 7)
+      {
+      case 1:
+	segs |= sim->display_char_gen ['.'];
+	break;
+      case 2:
+	segs |= sim->display_char_gen ['.'];
+	segs |= sim->display_char_gen [','];
+	break;
+      case 3:
+	segs |= sim->display_char_gen [','];
+	break;
+      }
     }
 
   sim->display_segments [act_reg->display_digit_position++] = segs;
