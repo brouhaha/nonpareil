@@ -18,12 +18,12 @@
 
 L02000:  go to L02015
 
-L02001:  bank toggle
+L02001:  bank toggle go to L12002	; 02001
 
 L02002:  go to L02010
 
-L02003:  p <- 0
-L02004:  bank toggle
+L02003:  p <- 0				; 02003: common ROM error 0 return
+L02004:  bank toggle go to error_p_x2	; 02004: common ROM error p return
 
 L02005:  1 -> s 9
          m2 exchange c
@@ -44,10 +44,10 @@ L02015:  delayed rom @03
 L02024:  0 -> s 9
 L02025:  0 -> s 11
          a exchange b[w]
-         bank toggle
+         bank toggle go to L12030
 
-         nop
-L02031:  bank toggle
+L02030:  nop
+L02031:  bank toggle go to L12032
 
 S02032:  delayed rom @17
          go to S07402
@@ -827,24 +827,27 @@ L03344:  jsb S03010
          nop
 S03354:  rom checksum
 
-S03355:  bank toggle
+S03355:  bank toggle go to L13356
 
-         go to L03301
-
-         nop
-S03360:  bank toggle
-
-         return
+L03356:  go to L03301
 
          nop
-S03363:  bank toggle
 
-         return
+S03360:  bank toggle go to L13361
+
+L03361:  return
 
          nop
-S03366:  bank toggle
 
-         return
+S03363:  bank toggle go to L13364
+
+L03364:  return
+
+         nop
+
+S03366:  bank toggle go to L13367
+
+L03367:  return
 
 L03370:  a + 1 -> a[x]
          shift right a[ms]
@@ -2781,57 +2784,59 @@ L06741:  stack -> a
          jsb dv2-10
          go to L06610
 
-L06745:  bank toggle
+L06745:  bank toggle go to L16746
 
-         delayed rom @04
+L06746:  delayed rom @04
          go to L02111
 
          nop
-L06751:  bank toggle
 
-         go to L06735
+L06751:  bank toggle go to L16752
 
-L06753:  bank toggle
+L06752:  go to L06735
 
-         go to L06734
+L06753:  bank toggle go to L16754
 
-L06755:  bank toggle
+L06754:  go to L06734
 
-         delayed rom @14
+L06755:  bank toggle go to L16757
+
+L06756:  delayed rom @14
          go to L06016
 
-L06760:  bank toggle
+L06760:  bank toggle go to L16761
 
-         go to L06461
+L06761:  go to L06461
 
-L06762:  bank toggle
+L06762:  bank toggle go to L16763
 
-         go to L06564
+L06763:  go to L06564
 
-L06764:  bank toggle
+L06764:  bank toggle go to L16765
 
-         go to L06710
+L06765:  go to L06710
 
-L06766:  bank toggle
+L06766:  bank toggle go to L16767
 
-         go to L06713
+L06767:  go to L06713
 
-         bank toggle
+         bank toggle go to L16771
 
-         go to L06732
+L06771:  go to L06732
 
-S06772:  bank toggle
+S06772:  bank toggle go to L16773
 
-         return
+L06773:  return
 
          nop
-L06775:  bank toggle
 
-         go to L06724
+L06775:  bank toggle go to L16776
 
-         bank toggle
+L06776:  go to L06724
 
-         jsb S07230
+         bank toggle go to L17000
+
+L07000:  jsb S07230
          m2 -> c
          decimal
          shift left a[x]
@@ -3464,14 +3469,19 @@ L07730:  jsb S07401
 
 L12000:  go to L12014
 
-L12001:  bank toggle
+L12001:  bank toggle go to L02002
 
 L12002:  go to L12167
 
          p <- 0
-L12004:  bank toggle
+L12004:  bank toggle go to L02005
 
-L12005:  go to L12173
+error_p_x2:				; common ROM error return, error number in P
+         go to error_p_x
+	 				; probably used for:
+					; error 0: improper mathemtatical operation
+					; error 1: storage register overflow (except statistics)
+					; error 3: improper statistical operation
 
 L12006:  c -> a[w]
          delayed rom @16
@@ -3491,13 +3501,13 @@ L12024:  0 -> s 11
 L12025:  a exchange b[w]
          go to L12033
 
-         bank toggle
+         bank toggle go to L02030
 
-         go to L12033
+L12030:  go to L12033
 
-         bank toggle
+         bank toggle go to S02032
 
-         go to L12200
+L12032:  go to L12200
 
 L12033:  jsb S12106
          a exchange b[w]
@@ -3606,9 +3616,10 @@ L12167:  delayed rom @07
          jsb S13445
          go to L12006
 
-         p <- 4
-L12173:  delayed rom @12
-         jsb S15301
+         p <- 4			; error 4: improper line number or label call
+error_p_x:
+         delayed rom @12
+         jsb error_p
          go to L12024
 
 L12176:  jsb S12365
@@ -4301,9 +4312,9 @@ L13314:  jsb S13305
 L13317:  delayed rom @14
          go to L16252
 
-L13321:  p <- 4
+L13321:  p <- 4			; error 4: improper line number or label call
          delayed rom @04
-         go to L12173
+         go to error_p_x
 
 L13324:  0 -> s 3
          if s 3 = 1
@@ -4334,30 +4345,31 @@ L13346:  p <- 1
          delayed rom @16
          go to L17327
 
-L13355:  bank toggle
+L13355:  bank toggle go to L03356
 
-         nop
+L13356:  nop
          jsb S13377
-L13360:  bank toggle
 
-         delayed rom @13
+L13360:  bank toggle go to L03361
+
+L13361:  delayed rom @13
          jsb S15776
-         bank toggle
+         bank toggle go to L03364
 
-         delayed rom @15
+L13364:  delayed rom @15
          jsb S16744
-         bank toggle
+         bank toggle go to L03367
 
-         delayed rom @12
+L13367:  delayed rom @12
          jsb S15330
          go to L13360
 
 L13372:  delayed rom @12
          go to L15031
 
-         p <- 2
+         p <- 2			; error 2: improper register number
          delayed rom @04
-         go to L12173
+         go to error_p_x
 
 S13377:  rom checksum
 
@@ -4468,7 +4480,8 @@ L13535:  0 -> a[w]
          if n/c go to L13535
          0 -> c[w]
          c - 1 -> c[w]
-         p <- 12
+
+         p <- 12		; Pr Error
          load constant 13
          load constant 10
          p <- 9
@@ -4477,6 +4490,7 @@ L13535:  0 -> a[w]
          load constant 10
          load constant 12
          load constant 10
+
          a exchange c[w]
          delayed rom @12
          go to S15330
@@ -4587,6 +4601,7 @@ L13716:  p <- 12
          load constant 10
          load constant 14
          load constant 15
+
          binary
          go to L13567
 
@@ -4626,9 +4641,9 @@ L13757:  jsb S13755
          delayed rom @04
          go to L12200
 
-L13772:  p <- 7
-         delayed rom @04
-         go to L12173
+L13772:  p <- 7				; error 7: illegal label (4-9) used with integrate or solve,
+         delayed rom @04		;   or illegal flag number (4-9)
+         go to error_p_x
 
 S13775:  delayed rom @04
          go to S12157
@@ -5278,13 +5293,14 @@ L14762:  c - 1 -> c[p]
          b exchange c[w]
          go to L14757
 
-         p <- 6
+         p <- 6				; error 8: subroutine level too deep
          delayed rom @04
-         go to L12173
+         go to error_p_x
 
          nop
          nop
          nop
+
 S15000:  delayed rom @04
          go to S12162
 
@@ -5498,10 +5514,11 @@ L15275:  1 -> s 7
 L15277:  delayed rom @06
          go to L13321
 
-S15301:  0 -> c[w]
+error_p: 0 -> c[w]
          binary
          c - 1 -> c[w]
          0 -> a[xs]
+
 L15305:  if p = 0
            then go to L15312
          a + 1 -> a[xs]
@@ -5510,14 +5527,16 @@ L15305:  if p = 0
 
 L15312:  shift left a[w]
          shift left a[w]
+
          p <- 4
          a exchange c[p]
          p <- 11
-         load constant 14
+         load constant 14	; Error
          load constant 10
          load constant 10
          load constant 12
          load constant 10
+
          a exchange c[w]
          0 -> b[w]
          0 -> s 1
@@ -6352,9 +6371,10 @@ L16710:  a exchange b[w]
          p <- 7
          if c[p] = 0
            then go to L17305
-L16723:  p <- 8
+
+L16723:  p <- 8				; error 8: subroutine level too deep
          delayed rom @04
-         go to L12173
+         go to error_p_x
 
 L16726:  delayed rom @04
          jsb S12112
@@ -6378,54 +6398,54 @@ L16742:  delayed rom @07
 
 S16744:  rom checksum
 
-L16745:  bank toggle
+L16745:  bank toggle go to L06746
 
-         delayed rom @04
+L16746:  delayed rom @04
          jsb S12112
          go to L16745
 
-L16751:  bank toggle
+L16751:  bank toggle go to L06752
 
-         go to L16734
+L16752:  go to L16734
 
-L16753:  bank toggle
+L16753:  bank toggle go to L06754
 
-         go to L16736
+L16754:  go to L16736
 
-L16755:  bank toggle
+L16755:  bank toggle go to L06756
 
          go to L16726
 
 L16757:  1 -> s 4
-L16760:  bank toggle
+L16760:  bank toggle go to L06761
 
-         go to L16740
+L16761:  go to L16740
 
-L16762:  bank toggle
+L16762:  bank toggle go to L06763
 
-         go to L16742
+L16763:  go to L16742
 
-L16764:  bank toggle
+L16764:  bank toggle go to L06765
 
-         go to L16663
+L16765:  go to L16663
 
-L16766:  bank toggle
+L16766:  bank toggle go to L06767
 
-         go to L16732
+L16767:  go to L16732
 
-L16770:  bank toggle
+L16770:  bank toggle go to L06771
 
-         nop
-L16772:  bank toggle
+L16771:  nop
+L16772:  bank toggle go to L06773
 
-         delayed rom @12
+L16773:  delayed rom @12
          go to S15074
 
-L16775:  bank toggle
+L16775:  bank toggle go to L06776
 
-         go to L16706
+L16776:  go to L16706
 
-L16777:  bank toggle
+L16777:  bank toggle go to L07000
 
 L17000:  delayed rom @12
          go to L15376
@@ -6496,8 +6516,9 @@ L17061:  jsb S17140
          load constant 6
          if a >= c[x]
            then go to L17045
-L17073:  p <- 2
-         go to L17122
+
+L17073:  p <- 2				; error 2: improper register number
+         go to error_p_x3
 
 L17075:  p <- 0
          load constant 6
@@ -6523,8 +6544,9 @@ L17106:  load constant 8
          delayed rom @15
          go to L16751
 
-L17122:  delayed rom @04
-         go to L12173
+error_p_x3:
+         delayed rom @04
+         go to error_p_x
 
 L17124:  load constant 8
          p <- 0
