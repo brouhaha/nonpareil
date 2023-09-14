@@ -523,7 +523,14 @@ L02716:  0 -> c[w]
          c - 1 -> c[x]
          m1 exchange c
          0 -> c[w]
-         load constant 9
+; constant for calculation of gamma
+; using Stirling approximation?
+; https://gensoft.pasteur.fr/docs/bpplib/2.2.0/bpp-core/RandomTools_8cpp_source.html
+; https://github.com/ViennaRNA/RNAcode/blob/master/seqgen/gamma.c 
+; http://www.admb-project.org/developers/workshops/seattle-2016/Kristensen_Anders_Report.pdf
+; 0.5 * ln(2 * pi)
+; incorrectly rounded, should end in 33205, not 33207
+         load constant 9	; 
          load constant 1
          load constant 8
          load constant 9
@@ -4414,6 +4421,7 @@ L13441:  0 -> s 3
            then go to L12075
          go to L13435
 
+
 S13445:  display off
          binary
          clear status
@@ -4427,9 +4435,10 @@ S13445:  display off
          c -> data address
          a exchange c[w]
          c -> data
-         c -> register 14
-         c -> register 15
-         p <- 1
+         c -> register 14	; init RAM 0x2e
+         c -> register 15	; init RAM 0x2f
+
+         p <- 1			; read RAM 0x1f
          load constant 1
          load constant 15
          c -> data address
@@ -4442,13 +4451,16 @@ S13445:  display off
          p <- 4
          a exchange c[w]
          c -> a[wp]
+
          p <- 12
-         load constant 14
+         load constant 14	; cold start constant
          load constant 10
          load constant 14
          a - c -> a[w]
          if a[w] # 0
            then go to L13521
+
+; cold start constant is OK
          c -> register 15
          c -> a[w]
          shift right a[w]
@@ -4459,14 +4471,18 @@ S13445:  display off
          0 -> c[w]
          return
 
+; cold start contant isn't present
 L13521:  p <- 4
          load constant 4
          0 -> c[wp]
          c -> data
+
          p <- 0
          load constant 4
          a exchange c[x]
          f exchange a[x]
+
+; clear RAM from address 0x1e down to 0x00
          0 -> c[w]
          p <- 1
          load constant 1
@@ -4478,9 +4494,9 @@ L13535:  0 -> a[w]
          a exchange c[w]
          c - 1 -> c[x]
          if n/c go to L13535
-         0 -> c[w]
-         c - 1 -> c[w]
 
+         0 -> c[w]		; all blanks -> c
+         c - 1 -> c[w]
          p <- 12		; Pr Error
          load constant 13
          load constant 10
@@ -5513,6 +5529,7 @@ L15275:  1 -> s 7
 
 L15277:  delayed rom @06
          go to L13321
+
 
 error_p: 0 -> c[w]
          binary
