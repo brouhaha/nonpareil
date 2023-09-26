@@ -1427,24 +1427,22 @@ static void spice_display_scan (sim_t *sim)
 	sim->display_segments [0] = sim->display_char_gen ['-'];
       }
       if (b == 6)
-	{
-	  if (a == 9)
-	    segs = sim->display_char_gen ['-'];
-	}
-      else
-	segs = sim->display_char_gen [a];
-      switch (b & 7)
       {
-      case 1:
-	segs |= sim->display_char_gen ['.'];
-	break;
-      case 2:
-	segs |= sim->display_char_gen ['.'];
-	segs |= sim->display_char_gen [','];
-	break;
-      case 3:
-	segs |= sim->display_char_gen [','];
-	break;
+	if (a == 9)
+	  segs = sim->display_char_gen ['-'];
+      }
+      else
+      {
+	segs = sim->display_char_gen [a];
+	if (b & 1)
+	{
+	  segs |= sim->display_char_gen ['.'];
+	}
+	if (b & 2)
+	{
+	  segs |= sim->display_char_gen ['.'];
+	  segs |= sim->display_char_gen [','];
+	}
       }
     }
 
