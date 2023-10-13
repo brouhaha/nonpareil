@@ -516,14 +516,14 @@ inst_rom_checksum : ROM CHECKSUM            { emit (01460); } ;
 
 inst_bank_toggle: BANK TOGGLE               { emit (01060); }
 		| BANK TOGGLE '(' expr ')'  { emit (01060);
-                                              addr_t tgt = (pc + 1) & 07777;
+                                              addr_t tgt = get_next_pc();
 					      if ((pass == 2) && ($4 != tgt))
 						{
 						  error ("'bank toggle' target value incorrect - requested %05o, actual %05o\n", $4, tgt);
 						}
 					    }
 		| BANK TOGGLE GO TO expr    { emit (01060);
-                                              addr_t tgt = (pc + 1) & 07777;
+                                              addr_t tgt = get_next_pc();
 					      if ((pass == 2) && ($5 != tgt))
 						{
 						  error ("'bank toggle' target value incorrect - requested %05o, actual %05o\n", $5, tgt);
