@@ -13,6 +13,16 @@
 ; f  s7=1
 ; g  s14=1
 
+; RAM usage
+; 000..00e:  reg 0 through reg.4
+; 00f:       I register
+; 010..014:  reg .5 through .9
+; 01e down:  program
+; 01f[2:0]:  end of program pointer
+; 02f[2:0]:  program pointer
+;               000 for step 000
+;               brr   b = byte 1 - 7 (1 at 1:0, 7 at 13:12)
+
 	 .bank 0
 	 .org @2000
 
@@ -166,11 +176,11 @@ L02177:  a exchange c[w]
            then go to L02213
          if a >= c[p]
            then go to L02215
-L02211:  p <- 5
+error_5: p <- 5			; recursive call to SOLVE OR INTEG
          go to L02004
 
 L02213:  if a >= c[p]
-           then go to L02211
+           then go to error_5
 L02215:  m1 -> c
          a exchange c[w]
          go to L02051
@@ -265,28 +275,34 @@ S02323:  a + 1 -> a[x]
 L02344:  a exchange c[w]
          return
 
-L02346:  p <- 9
+error_9: p <- 9			; self-test fail
          go to L02004
 
+; test a block of 16 registers
+; on entry:
+;   c  = start address
+;   m1 = start address
 L02350:  p <- 0
-L02351:  c -> data address
+L02351:  c -> data address	; write each register's address to the register
          c -> data
          c + 1 -> c[p]
          if n/c go to L02351
-         m1 -> c
-L02356:  c -> data address
+
+         m1 -> c		; get start address back
+L02356:  c -> data address	; compare each reg to its start address
          a exchange c[w]
          data -> c
          a - c -> c[w]
          if c[w] # 0
-           then go to L02346
+           then go to error_9
          a exchange c[w]
          c + 1 -> c[p]
          if n/c go to L02356
+
          clear data registers
          go to L02376
 
-S02371:  0 -> c[w]
+S02371:  0 -> c[w]		; select registers 0x30..0x3f (for integrate?)
          p <- 1
          load constant 3
          c -> data address
@@ -568,14 +584,14 @@ L02760:  jsb S02415
          go to L02002
 
 S02765:  if c[p] # 0
-           then go to L02775
+           then go to error_8
          p <- 11
          if c[p] # 0
-           then go to L02775
+           then go to error_8
          p <- 10
          if c[p] = 0
            then go to L02344
-L02775:  p <- 8
+error_8: p <- 8			; subroutine nested too deep
          delayed rom @04
          go to L02004
 
@@ -989,7 +1005,7 @@ L03565:  c -> stack
          go to L06423
 
 S03572:  if s 5 = 1
-           then go to L02346
+           then go to error_9
 S03574:  m2 exchange c
          p <- 12
          c + 1 -> c[p]
@@ -998,7 +1014,7 @@ S03574:  m2 exchange c
 
 L03601:  a - 1 -> a[w]
          if a[w] # 0
-           then go to L02346
+           then go to error_9
          jsb S03574
          binary
          p <- 1
@@ -1023,7 +1039,7 @@ L03613:  load constant 5
          c + c -> c[w]
          a - c -> a[w]
          if a[w] # 0
-           then go to L02346
+           then go to error_9
          down rotate
          b -> c[w]
          1 -> s 4
@@ -1035,19 +1051,22 @@ L03613:  load constant 5
          load constant 15
          a - c -> a[w]
          if a[w] # 0
-           then go to L02346
+           then go to error_9
          down rotate
          stack -> a
          a - c -> a[w]
          if a[w] # 0
-           then go to L02346
-         0 -> c[w]
+           then go to error_9
+
+         0 -> c[w]		; test regs 0x20..0x2f
          p <- 1
          load constant 2
          jsb S03727
-         p <- 1
+
+         p <- 1			; test regs 0x30...0x3f
          load constant 3
          jsb S03727
+
          c - 1 -> c[w]
          c -> data address
          jsb S03574
@@ -1083,8 +1102,9 @@ L03713:  load constant 2
          delayed rom @04
          go to L02001
 
+; test a block of 16 registers
 S03727:  jsb S03574
-         m1 exchange c
+         m1 exchange c		; save start address in m1
          m1 -> c
          delayed rom @04
          go to L02350
@@ -1189,6 +1209,8 @@ L04061:  0 -> a[w]
 L04063:  jsb S04043
          go to L04061
 
+
+; inverse trigonometric functions, continued
 L04065:  0 -> b[w]
          c -> a[w]
          a exchange b[m]
@@ -1227,7 +1249,7 @@ L04110:  if a[x] # 0
          go to L04316
 
 L04130:  if s 6 = 1
-           then go to L04367
+           then go to error_0
 L04132:  delayed rom @00
          jsb 1/x13
          jsb S04043
@@ -1390,11 +1412,11 @@ L04356:  if s 13 = 1
          delayed rom @12
          go to L05031
 
-L04364:  p <- 3
+error_3: p <- 3
          delayed rom @04
          go to L02004
 
-L04367:  delayed rom @04
+error_0: delayed rom @04
          go to L02003
 
 S04371:  0 -> c[w]
@@ -1461,10 +1483,14 @@ L04456:  p <- 2
          p <- 8
          return
 
+
+; ->R
 L04462:  1 -> s 13
          1 -> s 6
          stack -> a
          a exchange c[w]
+
+; trigonometric functions
 L04466:  0 -> a[w]
          0 -> b[w]
          a exchange c[m]
@@ -1877,9 +1903,9 @@ L05241:  jsb S05322
          delayed rom @13
          jsb S05717
          if c[s] # 0
-           then go to L04364
+           then go to error_3
          if c[m] = 0
-           then go to L04364
+           then go to error_3
          register -> c 3
          0 - c - 1 -> c[s]
          c -> a[w]
@@ -1930,7 +1956,7 @@ S05326:  delayed rom @17
          go to S07402
 
 L05330:  if b[m] = 0
-           then go to L04364
+           then go to error_3
          if 0 = s 6
            then go to L05343
          jsb S05015
@@ -2007,9 +2033,9 @@ L05417:  if 0 = s 6
          jsb S05415
          jsb S05405
          if a[s] # 0
-           then go to L04364
+           then go to error_3
          if c[m] = 0
-           then go to L04364
+           then go to error_3
          m2 -> c
          if s 9 = 1
            then go to L05433
@@ -2021,10 +2047,10 @@ L05436:  delayed rom @04
          go to L02000
 
 L05440:  if a[s] # 0
-           then go to L04364
+           then go to error_3
          jsb S05415
          if a[s] # 0
-           then go to L04364
+           then go to error_3
          jsb S05565
          0 -> b[w]
          a exchange b[m]
@@ -2558,7 +2584,7 @@ L06411:  c -> stack
            then go to L07224
          if s 2 = 1
            then go to L07224
-         p <- 6
+         p <- 6			; error 6 - SOLVE unable to find root
          go to L06562
 
 L06423:  m2 -> c
@@ -2656,12 +2682,12 @@ L06540:  0 -> c[x]
            then go to L06556
          0 -> c[xs]
          if a >= c[x]
-           then go to L06561
+           then go to error_2
 L06556:  m2 -> c
          decimal
          return
 
-L06561:  p <- 2
+error_2: p <- 2			; improper register number
 L06562:  delayed rom @04
          go to L02004
 
@@ -2798,7 +2824,8 @@ L06746:  delayed rom @04
 
          nop
 
-L06751:  bank toggle go to L16752
+op_grd_3:
+         bank toggle go to op_grd_2
 
 L06752:  go to L06735
 
@@ -2806,7 +2833,7 @@ L06753:  bank toggle go to L16754
 
 L06754:  go to L06734
 
-L06755:  bank toggle go to L16757
+L06755:  bank toggle go to L16756
 
 L06756:  delayed rom @14
          go to L06016
@@ -2857,12 +2884,12 @@ L07005:  jsb S07041
 L07012:  delayed rom @04
          go to L02002
 
-         go to L07047
+         go to op_lastx		; 0C: LASTx
 
-         go to L07152
+         go to op_grd_4		; 0D: GRD
 
-         delayed rom @17
-         go to L07417
+         delayed rom @17	; 0E: ISG
+         go to op_isg
 
 L07020:  y -> a
 L07021:  0 - c - 1 -> c[s]
@@ -2894,7 +2921,8 @@ S07041:  c -> a[w]
          c + 1 -> c[x]
          return
 
-L07047:  if s 9 = 1
+op_lastx:
+         if s 9 = 1
            then go to L07052
          c -> stack
 L07052:  data -> c
@@ -2982,8 +3010,9 @@ L07147:  if c[s] = 0
            then go to L06755
          go to L07224
 
-L07152:  delayed rom @15
-         go to L06751
+op_grd_4:
+         delayed rom @15
+         go to op_grd_3
 
          go to L07247
 
@@ -3004,12 +3033,13 @@ L07171:  jsb S07230
          m2 -> c
          return
 
-         go to L07101
 
-         go to L07242
-
-         1 -> s 10
+; @07174: dispatch table for instructions 7C..7E
+         go to L07101		; 7C: L.R.
+         go to L07242		; 7D: sin-1
+         1 -> s 10		; 7E: sin
          go to L07216
+
 
 L07200:  0 -> a[w]
          delayed rom @03
@@ -3029,8 +3059,11 @@ L07211:  jsb S07263
 
          go to L07241
 
+
+; sin
 L07216:  1 -> s 6
          go to L07236
+
 
 L07220:  y -> a
          a - c -> c[w]
@@ -3056,12 +3089,15 @@ L07236:  jsb S07160
          delayed rom @11
          go to L04466
 
+
+; inverse trigonometric functions
 L07241:  1 -> s 10
 L07242:  1 -> s 6
 L07243:  1 -> s 13
          jsb S07160
          delayed rom @10
          go to L04065
+
 
 L07247:  1 -> s 6
 L07250:  1 -> s 4
@@ -3145,7 +3181,7 @@ L07331:  delayed rom @00
 
          if c[m] # 0
            then go to L06741
-         delayed rom @04
+         delayed rom @04		; error 0
          go to L02003
 
 L07343:  0 -> c[s]
@@ -3208,7 +3244,7 @@ S07414:  c -> data address
          register -> c 15
          return
 
-L07417:  1 -> s 4
+op_isg:  1 -> s 4
 L07420:  decimal
          0 -> c[w]
          jsb S07414
@@ -3548,8 +3584,8 @@ L12060:  0 -> s 1
 
 L12070:  if s 12 = 1
            then go to L12176
-L12072:  if s 15 = 1
-           then go to L12401
+L12072:  if s 15 = 1		; key pressed?
+           then go to key_dispatch
          go to L12060
 
 L12075:  b exchange c[w]
@@ -3609,15 +3645,20 @@ L12152:  p <- 2
          load constant 14
          go to L12134
 
+
+; get reg 01f - program end
 S12157:  p <- 1
          load constant 1
          go to L12164
 
+
+; get reg 02f - program pointer
 S12162:  p <- 1
          load constant 2
 L12164:  c -> data address
          register -> c 15
          return
+
 
 L12167:  delayed rom @07
          jsb S13445
@@ -3651,8 +3692,8 @@ L12220:  0 -> s 15
          if s 15 = 1
            then go to L12220
          display off
-         jsb S12234
-         c -> a[w]
+         jsb S12234		; get program instruction
+         c -> a[w]		; copy to a and m1
          m1 exchange c
          a exchange c[w]
          if s 6 = 1
@@ -3660,14 +3701,17 @@ L12220:  0 -> s 15
          delayed rom @07
          go to L13441
 
-S12234:  jsb S12162
+
+; get current program instruction into c[1:0]
+S12234:  jsb S12162		; get program pointer
          c -> data address
          a exchange c[x]
          data -> c
-         a - 1 -> a[xs]
+         a - 1 -> a[xs]		; adjust byte number to 0-6
 L12241:  a - 1 -> a[xs]
-         if n/c go to L12362
+         if n/c go to L12362	; rotate data one byte right
          return
+
 
 S12244:  a exchange c[w]
          m1 exchange c
@@ -3753,9 +3797,12 @@ L12357:  0 -> s 2
          0 -> s 11
          go to L12035
 
+
+; rotate program word in C one byte right
 L12362:  shift right c[w]
          shift right c[w]
          go to L12241
+
 
 S12365:  delayed rom @06
          go to S13216
@@ -3772,9 +3819,12 @@ S12373:  jsb S12157
          delayed rom @12
          go to L15366
 
-L12401:  binary
+
+key_dispatch:
+         binary
          display off
          keys -> rom address
+
 
 key_14:  if 0 = s 7			; key 14 (@061): f
            then go to L12411
@@ -4666,45 +4716,34 @@ S13775:  delayed rom @04
 
 	 .dw @0167			; CRC, bank 1 quad 1 (@12000..@13777)
 
-         go to L14023
 
-         go to L14131
+; @14000: keycode dispatch table for most significant digit of instruction
+         go to L14023		; 0x: LBL
+         go to L14131		; 1x: SOLVE
+         go to L14374		; 2x: INTG
+         go to L14061		; 3x: ENG
+         go to L14075		; 4x: SCI
+         go to L14120		; 5x: FIX
+         go to L14124		; 6x: RCL
+         go to L14123		; 7x: RCL.
+         go to L14051		; 8x: STO
+         go to L14050		; 9x: STO.
+         go to L14052		; Ax: STO-
+         go to L14111		; Bx: STO+
+         go to L14113		; Cx: STO*
+         go to L14042		; Dx: STO/
+         go to L14115		; Ex: GTO
+				; Fx: GSB
 
-         go to L14374
-
-         go to L14061
-
-         go to L14075
-
-         go to L14120
-
-         go to L14124
-
-         go to L14123
-
-         go to L14051
-
-         go to L14050
-
-         go to L14052
-
-         go to L14111
-
-         go to L14113
-
-         go to L14042
-
-         go to L14115
-
-L14017:  load constant 1
+L14017:  load constant 1	; keycode 13: GSB
          load constant 3
 L14021:  delayed rom @11
          go to L14753
 
-L14023:  load constant 1
+L14023:  load constant 1	; keycode 25 13: h LBL
          load constant 3
 L14025:  p <- 8
-L14026:  load constant 2
+L14026:  load constant 2	; keycode 25: h
          load constant 5
          go to L14021
 
@@ -4723,24 +4762,23 @@ L14026:  load constant 2
          load constant 7
          go to L14154
 
-L14042:  load constant 7
+L14042:  load constant 7	; keycode 23 71: STO /
 L14043:  load constant 1
          p <- 8
-L14045:  load constant 2
+L14045:  load constant 2	; keycode 23: STO
          load constant 3
          go to L14021
 
 L14050:  jsb S14127
 L14051:  go to L14045
 
-L14052:  load constant 4
+L14052:  load constant 4	; keycode 23 41: STO-
          go to L14043
 
-         go to L14057
-
-         go to L14164
-
-         go to L14372
+; @14054: keycode decode table for instructions 0C..0E
+         go to L14057		; 0C: LASTx
+         go to L14164		; 0D: GRD
+         go to L14372		; 0E: ISG
 
 L14057:  0 -> a[xs]
          go to L14311
@@ -4751,10 +4789,10 @@ L14061:  p <- 0
          if a >= c[p]
            then go to L14213
          p <- 6
-         load constant 1
+         load constant 1	; keycode 14 13: f ENG
          load constant 3
 L14071:  p <- 8
-L14072:  load constant 1
+L14072:  load constant 1	; keycode 14: f
          load constant 4
          go to L14021
 
@@ -4767,26 +4805,26 @@ L14075:  p <- 0
          if a >= c[p]
            then go to L14603
          p <- 6
-         load constant 1
+         load constant 1	; keycode 14 12: f SCI
          load constant 2
          go to L14071
 
-L14111:  load constant 5
+L14111:  load constant 5	; keycode 23 51: STO +
          go to L14043
 
-L14113:  load constant 6
+L14113:  load constant 6	; keycode 23 61: STO *
          go to L14043
 
-L14115:  load constant 2
+L14115:  load constant 2	; keycode 22: GTO
          load constant 2
          go to L14021
 
-L14120:  load constant 1
+L14120:  load constant 1	; keycode 14 11: f FIX
          load constant 1
          go to L14071
 
-L14123:  jsb S14127
-L14124:  load constant 2
+L14123:  jsb S14127		; keycode 24 .: RCL .
+L14124:  load constant 2	; keycode 24: RCL
          load constant 4
          go to L14021
 
@@ -4825,7 +4863,7 @@ L14156:  a - c -> c[p]
          load constant 2
          go to L14135
 
-L14164:  load constant 1
+L14164:  load constant 1	; keycdoe 14 13: GRD
          load constant 3
          delayed rom @11
          go to L14747
@@ -4954,34 +4992,22 @@ L14334:  load constant 2
 
          nop
          nop
+
+; @14340:
          go to L14170
-
          go to L14177
-
          go to L14210
-
          go to L14213
-
          go to L14216
-
          go to L14223
-
          go to L14230
-
          go to L14242
-
          go to L14365
-
          go to L14300
-
          go to L14247
-
          go to L14256
-
          go to L14260
-
          go to L14251
-
          go to L14272
 
          jsb S14172
@@ -5023,34 +5049,21 @@ S14376:  a exchange c[ms]
          load constant 12
          go to L14555
 
+; @14420:
          go to L14652
-
          go to L14676
-
          go to L14700
-
          go to L14702
-
          go to L14657
-
          go to L14704
-
          go to L14710
-
          go to L14717
-
          go to L14723
-
          go to L14726
-
          go to L14662
-
          go to L14665
-
          go to L14670
-
          go to L14673
-
          go to L14732
 
          load constant 1
@@ -5059,7 +5072,7 @@ S14376:  a exchange c[ms]
          delayed rom @10
          go to L14017
 
-L14444:  load constant 7
+L14444:  load constant 7	; keycode 14 73: SOLVE
          load constant 3
          p <- 0
          load constant 8
@@ -5149,8 +5162,8 @@ L14555:  p <- 0
          if a >= c[p]
            then go to L14571
 L14566:  p <- 6
-         delayed rom @10
-         a -> rom address
+         delayed rom @10	; keycode dispatch for most significant digit of instruction
+         a -> rom address	; using table at @14000
 
 L14571:  a - 1 -> a[xs]
          a - 1 -> a[xs]
@@ -5186,8 +5199,8 @@ L14620:  p <- 1
          a + 1 -> a[xs]
          a + 1 -> a[xs]
          p <- 4
-         delayed rom @10
-         a -> rom address
+         delayed rom @10	; keycode decode for 0C..0E
+         a -> rom address	; using table at @14054
 
 L14631:  p <- 4
          load constant 5
@@ -6401,8 +6414,9 @@ L16726:  delayed rom @04
 L16732:  delayed rom @14
          go to L16252
 
-L16734:  delayed rom @16
-         go to L17211
+op_grd_1:
+         delayed rom @16
+         go to op_grd
 
 L16736:  delayed rom @07
          go to L13400
@@ -6423,7 +6437,8 @@ L16746:  delayed rom @04
 
 L16751:  bank toggle go to L06752
 
-L16752:  go to L16734
+op_grd_2:
+         go to op_grd_1
 
 L16753:  bank toggle go to L06754
 
@@ -6431,7 +6446,7 @@ L16754:  go to L16736
 
 L16755:  bank toggle go to L06756
 
-         go to L16726
+L16756:  go to L16726
 
 L16757:  1 -> s 4
 L16760:  bank toggle go to L06761
@@ -6500,9 +6515,10 @@ L17031:  jsb S17010
          load constant 1
          go to L17027
 
-L17034:  0 -> c[w]
+L17034:  0 -> c[w]		; select I register
          c -> data address
          c -> register 15
+
          jsb S17140
          if c[x] # 0
            then go to L17045
@@ -6625,7 +6641,8 @@ L17206:  jsb S17140
          0 -> c[s]
          go to L17214
 
-L17211:  jsb S17140
+
+op_grd:  jsb S17140
          0 -> c[s]
          c + 1 -> c[s]
 L17214:  c + 1 -> c[s]
@@ -6663,7 +6680,8 @@ L17247:  if c[xs] = 0
            then go to L16755
          go to L17234
 
-S17252:  0 -> c[x]
+
+S17252:  0 -> c[x]		; select LASTx register
          p <- 1
          load constant 2
          c -> data address
@@ -6751,71 +6769,46 @@ L17360:  a - 1 -> a[p]
          c - 1 -> c[p]
          if a >= c[p]
            then go to L17441
-         delayed rom @17
-         a -> rom address
+         delayed rom @17	; instruction dispatch for most significant digit of instruction
+         a -> rom address	; using table at @17400
 
          nop
          nop
          nop
+
+; @17400: instruction dispatch table for most significant digit of instruction
+         go to L17775		; 0x: LBL
+         go to L17452		; 1x: SOLVE
+         go to L17454		; 2x: INTG
+         go to L17456		; 3x: ENG
+         go to L17460		; 4x: SCI
+         go to L17462		; 5x: FIX
+         go to L17465		; 6x: RCL
+         go to L17464		; 7x: RCL.
+         go to L17473		; 8x: STO
+         go to L17472		; 9x: STO.
+         go to L17534		; Ax: STO-
+         go to L17540		; Bx: STO+
+         go to L17542		; Cx: STO*
+         go to L17545		; Dx: STO/
+         1 -> s 4		; Ex: GTO
+         go to L17437		; Fx: GSB
+
+; @17420: ?
          go to L17775
-
-         go to L17452
-
-         go to L17454
-
-         go to L17456
-
-         go to L17460
-
-         go to L17462
-
-         go to L17465
-
-         go to L17464
-
-         go to L17473
-
-         go to L17472
-
-         go to L17534
-
-         go to L17540
-
-         go to L17542
-
-         go to L17545
-
-         1 -> s 4
-         go to L17437
-
-         go to L17775
-
          go to L17444
-
          go to L17446
-
          go to L17450
-
          go to L17725
-
          go to L17626
-
          go to L17644
-
          go to L17734
-
          go to L17716
-
          go to L17654
-
          go to L17550
-
          go to L17554
-
          go to L17560
-
          go to L17564
-
          1 -> s 4
 L17437:  delayed rom @15
          go to L16663
