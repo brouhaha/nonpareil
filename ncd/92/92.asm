@@ -88,7 +88,7 @@ L00052:  jsb S00366
 
 L00064:  jsb S00206
          delayed rom @10
-         bank toggle
+         bank toggle go to L14067
 
 L00067:  jsb S00366
          p <- 2
@@ -117,7 +117,7 @@ L00110:  pick print home?
 
 L00114:  jsb S00206
          delayed rom @10
-         bank toggle
+         bank toggle go to L14117
 
 L00117:  jsb S00366
          1 -> s 4
@@ -139,7 +139,7 @@ L00135:  0 -> s 3
 
 L00137:  jsb S00206
          delayed rom @12
-         bank toggle
+         bank toggle go to L15142
 
 S00142:  p <- 5
 L00143:  0 -> s 3
@@ -413,6 +413,7 @@ L00475:  delayed rom @10
          display off
          go to S00617
 
+; @00501:
          go to L00623
 
 L00502:  go to L00542
@@ -490,6 +491,7 @@ L00570:  jsb S00762
          down rotate
          go to L00665
 
+; @00601:
          go to L00604
 
          go to L00604
@@ -701,13 +703,13 @@ L01034:  0 -> c[w]
          p <- 11
          0 -> c[wp]
          p <- 7
-         load constant 2
-         load constant 4
-         load constant 3
-         load constant 10
-         load constant 8
-         load constant 3
-         load constant 6
+         load constant 2	; 0010 0100 0011 1010 1000 0011 0110 0110
+         load constant 4	; "CLEAR" for PIK print6 instruction
+         load constant 3	; C 10 0100
+         load constant 10	; L         0011 10
+         load constant 8	; E                10 1000
+         load constant 3	; A                        0011 01
+         load constant 6	; R                               10 0110
          load constant 6
          if 0 = s 15
            then go to L01057
@@ -1349,7 +1351,7 @@ S02056:  delayed rom @07
 L02061:  delayed rom @10
          jsb S04337
 S02063:  1 -> s 14
-         bank toggle
+         bank toggle go to L12065
 
 L02065:  jsb S02054
          jsb S02365
@@ -1383,7 +1385,7 @@ L02075:  data -> c
 S02117:  0 -> a[w]
          a + 1 -> a[s]
          shift right a[w]
-         return
+L02122:  return
 
 S02123:  delayed rom @07
          go to S03466
@@ -1399,7 +1401,7 @@ S02126:  load constant 4
          load constant 3
          return
 
-S02137:  bank toggle
+S02137:  bank toggle go to L12140
 
 S02140:  delayed rom @07
          go to S03622
@@ -1519,7 +1521,7 @@ S02303:  register -> c 5
 
 S02305:  register -> c 6
 S02306:  1 -> s 7
-         bank toggle
+         bank toggle go to L12310
 
 L02310:  load constant 1
          a exchange c[w]
@@ -1580,7 +1582,7 @@ L02374:  a + 1 -> a[p]
 
          nop
 
-L02400:  bank toggle
+L02400:  bank toggle go to L12401
 
          nop
          nop
@@ -1590,7 +1592,7 @@ L02404:  jsb S02621
          load constant 11
          go to L02463
 
-S02407:  bank toggle
+S02407:  bank toggle go to L12410
 
 L02410:  jsb S02416
          jsb S02576
@@ -1644,7 +1646,7 @@ L02456:  load constant 8
          load constant 12
          jsb S02474
          0 -> s 9
-L02462:  bank toggle
+L02462:  bank toggle go to L12463
 
 L02463:  load constant 0
          load constant 3
@@ -1908,12 +1910,12 @@ L03007:  load constant 12	; o   - tail end of display error
          nop
          nop
 
-S03022:  bank toggle
+S03022:  bank toggle go to L13023
 
          nop
 
 S03024:  1 -> s 7
-S03025:  bank toggle
+S03025:  bank toggle go to L13026
 
 L03026:  binary
          0 -> c[w]
@@ -1929,13 +1931,13 @@ L03026:  binary
          p <- 11
          0 -> c[wp]
          p <- 7
-         load constant 2
-         load constant 8
-         load constant 9
-         load constant 10
-         load constant 6
-         load constant 0
-         load constant 14
+         load constant 2	; 0010 1000 1001 1010 0110 0000 1110 0110
+         load constant 8	; "ERROR" for PIK print6 instruction
+         load constant 9	; E 10 1000
+         load constant 10	; R         1001 10
+         load constant 6	; R                10 1010
+         load constant 0	; O                        0000 11
+         load constant 14	; R                               10 0110
          load constant 6
          delayed rom @00
          jsb S00341
@@ -1956,7 +1958,7 @@ L03071:  1 -> s 4
 
 S03073:  1 -> s 7
 S03074:  1 -> s 14
-         bank toggle
+         bank toggle go to S13076
 
 S03076:  delayed rom @00
          go to L00360
@@ -1976,7 +1978,7 @@ L03107:  jsb S03341
          load constant 1
          load constant 2
          jsb S03102
-         bank toggle
+         bank toggle go to L13115
 
          delayed rom @00
          go to L00252
@@ -2191,10 +2193,10 @@ L03414:  b exchange c[w]
          go to L00267
 
 S03420:  1 -> s 14
-         bank toggle
+         bank toggle go to S13422
 
 S03422:  1 -> s 7
-         bank toggle
+         bank toggle go to L13424
 
          nop
          nop
@@ -2204,7 +2206,7 @@ S03422:  1 -> s 7
          nop
 
          1 -> s 7
-S03433:  bank toggle
+S03433:  bank toggle go to L13434
 
 L03434:  jsb S03622
          p <- 1
@@ -2237,7 +2239,7 @@ L03460:  shift right c[w]
          nop
 
 S03466:  1 -> s 7
-         bank toggle
+         bank toggle go to L13470
 
 L03470:  c - 1 -> c[p]
          p <- 2
@@ -2253,7 +2255,7 @@ L03477:  pick print cr?
          go to L03556
 
          1 -> s 7
-L03505:  bank toggle
+L03505:  bank toggle go to L13506
 
 L03506:  p - 1 -> p
          a + 1 -> a[p]
@@ -2287,7 +2289,7 @@ L03536:  1 -> s 15
          go to L01552
 
 S03543:  1 -> s 7
-         bank toggle
+         bank toggle go to L13545
 
 L03545:  load constant 12
 L03546:  a exchange c[ms]
@@ -2298,13 +2300,13 @@ L03546:  a exchange c[ms]
 
 S03553:  1 -> s 7
 L03554:  1 -> s 14
-         bank toggle
+         bank toggle go to S13556
 
 L03556:  0 -> s 3
          go to L03566
 
          1 -> s 7
-L03561:  bank toggle
+L03561:  bank toggle go to L13562
 
 L03562:  m1 exchange c
 S03563:  a exchange b[x]
@@ -2373,7 +2375,7 @@ S03643:  0 -> c[w]
          go to L03567
 
 S03653:  1 -> s 7
-         bank toggle
+         bank toggle go to L13655
 
 L03655:  if 0 = s 15
            then go to L03210
@@ -2487,7 +2489,7 @@ S04014:  delayed rom @13
 S04016:  delayed rom @07
          go to S03622
 
-L04020:  bank toggle
+L04020:  bank toggle go to L14021
 
 L04021:  jsb S04016
          delayed rom @13
@@ -3048,7 +3050,7 @@ S05025:  delayed rom @13
 S05027:  delayed rom @05
          go to S02407
 
-L05031:  bank toggle
+L05031:  bank toggle go to L15032
 
 L05032:  jsb S05024
          1 -> s 2
@@ -3518,7 +3520,7 @@ S05677:  load constant 9
 L05705:  if s 1 = 1
            then go to L05765
          delayed rom @07
-         bank toggle
+         bank toggle go to L13711
 
 L05711:  jsb S05674
          load constant 10
@@ -3570,7 +3572,7 @@ L05761:  m2 exchange c
          nop
 
 L05765:  delayed rom @11
-         bank toggle
+         bank toggle go to L14767
 
          nop
          nop
@@ -4770,7 +4772,7 @@ L12062:  if 0 = s 14
            then go to L13114
          go to L12117
 
-         0 -> a[w]
+L12065:  0 -> a[w]
          p <- 12
          f -> a[x]
 L12070:  if p = 2
@@ -4800,7 +4802,7 @@ L12112:  if a[p] # 0
 L12116:  0 -> c[w]
 L12117:  0 -> s 14
          0 -> s 7
-         bank toggle
+         bank toggle go to L02122
 
 L12122:  a exchange c[w]
          shift left a[x]
@@ -4818,7 +4820,7 @@ L12131:  p <- 3
          p <- 8
          return
 
-         0 -> a[w]
+L12140:  0 -> a[w]
          0 -> b[ms]
          p <- 12
          f -> a[x]
@@ -4929,7 +4931,7 @@ L12303:  p <- 1
          p <- 7
          return
 
-         1 -> s 14
+L12310:  1 -> s 14
          c -> a[w]
          decimal
          p <- 12
@@ -5001,7 +5003,7 @@ L12403:  a exchange b[s]
          0 -> c[w]
          go to L12572
 
-         1 -> s 14
+L12410:  1 -> s 14
 S12411:  if c[m] # 0
            then go to L12414
          0 -> c[w]
@@ -5048,7 +5050,7 @@ L12460:  a + 1 -> a[x]
          p - 1 -> p
          go to L12726
 
-         jsb S12476
+L12463:  jsb S12476
          if s 9 = 1
            then go to L12401
          delayed rom @06
@@ -5288,10 +5290,10 @@ L13017:  delayed rom @05
          b exchange c[w]
          go to L13247
 
-         0 -> a[w]
+L13023:  0 -> a[w]
          a exchange c[m]
          1 -> s 7
-         1 -> s 14
+L13026:  1 -> s 14
 S13027:  if c[s] # 0
            then go to L13767
          0 -> a[s]
@@ -5349,7 +5351,7 @@ S13105:  a - b -> a[w]
          p - 1 -> p
 L13114:  return
 
-         jsb S13015
+L13115:  jsb S13015
          delayed rom @03
          go to L01531
 
@@ -5578,7 +5580,7 @@ L13421:  go to S13645
 S13422:  delayed rom @06
          go to S13340
 
-         1 -> s 14
+L13424:  1 -> s 14
 S13425:  0 -> b[w]
          a exchange b[s]
          a exchange b[x]
@@ -5587,7 +5589,7 @@ S13430:  m1 exchange c
          0 -> c[x]
          go to S13435
 
-         1 -> s 14
+L13434:  1 -> s 14
 S13435:  a exchange b[w]
          m1 exchange c
          a + c -> c[x]
@@ -5619,7 +5621,7 @@ S13463:  0 -> c[w]
 L13466:  c -> data address
          return
 
-         1 -> s 14
+L13470:  1 -> s 14
 S13471:  if c[m] = 0
            then go to L12770
          0 -> b[w]
@@ -5635,7 +5637,7 @@ S13502:  0 -> a[w]
          b exchange c[w]
          return
 
-         1 -> s 14
+L13506:  1 -> s 14
 L13507:  if c[m] = 0
            then go to L12770
 L13511:  m1 exchange c
@@ -5669,7 +5671,7 @@ S13541:  m1 exchange c
          0 -> c[x]
          return
 
-         1 -> s 14
+L13545:  1 -> s 14
 S13546:  m1 exchange c
          m1 -> c
          0 - c - 1 -> c[s]
@@ -5684,7 +5686,7 @@ S13556:  0 -> c[s]
 
          nop
 
-         1 -> s 14
+L13562:  1 -> s 14
 L13563:  0 -> c[s]
          m1 exchange c
          0 - c - 1 -> c[s]
@@ -5752,7 +5754,7 @@ L13651:  0 -> c[w]
          load constant 1
          go to L13466
 
-         1 -> s 14
+L13655:  1 -> s 14
 S13656:  m1 exchange c
          m1 -> c
          go to L13551
@@ -5786,7 +5788,7 @@ S13704:  delayed rom @10
          c -> register 11
          return
 
-         jsb S13704
+L13711:  jsb S13704
          delayed rom @10
          jsb S14172
          jsb S13456
@@ -5880,7 +5882,8 @@ S14017:  select rom go to L13420
 
 S14020:  select rom go to L13421
 
-         jsb S14172
+
+L14021:  jsb S14172
          jsb S14201
          jsb S14011
          register -> c 4
@@ -5920,7 +5923,7 @@ S14062:  0 -> c[w]
          c -> data address
          return
 
-         jsb S14172
+L14067:  jsb S14172
          jsb S14201
          jsb S14011
          if 0 = s 10
@@ -5946,7 +5949,7 @@ L14075:  jsb S14015
 
          nop
 
-         jsb S14172
+L14117:  jsb S14172
          0 -> s 1
          0 -> s 2
          jsb S14203
@@ -6406,7 +6409,7 @@ L14762:  1 -> s 4
 S14765:  delayed rom @12
          go to S15366
 
-         delayed rom @07
+L14767:  delayed rom @07
          jsb S13704
          1 -> s 11
          delayed rom @12
@@ -6464,7 +6467,7 @@ S15026:  delayed rom @07
 S15030:  delayed rom @11
          go to S14414
 
-         delayed rom @10
+L15032:  delayed rom @10
          jsb S14172
          0 -> s 1
          delayed rom @10
@@ -6539,7 +6542,7 @@ L15117:  jsb S15012
            then go to L15076
          go to L15075
 
-         0 -> s 11
+L15142:  0 -> s 11
 L15143:  jsb S15010
          jsb S15007
          c - 1 -> c[x]
