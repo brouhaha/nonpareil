@@ -1210,7 +1210,7 @@ L04063:  jsb S04043
          go to L04061
 
 
-; inverse trigonometric functions, continued
+; inverse trigonometric functions - part 2
 L04065:  0 -> b[w]
          c -> a[w]
          a exchange b[m]
@@ -1490,7 +1490,11 @@ L04462:  1 -> s 13
          stack -> a
          a exchange c[w]
 
-; trigonometric functions
+; trigonometric functions - part 2
+;    S13=1  S10=0  S6=1   polar to rectangular
+;    S13=0  S10=1  S6=1   sin
+;    S13=0  S10=0  S6=1   cos
+;    S13=0  S10=0  S6=0   tan
 L04466:  0 -> a[w]
          0 -> b[w]
          a exchange c[m]
@@ -1871,7 +1875,8 @@ S05200:  c -> a[wp]
          0 -> c[x]
          return
 
-L05214:  0 -> a[w]
+
+op_to_rad:  0 -> a[w]
          delayed rom @10
          jsb S04232
          b exchange c[w]
@@ -1881,7 +1886,9 @@ L05214:  0 -> a[w]
          jsb S05007
          go to L05101
 
-L05225:  c -> a[w]
+
+op_to_deg:
+         c -> a[w]
          jsb S05234
          jsb S05003
          delayed rom @10
@@ -2669,6 +2676,8 @@ L06534:  rotate left a
          go to L06766
 
          nop
+
+
 L06540:  0 -> c[x]
          p <- 0
          load constant 5
@@ -2687,6 +2696,7 @@ L06556:  m2 -> c
          decimal
          return
 
+
 error_2: p <- 2			; improper register number
 L06562:  delayed rom @04
          go to L02004
@@ -2699,7 +2709,7 @@ L06565:  delayed rom @03
          p <- 1
          go to L06562
 
-L06573:  if c[xs] # 0
+op_fact: if c[xs] # 0
            then go to L06635
          delayed rom @16
          jsb S07263
@@ -2838,7 +2848,8 @@ L06755:  bank toggle go to L16756
 L06756:  delayed rom @14
          go to L06016
 
-L06760:  bank toggle go to L16761
+op_x_exch_ind_i3:
+         bank toggle go to op_x_exch_ind_i2
 
 L06761:  go to L06461
 
@@ -2876,7 +2887,7 @@ L07000:  jsb S07230
          shift left a[x]
          a -> rom address
 
-L07005:  jsb S07041
+op_frac:  jsb S07041
          0 -> a[x]
          delayed rom @00
          jsb shf10
@@ -2884,6 +2895,8 @@ L07005:  jsb S07041
 L07012:  delayed rom @04
          go to L02002
 
+
+; @07014: dispatch table for instructions 0C..0E
          go to op_lastx		; 0C: LASTx
 
          go to op_grd_4		; 0D: GRD
@@ -2891,28 +2904,34 @@ L07012:  delayed rom @04
          delayed rom @17	; 0E: ISG
          go to op_isg
 
-L07020:  y -> a
+
+op_x_le_y:  y -> a
 L07021:  0 - c - 1 -> c[s]
          jsb S07345
          if c[s] # 0
            then go to L06755
          go to L07224
 
-L07026:  if c[s] # 0
+op_x_greater_than_zero:
+         if c[s] # 0
            then go to L06755
-         go to L07141
+         go to op_x_not_equal_zero
 
-L07031:  delayed rom @02
-         jsb S01041
+op_e_to_x:
+         delayed rom @02
+         jsb S01041	; exp10
          go to L07012
 
-         go to L07372
 
-         go to L07031
+; @07034: dispatch table for instructions 1C..1E
+         go to op_fact1		; 1C: factorial
 
-         delayed rom @01
+         go to op_e_to_x	; 1D: e^x
+
+         delayed rom @01	; 1E: ln
          jsb S00540
          go to L07012
+
 
 S07041:  c -> a[w]
          p <- 12
@@ -2928,11 +2947,13 @@ op_lastx:
 L07052:  data -> c
          go to L07362
 
-         go to L07331
 
-         go to L07200
+; @07054: dispatch table for instructions 2C..2E
+         go to op_1_over_x	; 2C: 1/x
 
-         delayed rom @01
+         go to op_ten_to_x	; 2D: 10^x
+
+         delayed rom @01	; 2E: LOG
          jsb S00540
          0 -> c[w]
          m1 exchange c
@@ -2944,19 +2965,24 @@ L07052:  data -> c
          jsb dv2-13
          go to L07012
 
-L07071:  jsb S07160
+
+op_to_polar:
+         jsb S07160
          delayed rom @10
          go to L04005
 
-         go to L07226
 
-         go to L07321
+; @07074: dipatch table for instructions 3C..3E
+         go to op_y_to_x	; 3C: y^x
 
-         delayed rom @00
+         go to op_x_squared	; 3D: x^2
+
+         delayed rom @00	; 3E: sqrt(x)
          jsb sqr10
          go to L07012
 
-L07101:  y -> a
+
+op_delta_percent:  y -> a
          a exchange c[s]
          0 - c - 1 -> c[s]
          a exchange c[s]
@@ -2970,13 +2996,16 @@ S07110:  delayed rom @15
 L07112:  delayed rom @15
          go to L06753
 
-         go to L07250
 
-         go to L07071
+; @07114: displatch table for instructions 4C..4E
+         go to op_y_hat		; 4C: y hat
 
-         jsb S07160
+         go to op_to_polar	; 4D: ->P
+
+         jsb S07160		; 4E ->R
          delayed rom @11
          go to L04462
+
 
 L07121:  y -> a
          a exchange c[w]
@@ -2986,27 +3015,35 @@ L07121:  y -> a
          jsb dv1-10
          go to L07012
 
-L07130:  1 -> s 6
-L07131:  jsb S07110
+op_correlation_coefficient:
+         1 -> s 6
+op_std_dev:
+         jsb S07110
          delayed rom @12
          go to L05241
 
-         go to L07130
 
-         go to L07351
+; @07134: dispatch table for instructions 05C..05E
+         go to op_correlation_coefficient	; 05C: r
 
-         go to L07232
+         go to op_to_rad1	; 05D: ->RAD
 
-L07137:  y -> a
+         go to op_to_deg1	; 05E: ->DEG
+
+
+op_x_not_equal_y:
+         y -> a
          a - c -> c[w]
-L07141:  if c[w] = 0
+op_x_not_equal_zero:
+         if c[w] = 0
            then go to L06755
          go to L07224
 
-L07144:  y -> a
+op_x_greater_than_y:  y -> a
 L07145:  0 - c - 1 -> c[s]
          jsb S07345
-L07147:  if c[s] = 0
+op_x_lt_zero:
+         if c[s] = 0
            then go to L06755
          go to L07224
 
@@ -3014,12 +3051,22 @@ op_grd_4:
          delayed rom @15
          go to op_grd_3
 
-         go to L07247
 
-         1 -> s 8
-         delayed rom @12
+; @07154: dispatch table for instructions 6C..6E
+         go to op_linear_regression	; 6C: L.R.
+
+         1 -> s 8		; 6D: ->H
+         delayed rom @12	; 6E: ->HMS
          go to L05115
 
+
+; trig, inv trig - part 1
+;     s13=1  s10=0  s6=1   arcsin
+;     s13=1  s10=1  s6=1   arccos
+;     s13=1  s10=0  s6=0   arctan
+;     s13=0  s10=1  s6=1   sin
+;     s13=0  s10=0  s6=1   cos
+;     s13=0  s10=0  s6=0   tan (used as subroutine by ->P)
 S07160:  delayed rom @17
          jsb S07411
          if c[s] = 0
@@ -3035,13 +3082,14 @@ L07171:  jsb S07230
 
 
 ; @07174: dispatch table for instructions 7C..7E
-         go to L07101		; 7C: L.R.
-         go to L07242		; 7D: sin-1
+         go to op_delta_percent	; 7C: delta %
+         go to op_arcsin	; 7D: sin-1
          1 -> s 10		; 7E: sin
          go to L07216
 
 
-L07200:  0 -> a[w]
+op_ten_to_x:
+         0 -> a[w]
          delayed rom @03
          jsb S01651
          m2 -> c
@@ -3051,69 +3099,87 @@ L07200:  0 -> a[w]
          jsb S01016
          go to L07012
 
-L07211:  jsb S07263
+
+op_int:  jsb S07263
          go to L07012
 
          nop
-         go to L07311
-
-         go to L07241
 
 
-; sin
-L07216:  1 -> s 6
+; @07214: dispatch table for instructions 8C...8E
+         go to L07311		; 8C: mean
+
+         go to op_arccos	; 8D: cos-1
+
+L07216:  1 -> s 6		; 8E: cos (sin comes here, after setting s 10)
          go to L07236
 
 
-L07220:  y -> a
+op_x_equal_y:  y -> a
          a - c -> c[w]
-L07222:  if c[w] # 0
+op_x_equal_zero:
+         if c[w] # 0
            then go to L06755
 L07224:  delayed rom @04
          go to L02024
 
-L07226:  delayed rom @02
-         go to L01331
+
+op_y_to_x:
+         delayed rom @02
+         go to L01331		; xy_to_x
 
 S07230:  delayed rom @17
          go to S07402
 
-L07232:  delayed rom @12
-         go to L05225
+op_to_deg1:
+         delayed rom @12
+         go to op_to_deg
 
-         go to L07131
 
-         go to L07243
+; @07234: dispatch table for instructions 9C..9E
+         go to op_std_dev	; 9C: std dev
 
-L07236:  jsb S07160
+         go to op_arctan	; 9D: tan-1
+
+L07236:  jsb S07160		; 9E: tan (sin and cos come here, after setting flags)
          delayed rom @11
          go to L04466
 
 
 ; inverse trigonometric functions
-L07241:  1 -> s 10
-L07242:  1 -> s 6
-L07243:  1 -> s 13
+op_arccos:
+         1 -> s 10
+op_arcsin:
+         1 -> s 6
+op_arctan:
+         1 -> s 13
          jsb S07160
          delayed rom @10
          go to L04065
 
 
-L07247:  1 -> s 6
-L07250:  1 -> s 4
-         go to L07131
+op_linear_regression:
+         1 -> s 6
+op_y_hat:
+         1 -> s 4
+         go to op_std_dev
 
-L07252:  down rotate
+
+op_roll_down:
+         down rotate
          go to L07362
 
-         go to L07323
 
-         go to L07147
+; @07254: dispatch table for instructions AC..AF
+         go to op_percent	; AC: %
 
-         go to L07020
+         go to op_x_lt_zero	; AD: x<0
 
-         0 - c - 1 -> c[s]
-L07260:  stack -> a
+	 go to op_x_le_y	; AE: x<=y
+
+         0 - c - 1 -> c[s]	; AF: -
+op_addition:
+         stack -> a
          jsb S07345
          go to L07012
 
@@ -3128,13 +3194,16 @@ L07271:  jsb S07110
          delayed rom @13
          go to L05477
 
-         go to L07211
 
-         go to L07026
+; @07274: dispatch table for instructions BC..BE
+         go to op_int			; BC: INT
 
-         go to L07144
+         go to op_x_greater_than_zero	; BD: x>0
 
-         go to L07260
+         go to op_x_greater_than_y	; BE: x>y
+
+         go to op_addition		; BF: +
+
 
 L07300:  c + 1 -> c[x]
 L07301:  if c[x] = 0
@@ -3150,82 +3219,105 @@ L07311:  jsb S07110
          delayed rom @03
          go to L01545
 
-         go to L07005
+; @07314: dispatch table for instructions CC..CF
+         go to op_frac			; CC: FRAC
 
-         go to L07141
+         go to op_x_not_equal_zero	; CD: x/=0
 
-         go to L07137
+         go to op_x_not_equal_y		; CD: x/=y
 
-         stack -> a
+         stack -> a			; CE: *
          go to L07326
 
-L07321:  c -> a[w]
+
+op_x_squared:
+         c -> a[w]
          go to L07326
 
-L07323:  y -> a
+
+op_percent:
+         y -> a
          c - 1 -> c[x]
          c - 1 -> c[x]
 L07326:  delayed rom @00
          jsb mp2-10
          go to L07012
 
-L07331:  delayed rom @00
+op_1_over_x:
+         delayed rom @00
          jsb 1/x10
          go to L07012
 
-         go to L07343
 
-         go to L07222
+; @07334: dispatch table for instructions DC...DF
+         go to op_abs		; DC: ABS
 
-         go to L07220
+         go to op_x_equal_zero	; DD: x=0
 
-         if c[m] # 0
+         go to op_x_equal_y	; DE: x=y
+
+         if c[m] # 0		; DF  divide
            then go to L06741
-         delayed rom @04		; error 0
+         delayed rom @04	; error 0
          go to L02003
 
-L07343:  0 -> c[s]
+
+op_abs:  0 -> c[s]
          go to L07012
+
 
 S07345:  delayed rom @00
          go to ad2-10
 
-L07347:  delayed rom @15
-         go to L06760
 
-L07351:  delayed rom @12
-         go to L05214
+op_x_exch_ind_i4:
+         delayed rom @15
+         go to op_x_exch_ind_i3
+
+
+op_to_rad1:
+         delayed rom @12
+         go to op_to_rad
 
          nop
-         go to L07347
 
-         go to L07252
 
-         go to L07364
+; @07354: dispatch table for instructions EC..EF
+         go to op_x_exch_ind_i4	; EC: x<>(i)
 
-         stack -> a
+         go to op_roll_down	; ED: Rdn
+
+         go to op_x_exch_i	; EE: x<>I
+
+         stack -> a		; EF: x<>y
          c -> stack
          a exchange c[w]
 L07362:  delayed rom @04
          go to L02000
 
-L07364:  0 -> c[w]
+
+op_x_exch_i:
+         0 -> c[w]
          c -> data address
          register -> c 15
          m2 exchange c
          delayed rom @15
          go to L06720
 
-L07372:  delayed rom @15
-         go to L06573
-
-         go to L07112
-
-         1 -> s 4
-         go to L07271
-
+op_fact1:
          delayed rom @15
+         go to op_fact
+
+
+; @07374: dispatch table for instructions FC..FF
+         go to L07112		; FC: PSE
+
+         1 -> s 4		; FD: Sigma-
+         go to L07271		; FE: Sigma+
+
+         delayed rom @15	; FF: R/S
          go to L06762
+
 
 S07401:  select rom @00 (x-ad1-10)
 
@@ -6421,8 +6513,9 @@ op_grd_1:
 L16736:  delayed rom @07
          go to L13400
 
-L16740:  delayed rom @17
-         go to L17747
+op_x_exch_ind_i1:
+         delayed rom @17
+         go to op_x_exch_ind_i
 
 L16742:  delayed rom @07
          go to L13757
@@ -6451,7 +6544,8 @@ L16756:  go to L16726
 L16757:  1 -> s 4
 L16760:  bank toggle go to L06761
 
-L16761:  go to L16740
+op_x_exch_ind_i2:
+         go to op_x_exch_ind_i1
 
 L16762:  bank toggle go to L06763
 
@@ -6794,6 +6888,7 @@ L17360:  a - 1 -> a[p]
          1 -> s 4		; Ex: GTO
          go to L17437		; Fx: GSB
 
+
 ; @17420: ?
          go to L17775
          go to L17444
@@ -6812,6 +6907,7 @@ L17360:  a - 1 -> a[p]
          1 -> s 4
 L17437:  delayed rom @15
          go to L16663
+
 
 L17441:  a + 1 -> a[xs]
          c + 1 -> c[p]
@@ -7047,12 +7143,15 @@ S17742:  m2 -> c
          c -> stack
 L17746:  return
 
-L17747:  0 -> c[x]
+
+op_x_exch_ind_i:
+         0 -> c[x]
          c -> data address
          jsb S17570
          c -> data
          a exchange c[w]
          go to L17470
+
 
 S17755:  c -> a[w]
          p <- 12
