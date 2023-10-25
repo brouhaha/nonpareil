@@ -1,21 +1,23 @@
 /*
-Copyright 1995, 2003-2008, 2010, 2022 Eric Smith <spacewar@gmail.com>
+Copyright 1995-2023 Eric Smith <spacewar@gmail.com>
+SPDX-License-Identifier: GPL-3.0-only
 
-Nonpareil is free software; you can redistribute it and/or modify it
-under the terms of the GNU General Public License version 2 as
-published by the Free Software Foundation.  Note that I am not
-granting permission to redistribute or modify Nonpareil under the
-terms of any later version of the General Public License.
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License version 3 as
+published by the Free Software Foundation.
 
-Nonpareil is distributed in the hope that it will be useful, but
+Note that permission is NOT granted to redistribute and/or modify
+this porogram under the terms of any other version, earlier or
+later, of the GNU General Public License.
+
+This program is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-General Public License for more details.
+General Public License version 3 for more details.
 
 You should have received a copy of the GNU General Public License
-along with this program (in the file "COPYING"); if not, write to the
-Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
-MA 02111, USA.
+version 3 along with this program (in the file "gpl-3.0.txt"); if not,
+see <https://www.gnu.org/licenses/>.
 */
 
 #include <inttypes.h>
@@ -126,7 +128,7 @@ static reg_detail_t nut_cpu_reg_detail [] =
   // prev_tef_last
 #endif // NUT_BUGS
 
-  // NR  ("selprf",  selprf,  4,     16,   NULL,      NULL,      0),
+  // NR  ("selpf",   selpf,   4,     16,   NULL,      NULL,      0),
 
   // display_enable
 };
@@ -1062,24 +1064,24 @@ static void op_test_ext_flag (sim_t *sim, int opcode)
 }
 
 
-static void op_selprf (sim_t *sim, int opcode)
+static void op_selpf (sim_t *sim, int opcode)
 {
   nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
 
-  nut_reg->selprf = opcode >> 6;
-  nut_reg->inst_state = inst_nut_selprf;
+  nut_reg->selpf = opcode >> 6;
+  nut_reg->inst_state = inst_nut_selpf;
 }
 
 
-// This "opcode" handles all instructions following a selprf (AKA
-// PERTCT or SELP) instruction until a return of control.
+// This "opcode" handles all instructions following a selpf (AKA
+// PERTCT, SELP, or SELPRF) instruction until a return of control.
 static void op_smart_periph (sim_t *sim, int opcode)
 {
   nut_reg_t *nut_reg = get_chip_data (sim->first_chip);
   bool flag = false;
 
-  if (nut_reg->selprf_fcn [nut_reg->selprf])
-    flag = nut_reg->selprf_fcn [nut_reg->selprf] (sim, opcode);
+  if (nut_reg->selpf_fcn [nut_reg->selpf])
+    flag = nut_reg->selpf_fcn [nut_reg->selpf] (sim, opcode);
   if ((opcode & 0x03f) == 0x003)
     nut_reg->carry = flag;
   if (opcode & 1)
@@ -1762,7 +1764,7 @@ static void nut_init_ops (nut_reg_t *nut_reg)
   for (i = 0; i < 16; i++)
     {
       nut_reg->op_fcn [0x010 + (i << 6)] = op_lc;
-      nut_reg->op_fcn [0x024 + (i << 6)] = op_selprf;
+      nut_reg->op_fcn [0x024 + (i << 6)] = op_selpf;
       nut_reg->op_fcn [0x028 + (i << 6)] = op_write_reg_n;
       nut_reg->op_fcn [0x038 + (i << 6)] = op_read_reg_n;
     }
@@ -1943,7 +1945,7 @@ static bool nut_execute_cycle (sim_t *sim)
       nut_reg->pc++;
       op_ldi_cycle_2 (sim, opcode);
       break;
-    case inst_nut_selprf:
+    case inst_nut_selpf:
       nut_reg->pc++;
       op_smart_periph (sim, opcode);
       break;

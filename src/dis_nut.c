@@ -1,22 +1,23 @@
 /*
-$Id$
-Copyright 2004, 2005, 2007-2010 Eric Smith <eric@brouhaha.com>
+Copyright 2004-2023 Eric Smith <spacewar@gmail.com>
+SPDX-License-Identifier: GPL-3.0-only
 
-Nonpareil is free software; you can redistribute it and/or modify it
-under the terms of the GNU General Public License version 2 as
-published by the Free Software Foundation.  Note that I am not
-granting permission to redistribute or modify Nonpareil under the
-terms of any later version of the General Public License.
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License version 3 as
+published by the Free Software Foundation.
 
-Nonpareil is distributed in the hope that it will be useful, but
+Note that permission is NOT granted to redistribute and/or modify
+this porogram under the terms of any other version, earlier or
+later, of the GNU General Public License.
+
+This program is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-General Public License for more details.
+General Public License version 3 for more details.
 
 You should have received a copy of the GNU General Public License
-along with this program (in the file "COPYING"); if not, write to the
-Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
-MA 02111, USA.
+version 3 along with this program (in the file "gpl-3.0.txt"); if not,
+see <https://www.gnu.org/licenses/>.
 */
 
 #include <stdbool.h>
@@ -33,6 +34,34 @@ MA 02111, USA.
 #include "proc.h"
 #include "digit_ops.h"
 #include "proc_nut.h"
+
+
+static int nut_disassemble_selpf (int op1,
+				  inst_state_t *inst_state,
+				  bool *new_carry_known_clear,
+				  char *buf,
+				  int len)
+{
+  if (op1 & 0x001)
+  {
+    *inst_state = inst_normal;
+  }
+
+  if ((op1 & 0x003) == 0x000)
+    buf_printf(&buf, &len, "pfchnr 0x%02x", op1 >> 2);
+  else if ((op1 & 0x003) == 0x001)
+    buf_printf(&buf, &len, "pfchr  0x%02x", op1 >> 2);
+  else if ((op1 & 0x03f) == 0x03a)
+    buf_printf(&buf, &len, "c=pfnr %d", op1 >> 6);
+  else if ((op1 & 0x03f) == 0x03b)
+    buf_printf(&buf, &len, "c=pfr  %d", op1 >> 6);
+  else if ((op1 & 0x03f) == 0x003)
+    buf_printf(&buf, &len, "?pfsft %d", op1 >> 6);
+  else
+    buf_printf(&buf, &len, "??? 0x03x%", op1);
+
+  return true;
+}
 
 
 static int nut_disassemble_short_branch (rom_word_t op1,
@@ -283,6 +312,7 @@ static int tmap [16] =
 
 static int nut_disassemble_misc (int op1,
 				 int op2,
+				 inst_state_t *inst_state,
 				 bool *new_carry_known_clear,
 				 flow_type_t *flow_type,
 				 char *buf,
@@ -351,7 +381,8 @@ static int nut_disassemble_misc (int op1,
       *flow_type = nut_op20 [op1 >> 6].flow_type;
       break;
     case 0x024:
-      buf_printf (& buf, & len, "selprf %d", arg);
+      buf_printf (& buf, & len, "selpf %d", arg);
+      *inst_state = inst_nut_selpf;
       break;
     case 0x028:
       buf_printf (& buf, & len, "reg=c %d", arg);
@@ -509,13 +540,15 @@ bool nut_disassemble (sim_t        *sim,
 {
   bool new_carry_known_clear = true;
   bool status;
-  bool two_word, three_word;
+  bool two_word = false;
+  bool three_word = false;
   rom_word_t op1;
   rom_word_t op2 = 0;
   rom_word_t op3 = 0;
   addr_t base_addr = *addr;
 
-  if ((*inst_state) != inst_normal)
+  if (((*inst_state) != inst_normal) &&
+      ((*inst_state) != inst_nut_selpf))
     return false;
 
   *flow_type = flow_no_branch;
@@ -524,21 +557,24 @@ bool nut_disassemble (sim_t        *sim,
     return false;
   (*addr) = ((*addr) + 1) & 0xffff;
 
-  two_word = nut_two_word_instruction (op1);
-  if (two_word)
+  if (*inst_state == inst_normal)
+  {
+    two_word = nut_two_word_instruction (op1);
+    if (two_word)
     {
       if (! sim_read_rom (sim, *bank, *addr, & op2))
 	return false;
       (*addr) = ((*addr) + 1) & 0xffff;
     }
 
-  three_word = (two_word && (flags & DIS_FLAG_NUT_41_JUMPS) && nut_three_word_instruction (op1, op2));
-  if (three_word)
+    three_word = (two_word && (flags & DIS_FLAG_NUT_41_JUMPS) && nut_three_word_instruction (op1, op2));
+    if (three_word)
     {
       if (! sim_read_rom (sim, *bank, *addr, & op3))
 	return false;
       (*addr) = ((*addr) + 1) & 0xffff;
     }
+  }
 
   if (flags & DIS_FLAG_LISTING)
     {
@@ -556,11 +592,22 @@ bool nut_disassemble (sim_t        *sim,
       buf_printf (& buf, & len, "<label>  ");
     }
 
-  switch (op1 & 3)
+  if (*inst_state == inst_nut_selpf)
+  {
+    status = nut_disassemble_selpf(op1,
+				   inst_state,
+				   & new_carry_known_clear,
+				   buf,
+				   len);
+  }
+  else
+  {
+    switch (op1 & 3)
     {
     case 0:
       status = nut_disassemble_misc (op1,
 				     op2,
+				     inst_state,
 				     & new_carry_known_clear,
 				     flow_type,
 				     buf,
@@ -598,6 +645,7 @@ bool nut_disassemble (sim_t        *sim,
 					     len);
       break;
     }
+  }
 
   *carry_known_clear = new_carry_known_clear;
 

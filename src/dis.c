@@ -59,7 +59,7 @@ void usage (FILE *f)
   fprintf (f, "Copyright 2005, 2006, 2007, 2008 Eric Smith <eric@brouhaha.com>\n");
   fprintf (f, "http://nonpareil.brouhaha.com/\n");
   fprintf (f, "\n");
-  fprintf (f, "usage: %s [options] model\n", progname);
+  fprintf (f, "usage: %s [options] model [module]\n", progname);
   fprintf (f, "options:\n");
   fprintf (f, "   -a  assembly source mode\n");
   fprintf (f, "   -l  listing mode (default)\n");
