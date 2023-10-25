@@ -22,6 +22,10 @@ MA 02111, USA.
 void init_debugger_gui (csim_t *csim);
 
 
+void debug_stop      (gpointer callback_data,
+		      guint    callback_action,
+		      GtkWidget *widget);
+
 void debug_run       (gpointer callback_data,
 		      guint    callback_action,
 		      GtkWidget *widget);

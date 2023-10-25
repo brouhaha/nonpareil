@@ -430,6 +430,14 @@ void debug_show_ram  (gpointer callback_data,
 }
 
 
+void debug_stop      (gpointer callback_data,
+		      guint    callback_action,
+		      GtkWidget *widget)
+{
+  sim_stop (dg_csim->sim);
+}
+
+
 void debug_run       (gpointer callback_data,
 		      guint    callback_action,
 		      GtkWidget *widget)
