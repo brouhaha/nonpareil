@@ -1,5 +1,5 @@
 ; 32E model-specific firmware, uses 1820-2162 CPU ROM
-; Copyright 2022 Eric Smith <spacewar@gmail.com>
+; Copyright 2022-2023 Eric Smith <spacewar@gmail.com>
 ; SPDX-License-Identifier: GPL-3.0-only
 
 ; HP-32E Q function reverse-engineered by mike-stgt:
@@ -18,17 +18,17 @@
 ; 2   digit entry has exponent
 ; 3   digit entry has decimal
 ; 4   general flag; in display formatting, exponent to be shown
-; 5
-; 6
+; 5   hardware: CRC check failure
+; 6   general flag
 ; 7
-; 8
+; 8   general flag
 ; 9   stack lift disable
-; 10
+; 10  general flag
 ; 11  digit entry
-; 12
-; 13
-; 14
-; 15 hardware - key pressed
+; 12  RAD
+; 13  general flag
+; 14  RAD, GRD
+; 15  hardware - key pressed
 
 ; P register values in main loop:
 ; 1   STO /
@@ -380,7 +380,7 @@ L02364:  0 -> s 0	; set fix mode
 format_display:
          m2 -> c
          b exchange c[w]
-         if s 11 = 1
+         if s 11 = 1		; in digit entry?
            then go to L03373
          decimal
          b -> c[w]
@@ -1239,10 +1239,10 @@ L03606:  if s 2 = 1		; already have exponent?
          if c[m] = 0
            then go to L03623
          m2 -> c
-         if b[wp] = 0
-           then go to L03602
-L03623:  p <- 12
-         delayed rom @04
+         if b[wp] = 0		; more than 7 mantissa digits?
+           then go to L03602	;   no
+L03623:  p <- 12		;   yes, clear prefix
+         delayed rom @04	;        and return to main loop
          go to L02031
 
 
