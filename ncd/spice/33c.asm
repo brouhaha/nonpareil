@@ -9,9 +9,23 @@
 
 	 .include "1820-2105.inc"
 
-; flags:
-; f  s4=1 s6=1
-; g  s4=1 s6=0
+; S bits:
+; 0
+; 1
+; 2
+; 3
+; 4   f or g prefix
+; 5
+; 6   f prefix
+; 7
+; 8
+; 9
+; 10
+; 11
+; 12  digit entry
+; 13
+; 14  ENG mode
+; 15
 
 	 .org @2000
 
@@ -498,7 +512,7 @@ L02664:  0 -> s 3
          c -> a[w]
          display off
          display toggle
-L02674:  0 -> s 15
+L02674:  0 -> s 15		; wait for key
          if s 15 = 1
            then go to L02674
 L02677:  0 -> c[x]
@@ -613,10 +627,10 @@ L03034:  jsb S03070
          if s 3 = 0
            then go to L03273
          delayed rom @10
-         jsb S04372
+         jsb format_display
 L03046:  display off
          display toggle
-L03050:  0 -> s 15
+L03050:  0 -> s 15		; wait for key
          if s 15 = 1
            then go to L03050
 L03053:  0 -> s 1
@@ -719,7 +733,7 @@ L03202:  display off
          0 -> s 3
          if s 3 = 0
            then go to L03050
-L03207:  0 -> s 15
+L03207:  0 -> s 15		; wait for key release
          if s 15 = 1
            then go to L03207
          display off
@@ -1161,7 +1175,7 @@ L03773:  a exchange c[p]
          delayed rom @06
          go to L03356
 
-	 .dw @0724			; CRC, quad 1 (@2000..@3777)
+         .dw @0724			; CRC, quad 1 (@2000..@3777)
 
          go to L04024
 
@@ -1489,10 +1503,12 @@ L04366:  shift left a[x]
 L04370:  jsb S04342
          go to L04161
 
-S04372:  m1 -> c
+
+format_display:
+         m1 -> c
          b exchange c[w]
-         if s 12 = 1
-           then go to L04544
+         if s 12 = 1		; in digit entry?
+           then go to L04544	;   yes
          decimal
          register -> c 8
          0 -> s 0
@@ -1513,8 +1529,8 @@ L04411:  b -> c[w]
          p <- 1
          load constant 1
          load constant 0
-         if a >= c[x]
-           then go to L04443
+         if a >= c[x]		; large exponent?
+           then go to L04443	;   yes, force SCI
          0 -> a[x]
          f -> a[x]
          a + b -> a[x]
@@ -1526,14 +1542,16 @@ L04432:  0 -> a[x]
          f -> a[x]
          a + 1 -> a[x]
          a + c -> a[x]
-         if n/c go to L04443
+         if n/c go to L04443	; negative exponent, force SCI
          go to L04446
 
 L04440:  c - 1 -> c[x]
          c -> a[x]
          go to L04446
 
-L04443:  1 -> s 0
+
+; display formatting, SCI or ENG
+L04443:  1 -> s 0		; display exponent
 L04444:  0 -> a[x]
          f -> a[x]
 L04446:  b -> c[w]
@@ -1569,12 +1587,12 @@ L04502:  c -> a[ms]
          a - 1 -> a[wp]
          c -> a[x]
          decimal
-         if s 0 = 0
-           then go to L04532
-         if s 14 = 1
-           then go to L04615
-L04513:  if c[xs] = 0
-           then go to L04520
+         if s 0 = 0		; exponent to be displayed?
+           then go to L04532	;   no
+         if s 14 = 1		; ENG mode?
+           then go to L04615	;   yes
+L04513:  if c[xs] = 0		; exponent negative?
+           then go to L04520	;   no
          decimal
          0 - c -> c[x]
          c - 1 -> c[xs]
@@ -1646,15 +1664,17 @@ L04610:  shift right a[w]
            then go to L04610
          go to L04542
 
+
+; display formatting in ENG mode
 L04615:  b exchange c[x]
          a + 1 -> a[xs]
          a - 1 -> a[x]
          p <- 1
          0 -> c[x]
          load constant 3
-L04623:  a - c -> a[x]
+L04623:  a - c -> a[x]		; divide exponent by 3 by repeated subtraction
          if n/c go to L04623
-         a + c -> a[x]
+         a + c -> a[x]		; restore from underflow
          shift right c[x]
 L04627:  a - c -> a[x]
          if n/c go to L04627
@@ -2614,7 +2634,7 @@ L06301:  if c[s] = 0
 
 L06304:  0 -> s 12
          delayed rom @10
-         jsb S04372
+         jsb format_display
          display off
          display toggle
          delayed rom @05

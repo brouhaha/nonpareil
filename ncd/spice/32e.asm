@@ -15,16 +15,16 @@
 ; S bits:
 ; 0   SCI or ENG display format
 ; 1   ENG display format
-; 2
-; 3
-; 4
+; 2   digit entry has exponent
+; 3   digit entry has decimal
+; 4   general flag; in display formatting, exponent to be shown
 ; 5
 ; 6
 ; 7
 ; 8
 ; 9   stack lift disable
 ; 10
-; 11
+; 11  digit entry
 ; 12
 ; 13
 ; 14
@@ -78,9 +78,9 @@ L02023:  delayed rom @03
          0 -> s 9		; enable stack lift
 
 ; main loop, four entry points depending on what needs to be done
-L02027:  jsb S02107		; clear s 2, 3, 11, 4, 6, 7, 8, 10, 13
-L02030:  jsb S02367		; display formatting?
-L02031:  jsb S02112		; clear s 4, 6, 7, 8, 10, 13
+L02027:  jsb clear_digit_entry_etc
+L02030:  jsb format_display
+L02031:  jsb clear_flags
 L02032:  delayed rom @06
          jsb get_key
          m2 -> c
@@ -145,10 +145,13 @@ L02075:  delayed rom @00	; unshifted key 12 - 1/x
          go to L02031
 
 
-S02107:  0 -> s 11
-         0 -> s 2
-         0 -> s 3
-S02112:  0 -> s 4
+clear_digit_entry_etc:
+         0 -> s 11		; not in digit entry
+         0 -> s 2		; digit entry does not have decimal
+         0 -> s 3		; digit entry does not have decimal
+
+clear_flags:
+         0 -> s 4
          0 -> s 6
          0 -> s 7
          0 -> s 8
@@ -256,13 +259,17 @@ L02213:  if p = 12		; unshifted key 73 - decimal
 L02230:  p <- 1
          go to L02004
 
+
 ; set ENG display format
 L02232:  1 -> s 1
 
 ; set SCI display format
 L02233:  1 -> s 0
+
+; store FIX/SCI/ENG digit count
 L02234:  f exchange a[x]
          go to L02027
+
 
 L02236:  stack -> a		; multiplication
          go to L02126
@@ -370,14 +377,14 @@ L02364:  0 -> s 0	; set fix mode
          go to L02234
 
 
-; display formatting
-S02367:  m2 -> c
+format_display:
+         m2 -> c
          b exchange c[w]
          if s 11 = 1
            then go to L03373
          decimal
          b -> c[w]
-         0 -> s 4
+         0 -> s 4		; assume no exponent display
          c -> a[w]
          if s 0 = 1		; SCI or ENG
            then go to L02427
@@ -399,6 +406,7 @@ L02416:  c - 1 -> c[x]
          c -> a[x]
          go to L02432
 
+
 L02421:  0 -> a[x]
          f -> a[x]
          a + 1 -> a[x]
@@ -408,7 +416,7 @@ L02421:  0 -> a[x]
 
 
 ; display formatting, SCI or ENG
-L02427:  1 -> s 4
+L02427:  1 -> s 4		; display exponent
          0 -> a[x]
          f -> a[x]
 
@@ -418,8 +426,8 @@ L02432:  b -> c[w]
 L02435:  p - 1 -> p
          a - 1 -> a[x]
          if n/c go to L02435
-         if s 4 = 1
-           then go to L02445
+         if s 4 = 1		; exponent to be displayed?
+           then go to L02445	;   yes
          if c[xs] = 0
            then go to L02445
          p + 1 -> p
@@ -629,6 +637,8 @@ S02671:  0 -> c[w]
 L02701:  delayed rom @11		; f-shifted key 52 - ->R
          go to L04470
 
+
+; even more ENG mode display formatting
 L02703:  a - 1 -> a[p]
 L02704:  a - 1 -> a[x]
          if n/c go to L02707
@@ -642,6 +652,7 @@ L02707:  a + 1 -> a[s]
          a + 1 -> a[p]
          if n/c go to L02703
          go to L02704
+
 
          nop
 
@@ -665,6 +676,7 @@ L02724:  jsb S02554		; g-shifted key 61 - ->kg
          go to L02517
 
 
+; display formatting continued
 L02737:  if c[s] = 0
            then go to L02753
          if s 4 = 0
@@ -682,12 +694,12 @@ L02753:  c -> a[ms]
          a - 1 -> a[wp]
          c -> a[x]
          decimal
-         if s 4 = 0
-           then go to L03361
-         if s 1 = 1
-           then go to L03201	; ENG
-L02764:  if c[xs] = 0
-           then go to L02771
+         if s 4 = 0		; exponent to be displayed?
+           then go to L03361	;   no
+         if s 1 = 1		; ENG mode?
+           then go to L03201	;   yes
+L02764:  if c[xs] = 0		; exponent negative?
+           then go to L02771	;   no
          decimal
          0 - c -> c[x]
          c - 1 -> c[xs]
@@ -868,14 +880,15 @@ L03156:  delayed rom @10	; g-shifted key 52 - ->P
          go to L03111		; g-shifted key 32 - RAD
 
          a exchange c[w]	; g-shifted key 31 - MANT
-         0 -> b[w]
+         0 -> b[w]		; no decimals or specials
          display toggle
-L03166:  0 -> s 15
+L03166:  0 -> s 15		; wait for key release
          if s 15 = 1
            then go to L03166
          display off
 L03172:  delayed rom @04
          go to L02027
+
 
 S03174:  0 -> c[w]
          p <- 12
@@ -884,7 +897,7 @@ S03174:  0 -> c[w]
          return
 
 
-; display formatting ENG
+; display formatting in ENG mode
 L03201:  b exchange c[x]
          a + 1 -> a[xs]
          a - 1 -> a[x]
@@ -921,6 +934,8 @@ L03230:  select rom go to L05631	; g-shifted key 24 - std dev
 
 L03231:  select rom go to L05632	; g-shifted key 22 - lin est x
 
+
+; display formatting in ENG mode, continued
 L03232:  a + c -> a[x]
          b -> c[x]
          p <- 12
@@ -1029,12 +1044,18 @@ L03351:  jsb S03072		; g-shifted key 13 - LSTx
          register -> c 10
          go to L03357
 
+
+; CHS while not in digit entry
 L03354:  if c[m] = 0
            then go to L02030
          0 - c - 1 -> c[s]
 L03357:  delayed rom @04
          go to L02000
 
+
+; display formatting, part 3
+
+; display with expoennt, but not in ENG mode
 L03361:  0 -> a[s]
          if a[xs] # 0
            then go to L03342
@@ -1078,8 +1099,10 @@ L03427:  p <- 5
          load constant 6
          go to L03401
 
-L03432:  if s 11 = 0
-           then go to L03444
+
+; digit key with no prefix
+L03432:  if s 11 = 0		; already in digit entry?
+           then go to L03444	;   no, start
          b exchange c[w]
          b -> c[w]
          0 -> c[x]
@@ -1089,8 +1112,10 @@ L03432:  if s 11 = 0
          a exchange c[m]
          go to L03446
 
-L03444:  jsb S03542
+; starting digit entry with a digit
+L03444:  jsb stack_lift_start_entry
          c - 1 -> c[m]
+
 L03446:  shift left a[x]
          shift left a[x]
          p <- 3
@@ -1108,7 +1133,7 @@ L03452:  c + 1 -> c[p]
 L03463:  c - 1 -> c[p]
          if p # 3
            then go to L03471
-         1 -> s 3
+         1 -> s 3		; have decimal
          0 -> c[x]
          go to L03477
 
@@ -1156,13 +1181,17 @@ L03534:  jsb S03553
          go to L03506
 
 
-S03542:  if s 9 = 1		; stack lift if not disabled
-           then go to S03545
+
+; lift stack if not disabled, then start digit entry
+stack_lift_start_entry:  if s 9 = 1
+           then go to start_digit_entry
          c -> stack
-S03545:  0 -> s 9
-         1 -> s 11
-         0 -> c[w]
-         c -> a[ms]
+
+start_digit_entry:
+         0 -> s 9	; enable stack lift
+         1 -> s 11	; digit entry started
+         0 -> c[w]	; start entry from zero
+         c -> a[ms]	; will count no. digits left of decimal - 1
          binary
          return
 
@@ -1184,22 +1213,25 @@ L03563:  if c[p] # 0
          shift left a[m]
          go to L03563
 
-L03573:  if s 11 = 1
-           then go to L03606
-         jsb S03542
-L03576:  p <- 12
+
+; EEX
+L03573:  if s 11 = 1		; digit entry already started?
+           then go to L03606	;   yes
+	   	      		
+         jsb stack_lift_start_entry	;   no, started digit entry with EEX
+L03576:  p <- 12		; make the mantissa 1.
          load constant 1
          c -> a[w]
-         a - 1 -> a[wp]
-L03602:  0 -> a[x]
-         1 -> s 2
-         1 -> s 3
+         a - 1 -> a[wp]		; display only one mantissa digit
+L03602:  0 -> a[x]		; display exponent
+         1 -> s 2		; have exponent
+         1 -> s 3		; have decimal
          go to L03506
 
-L03606:  if s 2 = 1
-           then go to L03623
-         if c[m] = 0
-           then go to L03626
+L03606:  if s 2 = 1		; already have exponent?
+           then go to L03623	;   yes
+         if c[m] = 0		; is the mantissa zero?
+           then go to L03626	;   yes, make the mantissa 1.
          p <- 5
          a exchange c[m]
          c -> a[m]
@@ -1213,19 +1245,27 @@ L03623:  p <- 12
          delayed rom @04
          go to L02031
 
-L03626:  jsb S03545
-         go to L03576
 
+; had zero in mantissa when EEX pressed
+L03626:  jsb start_digit_entry
+         go to L03576		; make the mantissa 1.
+
+
+; FIX/SCI/ENG .
 L03630:  1 -> s 3
          if s 11 = 1
            then go to L03623
          go to L03444
 
-L03634:  if s 11 = 0
-           then go to L03354
-         if s 2 = 1
-           then go to L03647
-         if c[m] = 0
+
+; CHS
+L03634:  if s 11 = 0		; digit entry in progress?
+           then go to L03354	;   no
+         if s 2 = 1		; have exponent?
+           then go to L03647	;   yes
+
+; CHS in mantissa entry
+         if c[m] = 0		; if mantissa is zero, ignore
            then go to L03643
          0 - c - 1 -> c[s]
 L03643:  binary
@@ -1233,6 +1273,8 @@ L03643:  binary
          nop
          go to L03511
 
+
+; CHS in exponent entry
 L03647:  p <- 5
          shift right a[wp]
          shift right a[wp]
@@ -1242,11 +1284,13 @@ L03647:  p <- 5
          c -> a[xs]
          go to L03525
 
+
 S03657:  p <- 5
          shift left a[wp]
          shift left a[wp]
          shift left a[wp]
          return
+
 
 S03664:  p <- 0
 L03665:  c -> a[w]
