@@ -189,7 +189,7 @@ S00222:  stack -> a
          go to S00230
 
 L00224:  a exchange c[w]
-S00225:  if 0 = s 13
+S00225:  if s 13 = 0
            then go to S00230
 L00227:  0 - c - 1 -> c[s]
 S00230:  jsb S00232
@@ -245,7 +245,7 @@ L00305:  if a[p] # 0
          shift left a[wp]
          go to L00301
 
-S00311:  if 0 = s 4
+S00311:  if s 4 = 0
            then go to L00314
          0 - c - 1 -> c[s]
 L00314:  jsb S00274
@@ -475,7 +475,7 @@ L00631:  a exchange c[w]
          shift left a[x]
          a exchange c[w]
          shift left a[w]
-         if 0 = s 8
+         if s 8 = 0
            then go to L00623
          if c[xs] # 0
            then go to L00566
@@ -664,7 +664,7 @@ L01101:  c - 1 -> c[p]
 L01111:  delayed rom @00
          jsb S00274
          0 -> a[s]
-         if 0 = s 7
+         if s 7 = 0
            then go to L01117
          0 - c - 1 -> c[s]
 L01117:  if s 10 = 1
@@ -676,7 +676,7 @@ L01123:  delayed rom @00
 L01125:  delayed rom @06
          go to L03000
 
-L01127:  if 0 = s 10
+L01127:  if s 10 = 0
            then go to L00401
          stack -> a
          if a[m] # 0
@@ -694,7 +694,7 @@ L01140:  if a[s] # 0
          0 -> c[w]
          go to L01125
 
-L01147:  if 0 = s 10
+L01147:  if s 10 = 0
            then go to L00401
          stack -> a
          a -> b[w]
@@ -885,9 +885,9 @@ L01420:  0 -> a[w]
 L01423:  if c[s] = 0
            then go to L01435
          1 -> s 4
-         if 0 = s 13
+         if s 13 = 0
            then go to L01435
-         if 0 = s 10
+         if s 10 = 0
            then go to L01435
          0 -> s 10
          1 -> s 7
@@ -896,7 +896,7 @@ L01435:  p <- 12
          if c[xs] = 0
            then go to L01626
          jsb S01526
-         if 0 = s 6
+         if s 6 = 0
            then go to L01637
          jsb S01752
          0 -> c[w]
@@ -962,7 +962,7 @@ L01531:  a -> b[w]
          if a[w] # 0
            then go to L01631
          a exchange c[w]
-         if 0 = s 6
+         if s 6 = 0
            then go to L01545
          jsb S01743
          0 -> c[w]
@@ -979,7 +979,7 @@ L01553:  b exchange c[w]
          c + c -> c[w]
          shift right c[w]
          b exchange c[w]
-         if 0 = s 10
+         if s 10 = 0
            then go to L01574
          jsb S01753
          b exchange c[w]
@@ -991,7 +991,7 @@ L01553:  b exchange c[w]
          delayed rom @00
          jsb S00274
          0 -> a[s]
-L01574:  if 0 = s 7
+L01574:  if s 7 = 0
            then go to L01600
          jsb S01753
          a + b -> a[w]

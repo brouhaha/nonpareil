@@ -64,9 +64,9 @@ S02025:  jsb S02062
          go to L02004
 
 L02046:  1 -> s 10
-         if 0 = s shft
+         if s shft = 0
            then go to L02125
-         if 0 = s 7
+         if s 7 = 0
            then go to L02174
          0 -> s 7
          go to L02370
@@ -88,17 +88,21 @@ S02064:  a exchange c[w]
          p <- 12
          return
 
+
 fn_rad:  1 -> s rad
          go to L02212
+
 
 fn_deg:  0 -> s grad
 L02076:  0 -> s rad
          go to L02212
 
+
 L02100:  1 -> s shft
 L02101:  1 -> s 13
          delayed rom @03
          go to L01420
+
 
 L02104:  delayed rom @03
          jsb S01756
@@ -118,7 +122,7 @@ fn_to_deg:
          1 -> s 10
          go to L02100
 
-L02122:  if 0 = s 10
+L02122:  if s 10 = 0
            then go to L02046
          0 -> s 10
 L02125:  if s 4 = 1
@@ -128,7 +132,7 @@ L02125:  if s 4 = 1
 
 fn_lstx: m2 -> c
 L02132:  m1 exchange c
-         if 0 = s 2
+         if s 2 = 0
            then go to L02136
          c -> stack
 L02136:  m1 -> c
@@ -143,7 +147,7 @@ L02141:  delayed rom @00
 S02144:  binary
          if s 4 = 1
            then go to L02157
-         if 0 = s 2
+         if s 2 = 0
            then go to L02152
          c -> stack
 L02152:  1 -> s 2
@@ -185,7 +189,8 @@ fn_mant_clr_prefix:
          c -> a[w]
          0 -> b[w]
          display toggle
-L02207:  0 -> s 15
+
+L02207:  0 -> s 15		; wait for key
          if s 15 = 1
            then go to L02207
 L02212:  delayed rom @06
@@ -271,7 +276,7 @@ L02316:  0 -> c[s]
 L02317:  b exchange c[w]
          if s rad = 1
            then go to L02104
-         if 0 = s grad
+         if s grad = 0
            then go to L02330
          a exchange c[w]
          c -> a[w]
@@ -304,7 +309,7 @@ L02343:  m1 exchange c
          m1 -> c
          c + c -> c[w]
          shift left a[w]
-         if 0 = s rad
+         if s rad = 0
            then go to L02367
          shift right a[w]
          shift right c[w]
@@ -315,7 +320,7 @@ L02370:  a - b -> a[w]
 L02373:  b exchange c[w]
          m1 -> c
          b exchange c[w]
-         if 0 = s rad
+         if s rad = 0
            then go to L02504
          if c[x] # 0
            then go to L02503
@@ -326,7 +331,7 @@ L02404:  p <- 12
          m1 -> c
          if s 10 = 1
            then go to L02717
-         if 0 = s 13
+         if s 13 = 0
            then go to L02542
          b exchange c[w]
          m2 -> c
@@ -337,7 +342,7 @@ L02404:  p <- 12
          a exchange b[w]
          delayed rom @00
          jsb S00056
-L02423:  if 0 = s 4
+L02423:  if s 4 = 0
            then go to L02426
          0 - c - 1 -> c[s]
 L02426:  delayed rom @06
@@ -465,7 +470,7 @@ L02610:  if b[w] = 0
            then go to L02704
          delayed rom @00
          jsb S00160
-         if 0 = s shft
+         if s shft = 0
            then go to L02542
          a -> b[w]
          p <- 1
@@ -483,7 +488,7 @@ L02632:  a exchange c[ms]
          delayed rom @00
          jsb S00122
          jsb S02461
-         if 0 = s 13
+         if s 13 = 0
            then go to L02671
          b exchange c[w]
          a exchange b[w]
@@ -531,7 +536,7 @@ L02704:  0 -> c[w]
          0 -> c[s]
          go to L02426
 
-L02713:  if 0 = s 13
+L02713:  if s 13 = 0
            then go to L02537
          0 -> c[m]
          go to L02735
@@ -543,7 +548,7 @@ L02717:  if s shft = 1
          jsb S00215
          go to L02542
 
-L02725:  if 0 = s 13
+L02725:  if s 13 = 0
            then go to L02537
          b exchange c[w]
          a exchange b[w]
@@ -569,7 +574,7 @@ L02745:  p - 1 -> p
 
 S02752:  delayed rom @00
          jsb S00060
-S02754:  if 0 = s 7
+S02754:  if s 7 = 0
            then go to L02757
          0 - c - 1 -> c[s]
 L02757:  delayed rom @00
@@ -734,15 +739,18 @@ L03174:  b exchange c[w]
 L03175:  0 -> a[x]
          decimal
          display toggle
-L03200:  0 -> s 15
+
+
+L03200:  0 -> s 15		; wait for key
          if s 15 = 1
            then go to L03200
-L03203:  if 0 = s 15
+L03203:  if s 15 = 0
            then go to L03203
          if p # 3
            then go to L03445
          m1 -> c
          go to L03015
+
 
 L03211:  p <- 0
          delayed rom @07
@@ -776,7 +784,7 @@ L03241:  c -> a[s]
          c - 1 -> c[xs]
 L03246:  binary
          a - 1 -> a[wp]
-         if 0 = s 8
+         if s 8 = 0
            then go to L03142
          c -> a[x]
          p <- 5
@@ -873,7 +881,7 @@ L03366:  load constant 2
          go to L03174
 
 S03377:  c + 1 -> c[p]
-         if 0 = s 5
+         if s 5 = 0
            then go to L03044
 L03402:  0 -> c[x]
          m1 exchange c
@@ -934,7 +942,7 @@ key_14:  if s shft = 1			; key 14 (@061): unshifted e^x,    shifted 10^x
          go to key_13			; key 13 (@062): unshifted y^x,    shifted pi
          go to key_12			; key 12 (@063): unshifted 1/x,    shifted SCI
 
-key11:   if 0 = s shft			; key 11 (@064): unshifted sqrt,   shifted FIX
+key11:   if s shft = 0			; key 11 (@064): unshifted sqrt,   shifted FIX
            then go to fn_fix
          jsb S03612			; sqrt
          go to L03472
@@ -974,7 +982,7 @@ key_72:  if s shft = 1			; key 72 (@102): unshifted 0,       shifted ->mm
            then go to fn_to_mm
 L03523:  if s 7 = 1
            then go to L02221
-         if 0 = s 10
+         if s 10 = 0
            then go to L03100
          shift right a[x]
          shift right a[x]
@@ -992,7 +1000,7 @@ L03537:  a + 1 -> a[xs]
 
          if s shft = 1			; key 51 (@143): unshifted plus,  shifted ->P
            then go to fn_to_polar
-         if 0 = s 7			; plus
+         if s 7 = 0			; plus
            then go to L03551
          if p = 12
            then go to L03762
@@ -1011,7 +1019,7 @@ key_15:  if s shft = 1			; key 15 (@060): unshifted ln,     shifted log
 
          if s shft = 1			; key 31 (@163): unshited ENTER^, shifted MATN/CLEAR PREFIX
            then go to fn_mant_clr_prefix
-         if 0 = s 7			; ENTER^
+         if s 7 = 0			; ENTER^
            then go to L03571
          if p = 12			; STO prefix?
            then go to self_test
@@ -1068,7 +1076,7 @@ S03634:  stack -> a
 
          if s shft = 1			; key 41 (@243): unshifted minus, shifted ->R
            then go to fn_to_rect
-         if 0 = s 7			; minus
+         if s 7 = 0			; minus
            then go to L03651
          if p = 12
            then go to L03761
@@ -1104,7 +1112,7 @@ key_73:  if s shft = 1			; key 73 (@101): unshifted .,       shifted ->degC
            then go to fn_to_deg_c
          jsb S03612			; .
          1 -> s 3
-         if 0 = s 4
+         if s 4 = 0
            then go to L03523
          go to L03763
 
@@ -1122,7 +1130,7 @@ L03715:  if s 7 = 1
 
          if s shft = 1			; key 61 (@323): unshifted times, shifted ->DEG
            then go to fn_to_deg
-         if 0 = s 7			; multiply
+         if s 7 = 0			; multiply
            then go to L03731
          if p = 12
            then go to L03760
@@ -1138,7 +1146,7 @@ key_32:  if s shft = 1			; key 32 (@162): unshifted CHS, shifted CLEAR ALL
          if c[m] = 0
            then go to L03763
          0 - c - 1 -> c[s]
-         if 0 = s 4
+         if s 4 = 0
            then go to L03000
 L03746:  a - 1 -> a[x]
          delayed rom @06

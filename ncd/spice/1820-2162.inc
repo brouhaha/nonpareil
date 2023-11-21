@@ -57,7 +57,7 @@ S01041  .equ @01041
 S01044  .equ @01044
 S01151	.equ @01151
 L01331	.equ @01331
-S01377  .equ @01377
+crc_check_quad_0  .equ @01377
 xft100  .equ @01407	; factorial
 L01474  .equ @01474
 L01476	.equ @01476

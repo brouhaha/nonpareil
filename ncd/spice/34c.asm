@@ -66,7 +66,7 @@ L02034:  a exchange b[x]
          jsb S02032
          if s 1 = 1
            then go to L02042
-         if 0 = s 2
+         if s 2 = 0
            then go to L02057
 L02042:  register -> c 14
          p <- 12
@@ -161,7 +161,7 @@ L02163:  b -> c[x]
          if s 2 = 1
            then go to L02175
          1 -> s 2
-L02173:  if 0 = s 4
+L02173:  if s 4 = 0
            then go to L02031
 L02175:  delayed rom @15
          go to L06775
@@ -928,7 +928,7 @@ L03440:  y -> a
          jsb ad1-10
          c -> register 11
          stack -> a
-         if 0 = s 8
+         if s 8 = 0
            then go to L03511
          m2 -> c
          a exchange c[w]
@@ -1071,7 +1071,7 @@ L03613:  load constant 5
          c -> data address
          jsb S03574
          delayed rom @02
-         jsb S01377
+         jsb crc_check_quad_0
          jsb S03572
          delayed rom @06
          jsb S03354
@@ -1217,9 +1217,9 @@ L04065:  0 -> b[w]
 L04070:  if c[s] = 0
            then go to L04102
          1 -> s 4
-         if 0 = s 13
+         if s 13 = 0
            then go to L04102
-         if 0 = s 10
+         if s 10 = 0
            then go to L04102
          0 -> s 10
          1 -> s 7
@@ -1343,7 +1343,7 @@ S04240:  p <- 12
          p <- 12
          return
 
-L04261:  if 0 = s 6
+L04261:  if s 6 = 0
            then go to L04135
          jsb S04000
          jsb S04000
@@ -1376,14 +1376,14 @@ L04313:  c - 1 -> c[x]
 L04316:  0 -> c[ms]
          delayed rom @00
          jsb shf10
-         if 0 = s 10
+         if s 10 = 0
            then go to L04330
          jsb S04232
          0 - c - 1 -> c[s]
          a exchange c[s]
          0 -> c[s]
          jsb S04002
-L04330:  if 0 = s 7
+L04330:  if s 7 = 0
            then go to L04334
          jsb S04232
          jsb S04002
@@ -1402,7 +1402,7 @@ L04334:  if s 12 = 1
          c - 1 -> c[x]
          delayed rom @00
          jsb mp1-10
-L04353:  if 0 = s 4
+L04353:  if s 4 = 0
            then go to L04356
          0 - c - 1 -> c[s]
 L04356:  if s 13 = 1
@@ -1501,16 +1501,16 @@ L04466:  0 -> a[w]
          if c[s] = 0
            then go to L04502
          1 -> s 7
-         if 0 = s 6
+         if s 6 = 0
            then go to L04500
-         if 0 = s 10
+         if s 10 = 0
            then go to L04501
 L04500:  1 -> s 4
 L04501:  0 -> c[s]
 L04502:  b exchange c[w]
          if s 12 = 1
            then go to L04616
-         if 0 = s 14
+         if s 14 = 0
            then go to L04513
          a exchange c[w]
          c -> a[w]
@@ -1548,7 +1548,7 @@ L04541:  a - b -> a[w]
          b exchange c[w]
          m1 -> c
          c + c -> c[w]
-         if 0 = s 12
+         if s 12 = 0
            then go to L04557
          shift right a[w]
          shift right c[w]
@@ -1559,7 +1559,7 @@ L04560:  a - b -> a[w]
 L04563:  b exchange c[w]
          m1 -> c
          b exchange c[w]
-         if 0 = s 12
+         if s 12 = 0
            then go to L04627
          if c[x] # 0
            then go to L04626
@@ -1578,9 +1578,9 @@ L04603:  0 -> s 4
          go to L04560
 
 L04605:  0 -> s 10
-         if 0 = s 6
+         if s 6 = 0
            then go to L04577
-         if 0 = s 7
+         if s 7 = 0
            then go to L04614
          0 -> s 7
          go to L04560
@@ -1689,7 +1689,7 @@ L04734:  a -> b[w]
 L04752:  m1 -> c
          if s 13 = 1
            then go to L05061
-         if 0 = s 10
+         if s 10 = 0
            then go to L05061
          delayed rom @00
          jsb 1/x13
@@ -1746,13 +1746,13 @@ L05020:  jsb S05011
          c -> stack
          jsb S05014
          jsb S05005
-         if 0 = s 10
+         if s 10 = 0
            then go to L05031
          stack -> a
          c -> stack
          a exchange c[w]
 L05031:  jsb S05016
-         if 0 = s 7
+         if s 7 = 0
            then go to L05035
          0 - c - 1 -> c[s]
 L05035:  stack -> a
@@ -1776,7 +1776,7 @@ L05054:  if b[m] = 0
          m1 exchange c
          delayed rom @00
          jsb div15
-L05061:  if 0 = s 6
+L05061:  if s 6 = 0
            then go to L05076
          jsb S05013
          jsb S05014
@@ -1789,7 +1789,7 @@ L05061:  if 0 = s 6
            then go to L04774
          delayed rom @00
          jsb 1/x13
-L05076:  if 0 = s 4
+L05076:  if s 4 = 0
            then go to L05101
          0 - c - 1 -> c[s]
 L05101:  delayed rom @04
@@ -1802,7 +1802,7 @@ L05103:  0 -> c[w]
          load constant 1
          c -> a[w]
          a -> b[w]
-         if 0 = s 6
+         if s 6 = 0
            then go to L05101
          go to L05061
 
@@ -1964,7 +1964,7 @@ S05326:  delayed rom @17
 
 L05330:  if b[m] = 0
            then go to error_3
-         if 0 = s 6
+         if s 6 = 0
            then go to L05343
          jsb S05015
          jsb S05010
@@ -2035,7 +2035,7 @@ S05415:  select rom @01 (L00416)
 
 S05416:  select rom @01 (L00417)
 
-L05417:  if 0 = s 6
+L05417:  if s 6 = 0
            then go to L05440
          jsb S05415
          jsb S05405
@@ -2126,14 +2126,14 @@ L05477:  jsb S05565
          delayed rom @04
          go to L02005
 
-S05545:  if 0 = s 4
+S05545:  if s 4 = 0
            then go to S05550
          0 - c - 1 -> c[s]
 S05550:  jsb S05720
 S05551:  delayed rom @03
          go to S01572
 
-S05553:  if 0 = s 4
+S05553:  if s 4 = 0
            then go to L05560
          a exchange c[w]
          0 - c - 1 -> c[s]
@@ -2543,7 +2543,7 @@ L06334:  register -> c 3
          a - c -> c[w]
          if c[w] # 0
            then go to L06346
-         if 0 = s 0
+         if s 0 = 0
            then go to L06354
 L06346:  register -> c 5
          jsb S06260
@@ -3652,7 +3652,7 @@ L12035:  jsb S12365
          0 -> s 1
          1 -> s 12
          0 -> s 3
-         if 0 = s 3
+         if s 3 = 0
            then go to L12177
          delayed rom @14
          jsb S16370
@@ -3667,7 +3667,7 @@ L12055:  0 -> s 15
            then go to L12055
 L12060:  0 -> s 1
          0 -> s 3
-         if 0 = s 3
+         if s 3 = 0
            then go to L12070
          if s 12 = 1
            then go to L12072
@@ -3693,7 +3693,7 @@ L12103:  1 -> s 9
 
 S12106:  if s 2 = 1
            then go to S12112
-         if 0 = s 1
+         if s 1 = 0
            then go to L12136
 S12112:  jsb S12157
          c -> a[x]
@@ -3778,7 +3778,7 @@ L12210:  0 -> a[x]
          display off
          display toggle
          0 -> s 3
-         if 0 = s 3
+         if s 3 = 0
            then go to L12055
 L12220:  0 -> s 15
          if s 15 = 1
@@ -3880,7 +3880,7 @@ L12344:  jsb S12244
          display off
          display toggle
 L12352:  0 -> s 15
-         if 0 = s 15
+         if s 15 = 0
            then go to L13415
          go to L12352
 
@@ -3918,7 +3918,7 @@ key_dispatch:
          keys -> rom address
 
 
-key_14:  if 0 = s 7			; key 14 (@061): f
+key_14:  if s 7 = 0			; key 14 (@061): f
            then go to L12411
          p <- 12
          0 -> a[x]
@@ -4488,7 +4488,7 @@ L13344:  p <- 0
          load constant 8
 L13346:  p <- 1
          0 -> s 3
-         if 0 = s 3
+         if s 3 = 0
            then go to L12642
          p <- 0
          delayed rom @16
@@ -4559,7 +4559,7 @@ L13435:  delayed rom @06
          go to L17340
 
 L13441:  0 -> s 3
-         if 0 = s 3
+         if s 3 = 0
            then go to L12075
          go to L13435
 
@@ -4602,7 +4602,7 @@ S13445:  display off
          if a[w] # 0
            then go to L13521
 
-; cold start constant is OK
+; cold start constant was OK
          c -> register 15
          c -> a[w]
          shift right a[w]
@@ -4613,7 +4613,7 @@ S13445:  display off
          0 -> c[w]
          return
 
-; cold start contant isn't present
+; cold start contant wasn't present
 L13521:  p <- 4
          load constant 4
          0 -> c[wp]
@@ -4654,7 +4654,7 @@ L13535:  0 -> a[w]
          go to S15330
 
 L13562:  0 -> s 3
-         if 0 = s 3
+         if s 3 = 0
            then go to L13575
          0 -> b[w]
          m2 -> c
@@ -5565,7 +5565,7 @@ L15174:  if p = 0
 L15202:  c -> a[x]
          0 -> s 7
          0 -> s 6
-         if 0 = s 10
+         if s 10 = 0
            then go to L15356
          delayed rom @15
          go to L16772
@@ -5608,7 +5608,7 @@ L15247:  1 -> s 7
          go to L15242
 
 L15251:  p + 1 -> p
-         if 0 = s 7
+         if s 7 = 0
            then go to L15215
          a exchange b[w]
          a exchange c[w]
@@ -5674,15 +5674,15 @@ L15332:  0 -> s 15
            then go to L15342
          1 -> s 12
 L15342:  0 -> s 3
-         if 0 = s 3
+         if s 3 = 0
            then go to L15350
-         if 0 = s 12
+         if s 12 = 0
            then go to L15352
          go to L15354
 
-L15350:  if 0 = s 12
+L15350:  if s 12 = 0
            then go to L15354
-L15352:  if 0 = s 15
+L15352:  if s 15 = 0
            then go to L15342
 L15354:  0 -> s 12
          display off
@@ -5705,7 +5705,7 @@ L15366:  load constant 7
          jsb S12122
          return
 
-L15376:  if 0 = s 11
+L15376:  if s 11 = 0
            then go to L15405
          jsb S15467
          if s 6 = 1
@@ -5750,14 +5750,14 @@ L15444:  m2 exchange c
          data -> c
          p <- 9
          0 -> c[p]
-         if 0 = s 7
+         if s 7 = 0
            then go to L15456
          c + 1 -> c[p]
-         if 0 = s 6
+         if s 6 = 0
            then go to L15456
          c + 1 -> c[p]
 L15456:  c -> data
-         if 0 = s 6
+         if s 6 = 0
            then go to L15465
          p <- 5
          shift left a[wp]
@@ -5885,12 +5885,12 @@ L15633:  if s 11 = 1
 L15640:  jsb S15467
          1 -> s 7
          jsb S15623
-         if 0 = s 6
+         if s 6 = 0
            then go to L15444
          jsb S15704
          go to L15444
 
-L15647:  if 0 = s 11
+L15647:  if s 11 = 0
            then go to L15672
          jsb S15467
          decimal
@@ -5956,7 +5956,7 @@ L15736:  p - 1 -> p
          return
 
 L15740:  0 -> s 3
-         if 0 = s 3
+         if s 3 = 0
            then go to L15747
          1 -> s 6
          0 -> s 11
@@ -6223,7 +6223,7 @@ L16317:  0 -> a[m]
          shift left a[w]
          a exchange c[p]
          p <- 1
-         if 0 = s 11
+         if s 11 = 0
            then go to L16334
          a + 1 -> a[p]
 L16334:  jsb S16064
@@ -6257,6 +6257,8 @@ L16365:  a exchange c[x]
          delayed rom @06
          go to L13335
 
+
+; dsiplay formatting, compare S02367 in 32E
 S16370:  m2 -> c
          b exchange c[w]
          if s 11 = 1
@@ -6273,11 +6275,12 @@ S16370:  m2 -> c
 L16405:  decimal
          0 -> a[x]
          f -> a[x]
-         0 -> c[x]
+
+         0 -> c[x]		; is exponent >= 10
          p <- 0
          load constant 10
          if a >= c[x]
-           then go to L16505
+           then go to L16505	;   yes, force SCI
 L16415:  b -> c[w]
          a exchange b[x]
          if s 4 = 1
@@ -6318,7 +6321,7 @@ L16456:  a exchange b[x]
          jsb S16507
          jsb S16516
          if s 6 = 1
-           then go to L16554
+           then go to L16554	; ENG
 L16463:  if c[xs] = 0
            then go to L16470
          decimal
@@ -6350,6 +6353,8 @@ L16512:  p - 1 -> p
          if n/c go to L16512
          return
 
+
+; display formatting, compare L02445 in 32E
 S16516:  0 -> a[w]
          c -> a[wp]
          a + c -> a[ms]
@@ -6357,7 +6362,7 @@ S16516:  0 -> a[w]
          a exchange c[ms]
          if c[s] = 0
            then go to L16543
-         if 0 = s 4
+         if s 4 = 0
            then go to L16551
          c + 1 -> c[x]
          if c[xs] = 0
@@ -6383,15 +6388,17 @@ L16551:  c + 1 -> c[x]
          p - 1 -> p
          go to L16542
 
+
+; display formatting ENG
 L16554:  b exchange c[x]
          a + 1 -> a[xs]
          a - 1 -> a[x]
          p <- 1
          0 -> c[x]
-         load constant 3
+         load constant 3	; divide exponent by 3 by repeated subtraction
 L16562:  a - c -> a[x]
          if n/c go to L16562
-         a + c -> a[x]
+         a + c -> a[x]		; restore from underflow
          shift right c[x]
 L16566:  a - c -> a[x]
          if n/c go to L16566
@@ -6399,6 +6406,7 @@ L16566:  a - c -> a[x]
          b -> c[x]
          p <- 12
          go to L16575
+
 
 L16574:  a - 1 -> a[p]
 L16575:  a - 1 -> a[x]
@@ -6691,27 +6699,33 @@ L17124:  load constant 8
 S17140:  delayed rom @04
          go to S12157
 
+
+; 3x: ENG 0..7, F? 0..1
 L17142:  load constant 8
          p <- 0
          if a >= c[p]
-           then go to L17020
+           then go to L17020	; F? 0..1
 L17146:  jsb S17140
          p <- 3
          load constant 2
          go to L17170
 
+
+; 4x: SCI 0..7, DEG, RAD
 L17152:  load constant 9
          p <- 0
          if a >= c[p]
-           then go to L17206
+           then go to L17206	; RAD
          c - 1 -> c[p]
          if a >= c[p]
-           then go to L17203
+           then go to L17203	; DEG
 L17161:  jsb S17140
          p <- 3
          load constant 1
          go to L17170
 
+
+; 5x: FIX 0..9
 L17165:  jsb S17140
          p <- 3
          0 -> c[p]
@@ -6726,6 +6740,7 @@ L17170:  f exchange a[x]
 L17200:  c -> register 15
 L17201:  delayed rom @04
          go to L12024
+
 
 L17203:  jsb S17140
          0 -> c[s]
@@ -6874,9 +6889,9 @@ L17360:  a - 1 -> a[p]
          go to L17775		; 0x: LBL
          go to L17452		; 1x: SOLVE
          go to L17454		; 2x: INTG
-         go to L17456		; 3x: ENG
-         go to L17460		; 4x: SCI
-         go to L17462		; 5x: FIX
+         go to L17456		; 3x: ENG 0..7, F? 0..1
+         go to L17460		; 4x: SCI 0..7, DEG, RAD
+         go to L17462		; 5x: FIX 0...9
          go to L17465		; 6x: RCL
          go to L17464		; 7x: RCL.
          go to L17473		; 8x: STO
@@ -6928,12 +6943,15 @@ L17452:  delayed rom @16
 L17454:  delayed rom @16
          go to L17124
 
+; 3x: ENG 0..7, F? 0..1
 L17456:  delayed rom @16
          go to L17142
 
+; 4x: SCI 0..7, DEG, RAD
 L17460:  delayed rom @16
          go to L17152
 
+; 5x: FIX 0..9
 L17462:  delayed rom @16
          go to L17165
 
@@ -6954,7 +6972,7 @@ S17476:  a exchange c[x]
          p <- 0
          a exchange c[p]
 L17502:  0 -> c[x]
-         if 0 = s 4
+         if s 4 = 0
            then go to L17513
          p <- 0
          load constant 5

@@ -12,12 +12,34 @@
 
          .include "1820-2162.inc"
 
-; P register values:
+; S bits:
+; 0   SCI or ENG display format
+; 1   ENG display format
+; 2
+; 3
+; 4
+; 5
+; 6
+; 7
+; 8
+; 9   stack lift disable
+; 10
+; 11
+; 12
+; 13
+; 14
+; 15 hardware - key pressed
+
+; P register values in main loop:
 ; 1   STO /
 ; 2   STO *
 ; 3   STO +
+; 4   STO -
 ; 5   STO
 ; 6   RCL
+; 7   ENG
+; 8   SCI
+; 9   FIX
 ; 10  f shift
 ; 11  g shift
 ; 12  no prefix
@@ -33,7 +55,9 @@ L02002:  go to L02066
 L02003:  p <- 0
 L02004:  go to L02352
 
-L02005:  1 -> s 9
+
+ml_disable_stack_lift:
+         1 -> s 9		; disable stack lift
          m2 exchange c
          go to L02027
 
@@ -51,18 +75,20 @@ L02022:  down rotate		; unshifted key 22 - Rdn
 L02023:  delayed rom @03
          jsb S01572
          m2 exchange c
-         0 -> s 9
-L02027:  jsb S02107
-L02030:  jsb S02367
-L02031:  jsb S02112
+         0 -> s 9		; enable stack lift
+
+; main loop, four entry points depending on what needs to be done
+L02027:  jsb S02107		; clear s 2, 3, 11, 4, 6, 7, 8, 10, 13
+L02030:  jsb S02367		; display formatting?
+L02031:  jsb S02112		; clear s 4, 6, 7, 8, 10, 13
 L02032:  delayed rom @06
-         jsb S03330
+         jsb get_key
          m2 -> c
          0 -> a[x]
          if p = 11
-           then go to L03237
+           then go to L03237	; g-shifted key dispatch
          if p = 10
-           then go to L02477
+           then go to L02477	; f-shifted key dispatch
          keys -> rom address	; unshifted key dispatch
 
 L02043:  0 -> s 1
@@ -118,6 +144,7 @@ L02075:  delayed rom @00	; unshifted key 12 - 1/x
          p <- 1			; STO prefix, change to STO /
          go to L02031
 
+
 S02107:  0 -> s 11
          0 -> s 2
          0 -> s 3
@@ -128,6 +155,7 @@ S02112:  0 -> s 4
          0 -> s 10
          0 -> s 13
          return
+
 
 L02121:  delayed rom @02	; unshifted key 13 - y^x
          go to L01331
@@ -140,7 +168,7 @@ L02126:  delayed rom @00
          go to L02002
 
 L02131:  0 -> c[w]		; unshifted key 34 - CLx
-         go to L02005
+         go to ml_disable_stack_lift
 
 L02133:  p <- 2
          go to L02004
@@ -181,7 +209,7 @@ L02156:  p <- 5			; unshifted key 23 - STO
          if p = 5		; unshifted key 31 - ENTER^
            then go to L02175	;   if STO prefix, run self-test
 L02165:  c -> stack
-         go to L02005
+         go to ml_disable_stack_lift
 
 L02167:  a + 1 -> a[x]
 L02170:  a + 1 -> a[x]		; unshifted key 54 - 6
@@ -190,7 +218,7 @@ L02170:  a + 1 -> a[x]		; unshifted key 54 - 6
          1 -> s 8
          go to L02141
 
-L02175:  if 0 = s 10		; STO ENTER^: self test
+L02175:  if s 10 = 0		; STO ENTER^: self test
            then go to L03723
          go to L02165
 
@@ -207,9 +235,9 @@ L02200:  if p = 12		; unshifted key 25 - Sigma+
          go to L02000
 
 L02213:  if p = 12		; unshifted key 73 - decimal
-           then go to L03630
+           then go to L03630	; . with no prefix
          if p = 9
-           then go to L03630
+           then go to L03630	; FIX .
          go to L02247
 
          go to L02200		; unshifted key 25 - Sigma+
@@ -228,7 +256,10 @@ L02213:  if p = 12		; unshifted key 73 - decimal
 L02230:  p <- 1
          go to L02004
 
+; set ENG display format
 L02232:  1 -> s 1
+
+; set SCI display format
 L02233:  1 -> s 0
 L02234:  f exchange a[x]
          go to L02027
@@ -246,9 +277,11 @@ L02241:  a + 1 -> a[x]		; unshifted key 43 - 8
          p <- 4			; STO prefix, change to STO -
          go to L02031
 
-L02247:  if p = 8
+
+; decimal key, continued
+L02247:  if p = 8		; SCI .
            then go to L03630
-         if p = 7
+         if p = 7		; ENG .
            then go to L03630
          if s 10 = 1
            then go to L03630
@@ -258,12 +291,14 @@ L02247:  if p = 8
 L02257:  a + 1 -> a[x]
 L02260:  if p = 12		; unshifted key 72 - 0
            then go to L03432
+
          if p = 9
-           then go to L02364
+           then go to L02364	; set FIX
          if p = 8
-           then go to L02043
+           then go to L02043	; set SCI
          if p = 7
-           then go to L02232
+           then go to L02232	; set ENG
+
          if s 6 = 1
            then go to L02133
          if s 10 = 1
@@ -330,10 +365,12 @@ L02357:  if p = 0
          p - 1 -> p
          go to L02357
 
-L02364:  0 -> s 0
+L02364:  0 -> s 0	; set fix mode
          0 -> s 1
          go to L02234
 
+
+; display formatting
 S02367:  m2 -> c
          b exchange c[w]
          if s 11 = 1
@@ -342,7 +379,7 @@ S02367:  m2 -> c
          b -> c[w]
          0 -> s 4
          c -> a[w]
-         if s 0 = 1
+         if s 0 = 1		; SCI or ENG
            then go to L02427
          if c[xs] # 0
            then go to L02421
@@ -350,7 +387,7 @@ S02367:  m2 -> c
          load constant 1
          load constant 0
          if a >= c[x]
-           then go to L02427
+           then go to L02427	; large exponent, force SCI
          0 -> a[x]
          f -> a[x]
          a + b -> a[x]
@@ -366,12 +403,15 @@ L02421:  0 -> a[x]
          f -> a[x]
          a + 1 -> a[x]
          a + c -> a[x]
-         if n/c go to L02427
+         if n/c go to L02427	; negative exponent, force SCI
          go to L02432
 
+
+; display formatting, SCI or ENG
 L02427:  1 -> s 4
          0 -> a[x]
          f -> a[x]
+
 L02432:  b -> c[w]
          0 -> c[s]
          p <- 12
@@ -389,6 +429,7 @@ L02445:  0 -> a[w]
          0 -> a[wp]
          a exchange c[ms]
          go to L02737
+
 
 L02453:  delayed rom @03	; f-shifted key 25 - Sigma-
          go to L01476
@@ -417,6 +458,7 @@ L02473:  b -> c[w]
          c -> a[w]
          0 -> a[s]
          go to L02764
+
 
 L02477:  keys -> rom address	; f-shifted key dispatch
 
@@ -622,9 +664,10 @@ L02724:  jsb S02554		; g-shifted key 61 - ->kg
          load constant 7
          go to L02517
 
+
 L02737:  if c[s] = 0
            then go to L02753
-         if 0 = s 4
+         if s 4 = 0
            then go to L02613
          c + 1 -> c[x]
          if c[xs] = 0
@@ -639,10 +682,10 @@ L02753:  c -> a[ms]
          a - 1 -> a[wp]
          c -> a[x]
          decimal
-         if 0 = s 4
+         if s 4 = 0
            then go to L03361
          if s 1 = 1
-           then go to L03201
+           then go to L03201	; ENG
 L02764:  if c[xs] = 0
            then go to L02771
          decimal
@@ -653,6 +696,7 @@ L02771:  a exchange c[x]
          jsb S03657
          delayed rom @06
          go to L03373
+
 
 L02776:  delayed rom @06	; f-shifted key 53 - ->RAD
          go to L03011
@@ -743,10 +787,13 @@ L03067:  p <- 11		; g-shifted key 15 - g
 L03070:  delayed rom @04
          go to L02031
 
+
+; stack lift if enabled
 S03072:  if s 9 = 1
            then go to L03075
          c -> stack
 L03075:  return
+
 
 L03076:  p <- 10		; g-shifted key 14 - f
          go to L03070
@@ -836,19 +883,22 @@ S03174:  0 -> c[w]
          c + 1 -> c[x]
          return
 
+
+; display formatting ENG
 L03201:  b exchange c[x]
          a + 1 -> a[xs]
          a - 1 -> a[x]
          p <- 1
          0 -> c[x]
-         load constant 3
+         load constant 3	; divide exponent by 3 by repeated subtraction
 L03207:  a - c -> a[x]
          if n/c go to L03207
-         a + c -> a[x]
+         a + c -> a[x]		; restore from underflow
          shift right c[x]
 L03213:  a - c -> a[x]
          if n/c go to L03213
          go to L03232
+
 
 L03216:  delayed rom @13	; g-shifted key 63 - COSH-1
          go to L05424
@@ -876,6 +926,7 @@ L03232:  a + c -> a[x]
          p <- 12
          delayed rom @05
          go to L02704
+
 
 L03237:  keys -> rom address	; g-shifted key dispatch
 
@@ -918,16 +969,18 @@ L03266:  shift left a[w]
          load constant 10	; r
          a exchange c[w]
          0 -> b[w]
-         jsb S03330
+         jsb get_key
          go to L03172
 
-L03304:  if s 9 = 1
+
+L03304:  if s 9 = 1		; stack lift if not disabled
            then go to L03307
          c -> stack
 L03307:  0 -> c[w]
          c -> data address
          a exchange c[w]
          go to L03357
+
 
 L03313:  c -> a[s]
          b exchange c[w]
@@ -950,16 +1003,19 @@ L03324:  delayed rom @13	; g-shifted key 62 - SINH-1
 L03326:  delayed rom @13	; g-shifted key 64 - TANH-1
          go to L05441
 
-S03330:  display off
+
+get_key:
+         display off
          decimal
          display toggle
 L03333:  0 -> s 15
          if s 15 = 1
            then go to L03333
-L03336:  if 0 = s 15
+L03336:  if s 15 = 0
            then go to L03336
          display off
          return
+
 
 L03342:  if c[ms] = 0
            then go to L02427
@@ -1022,7 +1078,7 @@ L03427:  p <- 5
          load constant 6
          go to L03401
 
-L03432:  if 0 = s 11
+L03432:  if s 11 = 0
            then go to L03444
          b exchange c[w]
          b -> c[w]
@@ -1069,7 +1125,7 @@ L03477:  c -> a[m]
          if c[m] = 0
            then go to L03506
          jsb S03553
-L03506:  if 0 = s 2
+L03506:  if s 2 = 0
            then go to L03511
          jsb S03657
 L03511:  m2 exchange c
@@ -1099,7 +1155,8 @@ L03534:  jsb S03553
            then go to L02000
          go to L03506
 
-S03542:  if s 9 = 1
+
+S03542:  if s 9 = 1		; stack lift if not disabled
            then go to S03545
          c -> stack
 S03545:  0 -> s 9
@@ -1108,6 +1165,7 @@ S03545:  0 -> s 9
          c -> a[ms]
          binary
          return
+
 
 S03553:  decimal
          a -> b[w]
@@ -1163,7 +1221,7 @@ L03630:  1 -> s 3
            then go to L03623
          go to L03444
 
-L03634:  if 0 = s 11
+L03634:  if s 11 = 0
            then go to L03354
          if s 2 = 1
            then go to L03647
@@ -1207,7 +1265,7 @@ L03676:  0 -> c[x]
          m2 -> c
          return
 
-S03704:  if 0 = s 5
+S03704:  if s 5 = 0
            then go to L03676
          go to L03711
 
@@ -1224,8 +1282,12 @@ L03715:  c -> data address
          if n/c go to L03715
          return
 
-S03722:  rom checksum
 
+crc_check_quad_1:
+         rom checksum
+
+
+; self-test
 L03723:  clear regs
          binary
          c + 1 -> c[w]
@@ -1261,17 +1323,19 @@ L03723:  clear regs
          jsb S03664
          0 -> s 5
          delayed rom @02
-         jsb S01377
+         jsb crc_check_quad_0
          jsb S03704
-         jsb S03722
+         jsb crc_check_quad_1
          jsb S03704
          delayed rom @12
-         jsb S05262
+         jsb crc_check_quad_2
          jsb S03704
          delayed rom @12
          go to L05357
 
+
 	 .dw @1142		; CRC, quad 1 (@2000..@3777)
+
 
 L04000:  m2 -> c		; g-shifted key 52 - ->P
          stack -> a
@@ -1337,9 +1401,9 @@ L04065:  0 -> b[w]
 L04070:  if c[s] = 0
            then go to L04102
          1 -> s 4
-         if 0 = s 13
+         if s 13 = 0
            then go to L04102
-         if 0 = s 10
+         if s 10 = 0
            then go to L04102
          0 -> s 10
          1 -> s 7
@@ -1463,7 +1527,7 @@ trc10:   p <- 12
          p <- 12
          return
 
-L04261:  if 0 = s 6
+L04261:  if s 6 = 0
            then go to brt290
          delayed rom @01
          jsb S00470
@@ -1500,7 +1564,7 @@ brt190:  c - 1 -> c[x]
 brt200:  0 -> c[ms]
          delayed rom @00
          jsb shf10
-         if 0 = s 10
+         if s 10 = 0
            then go to brt220
          jsb S04232
          0 - c - 1 -> c[s]
@@ -1508,7 +1572,7 @@ brt200:  0 -> c[ms]
          0 -> c[s]
          delayed rom @00
          jsb ad2-13
-brt220:  if 0 = s 7
+brt220:  if s 7 = 0
            then go to brt240
          jsb S04232
          delayed rom @00
@@ -1528,7 +1592,7 @@ brt240:  if s 12 = 1
          c - 1 -> c[x]
          delayed rom @00
          jsb mp1-10
-brt250:  if 0 = s 4
+brt250:  if s 4 = 0
            then go to brt260
          0 - c - 1 -> c[s]
 brt260:  if s 13 = 1
@@ -1624,16 +1688,16 @@ L04474:  0 -> a[w]
          if c[s] = 0
            then go to L04510
          1 -> s 7
-         if 0 = s 6
+         if s 6 = 0
            then go to L04506
-         if 0 = s 10
+         if s 10 = 0
            then go to L04507
 L04506:  1 -> s 4
 L04507:  0 -> c[s]
 L04510:  b exchange c[w]
          if s 12 = 1
            then go to L04624
-         if 0 = s 14
+         if s 14 = 0
            then go to L04521
          a exchange c[w]
          c -> a[w]
@@ -1671,7 +1735,7 @@ L04547:  a - b -> a[w]
          b exchange c[w]
          m1 -> c
          c + c -> c[w]
-         if 0 = s 12
+         if s 12 = 0
            then go to L04565
          shift right a[w]
          shift right c[w]
@@ -1682,7 +1746,7 @@ L04566:  a - b -> a[w]
 L04571:  b exchange c[w]
          m1 -> c
          b exchange c[w]
-         if 0 = s 12
+         if s 12 = 0
            then go to L04635
          if c[x] # 0
            then go to L04634
@@ -1701,9 +1765,9 @@ L04611:  0 -> s 4
          go to L04566
 
 L04613:  0 -> s 10
-         if 0 = s 6
+         if s 6 = 0
            then go to L04605
-         if 0 = s 7
+         if s 7 = 0
            then go to L04622
          0 -> s 7
          go to L04566
@@ -1812,7 +1876,7 @@ L04742:  a -> b[w]
 L04760:  m1 -> c
          if s 13 = 1
            then go to L05063
-         if 0 = s 10
+         if s 10 = 0
            then go to L05063
          delayed rom @00
          jsb 1/x13
@@ -1867,13 +1931,13 @@ L05022:  jsb S05011
          c -> stack
          jsb S05014
          jsb S05005
-         if 0 = s 10
+         if s 10 = 0
            then go to L05033
          stack -> a
          c -> stack
          a exchange c[w]
 L05033:  jsb S05020
-         if 0 = s 7
+         if s 7 = 0
            then go to L05037
          0 - c - 1 -> c[s]
 L05037:  stack -> a
@@ -1897,7 +1961,7 @@ L05056:  if b[m] = 0
          m1 exchange c
          delayed rom @00
          jsb div15
-L05063:  if 0 = s 6
+L05063:  if s 6 = 0
            then go to L05102
          jsb S05013
          a exchange c[w]
@@ -1912,7 +1976,7 @@ L05063:  if 0 = s 6
            then go to L04771
          delayed rom @00
          jsb 1/x13
-L05102:  if 0 = s 4
+L05102:  if s 4 = 0
            then go to L05105
          0 - c - 1 -> c[s]
 L05105:  delayed rom @04
@@ -1925,7 +1989,7 @@ L05107:  0 -> c[w]
          load constant 1
          c -> a[w]
          a -> b[w]
-         if 0 = s 6
+         if s 6 = 0
            then go to L05105
          go to L05063
 
@@ -1957,7 +2021,7 @@ L05146:  c - 1 -> c[x]
          if n/c go to L05141
 L05150:  0 -> c[w]
          b -> c[m]
-         if 0 = s 8
+         if s 8 = 0
            then go to L05171
          p + 1 -> p
          if p # 13
@@ -1998,7 +2062,7 @@ S05212:  c -> a[wp]
          c + c -> c[wp]
          c + c -> c[wp]
          a - c -> c[wp]
-         if 0 = s 8
+         if s 8 = 0
            then go to L05124
          0 -> a[w]
          c -> a[x]
@@ -2035,7 +2099,10 @@ L05244:  jsb S05014
          jsb S05015
          go to L05244
 
-S05262:  rom checksum
+
+crc_check_quad_2:
+         rom checksum
+
 
 L05263:  jsb S05016
          jsb S05010
@@ -2100,8 +2167,10 @@ L05345:  delayed rom @06
          jsb S05001
          go to L05343
 
+
+; more self-test
 L05357:  delayed rom @15
-         jsb S06775
+         jsb crc_check_quad_3
          delayed rom @07
          jsb S03704
          0 -> c[w]
@@ -2115,8 +2184,9 @@ L05365:  load constant 2
          c + c -> c[m]
          a exchange c[w]
          delayed rom @06
-         jsb S03330
+         jsb get_key
          select rom go to L00000
+
 
 S05400:  select rom go to x-ad2-10
 
@@ -2221,7 +2291,7 @@ L05471:  jsb S05567		; g-shifted key 62 - SINH-1
 L05512:  jsb S05567
          if s 4 = 1
            then go to L05522
-         if 0 = s 6
+         if s 6 = 0
            then go to L05524
          jsb S05621
          a exchange c[w]
@@ -2233,7 +2303,7 @@ L05524:  0 -> c[s]
          delayed rom @02
          jsb S01041
          jsb S05413
-         if 0 = s 4
+         if s 4 = 0
            then go to L05550
          jsb S05415
          jsb S05410
@@ -2373,7 +2443,7 @@ L05720:  jsb S05404
          jsb S05411
          jsb S05604
          jsb S05407
-         if 0 = s 6
+         if s 6 = 0
            then go to L05437
 L05730:  delayed rom @04
          go to L02000
@@ -2808,7 +2878,7 @@ L06527:  if c[xs] # 0
          1 -> s 8
 L06541:  c - 1 -> c[w]
          0 -> c[xs]
-         if 0 = s 8
+         if s 8 = 0
            then go to L06546
          0 -> c[s]
 L06546:  delayed rom @04
@@ -2963,13 +3033,16 @@ L06763:  display off
          a exchange b[w]
          delayed rom @00
          jsb nrm11
-         if 0 = s 13
+         if s 13 = 0
            then go to L06773
          0 - c - 1 -> c[s]
 L06773:  delayed rom @04
          go to L02000
 
-S06775:  rom checksum
+
+crc_check_quad_3:
+         rom checksum
+
 
          nop
 

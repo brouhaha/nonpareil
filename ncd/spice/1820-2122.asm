@@ -38,12 +38,12 @@ L00022:  jsb S00311
          0 -> c[w]
          c -> data address
          m2 -> c
-         if 0 = s 2
+         if s 2 = 0
            then go to L00263
 L00031:  delayed rom @12
          go to L05350
 
-L00033:  if 0 = s 0
+L00033:  if s 0 = 0
            then go to L00020
 L00035:  clear status
          1 -> s 0
@@ -167,7 +167,7 @@ L00207:  a exchange c[w]
 S00212:  m2 -> c
          b exchange c[w]
          0 -> c[w]
-         if 0 = s 9
+         if s 9 = 0
            then go to L00221
          p <- 5
          load constant 6
@@ -219,13 +219,13 @@ L00271:  decimal
 L00274:  0 -> s 15
          if s 15 = 1
            then go to L00274
-L00277:  if 0 = s 15
+L00277:  if s 15 = 0
            then go to L00277
          display off
          if p # 3
            then go to L00400
 L00304:  m2 -> c
-         if 0 = s 4
+         if s 4 = 0
            then go to L00033
          delayed rom @12
          go to L05176
@@ -791,12 +791,12 @@ L01316:  if a[s] # 0
            then go to L01351
          c - 1 -> c[x]
 L01321:  0 -> c[ms]
-         if 0 = s 8
+         if s 8 = 0
            then go to L01325
          0 - c - 1 -> c[s]
 L01325:  delayed rom @01
          jsb S00521
-         if 0 = s 6
+         if s 6 = 0
            then go to L01366
          delayed rom @01
          jsb S00765
@@ -920,12 +920,12 @@ L01502:  0 -> c[w]
          c -> a[w]
          p <- 2
          load constant 1
-         if 0 = s 8
+         if s 8 = 0
            then go to L01513
          0 - c - 1 -> c[x]
 L01513:  a exchange b[w]
          c -> a[w]
-L01515:  if 0 = s 1
+L01515:  if s 1 = 0
            then go to L01525
          delayed rom @02
          jsb S01035
@@ -1004,7 +1004,7 @@ L01623:  b exchange c[w]
          go to L01443
 
 L01625:  b exchange c[w]
-L01626:  if 0 = s 1
+L01626:  if s 1 = 0
            then go to L01633
          jsb S01676
          a exchange c[w]
@@ -1033,7 +1033,7 @@ L01650:  c + 1 -> c[x]
          a + 1 -> a[p]
          a exchange b[w]
          c -> a[w]
-         if 0 = s 8
+         if s 8 = 0
            then go to L01515
          delayed rom @01
          jsb S00677
@@ -1074,12 +1074,12 @@ L01714:  a + 1 -> a[x]
 L01724:  a exchange b[w]
          0 -> c[ms]
          c -> a[w]
-         if 0 = s 8
+         if s 8 = 0
            then go to L01734
          0 - c - 1 -> c[s]
          delayed rom @02
          jsb S01102
-L01734:  if 0 = s 1
+L01734:  if s 1 = 0
            then go to L01740
          delayed rom @02
          jsb S01035

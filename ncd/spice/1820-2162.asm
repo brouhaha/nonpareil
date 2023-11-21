@@ -405,7 +405,9 @@ S00535:  register -> c 6
          p <- 5
          go to L00517
 
-S00540:  0 -> b[w]		; possibly yxten
+
+; ln
+S00540:  0 -> b[w]
          b exchange c[m]
          a exchange c[w]
 S00543:  0 -> s 6
@@ -581,12 +583,12 @@ ln530:   if a[s] # 0
            then go to ln540
          c - 1 -> c[x]
 ln550:   0 -> c[ms]
-         if 0 = s 8
+         if s 8 = 0
            then go to ln560
          0 - c - 1 -> c[s]
 ln560:   delayed rom @00
          jsb shf10
-         if 0 = s 6
+         if s 6 = 0
            then go to L01040
          delayed rom @01
          jsb rcscr
@@ -677,12 +679,12 @@ exp300:  0 -> c[w]
          c -> a[w]
          p <- 2
          load constant 1
-         if 0 = s 8
+         if s 8 = 0
            then go to exp700
          0 - c - 1 -> c[x]
 exp700:  a exchange b[w]
          c -> a[w]
-exp710:  if 0 = s 4
+exp710:  if s 4 = 0
            then go to S01151
          delayed rom @01
          jsb stscr
@@ -728,7 +730,7 @@ exp430:  b exchange c[w]
          go to exp400
 
 exp500:  b exchange c[w]
-exp510:  if 0 = s 4
+exp510:  if s 4 = 0
            then go to exp570
          jsb lnap
          a exchange c[w]
@@ -757,7 +759,7 @@ exp520:  c + 1 -> c[x]
          a + 1 -> a[p]
          a exchange b[w]
          c -> a[w]
-         if 0 = s 8
+         if s 8 = 0
            then go to exp710
          delayed rom @00
          jsb 1/x13
@@ -798,12 +800,12 @@ lnap2:   a + 1 -> a[x]
 exp600:  a exchange b[w]
          0 -> c[ms]
          c -> a[w]
-         if 0 = s 8
+         if s 8 = 0
            then go to exp740
          0 - c - 1 -> c[s]
          delayed rom @01
          jsb S00565
-exp740:  if 0 = s 4
+exp740:  if s 4 = 0
            then go to L01326
          delayed rom @01
          jsb stscr
@@ -846,13 +848,17 @@ yx13:    y -> a
          delayed rom @01
          jsb ln10
          stack -> a
-         if 0 = s 7
+         if s 7 = 0
            then go to L01375
          0 - c - 1 -> c[s]
 L01375:  delayed rom @04
          go to L02002
 
-S01377:  rom checksum
+
+; @01377
+crc_check_quad_0:
+         rom checksum
+
 
 S01400:  select rom go to x-ad2-10
 S01401:  select rom go to x-ad1-10
@@ -982,7 +988,7 @@ L01555:  jsb S01406
          delayed rom @04
          go to L02000
 
-S01566:  if 0 = s 13
+S01566:  if s 13 = 0
            then go to L01571
          0 - c - 1 -> c[s]
 L01571:  jsb S01400
@@ -1012,7 +1018,7 @@ L01613:  0 -> c[wp]
 L01617:  p - 1 -> p
          return
 
-S01621:  if 0 = s 13
+S01621:  if s 13 = 0
            then go to L01626
          a exchange c[w]
          0 - c - 1 -> c[s]
