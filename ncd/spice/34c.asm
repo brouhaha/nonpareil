@@ -62,6 +62,9 @@ L02031:  bank toggle go to L12032
 S02032:  delayed rom @17
          go to S07402
 
+
+; 1x: SOLVE 0..3, A..B (s13 = 0)
+; 2x: INTEG 0..3, A..B (s13 = 1)
 L02034:  a exchange b[x]
          jsb S02032
          if s 1 = 1
@@ -2815,7 +2818,10 @@ L06724:  delayed rom @10
 L06732:  delayed rom @17
          go to L07420
 
+; 2x: INTEG 0..3, A..B
 L06734:  1 -> s 13
+
+; 1x: SOLVE 0..3, A..B
 L06735:  delayed rom @04
          go to L02034
 
@@ -2837,10 +2843,12 @@ L06746:  delayed rom @04
 op_grd_3:
          bank toggle go to op_grd_2
 
+; 1x: SOLVE 0..3, A..B
 L06752:  go to L06735
 
 L06753:  bank toggle go to L16754
 
+; 2x: INTEG 0..3, A..B
 L06754:  go to L06734
 
 L06755:  bank toggle go to L16756
@@ -6536,11 +6544,13 @@ L16746:  delayed rom @04
          jsb S12112
          go to L16745
 
+; 1x: SOLVE 0..3, A..B
 L16751:  bank toggle go to L06752
 
 op_grd_2:
          go to op_grd_1
 
+; 2x: INTG 0..3, A..B
 L16753:  bank toggle go to L06754
 
 L16754:  go to L16736
@@ -6602,20 +6612,27 @@ L17014:  p + 1 -> p
          if n/c go to L17014
          return
 
+
+; 38..3b: F? 0..3
 L17020:  jsb S17010
          if c[p] = 0
            then go to L16726
 L17023:  delayed rom @04
          go to L12023
 
+
+; 28..2B: CF 0..3
 L17025:  jsb S17010
          0 -> c[p]
 L17027:  c -> register 15
          go to L17023
 
+
+; 18..1B: SF 0..3
 L17031:  jsb S17010
          load constant 1
          go to L17027
+
 
 L17034:  0 -> c[w]		; select I register
          c -> data address
@@ -6666,16 +6683,18 @@ L17100:  m2 -> c
          delayed rom @04
          go to L12000
 
+
+; 1x: SOLVE 0..3, A..B, CLEAR REG, CLEAR Sigma, SF0, SF1
 L17106:  load constant 8
          p <- 0
          if a >= c[p]
-           then go to L17031
+           then go to L17031	; SF 0..1
          c - 1 -> c[p]
          if a >= c[p]
-           then go to L17061
+           then go to L17061	; CLEAR Sigma
          c - 1 -> c[p]
          if a >= c[p]
-           then go to L17034
+           then go to L17034	; CLEAR REG
          delayed rom @15
          go to L16751
 
@@ -6683,16 +6702,17 @@ error_p_x3:
          delayed rom @04
          go to error_p_x
 
+; 2x: INTG 0..3, A..B, spare, RTN, CF 0..1
 L17124:  load constant 8
          p <- 0
          if a >= c[p]
-           then go to L17025
+           then go to L17025	; 28..29: CF 0..1
          c - 1 -> c[p]
          if a >= c[p]
-           then go to L17224
+           then go to L17224	; 27: CLEAR RTN
          c - 1 -> c[p]
          if a >= c[p]
-           then go to L17201
+           then go to L17201	; 26: spare
          delayed rom @15
          go to L16753
 
@@ -6704,7 +6724,7 @@ S17140:  delayed rom @04
 L17142:  load constant 8
          p <- 0
          if a >= c[p]
-           then go to L17020	; F? 0..1
+           then go to L17020	; 38..39: F? 0..1
 L17146:  jsb S17140
          p <- 3
          load constant 2
@@ -6887,8 +6907,8 @@ L17360:  a - 1 -> a[p]
 
 ; @17400: instruction dispatch table for most significant digit of instruction
          go to L17775		; 0x: LBL
-         go to L17452		; 1x: SOLVE
-         go to L17454		; 2x: INTG
+         go to L17452		; 1x: SOLVE 0..3, A..B, SF 0..1
+         go to L17454		; 2x: INTG 0..3, A..B, spare, RTN, CF 0..1
          go to L17456		; 3x: ENG 0..7, F? 0..1
          go to L17460		; 4x: SCI 0..7, DEG, RAD
          go to L17462		; 5x: FIX 0...9
@@ -6904,22 +6924,27 @@ L17360:  a - 1 -> a[p]
          go to L17437		; Fx: GSB
 
 
-; @17420: ?
-         go to L17775
-         go to L17444
-         go to L17446
-         go to L17450
-         go to L17725
-         go to L17626
-         go to L17644
-         go to L17734
-         go to L17716
-         go to L17654
-         go to L17550
-         go to L17554
-         go to L17560
-         go to L17564
-         1 -> s 4
+; @17420: dispatch for xA, xB
+         go to L17775		; 0A..0B: LBL A..B
+         go to L17444		; 1A..1B: SF 2..3
+         go to L17446		; 2A..2B: CF 2..3
+         go to L17450		; 3A..3B: F? 2..3
+         go to L17725		; 4A..4B: pi, decimal
+         go to L17626		; 5A..5B: RCL Sigma, roll up
+         go to L17644		; 6A..6B: RCL (i), RCL I
+         go to L17734		; 7A..7B: DSE, GSB I
+         go to L17716		; 8A..8B: STO (i), STO I
+         go to L17654		; 9A..9B: DSP I, GTO I
+         go to L17550		; AA..AB: STO - (i), ENTER
+         go to L17554		; BA..BB: STO + (i), CHS
+         go to L17560		; CA..CB: STO * (i), EEX
+         go to L17564		; DA..DB: STO / (i), CLx
+
+         1 -> s 4		; EA...EB: GTO A..B
+				; FA...FB: GSB A..B
+
+; En: GTO 0..9 (s4 = 1)
+; Fn: GSB 0..9 (s4 = 0)
 L17437:  delayed rom @15
          go to L16663
 
@@ -6928,18 +6953,27 @@ L17441:  a + 1 -> a[xs]
          c + 1 -> c[p]
          a -> rom address
 
+
+; 1A..1B: SF 2..3
 L17444:  delayed rom @16
          go to L17031
 
+
+; 2A..2B: CF 2..3
 L17446:  delayed rom @16
          go to L17025
 
+
+; 3A..3B: F? 2..3
 L17450:  delayed rom @16
          go to L17020
 
+
+; 1x: SOLVE 0..3, A..B, CLEAR REG, CLEAR Sigma, SF0, SF1
 L17452:  delayed rom @16
          go to L17106
 
+; 2x: INTG 0..3, A..B, spare, RTN, CF 0..1
 L17454:  delayed rom @16
          go to L17124
 
@@ -6955,14 +6989,22 @@ L17460:  delayed rom @16
 L17462:  delayed rom @16
          go to L17165
 
+
+; 7x: RCL . 0..9
 L17464:  1 -> s 4
+
+; 6x: RCL 0..9
 L17465:  jsb S17476
 L17466:  jsb S17742
          data -> c
 L17470:  delayed rom @04
          go to L12000
 
+
+; 9x: STO . 0..9
 L17472:  1 -> s 4
+
+; 8x: STO 0..9
 L17473:  jsb S17476
 L17474:  c -> data
          go to L17470
@@ -6999,41 +7041,58 @@ L17524:  c -> data address
 L17532:  load constant 11
          go to L17513
 
+
+; Ax: STO - 0..9
 L17534:  jsb S17476
 L17535:  0 - c - 1 -> c[s]
 L17536:  delayed rom @15
          go to L16762
 
+
+; Bx: STO + 0..9
 L17540:  jsb S17476
          go to L17536
 
+
+; Cx: STO * 0..9
 L17542:  jsb S17476
 L17543:  delayed rom @15
          go to L16764
 
+
+; Dx: STO / 0..9
 L17545:  jsb S17476
 L17546:  delayed rom @15
          go to L16766
 
+
+; AA..AB: STO - (i), ENTER
 L17550:  if a >= c[p]
            then go to L17216
          jsb S17570
          go to L17535
 
+
+; BA..BB: STO + (i), CHS
 L17554:  if a >= c[p]
            then go to L17004
          jsb S17570
          go to L17536
 
+
+; CA..CB: STO * (i), EEX
 L17560:  if a >= c[p]
            then go to L17006
          jsb S17570
          go to L17543
 
+
+; DA..DB: STO / (i), CLx
 L17564:  if a >= c[p]
            then go to L17222
          jsb S17570
          go to L17546
+
 
 S17570:  register -> c 15
          0 -> c[s]
@@ -7068,6 +7127,8 @@ L17620:  a - c -> a[w]
          load constant 15
          go to L17524
 
+
+; 5A..5B: RCL Sigma, roll up
 L17626:  if a >= c[p]
            then go to L17100
          shift right a[x]
@@ -7083,6 +7144,8 @@ L17640:  a exchange c[w]
          register -> c 1
          go to L17470
 
+
+; 6A..6B: RCL (i), RCL I
 L17644:  if a >= c[p]
            then go to L17650
          jsb S17570
@@ -7093,6 +7156,8 @@ L17650:  register -> c 15
          m2 -> c
          go to L17466
 
+
+; 9A..9B: DSP I, GTO I
 L17654:  if a >= c[p]
            then go to L16757
          register -> c 15
@@ -7130,6 +7195,9 @@ L17712:  c -> a[m]
 L17713:  shift right c[w]
          a + c -> c[m]
          if n/c go to L17664
+
+
+; 8A..8B: STO (i), STO I
 L17716:  if a >= c[p]
            then go to L17722
          jsb S17570
@@ -7139,6 +7207,8 @@ L17722:  register -> c 15
          m2 -> c
          go to L17474
 
+
+; 4A..4B: pi, decimal
 L17725:  if a >= c[p]
            then go to L17002
          decimal
@@ -7147,10 +7217,13 @@ L17725:  if a >= c[p]
          delayed rom @15
          go to L16775
 
+
+; 7A..7B: DSE, GSB I
 L17734:  if a >= c[p]
            then go to L16760
          delayed rom @15
          go to L16770
+
 
 S17740:  delayed rom @04
          go to S12157
@@ -7188,6 +7261,8 @@ L17772:  0 -> c[wp]
          a exchange c[x]
          return
 
+
+; 0x: LBL 0..9, LBL A..B (effectively a NOP)
 L17775:  delayed rom @04
          go to L12023
 
