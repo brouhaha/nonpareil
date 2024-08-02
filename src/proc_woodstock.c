@@ -609,14 +609,16 @@ static void set_ext_flag (sim_t *sim, int ext_flag, bool value)
   case EXT_FLAG_ACT_KC:
   case EXT_FLAG_ACT_KD:
   case EXT_FLAG_ACT_KE:
-    uint8_t mask = 1 << (ext_flag - EXT_FLAG_ACT_KA);
-    if (value)
     {
-      act_reg->key_scanner_inputs |= mask;
-    }
-    else
-    {
-      act_reg->key_scanner_inputs &= ~mask;
+    	uint8_t mask = 1 << (ext_flag - EXT_FLAG_ACT_KA);
+    	if (value)
+    	{
+      		act_reg->key_scanner_inputs |= mask;
+    	}
+    	else
+    	{
+      		act_reg->key_scanner_inputs &= ~mask;
+    	}
     }
     break;
   case EXT_FLAG_ACT_KA_COND_S0:
@@ -624,11 +626,13 @@ static void set_ext_flag (sim_t *sim, int ext_flag, bool value)
   case EXT_FLAG_ACT_KC_COND_S0:
   case EXT_FLAG_ACT_KD_COND_S0:
   case EXT_FLAG_ACT_KE_COND_S0:
-    uint8_t mask2 = 1 << (ext_flag - EXT_FLAG_ACT_KA_COND_S0);
-    if (value)
-      act_reg->key_scanner_cond_s0_inputs |= mask2;
-    else
-      act_reg->key_scanner_cond_s0_inputs &= ~mask2;
+    {
+    	uint8_t mask2 = 1 << (ext_flag - EXT_FLAG_ACT_KA_COND_S0);
+    	if (value)
+      		act_reg->key_scanner_cond_s0_inputs |= mask2;
+    	else
+      		act_reg->key_scanner_cond_s0_inputs &= ~mask2;
+    }
     break;
   default:
     printf("ACT unknown ext flag %d\n", ext_flag);
