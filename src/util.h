@@ -68,11 +68,12 @@ char *newstrn (char *orig, int max_len);
 void realloc_strcpy (char **dest, char *src);
 
 
+#if __GLIBC__ < 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ < 38)
 // strlcpy will copy as much of src into dest as it can, up to one less than
 // the maximum length of dest specified by the argument l.  Unlike strncpy(),
 // strlcpy() will always leave dest NULL-terminated on return.
 char *strlcpy (char *dest, const char *src, size_t l);
-
+#endif
 
 // strlncpy will copy up to n characters from src to dest, but not more than
 // one less than the maximum length of dest specified by the argument l.
