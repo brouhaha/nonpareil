@@ -29,6 +29,7 @@ MA 02111, USA.
 #include "symtab.h"
 #include "arch.h"
 #include "asm.h"
+#include "asm_cond.h"
 
 void asm_cond_error (char *s);
 %}

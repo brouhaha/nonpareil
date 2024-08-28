@@ -23,6 +23,7 @@ MA 02111, USA.
 #include <stdbool.h>
 #include <stdint.h>
 #include <string.h>
+#include <stdlib.h>
 
 #include <libxml/SAX.h>
 #include <libxml/xmlwriter.h>
