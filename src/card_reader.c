@@ -101,7 +101,7 @@ static void write_card (char *fn, crc_card_side_t *side)
 
   xml_end_element (writer);  // magcard
 
-  if (! (xmlTextWriterEndDocument (writer) < 0))
+  if (xmlTextWriterEndDocument (writer) < 0)
     fatal (2, "can't end document\n");
 
   xmlFreeTextWriter (writer);
