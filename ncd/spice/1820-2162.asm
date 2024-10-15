@@ -12,7 +12,7 @@
 L02000   .equ @02000
 L02001   .equ @02001	; calculator-specific reset entry
 L02002   .equ @02002
-L02004   .equ @02004
+L02004   .equ @02004	; calculator-specific error_p entry
 L02005   .equ @02005
 
 	 .org @0000
@@ -857,7 +857,7 @@ L01375:  delayed rom @04
 
 ; @01377
 crc_check_quad_0:
-         rom checksum
+         rom check
 
 
 S01400:  select rom go to x-ad2-10
@@ -1142,4 +1142,5 @@ L01771:  a exchange c[m]
 
          nop
 
-         .dw @0533			; CRC, quad 0 (@0000..@1777)
+         .check			; CRC, quad 0 (@0000..@1777)
+;        .dw @0533		; CRC, quad 0 (@0000..@1777)

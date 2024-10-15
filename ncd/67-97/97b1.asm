@@ -1279,13 +1279,13 @@ L13755:  shift right c[wp]
 
         select rom @13 (L15774)	; from L3772 - WDATA
 
-        select rom @13 (L15775)	; not used
+        select rom @13 (L15775)	; from L3773 (not used)
 
-        select rom @13 (L15776)	; from L3774
+        select rom @13 (L15776)	; from L3774 - card inserted
 
         go to L13544		; from L3775
 
-        nop			; 3777
+        nop			; from L3776 (not used)
 
 	.bank 1
 	.org @4000	; from ROM/RAM p/n 1818-0230

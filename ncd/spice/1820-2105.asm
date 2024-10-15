@@ -19,7 +19,7 @@ L03002	.equ @03002
          delayed rom @06
          go to L03002
 
-S00002:  rom checksum		; computes checksum of quad 0 (@0000-@1777) and returns
+S00002:  rom check		; computes checksum of quad 0 (@0000-@1777) and returns
 
 L00003:  jsb S00006
          c -> data

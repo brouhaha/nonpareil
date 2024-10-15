@@ -821,7 +821,7 @@ L03301:  jsb S03071
            then go to L03014
          go to L03141
 
-S03312:  rom checksum		; computes checksum of quad 1 (@2000-@3777) and returns
+S03312:  rom check		; computes checksum of quad 1 (@2000-@3777) and returns
 
 self_test:
          clear regs

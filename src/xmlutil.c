@@ -1,6 +1,5 @@
 /*
-$Id$
-Copyright 2008 Eric Smith <eric@brouhaha.com>
+Copyright 2008, 2024 Eric Smith <spacewar@gmail.com>
 
 Nonpareil is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License version 2 as
@@ -25,6 +24,7 @@ MA 02111, USA.
 #include <string.h>
 
 #include <libxml/xmlwriter.h>
+#include <libxml/entities.h>
 
 #include "util.h"
 #include "xmlutil.h"

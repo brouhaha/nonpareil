@@ -113,7 +113,7 @@ label:		IDENT ':'	{ do_label ($1); }
 		;
 
 expr		: INTEGER { $$ = $1; }
-		| IDENT { if (pass == 1)
+		| IDENT { if (pass == PASS_INITIAL)
                             $$ = 0;
                           else
                             {
@@ -352,7 +352,7 @@ inst_sel_rom    : SELECT ROM expr           { $3 = range ($3, 0, 7);
                                               emit ((rom << 7) | 0x010);
 					      addr_t tgt = (rom << 8) + ((pc + 1) & 0377);
 					      target(tgt);
-					      if ((pass == 2) && ($5 != tgt))
+					      if ((pass != PASS_INITIAL) && ($5 != tgt))
 						{
 						  error("'select rom' target value incorrect - requested %05o, actual %05o\n", $5, tgt);
 						}

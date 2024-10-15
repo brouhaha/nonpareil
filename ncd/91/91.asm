@@ -349,7 +349,7 @@ L0414:	decimal
 	binary
 	go to L0736
 
-	go to L0461		; key 020 - multiply
+	go to op_mul		; key 020 - multiply
 
 	jsb S0766		; key 021 - subtract
 	delayed rom @04
@@ -391,7 +391,7 @@ L0455:	c + 1 -> c[p]
 
 	nop
 
-L0461:	jsb S0772
+op_mul:	jsb S0772
 	delayed rom @04
 	go to L2011
 
@@ -446,7 +446,7 @@ L0515:	p <- 3
 	nop
 
 	jsb S0765		; key 130 - roll up
-	load constant 7
+	load constant 7		; "R↑"
 	load constant 11
 	load constant 1
 	m1 exchange c
@@ -622,7 +622,7 @@ S0715:	if s 11 = 1
 L0727:	go to S0714
 
 L0730:	jsb S0765		; key 330 - roll down
-	load constant 7
+	load constant 7		; "R↓"
 	load constant 11
 	load constant 5
 	m1 exchange c
@@ -648,7 +648,7 @@ L0746:	delayed rom @04
 	if s 9 = 1
 	  then go to L0761
 L0754:	p <- 3
-	load constant 6
+	load constant 6		; "***"
 	load constant 1
 	load constant 8
 	load constant 6
@@ -776,7 +776,7 @@ L1130:	a exchange c[ms]
 	0 -> c[ms]
 	c - 1 -> c[ms]
 	delayed rom @03
-	jsb S1765
+	jsb prt_wait_cr
 	pick print 3
 	go to L1117
 
@@ -998,7 +998,7 @@ S1445:	if s 3 = 1
 	  then go to L1763
 	return
 
-S1450:	load constant 14
+S1450:	load constant 14	; " LIST"
 	load constant 2
 	load constant 9
 	load constant 12
@@ -1007,9 +1007,10 @@ S1450:	load constant 14
 	a exchange b[x]
 L1457:	if s 9 = 0
 	  then go to S1506
-L1461:	jsb S1765
-	jsb S1773
+L1461:	jsb prt_wait_cr
+	jsb prt_wait_home
 	pick print 6
+
 S1464:	jsb S1567
 	if s 3 = 1
 	  then go to L1720
@@ -1030,15 +1031,19 @@ L1472:	p - 1 -> p
 L1504:	pick print 3
 L1505:	return
 
-S1506:	p <- 11
+
+; prints up to five characers based on c[6:0}
+; leftmost char can be in any row, but col has to be 0..3
+S1506:	p <- 11			; fill left part of word with spaces
 L1507:	load constant 0
 	if p # 6
 	  then go to L1507
-	jsb S1765
-	jsb S1773
+	jsb prt_wait_cr
+	jsb prt_wait_home
 	pick print 6
 	jsb S1567
 	go to L1720
+
 
 S1517:	delayed rom @02
 	jsb S1267
@@ -1047,8 +1052,8 @@ S1517:	delayed rom @02
 	p <- 4
 	0 -> c[wp]
 	b -> c[x]
-	jsb S1765
-	jsb S1773
+	jsb prt_wait_cr
+	jsb prt_wait_home
 	pick print 2
 	jsb S1567
 	if s 3 = 1
@@ -1082,10 +1087,12 @@ L1555:	if s 4 = 0
 	c + 1 -> c[xs]
 	if n/c go to L1544
 S1567:	p <- 5
+
 L1570:	0 -> s 3
 	pick print home?
 	if s 3 = 0
 	  then go to L1505
+
 	c - 1 -> c[s]
 	if n/c go to L1570
 	p - 1 -> p
@@ -1140,7 +1147,7 @@ L1652:	p - 1 -> p
 	0 -> c[ms]
 	load constant 3
 	b exchange c[w]
-L1660:	jsb S1765
+L1660:	jsb prt_wait_cr
 	display toggle
 	hi i'm woodstock
 	binary
@@ -1157,11 +1164,11 @@ L1665:	pick key?
 	c - 1 -> c[w]
 	p <- 7
 	0 -> c[wp]
-L1701:	jsb S1773
+L1701:	jsb prt_wait_home
 	if s 5 = 1
 	  then go to L1636
 	pick print 0
-	jsb S1765
+	jsb prt_wait_cr
 	go to L1701
 
 	nop
@@ -1172,7 +1179,7 @@ L1710:	c - 1 -> c[p]
 	c - 1 -> c[p]
 	if n/c go to L1716
 	load constant 14
-L1716:	jsb S1765
+L1716:	jsb prt_wait_cr
 	pick print 3
 L1720:	m1 -> c
 	decimal
@@ -1200,8 +1207,8 @@ L1730:	jsb S1436
 	c + 1 -> c[p]
 	c - 1 -> c[p]
 	binary
-L1751:	jsb S1765
-	jsb S1773
+L1751:	jsb prt_wait_cr
+	jsb prt_wait_home
 	pick print 3
 	jsb S1464
 	jsb S1445
@@ -1213,18 +1220,22 @@ L1751:	jsb S1765
 L1763:	m1 -> c
 	select rom go to L0365
 
-S1765:	0 -> s 3
+
+prt_wait_cr:
+	0 -> s 3
 L1766:	pick print cr?
 	if s 3 = 0
 	  then go to L1766
 	0 -> s 3
 	return
 
-S1773:	0 -> s 3
+prt_wait_home:
+	0 -> s 3
 L1774:	pick print home?
 	if s 3 = 0
 	  then go to L1774
 	return
+
 
 L2000:	jsb S2363
 	jsb S2312
@@ -1264,7 +1275,7 @@ S2032:	p <- 12
 
 L2034:	if s 13 = 1
 	  then go to L2740
-	load constant 14
+	load constant 14	; "√X"
 	load constant 9
 	load constant 6
 	jsb S2313
@@ -1526,7 +1537,7 @@ S2400:	c -> a[wp]
 	0 -> c[x]
 	return
 
-S2414:	load constant 7
+S2414:	load constant 7		; "HMS→"
 	load constant 5
 	load constant 9
 	load constant 12
@@ -1738,7 +1749,7 @@ L2702:	p - 1 -> p
 	select rom go to L3710
 
 op_lastx:
-	load constant 14
+	load constant 14	; "LSTX"
 	load constant 3
 	load constant 0
 	load constant 2
@@ -1751,7 +1762,7 @@ op_lastx:
 
 L2722:	if s 13 = 1
 	  then go to L2504
-	load constant 1
+	load constant 1		; "1/X "
 	load constant 15
 	load constant 9
 	load constant 5
@@ -2591,7 +2602,7 @@ L4256:	register -> c 11
 
 L4316:	if s 13 = 1
 	  then go to L4201
-	load constant 8
+	load constant 8		; "P→"
 	load constant 6
 	load constant 14
 	jsb S4325
@@ -2808,7 +2819,7 @@ L4617:	m1 exchange c
 	  then go to L4640
 	p <- 6
 	0 -> c[wp]
-	load constant 8
+	load constant 8		; "ERROR" (because digits 11..7 will be filled
 	load constant 4
 	load constant 1
 	p <- 1

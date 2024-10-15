@@ -13,15 +13,15 @@
 
 ; Note that code from @02000 through @02777 is nearly identical between 37E and 38E
 
-         go to L02161
+L02000:  go to L02161
 
-         go to L02373
+L02001:  go to L02373
 
-         go to L02024
+L02002:  go to L02024
 
-         go to L02137
+L02003:  go to L02137
 
-         1 -> s 10
+L02004:  1 -> s 10
          jsb S02103
          jsb S02126
          delayed rom @02
@@ -210,7 +210,7 @@ L02253:  if c[m] = 0
 S02263:  delayed rom @01
          go to S00557
 
-S02265:  rom checksum
+S02265:  rom check
 
 L02266:  p <- 5
 L02267:  delayed rom @00
@@ -1621,7 +1621,7 @@ L04642:  p <- 12
          0 -> c[x]
          go to L04727
 
-S04645:  rom checksum
+S04645:  rom check
 
 L04646:  y -> a
          a exchange c[w]

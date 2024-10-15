@@ -73,7 +73,7 @@ typedef void (write_obj_t)(FILE *f, int opcode);
 
 static write_obj_t *write_obj [ARCH_MAX];
 
-int pass;
+pass_t pass;
 int errors;
 int warnings;
 
@@ -116,6 +116,9 @@ char *errptr;
 #define SRC_TAB 32
 char listbuf [MAX_LINE];
 char *listptr;
+
+
+uint16_t asm_memory[16 * 4096];
 
 
 #define MAX_INCLUDE_NEST 128
@@ -183,9 +186,18 @@ void pseudo_fillto(int addr, int val)
 {
   while (pc < addr)
     {
+      switch (pass)
+      {
+      case PASS_INITIAL:
+	break;
+      case PASS_FWD_REF:
+	asm_memory[pc] = val;
+	break;
+      case PASS_FINAL:
+	write_obj[arch](obj_file, val);
+	break;
+      }
       pc = (pc + 1) & pc_mask[arch];  // XXX will this show the wrong PC in the listing for fillto?
-      if (pass == 2)
-	write_obj [arch] (obj_file, val);
     }
   last_instruction_type = OTHER_INST;
 }
@@ -364,7 +376,7 @@ static void process_line (char *inbuf)
 
   parse_source_line ();
 
-  if (pass == 2)
+  if (pass == PASS_FINAL)
     {
       if (symtab_pseudoop_flag)
 	{
@@ -392,7 +404,7 @@ static void process_line (char *inbuf)
 }
 
 
-static void do_pass (int p)
+static void do_pass (pass_t p)
 {
   char inbuf [MAX_LINE];
 
@@ -411,7 +423,7 @@ static void do_pass (int p)
   legal_flag = false;
   local_label_flag = false;
 
-  printf ("Pass %d rom", pass);
+  printf ("Pass %d\n", pass);
 
   while (1)
     {
@@ -431,7 +443,7 @@ static void do_pass (int p)
   if (get_cond_nest_level() != 0)
     error ("unterminated conditional(s)");
 
-  if ((pass == 2) && list_file)
+  if ((pass == PASS_FINAL) && list_file)
     {
       fprintf (list_file, "\nGlobal symbols:\n\n");
       print_symbol_table (global_symtab,
@@ -563,13 +575,21 @@ int main (int argc, char *argv[])
 	fatal (2, "can't open listing file '%s'\n", list_fn);
     }
 
+  memset(asm_memory, 0xff, sizeof(asm_memory));  // mark as undefined
+
   include_nest = -1;
-  open_source (src_fn);
-  do_pass (1);
 
   open_source (src_fn);
+  do_pass (PASS_INITIAL);
+
+  // second pass to resolve forward references
+  open_source (src_fn);
+  do_pass (PASS_FWD_REF);
+
+  // third pass necessary to compute checksum or CRC
+  open_source (src_fn);
   write_object_file_metadata();
-  do_pass (2);
+  do_pass (PASS_FINAL);
 
   err_printf ("%d errors detected, %d warnings\n", errors, warnings);
 
@@ -591,7 +611,7 @@ void define_symbol (char *s, int value)
   else
     table = global_symtab;
 
-  if (pass == 1)
+  if (pass == PASS_INITIAL)
     {
       if (! create_symbol (table, s, value, lineno [include_nest]))
 	error ("multiply defined symbol '%s'\n", s);
@@ -648,31 +668,48 @@ static write_obj_t *write_obj [ARCH_MAX] =
   };
 
 
-static void emit_core (int op, int inst_type)
+static void emit_core(int op)
 {
+  addr_t addr = pc;
+
   if (obj_word_count < MAX_OBJ_PER_SOURCE_LINE)
     obj_words[obj_word_count++] = op;
 
+  switch (pass)
+  {
+  case PASS_INITIAL:
+    break;
+  case PASS_FWD_REF:
+    asm_memory[addr] = op;
+    break;
+  case PASS_FINAL:
+    // XXX compare op with content of object array, should match
+    write_obj [arch] (obj_file, op);
+  }
+}
+
+
+static void emit_generic(int op, int inst_type)
+{
   last_instruction_type = inst_type;
 
-  if (pass == 2)
-    write_obj [arch] (obj_file, op);
+  emit_core(op);
 }
 
 
 void emit (int op)
 {
-  emit_core (op, OTHER_INST);
+  emit_generic(op, OTHER_INST);
 }
 
 void emit_arith (int op)
 {
-  emit_core (op, ARITH_INST);
+  emit_generic(op, ARITH_INST);
 }
 
 void emit_test (int op)
 {
-  emit_core (op, TEST_INST);
+  emit_generic(op, TEST_INST);
 }
 
 void target (addr_t addr)
@@ -712,7 +749,7 @@ int range_pass2 (int val, int min, int max)
 {
   if ((val < min) || (val > max))
     {
-      if (pass == 2)
+      if (pass != PASS_INITIAL)
 	error ("value %d out of range [%d to %d], using %d\n", val, min, max, min);
       return min;
     }
@@ -756,7 +793,7 @@ int err_vprintf (char *format, va_list ap)
 {
   int res;
 
-  if (list_file && (pass == 2))
+  if (list_file && (pass == PASS_FINAL))
     {
       va_list ap_copy;
 

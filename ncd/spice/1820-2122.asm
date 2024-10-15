@@ -53,7 +53,7 @@ L00035:  clear status
          nop
          nop
 
-S00043:  rom checksum
+S00043:  rom check
 
 S00044:  c + 1 -> c[p]
          c -> data address

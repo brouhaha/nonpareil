@@ -29,7 +29,14 @@ extern int arch;
 
 typedef uint16_t addr_t;
 
-extern int pass;
+typedef enum
+{
+  PASS_INITIAL = 1,
+  PASS_FWD_REF,
+  PASS_FINAL
+} pass_t;
+
+extern pass_t pass;
 extern int errors;
 
 extern bool parse_error;
@@ -62,6 +69,11 @@ extern const char *license_string;
 
 
 #define MAXROM 16     /* classic and woodstock */
+
+
+extern uint16_t asm_memory[16 * 4096];
+// enough for Woodstock full address space
+// (two banks), or three Nut pages
 
 
 void pseudo_fillto(int addr, int val);

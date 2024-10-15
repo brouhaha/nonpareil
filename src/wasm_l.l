@@ -54,9 +54,9 @@ static keyword_t wasm_keywords [] =
   { "y",         Y },
 
   { "address",   ADDRESS },
-  { "bank",       BANK },
+  { "bank",      BANK },
   { "binary",    BINARY },
-  { "checksum",  CHECKSUM },
+  { "check",     CHECK },
   { "clear",     CLEAR },
   { "constant",  CONSTANT },
   { "cr",        CR },

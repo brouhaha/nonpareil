@@ -29,6 +29,7 @@ MA 02111, USA.
 #include "symtab.h"
 #include "arch.h"
 #include "asm.h"
+#include "asm_cond.h"
 
 void asm_cond_error (char *s);
 %}
@@ -103,7 +104,7 @@ factor		: '(' expr ')'  { $$ = $2; }
 			    }
 			  else
 			    {
-			      if (pass == 2)
+			      if (pass != PASS_INITIAL)
 				error ("undefined symbol '%s'\n", $1);
 			      $$ = 0;
 			    }

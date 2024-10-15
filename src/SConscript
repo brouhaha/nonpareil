@@ -62,6 +62,7 @@ build_env.Append (YACCFLAGS = [ '-d', '-v' ])
 
 if build_env ['debug'] :
     build_env.Append (CCFLAGS = ['-g'])
+    build_env.Append (LINKFLAGS = ['-g'])
 else:
     build_env.Append (CCFLAGS = ['-O2'])
     build_env.Append (LINKFLAGS = ['-s'])  # strip executables
@@ -222,7 +223,7 @@ uasm_srcs = Split ("""asm.c symtab.c
             	      asm_l.l asm_y.y
 		      asm_cond.c asm_cond_l.l asm_cond_y.y
                       casm_l.l casm_y.y
-                      wasm_l.l wasm_y.y
+                      wasm_l.l wasm_y.y wasm.c
 		      nasm_l.l nasm_y.y""")
 
 uasm = build_env.Program (target = 'uasm',

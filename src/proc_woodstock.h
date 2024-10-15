@@ -52,6 +52,8 @@ typedef uint16_t rom_addr_t;
 
 #define AV_BANK_USING_S0 0x02
 
+#define AV_SPICE_14_DIGIT_DISP 0x04
+
 
 typedef struct
 {

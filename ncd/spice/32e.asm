@@ -5,7 +5,7 @@
 ; HP-32E Q function reverse-engineered by mike-stgt:
 ;     https://forum.hp41.org/viewtopic.php?f=10&t=427
 
-	 .copyright "Copyright 2022 Eric Smith <spacewar@gmail.com>"
+	 .copyright "Copyright 2022-2023 Eric Smith <spacewar@gmail.com>"
 	 .license "GPL-v3.0-only"
 
          .arch woodstock
@@ -16,7 +16,7 @@
 ; 0   SCI or ENG display format
 ; 1   ENG display format
 ; 2   digit entry has exponent
-; 3   digit entry has decimal
+; 3   digit entry has decimal (hardware: unused)
 ; 4   general flag; in display formatting, exponent to be shown
 ; 5   hardware: CRC check failure
 ; 6   general flag
@@ -48,12 +48,13 @@
 
 L02000:  go to L02023
 
-L02001:  go to L02010
+L02001:  go to reset_x
 
 L02002:  go to L02066
 
-L02003:  p <- 0
-L02004:  go to L02352
+error_0: p <- 0			; error 0
+error_p:
+         go to error_p_x	; error entry from CPU ROM
 
 
 ml_disable_stack_lift:
@@ -61,7 +62,8 @@ ml_disable_stack_lift:
          m2 exchange c
          go to L02027
 
-L02010:  display off
+
+reset_x: display off
          clear status
          clear regs
          0 -> c[w]
@@ -173,8 +175,8 @@ L02126:  delayed rom @00
 L02131:  0 -> c[w]		; unshifted key 34 - CLx
          go to ml_disable_stack_lift
 
-L02133:  p <- 2
-         go to L02004
+error_2: p <- 2
+         go to error_p
 
 L02135:  a + 1 -> a[x]		; unshfited key 44 - 9
          1 -> s 6
@@ -217,7 +219,7 @@ L02165:  c -> stack
 L02167:  a + 1 -> a[x]
 L02170:  a + 1 -> a[x]		; unshifted key 54 - 6
          if s 10 = 1
-           then go to L02133
+           then go to error_2
          1 -> s 8
          go to L02141
 
@@ -256,8 +258,8 @@ L02213:  if p = 12		; unshifted key 73 - decimal
          a exchange c[w]
          go to L02000
 
-L02230:  p <- 1
-         go to L02004
+error_1: p <- 1
+         go to error_p
 
 
 ; set ENG display format
@@ -307,7 +309,7 @@ L02260:  if p = 12		; unshifted key 72 - 0
            then go to L02232	; set ENG
 
          if s 6 = 1
-           then go to L02133
+           then go to error_2
          if s 10 = 1
            then go to L02302
          a + 1 -> a[x]
@@ -349,7 +351,7 @@ L02327:  if p = 3
 L02335:  delayed rom @03
          jsb S01572
          if p = 10
-           then go to L02230
+           then go to error_1
 L02341:  c -> data
          0 -> c[w]
          c -> data address
@@ -361,16 +363,20 @@ L02347:  delayed rom @00
          jsb ad2-10
          go to L02335
 
-L02352:  0 -> c[w]
+
+error_p_x:
+         0 -> c[w]
          c -> data address
          binary
          c - 1 -> c[w]
-         0 -> a[xs]
+
+         0 -> a[xs]		; copy P to a[xs]
 L02357:  if p = 0
            then go to L03266
          a + 1 -> a[xs]
          p - 1 -> p
          go to L02357
+
 
 L02364:  0 -> s 0	; set fix mode
          0 -> s 1
@@ -834,7 +840,7 @@ L03114:  delayed rom @02	; g-shifted key 72 - e^x
          go to L03020
 
 L03117:  if c[m] = 0		; divide
-           then go to L02003
+           then go to error_0
          stack -> a
          jsb S03006
          go to L03020
@@ -971,6 +977,7 @@ L03260:  jsb S03072		; g-shifted key 12 - pi
          c + 1 -> c[m]
          0 -> c[x]
          go to L03357
+
 
 L03266:  shift left a[w]
          shift left a[w]
@@ -1298,7 +1305,7 @@ L03665:  c -> a[w]
          data -> c
          a - c -> a[w]
          if a[w] # 0
-           then go to L03711
+           then go to error_9
          c - 1 -> c[p]
          if n/c go to L03665
          clear data registers
@@ -1311,13 +1318,15 @@ L03676:  0 -> c[x]
 
 S03704:  if s 5 = 0
            then go to L03676
-         go to L03711
+         go to error_9
+
 
 L03707:  0 -> c[w]
          m2 exchange c
-L03711:  p <- 9
+error_9: p <- 9
          delayed rom @04
-         go to L02004
+         go to error_p
+
 
 S03714:  p <- 0
 L03715:  c -> data address
@@ -1328,7 +1337,7 @@ L03715:  c -> data address
 
 
 crc_check_quad_1:
-         rom checksum
+         rom check
 
 
 ; self-test
@@ -1650,7 +1659,7 @@ L04373:  delayed rom @04
          go to L02002
 
 L04375:  delayed rom @04
-         go to L02003
+         go to error_0
 
 trc30:   0 -> c[w]
          c - 1 -> c[w]
@@ -2116,10 +2125,10 @@ S05212:  c -> a[wp]
 
 L05226:  jsb S05014
          if a[s] # 0
-           then go to L05606
+           then go to error_3
          jsb S05015
          if a[s] # 0
-           then go to L05606
+           then go to error_3
          delayed rom @03
          jsb S01642
          0 -> b[w]
@@ -2145,7 +2154,7 @@ L05244:  jsb S05014
 
 
 crc_check_quad_2:
-         rom checksum
+         rom check
 
 
 L05263:  jsb S05016
@@ -2399,9 +2408,11 @@ L05602:  m2 -> c
 S05604:  delayed rom @03
          go to S01645
 
-L05606:  p <- 3
+
+error_3: p <- 3
          delayed rom @04
-         go to L02004
+         go to error_p
+
 
 S05611:  a exchange c[w]
 S05612:  0 - c - 1 -> c[s]
@@ -2429,9 +2440,9 @@ L05632:  jsb S05604		; g-shifted key 22 - lin est x
          jsb S05621
          jsb S05611
          if c[s] # 0
-           then go to L05606
+           then go to error_3
          if c[m] = 0
-           then go to L05606
+           then go to error_3
          0 -> s 13
          0 -> s 7
          register -> c 3
@@ -2496,9 +2507,9 @@ L05732:  jsb S05414
          jsb S05415
          jsb S05405
          if a[s] # 0
-           then go to L05606
+           then go to error_3
          if c[m] = 0
-           then go to L05606
+           then go to error_3
          m2 -> c
          delayed rom @06
          jsb S03072
@@ -2521,7 +2532,7 @@ L05752:  register -> c 1
          go to L05720
 
 S05764:  if b[m] = 0
-           then go to L05606
+           then go to error_3
          if s 6 = 1
            then go to L05263
          jsb S05604
@@ -2908,7 +2919,7 @@ S06501:  0 -> c[w]
 L06523:  if c[s] = 0		; g-shifted key 21 - Q-1
            then go to L06527
 L06525:  delayed rom @04
-         go to L02003
+         go to error_0
 
 L06527:  if c[xs] # 0
            then go to L06550
@@ -3085,9 +3096,11 @@ L06773:  delayed rom @04
 
 
 crc_check_quad_3:
-         rom checksum
+         rom check
 
 
          nop
 
 	 .dw @1475			; CRC, half of quad 3 (@6000..@6777
+
+         .fillto @10000

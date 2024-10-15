@@ -1975,8 +1975,16 @@ static void display_setup (sim_t *sim)
       // ten digits plus special-case for sign
       sim->display_digits = MAX_DIGIT_POSITION;
       act_reg->display_scan_fn = spice_display_scan;
-      act_reg->left_scan = WSIZE - 2;
-      act_reg->right_scan = 3;
+      if (0 && act_reg->arch_variant & AV_SPICE_14_DIGIT_DISP)
+      {
+	act_reg->left_scan = WSIZE - 2;
+	act_reg->right_scan = 0;
+      }
+      else
+      {
+	act_reg->left_scan = WSIZE - 2;
+	act_reg->right_scan = 3;
+      }
       break;
     default:
       fatal (2, "Woodstock arch doesn't know how to handle display for platform %s\n", platform_name [sim->platform]);

@@ -67,7 +67,6 @@ char *newstrn (char *orig, int max_len);
 
 void realloc_strcpy (char **dest, char *src);
 
-
 #if __GLIBC__ < 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ < 38)
 // strlcpy will copy as much of src into dest as it can, up to one less than
 // the maximum length of dest specified by the argument l.  Unlike strncpy(),

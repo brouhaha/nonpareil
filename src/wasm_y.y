@@ -30,6 +30,7 @@ see <https://www.gnu.org/licenses/>.
 #include "symtab.h"
 #include "arch.h"
 #include "asm.h"
+#include "wasm.h"
 
 int ptr_load_map [14];
 int ptr_test_map [14];
@@ -55,7 +56,7 @@ void wasm_error (char *s);
 %token ADDRESS
 %token BANK
 %token BINARY
-%token CHECKSUM
+%token CHECK
 %token CLEAR
 %token CONSTANT
 %token CR
@@ -145,12 +146,12 @@ pseudo_op	: ps_org
 		| ps_bank
 		| ps_rom
 		| ps_symtab
-		| ps_legal
-		| ps_dw
+		| pseudo_op_label
 		;
 
 pseudo_op_label	: ps_dw
 		| ps_legal
+                | ps_check
 		;
 
 pseudo_op_special_label	: ps_equ ;
@@ -187,6 +188,9 @@ ps_legal	: LEGAL { legal_flag = true; }
 
 ps_dw		: DW expr { $2 = range ($2, 0, 01777);
                             emit ($2); }
+		;
+
+ps_check        : CHECK { pseudo_check(pc); }
 		;
 
 instruction	: jsb_inst
@@ -431,7 +435,7 @@ misc_inst       : inst_load_const
 		| inst_return
 		| inst_binary
 		| inst_decimal
-		| inst_rom_checksum
+		| inst_rom_check
 		| inst_bank_toggle
 		| inst_woodstock
                 ;
@@ -512,7 +516,7 @@ inst_return	: RETURN                    { emit (01020); } ;
 
 inst_noop       : NOP			    { emit (00000); } ;
 
-inst_rom_checksum : ROM CHECKSUM            { emit (01460); } ;
+inst_rom_check  : ROM CHECK                 { emit (01460); } ;
 
 inst_bank_toggle: BANK TOGGLE               { emit (01060); }
 		| BANK TOGGLE '(' expr ')'  { emit (01060);

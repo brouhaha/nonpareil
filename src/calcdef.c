@@ -1,5 +1,5 @@
 /*
-Copyright 2006, 2008, 2010, 2022 Eric Smith <spacewar@gmail.com>
+Copyright 2006, 2008, 2010, 2022, 2024 Eric Smith <spacewar@gmail.com>
 
 Nonpareil is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License version 2 as
@@ -22,6 +22,7 @@ MA 02111, USA.
 #include <inttypes.h>
 #include <stdbool.h>
 #include <stdint.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include <libxml/SAX.h>

@@ -485,7 +485,7 @@ S02637:  delayed rom @00
 L02641:  delayed rom @12
          go to L05314
 
-S02643:  rom checksum
+S02643:  rom check
 
 L02644:  0 -> c[w]
          c -> data address
@@ -1495,7 +1495,7 @@ L04361:  jsb S04242
          load constant 1
          go to L04067
 
-S04365:  rom checksum
+S04365:  rom check
 
 L04366:  shift left a[x]
          go to L04167
@@ -3151,7 +3151,7 @@ L07175:  p <- 9
          delayed rom @06
          go to L03347
 
-S07200:  rom checksum
+S07200:  rom check
 
          nop
          nop

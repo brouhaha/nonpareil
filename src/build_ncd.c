@@ -515,7 +515,7 @@ void handle_obj_file_element (xmlNode *element)
   strip_whitespace (obj_fn);
 
   // $$$ check that the address space exists!
-  if (strcmp (addr_space_str, "inst") != 0)
+  if (strcmp ((char *) addr_space_str, "inst") != 0)
     fatal (2, "only 'inst' address space is supported\n");
 
   read_object_file (obj_fn, expected_hash);
@@ -536,7 +536,7 @@ void handle_memory_element (xmlNode *element)
   addr_space_str = get_attr_str (element, "addr_space");
 
   // Don't care about data memory, only instructions
-  if (strcmp (addr_space_str, "inst") != 0)
+  if (strcmp ((char *) addr_space_str, "inst") != 0)
     return;
 
   banks_str = get_attr_str (element, "banks");
@@ -551,8 +551,8 @@ void handle_memory_element (xmlNode *element)
   for (addr = base_addr; addr < base_addr + size; addr++)
     {
       xmlNode *loc_node;
-      xmlAttr *addr_attr;
-      xmlAttr *data_attr;
+      [[maybe_unused]] xmlAttr *addr_attr;
+      [[maybe_unused]] xmlAttr *data_attr;
       char addr_str [10];
       char data_str [10];
 
@@ -577,14 +577,26 @@ void handle_memory_element (xmlNode *element)
       data_attr = xmlNewProp (loc_node, (xmlChar *) "data", (xmlChar *) data_str);
     }
 
+  // XXX We should track the copyright notices and licenses from the object
+  //     files with regard to what address ranges they cover, but currently
+  //     we do not.
+  int copyright_count = 0;
   for (str_node_t *c_node = copyright_list_head; c_node; c_node = c_node->next)
   {
-    xmlAttr *copyright_attr = xmlNewProp (element, (xmlChar *) "copyright", (xmlChar *) c_node->s);
+    copyright_count += 1;
+
+    char tag_name[40];
+    if (copyright_count == 1)
+      snprintf(tag_name, strlen(tag_name), "copyright");
+    else
+      snprintf(tag_name, strlen(tag_name), "copyright%d", copyright_count);
+      
+    [[maybe_unused]] xmlAttr *copyright_attr = xmlNewProp (element, (xmlChar *) tag_name, (xmlChar *) c_node->s);
   }
 
   for (str_node_t *l_node = license_list_head; l_node; l_node = l_node->next)
   {
-    xmlAttr *license_attr = xmlNewProp (element, (xmlChar *) "license", (xmlChar *) l_node->s);
+    [[maybe_unused]] xmlAttr *license_attr = xmlNewProp (element, (xmlChar *) "license", (xmlChar *) l_node->s);
   }
 }
 

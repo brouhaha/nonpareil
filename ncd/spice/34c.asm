@@ -1,13 +1,18 @@
 ; 34C model-specific firmware, uses 1820-2162 CPU ROM
-; Copyright 2022 Eric Smith <spacewar@gmail.com>
+; Copyright 2022-2023 Eric Smith <spacewar@gmail.com>
 ; SPDX-License-Identifier: GPL-3.0-only
 
-	 .copyright "Copyright 2022 Eric Smith <spacewar@gmail.com>"
+	 .copyright "Copyright 2022-2023 Eric Smith <spacewar@gmail.com>"
 	 .license "GPL-v3.0-only"
 
          .arch woodstock
 
          .include "1820-2162.inc"
+
+; S bits:
+; 3  - hardware: program mode
+; 5  - hardware: ROM CRC check failure
+; 15 - hardware: key pressed
 
 ; flags:
 ; f  s7=1
@@ -851,7 +856,7 @@ L03344:  jsb S03010
          go to L03765
 
          nop
-S03354:  rom checksum
+S03354:  rom check
 
 S03355:  bank toggle go to L13356
 
@@ -2008,7 +2013,7 @@ L05373:  a + c -> a[wp]
            then go to L05373
          return
 
-S05400:  rom checksum
+S05400:  rom check
 
 S05401:  select rom @00 (x-ad1-10)
 
@@ -2628,7 +2633,7 @@ L06451:  c -> register 15
          register -> c 15
          return
 
-S06460:  rom checksum
+S06460:  rom check
 
 L06461:  decimal
          0 -> c[x]
@@ -3659,9 +3664,11 @@ L12035:  jsb S12365
            then go to L13415
          0 -> s 1
          1 -> s 12
-         0 -> s 3
+
+         0 -> s 3		; check PRGM/RUN switch
          if s 3 = 0
            then go to L12177
+
          delayed rom @14
          jsb S16370
          0 -> s 4
@@ -3674,9 +3681,11 @@ L12055:  0 -> s 15
          if s 15 = 1
            then go to L12055
 L12060:  0 -> s 1
-         0 -> s 3
+
+         0 -> s 3		; check PRGM/RUN switch
          if s 3 = 0
            then go to L12070
+
          if s 12 = 1
            then go to L12072
          1 -> s 12
@@ -3785,9 +3794,11 @@ L12210:  0 -> a[x]
          p <- 12
          display off
          display toggle
-         0 -> s 3
+
+         0 -> s 3		; check PRGM/RUN switch
          if s 3 = 0
            then go to L12055
+
 L12220:  0 -> s 15
          if s 15 = 1
            then go to L12220
@@ -3852,9 +3863,11 @@ L12304:  binary
 
 L12310:  1 -> s 1
          jsb S12162
-         0 -> s 3
+
+         0 -> s 3		; check RUN?PRGM switch
          if s 3 = 1
            then go to L12317
+
 L12315:  jsb S12112
          go to L12200
 
@@ -3870,9 +3883,10 @@ L12322:  if c[w] = 0
          jsb S17257
          go to L12200
 
-L12332:  0 -> s 3
+L12332:  0 -> s 3		; check PRGM/RUN switch
          if s 3 = 1
            then go to L12000
+
          jsb S12157
          m1 exchange c
          jsb S12162
@@ -4473,9 +4487,10 @@ L13321:  p <- 4			; error 4: improper line number or label call
          delayed rom @04
          go to error_p_x
 
-L13324:  0 -> s 3
+L13324:  0 -> s 3		; check PRGM/RUN switch
          if s 3 = 1
            then go to L12024
+
          delayed rom @04
          jsb S12162
          if c[x] = 0
@@ -4495,9 +4510,11 @@ L13341:  p <- 0
 L13344:  p <- 0
          load constant 8
 L13346:  p <- 1
-         0 -> s 3
+
+         0 -> s 3		; check PRGM/RUN switch
          if s 3 = 0
            then go to L12642
+
          p <- 0
          delayed rom @16
          go to L17327
@@ -4528,7 +4545,7 @@ L13372:  delayed rom @12
          delayed rom @04
          go to error_p_x
 
-S13377:  rom checksum
+S13377:  rom check
 
 L13400:  0 -> s 11
          display off
@@ -4566,9 +4583,10 @@ L13435:  delayed rom @06
          delayed rom @16
          go to L17340
 
-L13441:  0 -> s 3
+L13441:  0 -> s 3		; check PRGM/RUN switch
          if s 3 = 0
            then go to L12075
+
          go to L13435
 
 
@@ -4661,9 +4679,10 @@ L13535:  0 -> a[w]
          delayed rom @12
          go to S15330
 
-L13562:  0 -> s 3
+L13562:  0 -> s 3		; check PRGM/RUN switch
          if s 3 = 0
            then go to L13575
+
          0 -> b[w]
          m2 -> c
 L13567:  c -> a[w]
@@ -4685,10 +4704,12 @@ L13575:  p <- 12
 L13605:  jsb S13755
          0 -> c[w]
          c -> register 14
-         0 -> s 3
+
+         0 -> s 3		; check PRGM/RUN switch
          c -> register 15
          if s 3 = 1
            then go to L13636
+
          jsb S13775
          0 -> a[w]
          p <- 0
@@ -5677,13 +5698,17 @@ L15332:  0 -> s 15
          if s 15 = 1
            then go to L15332
          0 -> s 12
-         0 -> s 3
+
+         0 -> s 3		; check PRGM/RUN switch
          if s 3 = 1
            then go to L15342
+
          1 -> s 12
-L15342:  0 -> s 3
+
+L15342:  0 -> s 3		; check PRGM/RUN switch
          if s 3 = 0
            then go to L15350
+
          if s 12 = 0
            then go to L15352
          go to L15354
@@ -5963,9 +5988,10 @@ L15732:  0 -> c[wp]
 L15736:  p - 1 -> p
          return
 
-L15740:  0 -> s 3
+L15740:  0 -> s 3		; check PRGM/RUN switch
          if s 3 = 0
            then go to L15747
+
          1 -> s 6
          0 -> s 11
 L15745:  delayed rom @04
@@ -5995,7 +6021,7 @@ L15747:  delayed rom @06
          nop
          nop
          nop
-S15776:  rom checksum
+S15776:  rom check
 
          .dw @0602			; CRC, bank 1 quad 2 (@14000..@15777)
 
@@ -6536,7 +6562,7 @@ op_x_exch_ind_i1:
 L16742:  delayed rom @07
          go to L13757
 
-S16744:  rom checksum
+S16744:  rom check
 
 L16745:  bank toggle go to L06746
 

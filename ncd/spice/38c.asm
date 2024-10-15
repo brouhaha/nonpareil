@@ -62,7 +62,7 @@ L02032:  p <- 6
 
 L02034:  bank toggle
 
-S02035:  rom checksum
+S02035:  rom check
 
 L02036:  bank toggle
 
@@ -1528,7 +1528,7 @@ S04356:  0 -> c[w]
 L04367:  p <- 5
          go to L04140
 
-S04371:  rom checksum
+S04371:  rom check
 
          nop
          nop
@@ -3190,7 +3190,7 @@ S07373:  if c[w] # 0
          register -> c 5
          return
 
-S07377:  rom checksum
+S07377:  rom check
 
 S07400:  select rom go to x-ad2-10
 S07401:  select rom go to S05002
@@ -3463,7 +3463,7 @@ S07761:  0 -> s 8
 	 .bank 1
 	 .org @2000
 
-S12000:  rom checksum
+S12000:  rom check
 
 L12001:  bank toggle
 
@@ -3638,7 +3638,7 @@ L12211:  p - 1 -> p
          if p # 13
            then go to L12211
          p <- 8
-L12216:  load constant 14
+L12216:  load constant 14	; "Error"
          load constant 10
          load constant 10
          load constant 12

@@ -1,4 +1,4 @@
-; 67 firmware
+; 65 firmware
 ; Copyright 2022 Eric Smith <spacewar@gmail.com>
 ; SPDX-License-Identifier: GPL-3.0-only
 

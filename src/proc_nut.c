@@ -1860,6 +1860,7 @@ static void nut_print_state (sim_t *sim)
   log_printf (sim, "cycle %5" PRId64 "  ", sim->cycle_count);
   log_printf (sim, "%c=%x ", (nut_reg->q_sel) ? 'p' : 'P', nut_reg->p);
   log_printf (sim, "%c=%x ", (nut_reg->q_sel) ? 'Q' : 'q', nut_reg->q);
+  log_printf (sim, "g=%x%x ", (nut_reg->g[1], nut_reg->g[0]));
   log_printf (sim, "carry=%d ", nut_reg->carry);
   log_printf (sim, " stat=");
   log_print_stat (sim);
@@ -1871,6 +1872,11 @@ static void nut_print_state (sim_t *sim)
   log_print_reg (sim, "c=", nut_reg->c);
   log_print_reg (sim, "m=", nut_reg->m);
   log_print_reg (sim, "n=", nut_reg->n);
+
+  log_printf(sim, "stack:");
+  for (int i = 0; i < STACK_DEPTH; i++)
+    log_printf(sim, " %04x", nut_reg->stack[i]);
+  log_printf(sim, "\n");
 
   if (sim->source && sim->source [nut_reg->prev_pc])
     log_printf (sim, "%s", sim->source [nut_reg->prev_pc]);

@@ -1,8 +1,8 @@
 ; 33E model-specific firmware, uses 1820-2105 CPU ROM
-; Copyright 2022 Eric Smith <spacewar@gmail.com>
+; Copyright 2022-2023 Eric Smith <spacewar@gmail.com>
 ; SPDX-License-Identifier: GPL-3.0-only
 
-	 .copyright "Copyright 2022 Eric Smith <spacewar@gmail.com>"
+	 .copyright "Copyright 2022-2023 Eric Smith <spacewar@gmail.com>"
 	 .license "GPL-v3.0-only"
 
 	 .arch woodstock
@@ -13,9 +13,9 @@
 ; 0
 ; 1
 ; 2
-; 3
+; 3   HW - RUN/PRGM switch
 ; 4   f or g prefix
-; 5
+; 5   HW - ROM self-test failure
 ; 6   f prefix
 ; 7
 ; 8
@@ -485,13 +485,15 @@ S02637:  delayed rom @00
 L02641:  delayed rom @12
          go to L05314
 
-S02643:  rom checksum
+S02643:  rom check
 
 L02644:  0 -> c[w]
          c -> data address
-         0 -> s 3
+
+         0 -> s 3		; check PRGM/RUN switch
          if s 3 = 1
            then go to L02660
+
          c -> register 9
          c -> register 10
          c -> register 11
@@ -504,9 +506,10 @@ L02660:  register -> c 8
          delayed rom @14
          go to L06357
 
-L02664:  0 -> s 3
+L02664:  0 -> s 3		; check PRGM/RUN switch
          if s 3 = 0
            then go to L03341
+
          0 -> b[w]
          m1 -> c
          c -> a[w]
@@ -622,9 +625,11 @@ L03034:  jsb S03070
            then go to L03276
          0 -> s 1
          0 -> s 11
-         0 -> s 3
+
+         0 -> s 3		; check PRGM/RUN switch
          if s 3 = 0
            then go to L03273
+
          delayed rom @10
          jsb format_display
 L03046:  display off
@@ -633,9 +638,11 @@ L03050:  0 -> s 15		; wait for key
          if s 15 = 1
            then go to L03050
 L03053:  0 -> s 1
-         0 -> s 3
+
+         0 -> s 3		; check PRGM/RUN switch
          if s 3 = 0
            then go to L03063
+
          if s 11 = 0
            then go to L03065
          0 -> s 11
@@ -708,9 +715,11 @@ fn_sst:  1 -> s 1
          jsb S03362
          if c[x] = 0
            then go to L03162
-         0 -> s 3
+
+         0 -> s 3		; check PRGM/RUN switch
          if s 3 = 1
            then go to L03164
+
 L03162:  jsb S03076
          jsb S03362
 L03164:  a exchange b[w]
@@ -729,9 +738,11 @@ L03167:  shift left a[w]
          0 -> b[w]
 L03202:  display off
          display toggle
-         0 -> s 3
+
+         0 -> s 3		; check PRGM/RUN switch
          if s 3 = 0
            then go to L03050
+
 L03207:  0 -> s 15		; wait for key release
          if s 15 = 1
            then go to L03207
@@ -900,9 +911,11 @@ L03424:  p <- 1
            then go to L03433
          c + 1 -> c[p]
 L03433:  jsb S03412
-         0 -> s 3
+
+         0 -> s 3		; check PRGM/RUN switch
          if s 3 = 0
            then go to L03240
+
          delayed rom @06
          go to L03311
 
@@ -1494,7 +1507,7 @@ L04361:  jsb S04242
          load constant 1
          go to L04067
 
-S04365:  rom checksum
+S04365:  rom check
 
 L04366:  shift left a[x]
          go to L04167
@@ -1754,16 +1767,20 @@ S04733:  display off
 L04735:  0 -> s 15
          if s 15 = 1
            then go to L04735
-L04740:  0 -> s 3
+
+L04740:  0 -> s 3		; check PRGM/RUN switch
          if s 3 = 1
            then go to L04745
+
          if s 15 = 0
            then go to L04740
 L04745:  if s 15 = 1
            then go to L04752
-         0 -> s 3
+
+         0 -> s 3		; check PRGM/RUN switch
          if s 3 = 1
            then go to L04740
+
 L04752:  display toggle
          return
 
@@ -2896,7 +2913,7 @@ L06621:  p <- 1
          delayed rom @06
          go to L03347
 
-S06624:  rom checksum
+S06624:  rom check
 
 S06625:  if s 5 = 1
            then go to L06746

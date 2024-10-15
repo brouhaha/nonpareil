@@ -187,6 +187,7 @@ char *strlcpy (char *dest, const char *src, size_t l)
 }
 #endif
 
+
 // strlncpy will copy up to n characters from src to dest, but not more than
 // one less than the maximum length of dest specified by the argument l.
 // Unlike strncpy(), strlncpy() will always leave dest NULL-terminated on
@@ -525,7 +526,7 @@ char *find_file_in_path_list (char *name, char *opt_suffix, char *path_list)
   while (path_list && *path_list)
     {
       char *p = strchr (path_list, ':');
-      size_t n = p ? (p - path_list) : strlen (path_list);
+      size_t n = p ? ((size_t) (p - path_list)) : strlen (path_list);
 
       strlncpy (buf, path_list, sizeof (buf), n);
       max_strncat (buf, "/", sizeof (buf));

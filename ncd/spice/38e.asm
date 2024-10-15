@@ -24,15 +24,15 @@
 
 ; Note that code from @02000 through @02777 is nearly identical between 37E and 38E
 
-         go to L02161
+L02000:  go to L02161
 
-         go to L02373
+L02001:  go to L02373
 
-         go to L02024
+L02002:  go to L02024
 
-         go to L02137
+L02003:  go to L02137
 
-         1 -> s 10
+L02004:  1 -> s 10
          jsb S02103
          jsb S02126
          delayed rom @02
@@ -221,7 +221,7 @@ L02253:  if c[m] = 0
 S02263:  delayed rom @01
          go to S00557
 
-S02265:  rom checksum
+S02265:  rom check
 
 L02266:  p <- 5
 L02267:  delayed rom @00
@@ -1567,7 +1567,7 @@ L04520:  load constant 3
 
 L04522:  a -> rom address
 
-S04523:  rom checksum
+S04523:  rom check
 
 L04524:  jsb S04621
          go to L04777
@@ -2543,7 +2543,7 @@ L06200:  delayed rom @01
          jsb S00674
          go to L06150
 
-S06203:  rom checksum
+S06203:  rom check
 
 L06204:  stack -> a
          delayed rom @01
@@ -4180,7 +4180,7 @@ S13045:  bank toggle
 
          go to L13274
 
-S13047:  rom checksum
+S13047:  rom check
 
 S13050:  bank toggle
 

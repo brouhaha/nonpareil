@@ -77,13 +77,13 @@ S2000:  jsb S2235
         a - 1 -> a[s]
         if n/c go to L2042
         c -> a[w]
-        if a[xs] # 0
-          then go to L2031
+        if a[xs] # 0		; SCI or ENG?
+          then go to L2031	;   yes
         p <- 1
         load constant 1
         load constant 0
         if a >= c[x]
-          then go to L2037
+          then go to L2037	; large exponent, force SCI
         b exchange c[x]
         0 -> a[x]
         f -> a[x]
@@ -96,7 +96,7 @@ L2031:  0 -> a[x]
         f -> a[x]
         a + 1 -> a[x]
         a + c -> a[x]
-        if n/c go to L2037
+        if n/c go to L2037	; negative exponent, force SCI
         go to L2047
 
 L2037:  0 -> c[s]
@@ -131,10 +131,10 @@ L2071:  jsb S2227
           then go to L2150
         a exchange b[s]
         a - 1 -> a[s]
-        if a[s] # 0
-          then go to L2103
-        if a[xs] # 0
-          then go to L2130
+        if a[s] # 0		; ENG mode?
+          then go to L2103	;   yes
+        if a[xs] # 0		; exponent negative
+          then go to L2130	;   yes
         go to L2133
 
 L2103:  0 -> a[s]
@@ -145,10 +145,10 @@ L2103:  0 -> a[s]
         c - 1 -> c[x]
         a + c -> a[x]
         0 -> c[x]
-        load constant 3
+        load constant 3		; divide exponent by 3 by repeated subtraction
 L2114:  a - c -> a[x]
         if n/c go to L2114
-        a + c -> a[x]
+        a + c -> a[x]		; restore from underflow
         shift right c[x]
 L2120:  a - c -> a[x]
         if n/c go to L2120
