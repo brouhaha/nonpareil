@@ -69,6 +69,10 @@ char *calculator_chooser (char *path)
 		     gtk_hseparator_new ());
 
   file_chooser = gtk_file_chooser_widget_new (GTK_FILE_CHOOSER_ACTION_OPEN);
+  gtk_widget_set_size_request (file_chooser,
+                               460, // width
+                               300  // height
+                              );
 
   nui_kml_filter = gtk_file_filter_new ();
 
