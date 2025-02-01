@@ -1,5 +1,5 @@
 /*
-Copyright 1995-2023 Eric Smith <spacewar@gmail.com>
+Copyright 1995-2024 Eric Smith <spacewar@gmail.com>
 SPDX-License-Identifier: GPL-3.0-only
 
 This program is free software; you can redistribute it and/or modify
@@ -48,6 +48,8 @@ void nasm_error (char *s);
 %token LE_OP GE_OP EQ_OP NE_OP
 
 %token A B C F G M N P Q S W X
+
+%token <integer> S_NUM
 
 %token AB
 %token ABC
@@ -212,6 +214,7 @@ pseudo_op_label	: ps_dw
 pseudo_op_special_label	: ps_equ ;
 
 ps_equ		: IDENT '.' EQU expr { $4 = range ($4, 0, 0xffff);
+                                       printf("equating '%s', value %d\n", $1, $4);
 				       define_symbol ($1, $4); };
 
 ps_org		: ORG expr { $2 = range ($2, 0, 0xffff);
@@ -380,10 +383,12 @@ const_inst      : LDI expr            { $2 = range($2, 0, 0x3ff); emit(00460); e
 
 status_set_inst : S '=' expr expr     { $3 = range($3, 0, 1); $4 = range($4, 0, 13); emit(00000 + ($3 ? 00010 : 00004) + (digit_map[$4] << 6)); }
                 | S expr '=' expr     { $4 = range($4, 0, 1); $2 = range($2, 0, 13); emit(00000 + ($4 ? 00010 : 00004) + (digit_map[$2] << 6)); }
+                | S_NUM '=' expr       { $3 = range($3, 0, 1); $1 = range($1, 0, 13); emit(00000 + ($3 ? 00010 : 00004) + (digit_map[$1] << 6)); }
                 ;
 
 status_test_inst: '?' S '=' expr expr { $4 = range($4, 1, 1); $5 = range($5, 0, 13); emit_arith(00014 + (digit_map[$5] << 6)); }
                 | '?' S expr '=' expr { $5 = range($5, 1, 1); $3 = range($3, 0, 13); emit_arith(00014 + (digit_map[$3] << 6)); }
+                | '?' S_NUM '=' expr { $4 = range($4, 1, 1); $2 = range($2, 0, 13); emit_arith(00014 + (digit_map[$2] << 6)); }
                 ;
 
 status_inst     : status_set_inst

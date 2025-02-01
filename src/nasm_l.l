@@ -1,5 +1,5 @@
 /*
-Copyright 1995-2023 Eric Smith <spacewar@gmail.com>
+Copyright 1995-2024 Eric Smith <spacewar@gmail.com>
 SPDX-License-Identifier: GPL-3.0-only
 
 This program is free software; you can redistribute it and/or modify
@@ -32,6 +32,7 @@ see <https://www.gnu.org/licenses/>.
 %option noyywrap
 
 %{
+#include <ctype.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <string.h>
@@ -144,10 +145,20 @@ rb		\]
 
 0x{hexdig}+	{ sscanf (yytext+2, "%x", &nasm_lval.integer); return INTEGER; }
 
-
 {lglobal}*{lfirst}({lmiddle}*{lend})?	{
                           if ((nasm_lval.integer = keyword (yytext, nasm_keywords)))
                             return nasm_lval.integer;
+                          if (((yytext[0] == 's') || (yytext[0] == 'S')) && isdigit(yytext[1]))
+                          {
+                            int l = strlen(yytext);
+                            int v = atoi(yytext + 1);
+                            if ((l == 2) ||
+                                ((l == 3) && isdigit(yytext[2]) && (v <= 13)))
+                            {
+                              nasm_lval.integer = v;
+                              return S_NUM;
+                            }
+                          }
                           nasm_lval.string = newstr (yytext);
                           return IDENT;
 			}
