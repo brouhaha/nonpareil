@@ -47,6 +47,7 @@ MA 02111, USA.
 
 static xmlSAXHandler sax_handler;
 
+int sax_char_function = 0;
 
 typedef struct calcdef_mem_t
 {
@@ -912,9 +913,9 @@ static void parse_char (calcdef_t *calcdef,
     fatal (3, "char element doesn't have id attribute\n");
   calcdef->chip->char_gen->id = id;
   if (calcdef->chip->char_gen->bitmap)
-    sax_handler.characters = parse_bitmap;
+    sax_char_function = 1;
   else
-    sax_handler.characters = parse_segments;
+    sax_char_function = 2;
 }
 
 
@@ -1095,15 +1096,25 @@ static void sax_start_element (void *ref,
 static void sax_end_element (void *ref UNUSED,
 			     const xmlChar *name UNUSED)
 {
-  sax_handler.characters = NULL;
+  sax_char_function = 0;
 }
+
+static void sax_characters (void *ref,
+  const xmlChar *ch,
+  int len)
+
+{
+  if (sax_char_function==1) {parse_bitmap(ref,ch,len); };
+  if (sax_char_function==2) {parse_segments(ref,ch,len); };
+}
+
 
 
 static xmlSAXHandler sax_handler =
 {
   .getEntity     = sax_get_entity,
   .startElement  = sax_start_element,
-  .characters    = NULL,               // will change dynamically
+  .characters    = sax_characters,     
   .endElement    = sax_end_element,
   .warning       = sax_warning,
   .error         = sax_error,
