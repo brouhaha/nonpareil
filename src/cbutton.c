@@ -71,7 +71,6 @@ static void cbutton_class_init         (CbuttonClass          *klass);
 static void cbutton_init               (Cbutton               *cbutton);
 static void cbutton_destroy            (GtkObject             *object);
 static void cbutton_realize            (GtkWidget             *widget);
-static void cbutton_unrealize          (GtkWidget             *widget);
 static void cbutton_map                (GtkWidget             *widget);
 static void cbutton_unmap              (GtkWidget             *widget);
 static void cbutton_size_request       (GtkWidget             *widget,
@@ -151,7 +150,6 @@ cbutton_class_init (CbuttonClass *klass)
   object_class->destroy = cbutton_destroy;
 
   widget_class->realize = cbutton_realize;
-  widget_class->unrealize = cbutton_unrealize;
   widget_class->map = cbutton_map;
   widget_class->unmap = cbutton_unmap;
   widget_class->size_request = cbutton_size_request;
@@ -377,21 +375,6 @@ cbutton_realize (GtkWidget *widget)
   gdk_window_set_user_data (widget->window, cbutton);
 
   widget->style = gtk_style_attach (widget->style, widget->window);
-}
-
-static void
-cbutton_unrealize (GtkWidget *widget)
-{
-  Cbutton *cbutton;
-
-  g_return_if_fail (IS_CBUTTON (widget));
-  cbutton = CBUTTON (widget);
-
-  gdk_window_destroy (widget->window);
-  widget->window = NULL;
-
-  if (GTK_WIDGET_CLASS (parent_class)->unrealize)
-    (* GTK_WIDGET_CLASS (parent_class)->unrealize) (widget);
 }
 
 static void

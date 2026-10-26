@@ -27,7 +27,10 @@ MA 02111, USA.
 #include <stdlib.h>
 #include <string.h>
 
-#include "SDL/SDL_audio.h"
+// SDL is used for audio only.  SDL_MAIN_HANDLED keeps SDL from renaming main
+// to SDL_main; Nonpareil owns main().
+#define SDL_MAIN_HANDLED
+#include "SDL_audio.h"
 
 #include "util.h"
 #include "endian.h"

@@ -67,7 +67,9 @@ char *newstrn (char *orig, int max_len);
 
 void realloc_strcpy (char **dest, char *src);
 
-#if __GLIBC__ < 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ < 38)
+// macOS (and glibc >= 2.38) provide strlcpy() in <string.h>, returning size_t.
+// The declaration below returns char * and conflicts with the system prototype.
+#if !defined(__APPLE__) && (__GLIBC__ < 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ < 38))
 // strlcpy will copy as much of src into dest as it can, up to one less than
 // the maximum length of dest specified by the argument l.  Unlike strncpy(),
 // strlcpy() will always leave dest NULL-terminated on return.

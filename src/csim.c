@@ -49,6 +49,7 @@ MA 02111, USA.
 #include "printer.h"
 #include "csim.h"
 #include "calc_chooser.h"
+#include "headless.h"
 
 
 #ifdef HAS_DEBUGGER_GUI
@@ -110,6 +111,12 @@ void usage (FILE *f)
 #ifdef HAS_DEBUGGER
   fprintf (f, "   --stop\n");
 #endif
+  fprintf (f, "headless mode (no window / no ~/.nonpareil state):\n");
+  fprintf (f, "   --mod <path[:port]>   (repeatable)\n");
+  fprintf (f, "   --keys <name...>      (space-separated list of key labels)\n");
+  fprintf (f, "   --show                (display X register before exit)\n");
+  fprintf (f, "   --expect <value>      (error if X is not this at end)\n");
+  fprintf (f, "   --timeout <seconds>\n");
 }
 
 
@@ -885,6 +892,9 @@ int main (int argc, char *argv[])
   progname = newstr (argv [0]);
 
   setup_path ();
+
+  if (headless_requested (argc, argv))
+    exit (headless_main (argc, argv));
 
   gtk_init (& argc, & argv);
 

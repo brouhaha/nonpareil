@@ -31,7 +31,7 @@ EnsureSConsVersion(0, 98, 0)
 
 build_target_only = build_env ['build_target_only']
 
-cross = build_env ['PLATFORM'] != build_env ['target']
+cross = build_env ['cross']
 
 ming = build_env ['target'] == 'win32'
 
@@ -59,6 +59,57 @@ build_env.Append (CCFLAGS = ['-std=gnu99', '-Wall', '-Wextra'])
 # build_env.Append (LIBS = ['-lefence'])
 
 build_env.Append (YACCFLAGS = [ '-d', '-v' ])
+
+# Apple's /usr/bin/bison is 2.3 and cannot parse "%define api.prefix".
+# Homebrew's bison is keg-only, so it is not selected by a bare "bison"
+# on SCons' command PATH.  Point YACC at an absolute Bison >= 3.
+if build_env['PLATFORM'] == 'darwin':
+    import re
+    import shutil
+    import subprocess
+
+    def bison_version (path):
+        try:
+            out = subprocess.check_output ([path, '--version'],
+                                           text = True,
+                                           stderr = subprocess.STDOUT)
+        except (OSError, subprocess.CalledProcessError):
+            return None
+        m = re.search (r'(\d+)\.(\d+)', out)
+        if not m:
+            return None
+        return (int (m.group (1)), int (m.group (2)))
+
+    bison_candidates = []
+    brew = shutil.which ('brew')
+    if brew:
+        try:
+            prefix = subprocess.check_output ([brew, '--prefix', 'bison'],
+                                              text = True).strip ()
+            bison_candidates.append (os.path.join (prefix, 'bin', 'bison'))
+        except (OSError, subprocess.CalledProcessError):
+            pass
+    bison_candidates.append ('/opt/homebrew/opt/bison/bin/bison')
+    bison_candidates.append ('/usr/local/opt/bison/bin/bison')
+
+    bison = None
+    seen = set ()
+    for path in bison_candidates:
+        if path in seen:
+            continue
+        seen.add (path)
+        if not os.path.isfile (path) or not os.access (path, os.X_OK):
+            continue
+        ver = bison_version (path)
+        if ver and ver >= (3, 0):
+            bison = path
+            break
+    if not bison:
+        print ('error: Bison 3 or newer is required '
+               "(Apple's /usr/bin/bison is too old). "
+               'Install it with: brew install bison')
+        Exit (1)
+    build_env['YACC'] = bison
 
 if build_env ['debug'] :
     build_env.Append (CCFLAGS = ['-g'])
@@ -307,7 +358,7 @@ nonpareil_srcs = Split ("""about.c goose.c
                            sound.c endian.c
                            display.c printer.c card_reader.c
                            keyboard.c scancode.c slide_switch.c
-                           cbutton.c""")
+                           cbutton.c headless.c""")
 
 nonpareil_csim_srcs = Split ("""csim.c""")
 
@@ -339,6 +390,10 @@ if build_env ['has_debugger_gui']:
 
 nonpareil_env.ParseConfig (pkg_config_cmd + nonpareil_packages)
 nonpareil_env.ParseConfig (sdl_pkg_config_cmd)
+# sdl-config --libs links SDLmain, which expects SDL_main.  Nonpareil has
+# its own main and uses SDL only for audio.
+nonpareil_env['LIBS'] = [lib for lib in nonpareil_env['LIBS']
+                         if lib not in ('SDLmain', '-lSDLmain')]
 nonpareil_env.Append (LIBS = 'm')
 
 csim_env = nonpareil_env.Clone ()

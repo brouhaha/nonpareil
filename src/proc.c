@@ -104,6 +104,7 @@ typedef enum
   CMD_GET_DEBUG_FLAG,
   CMD_SINGLE_CYCLE,
   CMD_SINGLE_INST,
+  CMD_RUN_INSTRUCTIONS,
   CMD_SET_BREAKPOINT,
   CMD_GET_DISPLAY_UPDATE
 } sim_cmd_t;
@@ -970,6 +971,14 @@ static void handle_sim_cmd (sim_t *sim, sim_msg_t *msg)
       sim->single_inst_flag = true;
       msg->reply = OK;
       break;
+    case CMD_RUN_INSTRUCTIONS:
+      {
+	int n = msg->arg1;
+	while (n-- > 0)
+	  (void) sim->proc->execute_instruction (sim);
+	msg->reply = OK;
+      }
+      break;
     case CMD_SET_BREAKPOINT:
       break;
     case CMD_GET_DISPLAY_UPDATE:
@@ -1268,6 +1277,41 @@ bool sim_running (sim_t *sim)
   msg.cmd = CMD_GET_RUN_FLAG;
   send_cmd_to_sim_thread (sim, (gpointer) & msg);
   return msg.b;
+}
+
+
+void sim_run_instructions (sim_t *sim, int n)
+{
+  sim_msg_t msg;
+
+  if (n <= 0)
+    return;
+  memset (& msg, 0, sizeof (sim_msg_t));
+  msg.cmd = CMD_RUN_INSTRUCTIONS;
+  msg.arg1 = n;
+  send_cmd_to_sim_thread (sim, (gpointer) & msg);
+}
+
+
+uint64_t sim_get_cycle_count (sim_t *sim)
+{
+  sim_msg_t msg;
+
+  memset (& msg, 0, sizeof (sim_msg_t));
+  msg.cmd = CMD_GET_CYCLE_COUNT;
+  send_cmd_to_sim_thread (sim, (gpointer) & msg);
+  return msg.cycle_count;
+}
+
+
+void sim_set_cycle_count (sim_t *sim, uint64_t count)
+{
+  sim_msg_t msg;
+
+  memset (& msg, 0, sizeof (sim_msg_t));
+  msg.cmd = CMD_SET_CYCLE_COUNT;
+  msg.cycle_count = count;
+  send_cmd_to_sim_thread (sim, (gpointer) & msg);
 }
 
 

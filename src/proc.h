@@ -183,6 +183,9 @@ void sim_stop         (sim_t *sim);  // stops executing instructions (clear run 
 
 bool sim_running      (sim_t *sim);  // is the simulation running? (get run flag)
 
+/* Run n instructions synchronously in the sim thread. */
+void sim_run_instructions (sim_t *sim, int n);
+
 
 // The simulation pause flag is used to stop the simulator for state I/O.  It
 // overrides (but does not alter) the run flag.
