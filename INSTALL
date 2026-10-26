@@ -12,7 +12,7 @@ build it with a non-GNU toolchain.
 
 The recommended minimum tool versions are:
 
-    Bison	2.3.4
+    Bison	3.0
     Flex	2.5.33
     GCC		4.1.2
     NetPBM	10.35.41
@@ -25,6 +25,24 @@ must be available at build time.  A list of these is in the README file.
 
 Other versions of the tools (older or newer) may work but have not been
 tested.
+
+-----------------------------------------------------------------------------
+
+macOS:
+
+Install the build tools and libraries with Homebrew:
+
+	% brew install scons pkgconf gtk+ sdl libgsf bison
+
+The "sdl" formula is sdl12-compat, which provides the SDL 1.2 API this
+program uses.  Homebrew's bison is keg-only, so it does not replace
+/usr/bin/bison; the build looks up that keg-only binary.  SCons does
+not inherit the shell PATH.  On Darwin the build prepends Homebrew's
+bin so that pkg-config and sdl-config can be found.
+
+The assembler grammars use Bison's "%define api.prefix {name}" syntax,
+which requires Bison 3.0 or newer.  Apple's /usr/bin/bison 2.3 is not
+sufficient.
 
 -----------------------------------------------------------------------------
 

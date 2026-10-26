@@ -84,6 +84,29 @@ vars.AddVariables (EnumVariable ('target',
 #-----------------------------------------------------------------------------
 
 env = Environment (variables = vars)
+
+# SCons replaces ENV PATH with a short system list that omits Homebrew,
+# so spawned pkg-config and sdl-config would not be found.
+if env['PLATFORM'] == 'darwin':
+    import os
+    import shutil
+    import subprocess
+    bindir = None
+    brew = shutil.which ('brew')
+    if brew:
+        try:
+            prefix = subprocess.check_output ([brew, '--prefix'],
+                                              text = True).strip ()
+            candidate = os.path.join (prefix, 'bin')
+            if os.path.isdir (candidate):
+                bindir = candidate
+        except (OSError, subprocess.CalledProcessError):
+            bindir = None
+    if bindir is None and os.path.isdir ('/opt/homebrew/bin'):
+        bindir = '/opt/homebrew/bin'
+    if bindir:
+        env.PrependENVPath ('PATH', bindir)
+
 vars.Update (env)
 vars.Save (conf_file, env)
 
@@ -135,8 +158,20 @@ if not env ['libdir']:
 # Prepare for SConscription
 #-----------------------------------------------------------------------------
 
+# SCons names macOS "darwin". Building the posix target there is native,
+# not a cross compile.
+def native_target (platform, target):
+    if platform == target:
+        return True
+    return platform == 'darwin' and target == 'posix'
+
+env ['cross'] = not native_target (env ['PLATFORM'], env ['target'])
+
 host_build_dir = 'build/' + env ['PLATFORM']
-target_build_dir = 'build/' + env ['target']
+if env ['cross']:
+    target_build_dir = 'build/' + env ['target']
+else:
+    target_build_dir = host_build_dir
 
 if env ['debug']:
         host_build_dir += '-debug'
@@ -178,7 +213,7 @@ env.Append (KML_41CV = File ('nui/nut/41c/41cv.kml'))
 native_env = env.Clone ()
 native_env ['build_target_only'] = 0
 SConscript ('src/SConscript',
-            build_dir = host_build_dir,
+            variant_dir = host_build_dir,
             duplicate = 0,
             exports = {'build_env' : native_env,
                        'native_env' : env})
@@ -254,11 +289,11 @@ if env ['target'] == 'win32':
 # target platform code if cross-compiling
 #-----------------------------------------------------------------------------
 
-if (env ['PLATFORM'] != env ['target']):
+if env ['cross']:
         cross_build_env = env.Clone ()
         cross_build_env ['build_target_only'] = 1
         SConscript ('src/SConscript',
-                    build_dir = target_build_dir,
+                    variant_dir = target_build_dir,
                     duplicate = 0,
                     exports = {'build_env': cross_build_env,
                                'native_env' : env})
@@ -269,7 +304,7 @@ if (env ['PLATFORM'] != env ['target']):
 
 if env ['target'] == 'win32':
     SConscript ('win32/dll/SConscript',
-                build_dir = target_build_dir + '/win32/dll',
+                variant_dir = target_build_dir + '/win32/dll',
                 duplicate = 0)
 
     SConscript ('win32/SConscript')
